@@ -14,7 +14,7 @@ CHANGES_WITH:
 -->
 # Familiar
 
-Checked with Familiar **0.30 and 0.31**. Commands may change in any later
+Checked with Familiar **0.30 to 0.32**. Commands may change in any later
 0.x release: with another version, read the entry skill shipped beside that
 release. The installed engine's own role sheets and skills are authoritative;
 this file only routes you to them.
