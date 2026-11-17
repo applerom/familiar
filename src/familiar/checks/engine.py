@@ -7,6 +7,7 @@
 # - pristine fictional feeds have no trust findings and each trust check detects a broken copy [review: engine lead]
 # - checks cannot read settings absent from their rule's reads declaration [review: engine lead]
 # - off modes disappear and recorded exceptions remain visible [review: engine lead]
+# - safe media omissions advise while invalid photo pairs and conflicting subjects refuse output [review: engine lead]
 # CHANGES_WITH:
 # - MOD-PUBLICATION (declared reader surfaces and default-deny policy)
 # - MOD-FAMILY-WRITER (the sole filesystem and generation boundary)
@@ -18,6 +19,7 @@
 from __future__ import annotations
 
 import json
+import copy
 import re
 import tomllib
 
@@ -55,7 +57,8 @@ class Context:
 
 def generated(pic):
     return (pic.get('generated') is True or pic.get('kind') in
-            {'ours-drawing', 'reconstruction', 'generated', 'generated-reconstruction'} or '/gen/' in pic.get('asset', ''))
+            {'ours-drawing', 'reconstruction', 'generated', 'generated-reconstruction'} or
+            (pic.get('kind') != 'photo-treatment' and '/gen/' in pic.get('asset', '')))
 
 
 def record_path(instance, value):
@@ -126,6 +129,9 @@ def _inspect(ctx, chapter, documents, pictures, instance, people):
             pics.append(pictures[key])
     def variants(pic):
         from familiar.instance.publication import SCHEMAS
+        from familiar.instance.subjects import photo_pair
+        pic = copy.deepcopy(pic)
+        photo_pair(instance, pic)
         yield pic
         for key, field in SCHEMAS['image'].items():
             child = pic.get(key)
@@ -277,7 +283,7 @@ def _inspect_family(registry, feed_ids=None):
                 coverage[-1]['checks_run'] += 1
                 ctx = Context(registry, rule, scope)
                 for location, message in _inspect(ctx, chapter, documents, pictures, instance, people):
-                    signal = (rule['kind'] != 'trust' or location.endswith(('unknown', 'subjects-unknown', 'permission-review')) or
+                    signal = (rule['kind'] != 'trust' or location.endswith(('unknown', 'subjects-unknown', 'permission-review', '.omitted')) or
                               rule['check'].removeprefix('check:') == 'closed-topics-and-politics')
                     exception = (registry.text_exception(rule['id'], scope)
                                  if rule['check'] == 'check:closed-topics-and-politics'

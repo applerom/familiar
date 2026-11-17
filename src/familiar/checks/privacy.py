@@ -5,6 +5,7 @@
 # - merged participants retain their recorded publication permissions [review: engine lead]
 # - subjects outside chapter.people cannot bypass privacy [test: tests/gate/test_data_guarantees.py::test_f2_record_subject_cannot_be_omitted]
 # - nested and cover images obey the same prohibitions [test: tests/gate/test_data_guarantees.py::test_f6_reconstruction_cannot_be_a_portrait]
+# - withheld living documents and pictures advise without granting their publication [review: engine lead]
 # CHANGES_WITH:
 # - MOD-PUBLICATION
 # - MOD-CHECKS-ENGINE
@@ -55,7 +56,7 @@ def _violations(chapter, refs, pics, documents, instance, people, pictures=None)
                 if 'subjects' not in doc:
                     yield 'records.subjects-unknown', 'Document subjects undeclared; review required.'
                 elif person.get('id') in {people.get(x, {'id': x}).get('id') for x in doc['subjects']}:
-                    yield 'records', 'Living person document cannot be shown: ' + str(ref.get('doc'))
+                    yield 'records.omitted', 'Living person document is withheld: ' + str(ref.get('doc'))
             if any('subjects' not in p for p in pics):
                 yield 'picture.subjects-unknown', 'Picture subjects undeclared beside a living person; association is unverified.'
     by_id = {p.get('id'): p for p in people.values()}
@@ -69,7 +70,7 @@ def _violations(chapter, refs, pics, documents, instance, people, pictures=None)
             if status == 'unknown':
                 yield f'picture[{n}].subjects.unknown', 'Picture subject life status unknown.'
             if status != 'dead' and 'pictures' not in permissions(person):
-                yield f'picture[{n}]', 'Living picture subject has no recorded picture permission: ' + str(pic.get('asset'))
+                yield f'picture[{n}].omitted', 'Living picture subject has no recorded picture permission: ' + str(pic.get('asset'))
             if generated(pic) and status != 'dead':
                 yield f'picture[{n}]', 'Generated image uses a living person as subject.'
         if generated(pic) and (pic.get('subject_living') or pic.get('subject_child')):
@@ -78,12 +79,12 @@ def _violations(chapter, refs, pics, documents, instance, people, pictures=None)
     for rid, record in resolved.records.items():
         from familiar.instance.subjects import explicit_subjects
         if record.get('privacy') in {'living', 'living-possible'}:
-            yield 'records', 'Living or possibly living corpus records cannot be shown.'
+            yield 'records.omitted', 'Living or possibly living corpus records are withheld.'
         for symbol in explicit_subjects(record):
             person = people.get(symbol, by_id.get(symbol))
             if person is None:
                 yield 'records.subjects', 'Unknown document subject; resolve the canonical person ID.'
             elif life_status(person, privacy) != 'dead':
-                yield 'records', ('Living person document cannot be shown: ' + rid + '; ' + str(record.get('title', '')) +
+                yield 'records.omitted', ('Living person document is withheld: ' + rid + '; ' + str(record.get('title', '')) +
                                   '; protected subject: ' + str(person.get('name', symbol)) +
                                   '. Separate literal fields about deceased people; consent cannot release this full document.')

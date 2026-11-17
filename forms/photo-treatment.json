@@ -1,0 +1,13 @@
+{
+  "kind": "family-photograph",
+  "asset": "/portraits/invented-original.png",
+  "caption": "Original family photograph, unchanged colour",
+  "holder": "Invented Example family",
+  "subjects": ["person-example"],
+  "ours": {
+    "kind": "photo-treatment",
+    "asset": "/portraits/invented-print.png",
+    "caption": "The same photographic frame, processed",
+    "disclosure": "Processed to resemble book printing; facial features retained. Compare with the real original."
+  }
+}

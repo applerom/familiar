@@ -23,6 +23,10 @@ CHANGES_WITH:
 -->
 # Drawing
 
+A drawing invents or reconstructs a scene; a `photo-treatment` processes the same real frame, with its original and explicit disclosure (`forms/photo-treatment.json`).
+For treatments, preserve subjects and dimensions; a living subject requires picture consent and local host display, never reader publication. This does not authorize sending a living photograph to a generator.
+Never transplant or blend faces; the author and reader verify unchanged features, which pixel dimensions alone cannot prove.
+
 The card is the authority on what the picture shows; you are the authority on
 whether the picture shows it. You do not invent the scene again and you do not
 fix the card in silence. Found an error in the card: record it, change in the

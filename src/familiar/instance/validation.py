@@ -2,6 +2,7 @@
 # PURPOSE: Check authored family forms and references before reporting content readiness.
 # PRD_REF: docs/PRD.md#FORMS
 # INVARIANTS:
+# - photo-treatment is a distinct image kind whose frame binding is checked at publication [review: engine lead]
 # - misplaced family/requests data reports the configured questions path instead of silently disappearing [review: engine lead]
 # - invalid settings and dangling adopted references cannot receive a valid report; collector-only form errors remain separate [review: engine lead]
 # - empty folders do not count as chapter or cycle content [review: engine lead]
@@ -666,7 +667,7 @@ def _check(instance, selected=None):
         images = [v for v in pictures.values() if isinstance(v, dict)]
         images += [c['picture'] for c in chapters if isinstance(c.get('picture'), dict)]
         for image in images:
-            if 'kind' in image and image['kind'] not in {'period-picture', 'family-photograph', 'document-scan', 'generated-reconstruction', 'ours-drawing', 'reconstruction', 'generated'}:
+            if 'kind' in image and image['kind'] not in {'period-picture', 'family-photograph', 'document-scan', 'photo-treatment', 'generated-reconstruction', 'ours-drawing', 'reconstruction', 'generated'}:
                 fail(directory / 'pictures.json', 'unknown image kind', 'instance.unknown-image-kind')
             if 'subjects' in image:
                 if not isinstance(image['subjects'], list):

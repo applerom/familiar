@@ -92,6 +92,18 @@ action = "review-only"
 
 # Wording for the host; these templates do not add linguistic check resources.
 [host]
+media_omitted = "Pominięto ({view}): {item}. Powód: {reason}. {action}"
+media_host = "lokalny widok gospodarza"
+media_reader = "widok czytelników"
+media_records = "wycinek"
+media_picture = "obraz"
+media_figures = "obraz w tekście"
+media_game = "dokument gry"
+media_living = "żyje"
+media_unknown = "status życia nieznany"
+media_protected = "chroniony dokument albo nieokreślone osoby"
+media_action_document = "Ustalić status życia albo wydzielić wycinek o zmarłym; zgoda nie udostępnia pełnego dokumentu żyjącej osoby. Gra musi korzystać z widocznego wycinka."
+media_action_picture = "Ustalić status życia albo zapisać zgodę na zdjęcia. Obróbka zdjęcia żyjącej osoby pozostaje w lokalnym widoku gospodarza."
 internal_hidden = "[ukryty odsyłacz roboczy]"
 internal_notice = "Ukryto robocze identyfikatory lub ścieżki plików; pozostały tekst jest widoczny."
 consent_forward = "W tym samym liście są pytania o zgodę na opowieść. Jeśli pytanie dotyczy innej osoby, przekaż je proszę osobie wskazanej; tylko ona może udzielić zgody."

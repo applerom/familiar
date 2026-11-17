@@ -23,6 +23,7 @@
   </FEATURE_INSTANCE>
 
   <MODULE_INSTANCE_VALIDATION ID="MOD-INSTANCE-VALIDATION" FILE="src/familiar/instance/validation.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Image kinds distinguish a real-photo treatment from a generated drawing.</INVARIANT>
     <INVARIANT REVIEW="engine lead">All person references resolve applied contributions and identity successors; invalid ids name the working-tree commands.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Rejected tree contributions are blocking data findings with file, claim and cause, including selected-file checks.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-TREE-BUILDER"/>
@@ -90,6 +91,7 @@
   </MODULE_INTAKE_GEDCOM>
   <MODULE_INTAKE_CLI ID="MOD-INTAKE-CLI" FILE="src/familiar/intake/cli.py" STATE="IMPLEMENTED"/>
   <MODULE_FAMILY_GATE ID="MOD-FAMILY-GATE" FILE="src/familiar/instance/gate.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Withheld chapter media advise separately for the host and readers without weakening exclusions.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-PUBLICATION"/>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-INSTANCE-VALIDATION"/>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-OUTPUT-REVIEW"/>
@@ -106,6 +108,7 @@
     <REL TYPE="DEPENDS_ON" TARGET="MOD-OUTPUT-REVIEW"/>
   </MODULE_FAMILY_WRITER>
   <MODULE_PUBLICATION ID="MOD-PUBLICATION" FILE="src/familiar/instance/publication.py" STATE="IMPLEMENTED">
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_photo_treatment_stays_local_for_living_subject">Living photo treatments need picture permission and stay local; public generations track dead-only treatment uses.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Merged person references retain recorded privacy permissions.</INVARIANT>
     <!-- Plain card serialization is cheaper than reading and checking hundreds
          of cache payloads; the full declared projection is always applied. -->
@@ -122,9 +125,11 @@
     <INVARIANT REVIEW="engine lead">Merged participant permissions follow the active person.</INVARIANT>
   </MODULE_NARRATIVE_DISCLOSURE>
   <MODULE_SUBJECT_CLOSURE ID="MOD-SUBJECT-CLOSURE" FILE="src/familiar/instance/subjects.py" STATE="IMPLEMENTED">
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_f2_record_subject_cannot_be_omitted">Declared cut-out subjects agree with corpus subjects; chapter context is only a fallback, while protected shared scans retain their full closure.</INVARIANT>
     <!-- Structured gallery, chapter and fact attachments accumulate across shared document identities before either reader projection. -->
   </MODULE_SUBJECT_CLOSURE>
   <MODULE_OUTPUT_REVIEW ID="MOD-OUTPUT-REVIEW" FILE="src/familiar/instance/review.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Media uses follow displayed records and pictures rather than withheld authoring dependencies.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Review permissions and their input digests include merged person references.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-SUBJECT-CLOSURE"/>
   </MODULE_OUTPUT_REVIEW>
@@ -142,6 +147,7 @@
     <REL TYPE="DEPENDS_ON" TARGET="MOD-FAMILY-GATE"/>
   </MODULE_HOST_CLI>
   <MODULE_HOST_LANGUAGE ID="MOD-HOST-LANGUAGE" FILE="src/familiar/instance/host_language.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Numeric historical dates and folio fractions are prose, not working paths.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Word-shaped ids are prose unless written as explicit references; hidden references preserve the rest of the text with a localized notice.</INVARIANT>
     <!-- Compile one bounded matcher per host view; redact explicit references in fragments and the final surface. -->
   </MODULE_HOST_LANGUAGE>
@@ -151,6 +157,7 @@
     <REL TYPE="DEPENDS_ON" TARGET="MOD-NARRATIVE-DISCLOSURE"/>
   </MODULE_HOST_TEXT>
   <MODULE_HOST_PAGES ID="MOD-HOST-PAGES" FILE="src/familiar/instance/host_pages.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Private text pages name withheld media and actions for both audiences.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-OUTPUT-REVIEW"/>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-PUBLICATION"/>
   </MODULE_HOST_PAGES>

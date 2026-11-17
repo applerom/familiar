@@ -6,6 +6,7 @@
 # - exact dates and elapsed integer days use the selected pack's forms [review: cold reviewer]
 # - private prose never becomes a reader publication [review: engine lead]
 # - word-shaped ids in prose survive; explicit references are hidden without suppressing other text [review: engine lead]
+# - numeric dates, folio fractions and slash years remain ordinary historical prose [review: engine lead]
 # - one compiled identifier matcher preserves exact token boundaries across fragments and the final surface [review: engine lead]
 # CHANGES_WITH:
 # - regions/demo-english/pack.toml (host template keys)
@@ -199,6 +200,9 @@ class HostData:
 
     def _locators(self, text):
         def replace(match):
+            # Numeric calendar/folio notation is prose, even when it contains slashes.
+            if re.fullmatch(r'\d+(?:[./\\–—-](?:\d+|[IVXLCDM]+))+(?:[rv]|об)?\.?', match.group(), re.IGNORECASE):
+                return match.group()
             self.hidden = True
             return self.words('internal_hidden')
         return re.sub(r'@I\d+@|\b\w+_\w+\b|[A-Za-z]:[\\/]\S*|'

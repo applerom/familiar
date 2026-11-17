@@ -22,6 +22,7 @@ familiar = "familiar.cli:main"
 
 [dependency-groups]
 dev = [
+    "pillow>=10",
     "pytest>=8",
     "ruff>=0.6",
 ]

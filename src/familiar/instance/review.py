@@ -2,6 +2,7 @@
 # PURPOSE: Bind independent reading attestations to projected page bytes and scoped safety inputs.
 # PRD_REF: docs/PRD.md#FORMS
 # INVARIANTS:
+# - photo treatments retain dead-only public permission uses for later withdrawal [review: engine lead]
 # - review uses the active person permissions for merged references [review: engine lead]
 # - unrelated records preserve reading while changed display bytes lapse it [review: engine lead]
 # - namesakes are review cues, not canonical subject identities [review: engine lead]
@@ -94,7 +95,8 @@ def _output_uses(instance, kind, data, feed=None):
         from familiar.checks.engine import generated
         image_rights(item, pic)
         for pid in closure(instance, pic, shape='image', people=people).people:
-            add(item, pid, 'pictures', generated=generated(pic), subject_child=pic.get('subject_child', False))
+            add(item, pid, 'pictures', permission='never-if-living' if pic.get('kind') == 'photo-treatment' else None,
+                generated=generated(pic), subject_child=pic.get('subject_child', False))
     if kind in {'tree', 'reader'}:
         resolved = closure(instance, data, shape='graph', people=known)
         for pid, status in data.get('cardStatuses', {}).items():
@@ -132,6 +134,7 @@ def _output_uses(instance, kind, data, feed=None):
                     if edge.get(key):
                         add('edge:' + str(edge.get('from', edge.get('parent'))), edge[key], 'edge-text', 'never-if-living')
     for folder in service.folders(instance, feed) if kind in {'feeds', 'reader'} else []:
+        shown = next((f for f in (data if kind == 'feeds' else data.get('feeds', [])) if f['id'] == folder.name), {})
         meta = load(folder / 'feed.json', {})
         aliases = known | {k: known[v] for k, v in meta.get('persons', {}).items() if v in known}
         docs, pics = load(folder / 'documents.json', {}), load(folder / 'pictures.json', {})
@@ -173,14 +176,15 @@ def _output_uses(instance, kind, data, feed=None):
                 for field in fields:
                     if life_status(known.get(pid, {'id': pid}), privacy) == 'dead' or field in {'name', 'kinship'} or field in allowed(privacy, known.get(pid, {'id': pid})):
                         add(item, pid, field)
-            for rid, record in resolved.records.items():
+            visible = dict(shown, chapters=[]) if shape == 'feed' else next((c for c in shown.get('chapters', []) if c['id'] == chapter['id']), {})
+            displayed = closure(instance, visible, shape=shape, people=known)
+            for rid, record in displayed.records.items():
                 uses.append({'item': item + '/record:' + rid, 'person': None, 'field': 'document', 'record': rid, **({'excerpt': record['excerpt']} if record.get('excerpt') else {})})
                 from .subjects import explicit_subjects
                 for pid in explicit_subjects(record):
                     add(item + '/record:' + rid, pid, 'document', 'never-if-living')
-            for pic in resolved.images:
+            for pic in displayed.images:
                 image_use(item + '/image', pic, aliases)
-        shown = next((f for f in (data if kind == 'feeds' else data.get('feeds', [])) if f['id'] == folder.name), {})
         for group in shown.get('gens', []):
             if group.get('years'):
                 for pid in group.get('ids', []):

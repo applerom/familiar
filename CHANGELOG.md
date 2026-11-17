@@ -2,6 +2,14 @@
 
 ## 0.33.0 — 17 November 2026
 
+- We keep an explicitly attributed cut-out with its corpus subjects instead of
+  adding chapter participants; conflicting subjects refuse delivery and shared
+  protected scans stay private. Withheld chapter media and game evidence now
+  produce advice for the host and reader displays, also in plain-text pages.
+- We preserve numeric historical dates, slash years and folio fractions in host prose.
+- We pair real photographs with disclosed `photo-treatment` variants, binding the
+  original, subjects and pixel dimensions. Living treatments require picture consent
+  and remain local to the host; drawings keep their existing restrictions.
 - We resolve person references against the working tree, including applied research
   contributions and explicit identity successors: records, versions, questions, letters,
   document cut-outs, privacy, search coverage, feeds and research packets use the same people.

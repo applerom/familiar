@@ -6,6 +6,7 @@
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-CHECKS-CLI"/>
   </FEATURE_FEED_CHECKS>
   <MODULE_CHECKS_ENGINE ID="MOD-CHECKS-ENGINE" FILE="src/familiar/checks/engine.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Withheld living documents advise; contradictory photo or corpus declarations still refuse output.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-CHECKS-PRIVACY"/>
   </MODULE_CHECKS_ENGINE>
   <MODULE_CHECKS_LANGUAGE ID="MOD-CHECKS-LANGUAGE" FILE="src/familiar/checks/language.py" STATE="IMPLEMENTED"/>
@@ -20,6 +21,7 @@
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-FEED-CLI"/>
   </FEATURE_FEED_BUILD>
   <MODULE_FEED ID="MOD-FEED-BUILDER" FILE="src/familiar/feeds/builder.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Photo treatments bind to canonical subjects and their real original frame.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Person membership resolves the working tree and identity successors.</INVARIANT>
     <!-- Weighted person/source/asset failures block; new unweighted holes advise. Profile, alphabet, cover-required and layout lint are removed. -->
   </MODULE_FEED>
@@ -76,6 +78,7 @@
   </MODULE_SKILL_SECOND_LOOK>
   <MODULE_COMMAND ID="MOD-FEED-PAGES" FILE="src/familiar/feeds/pages.py" STATE="IMPLEMENTED"/>
   <MODULE_CHECKS_PRIVACY ID="MOD-CHECKS-PRIVACY" FILE="src/familiar/checks/privacy.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Living media exclusions advise because projection already withholds the material.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Merged participant permissions follow the active person.</INVARIANT>
   </MODULE_CHECKS_PRIVACY>
   <MODULE_SKILL_SHOT_CARD ID="MOD-SKILL-SHOT-CARD" FILE="method/skills/shot-card/SKILL.md" STATE="IMPLEMENTED">

@@ -8,11 +8,13 @@
 # - typed literal excerpts cannot expose full records or substitute their text [review: engine lead]
 # - linked document subjects accumulate across galleries, chapters and facts before any reader filtering [review: engine lead]
 # - a narrator reference on reported kinship resolves to a canonical family person [review: engine lead]
+# - declared cut-out subjects cannot replace corpus subjects; chapter context is only a fallback [review: engine lead]
 # CHANGES_WITH:
 # - MOD-PUBLICATION
 # - MOD-CHECKS-PRIVACY
 # :END_MODULE_CONTRACT
 import unicodedata
+import copy
 from dataclasses import dataclass, field
 
 
@@ -70,6 +72,50 @@ def _excerpt(data, fields):
     return {'id': data['id'], 'kind': data.get('kind'), 'fictional': data.get('fictional', False),
             'fields': {f: data['fields'][f] for f in fields}, 'excerpt': fields,
             'subjects': list(dict.fromkeys(p for f in fields for p in mapping[f]))}
+
+
+def photo_pair(instance, image):
+    """Bind a treatment to its real frame; dimensions cannot establish facial fidelity."""
+    if image.get('kind') == 'photo-treatment':
+        original = image.get('orig')
+        if not isinstance(original, dict) or original.get('kind') == 'photo-treatment':
+            raise ValueError('TRUST-08: photo treatment needs its real original frame')
+        photo_pair(instance, dict(original, ours=image))
+        return
+    treatment = image.get('ours', {})
+    if treatment.get('kind') != 'photo-treatment':
+        return
+    from familiar.checks.engine import generated, record_path
+    from .archive import photograph_rights
+    if image.get('kind') == 'family-photograph':
+        rights = photograph_rights(instance, image)
+        genuine = 'subjects' in image and rights and rights.get('holder') and rights.get('permissions', {}).get('family_app')
+    else:
+        genuine = image.get('kind') in {'period-picture', 'document-scan'} and record_path(instance, image.get('record')).is_file()
+    if not genuine or generated(image) or image.get('reconstruction') or treatment.get('generated') or treatment.get('reconstruction'):
+        raise ValueError('TRUST-10: photo treatment needs a real original with a corpus record or family-photo rights')
+    if not treatment.get('disclosure') or not image.get('caption') or not treatment.get('caption'):
+        raise ValueError('TRUST-08: photo treatment needs original and treatment captions and disclosure')
+    original = {k: copy.deepcopy(v) for k, v in image.items() if k != 'ours'}
+    reference = treatment.get('orig')
+    if reference is not None and reference != image.get('asset') and not (isinstance(reference, dict) and reference.get('asset') == image.get('asset')):
+        raise ValueError('TRUST-08: photo treatment must name the same original frame')
+    for key in ('subjects', 'record'):
+        if key in treatment and treatment[key] != image.get(key) and not image.get('_document_attributed'):
+            raise ValueError('TRUST-06: photo treatment cannot change original subjects or record')
+    try:
+        from PIL import Image
+    except ImportError as exc:
+        raise ValueError('Photo treatments require Pillow; install familiar[images]') from exc
+    paths = [instance.media_file(item.get('asset', '')) for item in (image, treatment)]
+    if not all(paths):
+        raise ValueError('TRUST-10: photo treatment or original file is missing')
+    with Image.open(paths[0]) as original_frame, Image.open(paths[1]) as edited:
+        if original_frame.size != edited.size:
+            raise ValueError('TRUST-08: photo treatment and original dimensions differ')
+    treatment.update(orig=original, subjects=list(image.get('subjects', [])))
+    if image.get('record'):
+        treatment['record'] = image['record']
 
 
 def closure(instance, value, *, shape='chapter', documents=None, pictures=None, people=None):
@@ -135,6 +181,9 @@ def closure(instance, value, *, shape='chapter', documents=None, pictures=None, 
         if kind == 'person':
             person(node['id'])
         if kind == 'image':
+            photo_pair(instance, node)
+            if node.get('kind') == 'photo-treatment' and not node.get('orig'):
+                raise ValueError('TRUST-08: photo treatment needs its original frame')
             result.images.append(node)
         if (kind in {'document', 'image', 'source', 'fact'} and node.get('record') and
                 (kind != 'source' or node.get('kind') not in {'memory', 'import', 'gedcom'})):
@@ -147,6 +196,11 @@ def closure(instance, value, *, shape='chapter', documents=None, pictures=None, 
                     if part.get('field') not in source['fields'] or part.get('read') != source['fields'][part['field']]:
                         raise ValueError('TRUST-02: excerpt reading must equal its selected literal field')
             record(node['record'], selection)
+            if kind in {'document', 'image'} and node.get('subjects') and not node.get('_document_attributed'):
+                declared = {known[p].get('id', p) for p in node['subjects'] if p in known}
+                actual = {known[p].get('id', p) for p in explicit_subjects(result.records[node['record']]) if p in known}
+                if actual - declared:
+                    raise ValueError('TRUST-06: declared subjects disagree with corpus record: ' + node['record'])
         if kind in {'chapter', 'feed'}:
             for blocks in node.get('prose', node.get('_prose', {})).values():
                 for block in blocks:
@@ -216,7 +270,7 @@ def attribute_documents(instance, graph):
         subjects.setdefault(first, set()).update(people)
         return first
 
-    def document(node, shape, context=(), sid=None):
+    def document(node, shape, context=(), sid=None, *, chapter=False):
         keys = [('source', sid)] if sid else []
         if node.get('record') and 'excerpt' not in node:
             keys.append(('record', node['record']))
@@ -231,7 +285,12 @@ def attribute_documents(instance, graph):
                 keys.append(('asset', value['asset']))
         value = dict(node, kind='archive-record') if shape == 'source' and node.get('record') in record_ids else node
         resolved = closure(instance, value, shape=shape, people=known)
-        people = set(context) | resolved.people
+        if shape in {'document', 'image'} and node.get('subjects') and not node.get('_document_attributed') and node.get('record') in resolved.records:
+            actual = closure(instance, {'record': node['record'], **({'excerpt': node['excerpt']} if 'excerpt' in node else {})}, shape=shape, people=known).people
+            declared = {known[p].get('id', p) for p in node['subjects']}
+            if actual and declared != actual:
+                raise ValueError('TRUST-06: declared subjects disagree with corpus record: ' + node['record'])
+        people = (set() if chapter and node.get('subjects') else set(context)) | resolved.people
         key = bind(keys, people)
         if key is not None and any(r.get('privacy') in {'living', 'living-possible'} for r in resolved.records.values()):
             protected.add(key)
@@ -247,12 +306,14 @@ def attribute_documents(instance, graph):
     def story(node, context=()):
         people = node.get('_people', node.get('people', context))
         for row in node.get('records', []):
-            document(row, 'document', people)
+            document(row, 'document', people, chapter=True)
         for collection in ('picture', 'figures'):
             values = node.get(collection, [])
             for image in values if isinstance(values, list) else [values]:
+                if isinstance(image, dict):
+                    photo_pair(instance, image)
                 if isinstance(image, dict) and (image.get('record') or image.get('kind') == 'document-scan' or image.get('photo') is False):
-                    document(image, 'image', people)
+                    document(image, 'image', people, chapter=True)
         for row in node.get('facts', []):
             fact(row, people)
         for child in node.get('extras', []) + node.get('chapters', []):
@@ -265,6 +326,7 @@ def attribute_documents(instance, graph):
     for pid, person in graph.get('people', {}).items():
         for collection in ('media', 'illustrations'):
             for image in person.get(collection, []):
+                photo_pair(instance, image)
                 if image.get('record') or image.get('kind') == 'document-scan' or image.get('photo') is False:
                     document(image, 'image', [pid])
         for row in person.get('facts', []) + person.get('retiredFacts', []):
@@ -278,3 +340,4 @@ def attribute_documents(instance, graph):
             if any(root(k) == root(key) for k in protected):
                 node['_document_private'] = True
         node['subjects'] = sorted(people)
+        node['_document_attributed'] = True

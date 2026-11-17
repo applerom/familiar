@@ -18,6 +18,18 @@ plain = ["home"]
 
 # Host wording is separate from linguistic checks; it makes no claim of check coverage.
 [host]
+media_omitted = "Withheld ({view}): {item}. Reason: {reason}. {action}"
+media_host = "local host display"
+media_reader = "reader display"
+media_records = "cut-out"
+media_picture = "picture"
+media_figures = "inline picture"
+media_game = "game evidence"
+media_living = "living"
+media_unknown = "life status unknown"
+media_protected = "protected document or undeclared subjects"
+media_action_document = "Clarify life status or separate a deceased-only excerpt; consent cannot release a living person's full document. A game must use a visible excerpt."
+media_action_picture = "Clarify life status or obtain recorded picture permission. A living person's photo treatment stays local to the host."
 internal_hidden = "[hidden working reference]"
 internal_notice = "Working identifiers or file paths were hidden; the remaining text is shown."
 consent_forward = "This same letter includes permission questions. If a question names someone else, please pass it to them; only that person can give their permission."

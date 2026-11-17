@@ -13,6 +13,8 @@ mutual references. Packages remain atomic; no working graph or reader/desk outpu
 can be delivered after any package fails to apply.
 Person references use the working tree (snapshot plus applied contributions), including merged ids resolved to their successors; inspect ids with `tree build --view working` or `tree person ID`.
 In host text an id leaks only when non-alphabetic, explicitly delimited as a reference, part of a path, or immediately qualified by an id/person/version/question/case/record/source type; we hide the reference with a notice and preserve the remaining prose.
+Numeric calendar and folio notation (including Roman months, year ranges and slash years) is prose, never a working path.
+An explicitly attributed cut-out uses its declared subjects, which must agree with its corpus record; only a cut-out without subjects inherits chapter people, while shared scans still accumulate protected gallery and source uses.
 Privacy configuration stays strict. Invalid presentation preferences use engine
 defaults without changing the stored family file; unknown nonprivacy preferences
 and stale text-lexicon paths cannot stop display. Setting weights use the same
@@ -20,6 +22,29 @@ registry as findings, rather than creating a second set of gates.
 
 What it promises, to whom, and how to extend it without opening a hole.
 Read this before you add a form, a reader surface, an output or a check.
+
+We report withheld chapter cut-outs, pictures and game evidence as private advice
+in `feed check` and `feed pages --text`, separately for the local host and readers.
+Advice names the item, protected subjects and life status, and the next action:
+clarify life status, record picture permission, or separate a deceased-only excerpt.
+Consent never releases a living person's full document. Omission remains safe and
+does not itself block a build; conflicting subjects still refuse it.
+
+A `photo-treatment` is the same real photographic frame with colour or print
+processing, distinct from a generated reconstruction. The original picture has
+`ours` with `kind: photo-treatment`, its own `asset`, `caption` and `disclosure`;
+we bind `orig`, subjects and corpus reference to the original. The original needs
+a corpus record (`period-picture` or `document-scan`) or `family-photograph`
+rights and explicit subjects. See `forms/photo-treatment.json`; install the
+`images` extra for dimension checks. Both frames must have the same pixel size.
+Dimensions do not establish that facial features stayed unchanged: the author
+and reader must verify that claim. No face transplant or blending is permitted.
+Captions identify the real original; the processed caption discloses the changes,
+and the reader opens the original through the existing pair control. A treatment
+inherits original privacy: deceased subjects follow the original's display rules;
+living or unknown subjects require recorded `pictures` permission and remain
+local to the host, excluded from reader exports and publication. Protected
+documents remain excluded in both views. Existing stored forms are unchanged.
 
 Collector captures and unreferenced original, import and media archive bytes are
 research working material, outside the snapshot and input watch; only declared

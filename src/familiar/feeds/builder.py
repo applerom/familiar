@@ -5,6 +5,7 @@
 # - feed references resolve from working people rather than a delivered graph [review: engine lead]
 # - unresolved people and documents stop output [test: tests/gate/test_data_guarantees.py::test_f1_shown_reference_resolves]
 # - document subjects reach reader export as canonical people rather than feed symbols [test: tests/journeys/test_installed_engine.py::test_installed_engine]
+# - photo pairs bind canonical subjects and a real original before materialization [review: engine lead]
 # CHANGES_WITH:
 # - docs/PRD.md#FORMS
 # - MOD-INSTANCE-MODEL (the same registered asset path as the trust gate)
@@ -84,6 +85,15 @@ class _Feed:
                 p = copy.deepcopy(p)
                 p.pop('card', None)
                 if p.get('ours'): p['ours'].pop('card', None)
+                def subjects(image):
+                    if 'subjects' in image:
+                        image['subjects'] = [self.person(pid, where) for pid in image['subjects']]
+                    for child in ('ours', 'orig'):
+                        if isinstance(image.get(child), dict):
+                            subjects(image[child])
+                subjects(p)
+                from familiar.instance.subjects import photo_pair
+                photo_pair(context.get(), p)
                 return p
         for k in keys:
             if k not in self.pictures:

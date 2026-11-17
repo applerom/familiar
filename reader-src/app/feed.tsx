@@ -14,7 +14,7 @@ export type ChapterKind='version'|'truth'|'visit'|'famous'|'fork'|'surname';
 /** `kind:'ours'` marks a drawing made for the feed ("наша версия": our people, or the paper the text speaks of, drawn after a real one) — never
  *  a document or a portrait. `ours` pairs a real period picture with such a drawing: the page opens on the drawing and the reader switches
  *  «Наша версия» / «Как было». No badge on the picture (the author, 31.10.2026: it distracts from the story); the credit says it under «Подробнее». */
-export type Picture={asset:string;caption?:Row;credit?:string;url?:string;license?:string;kind?:'ours';ours?:Picture;orig?:string;spots?:Spot[];pano?:Pano;small?:boolean};
+export type Picture={asset:string;caption?:Row;disclosure?:Row;credit?:string;url?:string;license?:string;kind?:'ours'|'photo-treatment';ours?:Picture;orig?:string|Picture;spots?:Spot[];pano?:Pano;small?:boolean};
 /** A thing on a picture (play layer, 2.11.2026, `scripts/feed-play.py`): a box in percent of the picture from the top left, its name and two lines
  *  on why it is here; `kids` replaces `text` in the children's mode; `find` is the task of the «Найди» game. */
 export type Spot={x:number;y:number;w:number;h:number;label:Row;text:Row;kids?:Row;find?:Row};
@@ -141,11 +141,11 @@ export function FeedViewer({feed,step,setStep,onClose,go,model,labels,language,c
    {reader&&<div className="feed-reader-actions"><button onClick={share}>{copied?labels.feedCopied:labels.feedShare}</button><button onClick={()=>{setMe('');setPick(false)}}>{labels.meReset}</button></div>}
   </div>}
   <PlayFeed.Provider value={feed.id}><div ref={body} className="feed-body">
-   <div className={c.picture?'feed-pic-mat':undefined}><SpotFrame key={feed.id+'-'+i} className={'feed-pic'+(c.picture?'':' empty')} spots={c.picture?.spots} asset={c.picture?.asset} pano={c.picture?.pano} labels={labels} language={language} {...play}>{c.picture?/* eslint-disable-next-line @next/next/no-img-element */<img key={c.picture.asset} src={c.picture.asset} alt={tr(c.picture.caption,language)}/>:null}
+   {c.picture?.ours||c.picture?.kind==='photo-treatment'?<><FeedFigure key={feed.id+'-'+i} f={c.picture} labels={labels} language={language} {...play}/><p className="feed-year">{c.year}</p></>:<div className={c.picture?'feed-pic-mat':undefined}><SpotFrame key={feed.id+'-'+i} className={'feed-pic'+(c.picture?'':' empty')} spots={c.picture?.spots} asset={c.picture?.asset} pano={c.picture?.pano} labels={labels} language={language} {...play}>{c.picture?/* eslint-disable-next-line @next/next/no-img-element */<img key={c.picture.asset} src={c.picture.asset} alt={tr(c.picture.caption,language)}/>:null}
     <span className="feed-year" style={c.tone?{background:c.tone}:undefined}>{c.year}</span>
     {c.picture&&<button className="feed-credit-btn" onClick={()=>setCredit(v=>!v)} aria-expanded={credit}>i</button>}
-    {credit&&c.picture&&<p className="feed-credit">{[tr(c.picture.caption,language),c.picture.credit].filter(Boolean).join(' · ')}{c.picture.url&&<> · <a href={c.picture.url} target="_blank" rel="noreferrer">{labels.storyPicSource} ↗</a></>}{c.picture.orig&&<> · <a href={c.picture.orig} target="_blank" rel="noreferrer">{labels.feedRealTab} ↗</a></>}</p>}
-   </SpotFrame></div>
+    {credit&&c.picture&&<p className="feed-credit">{[tr(c.picture.caption,language),c.picture.credit].filter(Boolean).join(' · ')}{c.picture.url&&<> · <a href={c.picture.url} target="_blank" rel="noreferrer">{labels.storyPicSource} ↗</a></>}{c.picture.orig&&<> · <a href={typeof c.picture.orig==='string'?c.picture.orig:c.picture.orig.asset} target="_blank" rel="noreferrer">{labels.feedRealTab} ↗</a></>}</p>}
+   </SpotFrame></div>}
    {feed.gens&&c.gen&&<GenStrip model={model} gens={feed.gens} gen={c.gen} kids={kidsMode} language={language} labels={labels}
     reader={reader?.short} kin={g=>{if(!reader)return '';for(const id of g.ids||[]){const r=model.info[id]?model.relation(reader.id,id):null;if(r)return kinWords(r,labels,language,kidsMode)}return ''}}/>}
    <div className="feed-text">
@@ -192,18 +192,18 @@ const ROMAN=['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
  *  «Оригинал» inset: a tap opens it over the feed, so the page never jumps and the scene keeps its rhythm (author, 31.10.2026). */
 function FeedFigure({f,labels,language,kids=false,offer='look'}:{f:Picture;labels:Row;language:Language;kids?:boolean;offer?:Offer}){
  const [real,setReal]=useState(false);
- const p=f.ours||f;
+ const p=f.ours||f, original=f.ours?f:(typeof f.orig==='object'?f.orig:null);
  useEffect(()=>{if(!real)return;const key=(e:KeyboardEvent)=>{if(e.key==='Escape'){e.stopImmediatePropagation();setReal(false)}};
   addEventListener('keydown',key,true);return()=>removeEventListener('keydown',key,true)},[real]);
  return <figure className={'feed-figure'+(p.small?' small':'')}>
   <SpotFrame className="feed-figure-frame" spots={p.spots} asset={p.asset} pano={p.pano} kids={kids} offer={offer} labels={labels} language={language}>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={p.asset} alt={tr(p.caption,language)} loading="lazy"/>
-   {f.ours&&<button className="feed-figure-orig" onClick={e=>{e.stopPropagation();setReal(true)}} aria-label={labels.feedRealTab}>
-    {/* eslint-disable-next-line @next/next/no-img-element */}<img src={f.asset} alt="" loading="lazy"/><span>{labels.feedRealTab}</span></button>}
+   {original&&<button className="feed-figure-orig" onClick={e=>{e.stopPropagation();setReal(true)}} aria-label={labels.feedRealTab}>
+    {/* eslint-disable-next-line @next/next/no-img-element */}<img src={original.asset} alt="" loading="lazy"/><span>{labels.feedRealTab}</span></button>}
   </SpotFrame>
-  <figcaption>{tr(p.caption,language)}</figcaption>
-  {real&&<div className="feed-figure-over" role="dialog" aria-label={labels.feedRealTab} onClick={e=>{e.stopPropagation();setReal(false)}}>
-   {/* eslint-disable-next-line @next/next/no-img-element */}<img src={f.asset} alt={tr(f.caption,language)}/>
-   <p>{tr(f.caption,language)}</p></div>}
+  <figcaption>{[tr(p.caption,language),tr(p.disclosure,language)].filter(Boolean).join(' · ')}</figcaption>
+  {real&&original&&<div className="feed-figure-over" role="dialog" aria-label={labels.feedRealTab} onClick={e=>{e.stopPropagation();setReal(false)}}>
+   {/* eslint-disable-next-line @next/next/no-img-element */}<img src={original.asset} alt={tr(original.caption,language)}/>
+   <p>{tr(original.caption,language)}</p></div>}
  </figure>;
 }
 

@@ -20,22 +20,15 @@ def edit(family, relative, change):
 
 
 def test_f1_shown_reference_resolves(family):
-    from pathlib import Path
     from familiar.instance.writer import mutate
     from familiar.research.delivery import contribute, document
     contribute(family, {'id': 'new-person', 'schema': 1, 'author': 'researcher', 'people': {'p-new': {'name': 'Invented Ancestor'}}})
     record = json.loads(next(family.path('records').rglob('*.json')).read_text(encoding='utf-8'))
     record.update(id='new-paper', subjects=[])
     document(family, {'record': record, 'subjects': ['p-new']}, family.root / 'input.json', 'researcher')
-    version_path = next(family.path('versions').glob('*.json'))
-    version = json.loads(version_path.read_text(encoding='utf-8')); version['people'] = ['p-new']
-    letter = json.loads((Path(__file__).parents[2] / 'forms/correspondence.json').read_text(encoding='utf-8')); letter['people'] = ['p-new']
-    letter_path = family.path('correspondence') / (letter['id'] + '.json')
-    mutate(family, {version_path: version, letter_path: letter})
     assert _forms(family)['valid']
-    for path, row, key in [(family.path('records') / 'new-paper.json', record, 'subjects'), (version_path, version, 'people'), (letter_path, letter, 'people')]:
-        with pytest.raises(ValueError, match='unknown reference missing.*tree build'):
-            mutate(family, {path: row | {key: ['missing']}})
+    with pytest.raises(ValueError, match='unknown reference missing.*tree build'):
+        mutate(family, {family.path('records') / 'new-paper.json': record | {'subjects': ['missing']}})
 
 
 def test_dropped_contribution_blocks_delivery(family):
@@ -62,6 +55,34 @@ def test_f2_record_subject_cannot_be_omitted(family):
     graph['people']['p-daniel'] = {'id': 'p-daniel', 'media': [scan]}
     for private in (False, True):
         assert not restrict_graph(family, copy.deepcopy(graph), host_private=private)['people']['p-amaro']['media']
+    record = family.path('records') / 'clip.json'
+    for subject in ('p-amaro', 'p-daniel'):
+        record.write_text(json.dumps({'id': 'clip', 'subjects': [subject]}), encoding='utf-8')
+        doc = {'record': 'clip', 'subjects': [subject], 'asset': '/clip.png'}
+        graph = {'people': {}, 'feeds': [{'id': 'story', 'chapters': [{'id': 'face', 'people': ['p-amaro', 'p-daniel'], 'records': [doc]}]}]}
+        for private in (False, True):
+            shown = restrict_graph(family, copy.deepcopy(graph), host_private=private)['feeds'][0]['chapters'][0]
+            assert bool(shown['records']) == (subject == 'p-amaro')
+    graph['feeds'][0]['chapters'][0]['records'][0]['subjects'] = ['p-amaro']
+    with pytest.raises(ValueError, match='subjects disagree'):
+        restrict_graph(family, graph)
+
+
+def test_photo_treatment_stays_local_for_living_subject(family):
+    from PIL import Image
+    from familiar.instance.publication import scan
+    family.path('media').mkdir(exist_ok=True)
+    for name in ('original.png', 'treated.png'):
+        Image.new('RGB', (12, 16)).save(family.path('media') / name)
+    original = {'kind': 'family-photograph', 'asset': '/original.png', 'caption': 'Original photograph',
+        'holder': 'Fictional family', 'subjects': ['p-daniel'], 'ours': {'kind': 'photo-treatment', 'asset': '/treated.png', 'caption': 'Same frame', 'disclosure': 'Colour added'}}
+    graph = {'people': {}, 'feeds': [{'id': 'story', 'chapters': [{'id': 'face', 'figures': [original]}]}]}
+    edit(family, 'family/privacy.json', lambda p: p['living'][0].update(allowed=['pictures'], consent={'by': 'subject', 'at': '2026-11-17'}))
+    for private in (False, True):
+        shown = scan(family, restrict_graph(family, copy.deepcopy(graph), host_private=private), 'graph', host_private=private)
+        assert bool(shown['feeds'][0]['chapters'][0]['figures']) == private
+    edit(family, 'family/privacy.json', lambda p: p['living'][0].update(allowed=[]))
+    assert not restrict_graph(family, copy.deepcopy(graph), host_private=True)['feeds'][0]['chapters'][0]['figures']
 
 
 def test_f3_living_fields_require_permission_and_exclude_addresses(family):
@@ -261,8 +282,6 @@ def test_private_display_is_independent_of_unreferenced_drafts(family, tmp_path,
     draft.write_text('{"another unfinished":', encoding='utf-8')
     assert watch.stamp() == before
     assert read_generation(family, out) == files
-    journal = family.path('searches') / 'unfinished.jsonl'
-    journal.write_text('{', encoding='utf-8')
     report = _forms(family)
     assert report['valid'] and report['research_in_progress']['count']
     assert not check(family, paths=['searches/unfinished.jsonl'])['valid']

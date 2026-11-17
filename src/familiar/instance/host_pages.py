@@ -4,6 +4,7 @@
 # INVARIANTS:
 # - reader acceptance is checked against current reader bytes and reported separately from feed acceptance [review: cold reviewer]
 # - private story text is labelled as working material before it is shown [review: cold reviewer]
+# - withheld chapter media name the affected item, display audience and next action [review: engine lead]
 # CHANGES_WITH:
 # - MOD-FEED-CLI (plain-text pages option)
 # - MOD-OUTPUT-REVIEW (source-page review units)
@@ -20,6 +21,8 @@ def _pages(data, feed=None, selection=None, *, titles_only=False):
     instance, w = data.instance, data.words
     feeds = [project(_materialize(instance, folder)[0], 'feed', instance.languages)
              for folder in folders(instance, feed)]
+    from .publication import media_omissions
+    omitted = media_omissions(instance, [_materialize(instance, folder)[0] for folder in folders(instance, feed)])
     uses = _output_uses(instance, 'feeds', feeds, feed)
     review = _review_manifest(instance, _review_units(instance, 'feeds', feeds, {}), uses)
     # Reader and feeds have different projections and safety scopes. Never transfer
@@ -78,6 +81,13 @@ def _pages(data, feed=None, selection=None, *, titles_only=False):
             for document in chapter.get('records', []):
                 parts += [data.text(document.get('title')), data.text(document.get('read'))]
                 parts += [data.text(p.get('read')) for p in document.get('parts', [])]
+            for omission in omitted:
+                if omission['feed'] == row['id'] and omission['chapter'] == chapter['id']:
+                    parts.append(w('media_omitted', view=w('media_' + omission['view']),
+                        item=w('media_' + omission['field']) + ': ' + data.text(omission['label']),
+                        reason=data.text(omission['reason']).replace('(living)', '(' + w('media_living') + ')').replace('(unknown)', '(' + w('media_unknown') + ')')
+                            if omission['reason'] not in {'protected document or undeclared subjects', 'withheld document'} else w('media_protected'),
+                        action=w('media_action_' + omission['action'])))
             result.append('\n\n'.join(filter(None, parts)))
     if selection and not found:
         raise ValueError('No such story page.')

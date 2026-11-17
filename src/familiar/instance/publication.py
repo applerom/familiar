@@ -5,6 +5,7 @@
 # - recorded permissions on merged ids follow the active person [review: engine lead]
 # - publication asset failures retain each unique URL across feeds [review: engine lead]
 # - both reader modes exclude protected documents using accumulated structured attachments [review: engine lead]
+# - photo treatments inherit original privacy; living treatments require local picture consent [review: engine lead]
 # - living name parts inferred by researchers are omitted from canonical names; reported kin wording remains permissible kinship [review: engine lead]
 # - the person's `coverage` (where it was looked for) is declared for the host-private reader only and is dropped from every public projection [review: engine lead]
 # - undeclared nested fields have no publication path [test: tests/gate/test_data_guarantees.py::test_f5_undeclared_reader_fields_stay_private]
@@ -53,7 +54,7 @@ SCHEMAS['fact'] = fields('text label basis decision') | fields('record eventKey'
 SCHEMAS['fact'] |= fields('uncertainty eventType detailOnly', 'scalar')
 SCHEMAS['snippet'] = fields('asset', 'reference') | fields('field read')
 SCHEMAS['document'] = fields('kind caption source where read title field') | fields('asset full record', 'reference') | fields('fictional image_seen kids', 'scalar') | fields('subjects excerpt', ['reference']) | fields('parts snippets', ['snippet'])
-SCHEMAS['image'] = fields('caption alt title description source credit holder license url') | fields('asset full record', 'reference') | fields('generated kind role is_portrait reconstruction subject_living subject_child fictional', 'scalar') | fields('subjects', ['reference']) | fields('orig ours', 'image')
+SCHEMAS['image'] = fields('caption alt title description source credit holder license url disclosure') | fields('asset full record', 'reference') | fields('generated kind role is_portrait reconstruction subject_living subject_child fictional', 'scalar') | fields('subjects', ['reference']) | fields('orig ours', 'image')
 SCHEMAS['link'] = fields('label title text') | fields('url kind', 'scalar')
 SCHEMAS['place'] = fields('name note') | fields('url', 'scalar')
 SCHEMAS['variant'] = fields('title text more') | fields('version', 'scalar')
@@ -337,7 +338,10 @@ def restrict_graph(instance, graph, *, host_private=False):
 
 def restrict_feed(instance, feed):
     from .narrative import restrict_feed as project_narrative
-    return project_narrative(instance, feed)
+    from .subjects import attribute_documents
+    graph = {'feeds': [copy.deepcopy(feed)]}
+    attribute_documents(instance, graph)
+    return project_narrative(instance, private_graph(instance, graph, host_private=False)['feeds'][0])
 
 
 def scan(instance, value, shape, *, host_private=False):
@@ -361,6 +365,8 @@ def scan(instance, value, shape, *, host_private=False):
         for image in resolved.images:
             image_subjects = closure(instance, image, shape='image', people=known)
             subjects = image_subjects.people
+            if image.get('kind') == 'photo-treatment' and any(life_status(known[pid], privacy) != 'dead' for pid in subjects):
+                raise ValueError('TRUST-06: living photo treatment is local to the host only')
             if image.get('kind') == 'document-scan' and not image.get('record'):
                 raise ValueError('TRUST-10: tree document scan needs a canonical corpus record')
             if image_subjects.records and (any(life_status(known[pid], privacy) != 'dead' for pid in subjects) or
@@ -433,6 +439,16 @@ def private_graph(instance, graph, *, host_private=True):
                 return False
             addresses.update(str(node[k]) for k in ('place', 'value', 'text', 'note') if node.get(k))
             return True
+        treatment = node if node.get('kind') == 'photo-treatment' else node.get('ours', {})
+        if treatment.get('kind') == 'photo-treatment':
+            resolved = closure(instance, node, shape='image', people=known)
+            living = [p for p in resolved.people if life_status(known[p], privacy) != 'dead']
+            if living and (not host_private or any('pictures' not in allowed(privacy, known[p]) for p in living)):
+                return True
+        if key in {'media', 'illustrations', 'figures', 'picture'}:
+            resolved = closure(instance, node, shape='image', people=known)
+            if any(life_status(known[p], privacy) != 'dead' and 'pictures' not in allowed(privacy, known[p]) for p in resolved.people):
+                return True
         if key == 'records' or node.get('kind') == 'document-scan' or (key in {'media', 'illustrations', 'figures', 'picture'} and (node.get('record') or node.get('photo') is False)):
             return unsafe_document(node, 'document' if key == 'records' else 'image')
         return False
@@ -457,6 +473,50 @@ def private_graph(instance, graph, *, host_private=True):
                 node = node.replace(address, '')
         return node
     return redact(graph)
+
+
+def media_omissions(instance, feeds):
+    """Private advice from the same projections that remove chapter media and games."""
+    from familiar.checks.engine import _known_people, life_status, load
+    from familiar.tree.builder import _build
+    from familiar.reader.experiences import play
+    from .subjects import attribute_documents, closure
+    graph = _build(instance)
+    graph['feeds'] = copy.deepcopy(feeds)
+    play(instance, graph)
+    attribute_documents(instance, graph)
+    known, privacy = _known_people(instance), load(instance.path('privacy'), {})
+    rows = []
+    for private in (True, False):
+        shown = private_graph(instance, copy.deepcopy(graph), host_private=private)
+        for feed, visible_feed in zip(graph['feeds'], shown['feeds']):
+            def chapter_media(chapter, visible, cid):
+                for field in ('records', 'picture', 'figures'):
+                    items = chapter.get(field, [])
+                    items = items if isinstance(items, list) else [items]
+                    kept = visible.get(field, [])
+                    kept = kept if isinstance(kept, list) else [kept]
+                    for index, item in enumerate(items):
+                        if not item or any(all(item.get(k) == v.get(k) for k in ('asset', 'record', 'subjects', 'ours')) for v in kept):
+                            continue
+                        resolved = closure(instance, item, shape='document' if field == 'records' else 'image', people=known)
+                        subjects = [known[p].get('name', p) + ' (' + life_status(known[p], privacy) + ')'
+                                    for p in sorted(resolved.people) if life_status(known[p], privacy) != 'dead']
+                        rows.append({'feed': feed['id'], 'chapter': cid, 'view': 'host' if private else 'reader',
+                            'field': field, 'item': item.get('record') or item.get('asset') or str(index + 1),
+                            'label': item.get('title') or item.get('caption') or str(index + 1),
+                            'reason': ', '.join(subjects) or 'protected document or undeclared subjects',
+                            'action': 'document' if field == 'records' or resolved.records else 'picture'})
+                truth = chapter.get('game', {}).get('truth', {}).get('record')
+                if truth and truth != visible.get('game', {}).get('truth', {}).get('record'):
+                    cause = next((r for r in reversed(rows) if r['chapter'] == cid and r['view'] == ('host' if private else 'reader')), {})
+                    rows.append(dict(cause, feed=feed['id'], chapter=cid, view='host' if private else 'reader',
+                                     field='game', item=truth, label=cause.get('label', truth), reason=cause.get('reason', 'withheld document'), action='document'))
+                for index, extra in enumerate(chapter.get('extras', [])):
+                    chapter_media(extra, visible.get('extras', [])[index] if index < len(visible.get('extras', [])) else {}, cid)
+            for chapter, visible in zip(feed.get('chapters', []), visible_feed.get('chapters', [])):
+                chapter_media(chapter, visible, chapter['id'])
+    return rows
 
 
 def scan_assets(instance, value, *, errors=None, seen=None):
