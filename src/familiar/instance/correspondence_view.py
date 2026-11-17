@@ -61,7 +61,8 @@ def project(instance):
             sections = [item['title'], w['to'] + ': ' + item['recipient'],
                 w['sender'] + ': ' + item['sender'], w['state_' + row['state']],
                 w['destination'] + ': ' + row['destination'],
-                w['follow_up'] + ': ' + row['follow_up'], item['context'], item['text']]
+                w['follow_up'] + ': ' + row['follow_up'],
+                item['context'] and w['about'] + ': ' + item['context'], item['text']]
             if sent:
                 sections.append(w['sent_info'].format(by=item['sent_by'], at=item['sent_at']))
             for reply in item['replies']:

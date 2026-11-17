@@ -35,7 +35,7 @@ def project(instance, w):
     def card(row, group):
         content = '<article class="correspondence-card" data-correspondence="' + e(row['id']) + '" data-state="' + e(row['state']) + '">'
         content += '<h3>' + e(row['title']) + '</h3>' + text(c['to'] + ': ' + row['recipient'], 'correspondence-meta')
-        content += text(row['context'], 'correspondence-meta')
+        content += text(row['context'] and c['about'] + ': ' + row['context'], 'correspondence-meta')
         content += text(c['sender'] + ': ' + row['sender'], 'correspondence-meta')
         content += '<p class="correspondence-meta" data-sent-info data-sender="' + e(row['sender']) + '"' + (' hidden' if not row['sent_by'] else '') + '>'
         content += e(c['sent_info'].format(by=row['sent_by'], at=date(row['sent_at']))) + '</p>'
