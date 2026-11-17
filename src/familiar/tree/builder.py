@@ -7,6 +7,7 @@
 # - consumers may enrich cards before one identity pass [review: engine lead]
 # - the private working view retains living data beside unfinished publications [review: engine lead]
 # - cheap normalization is recomputed before global identity and relationship checks; it requires no per-person cache files [review: engine lead]
+# - no working or reader graph is returned when a contribution was rejected [review: engine lead]
 # CHANGES_WITH:
 # - MOD-PUBLICATION (declared reader surfaces and default-deny policy)
 # - MOD-FAMILY-WRITER (the sole filesystem and generation boundary)
@@ -84,6 +85,10 @@ def _build_pre_identity(instance):
     if not isinstance(raw, dict) or not isinstance(raw.get('people'), list):
         raise TypeError('snapshot must use the people[] object form')
     graph = _snapshot_graph(instance, raw, apply_identity=False)
+    errors = graph['research']['contributions']['errors']
+    if errors:
+        raise ValueError('Contributions were not applied: ' + '; '.join(
+            error['file'] + ': ' + error['error'] for error in errors))
     return graph
 
 

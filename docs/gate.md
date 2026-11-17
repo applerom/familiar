@@ -6,6 +6,11 @@ editorial completeness and service-locator spelling lint are removed; unknown
 checks advise. A missing weight does not grant a new acceptance requirement.
 The declared projection, living/document exclusions, source fidelity and
 independent review binding remain core guarantees.
+Tree contributions are adopted family inputs: a rejected package is a blocking
+data finding in whole-instance and selected-file checks, naming its file, claim
+and cause. Source ids resolve across contributions in the same family, including
+mutual references. Packages remain atomic; no working graph or reader/desk output
+can be delivered after any package fails to apply.
 Privacy configuration stays strict. Invalid presentation preferences use engine
 defaults without changing the stored family file; unknown nonprivacy preferences
 and stale text-lexicon paths cannot stop display. Setting weights use the same

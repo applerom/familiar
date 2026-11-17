@@ -12,6 +12,7 @@
 # - full checks expose nonblocking birth-clan surname differences after identity resolution [review: engine lead]
 # - search journal rows outside the ledger form are advice that names the migration command, never a refusal [review: engine lead]
 # - a controlled saved zero supports only against arguments; missing read scope or doubtful queries remain unusable [review: engine lead]
+# - whole and selected-file checks report rejected contributions with their claim and cause [review: engine lead]
 # CHANGES_WITH:
 # - MOD-FAMILY-GATE (the shared family boundary contract)
 # - docs/PRD.md#FORMS
@@ -68,9 +69,7 @@ def validate_changes(instance, paths):
         any(p.parent.parent == instance.path('feeds') and str(p) == e['location'] for p in paths))]
     if any(p.is_relative_to(instance.path('contributions')) for p in paths):
         from familiar.tree.builder import _build
-        graph = _build(instance)
-        errors.extend({'message': e['file'] + ': ' + e['error']} for e in
-                      graph['research']['contributions']['errors'])
+        _build(instance)
     if errors:
         raise ValueError('; '.join(e['message'] for e in errors))
 
@@ -265,7 +264,11 @@ def _check(instance, selected=None):
 
     def ref(value, known, where):
         if value is not None and (not isinstance(value, str) or value not in known):
-            fail(where, f'unknown reference {value}', 'instance.f-unknown-reference-value')
+            ids = sorted(known)
+            hint = ', '.join(ids[:20]) or '(none declared)'
+            if len(ids) > 20:
+                hint += f', … ({len(ids)} total); inspect the family declarations with instance paths'
+            fail(where, f'unknown reference {value}; known ids: {hint}', 'instance.f-unknown-reference-value')
 
     snapshot = instance.path('tree_snapshot')
     people_data = load(snapshot / 'people.json', {})
@@ -533,11 +536,12 @@ def _check(instance, selected=None):
                         fail(path, f'malformed form: {exc}', 'instance.f-malformed-form-exc')
             except (ValueError, OSError) as exc:
                 fail(path, str(exc), 'instance.str-exc')
-    for path in instance.path('contributions').glob('*/*.json'):
-        if not chosen(path):
-            continue
-        for error in assertions(load(path, {})):
-            fail(path, error, 'instance.error')
+    contribution_files = list(instance.path('contributions').glob('*/*.json'))
+    if contribution_files and (selected is None or any(chosen(path) for path in contribution_files)):
+        from familiar.tree.builder import _snapshot_graph
+        graph = _snapshot_graph(instance, people_data, apply_identity=False)
+        for error in graph['research']['contributions']['errors']:
+            fail(instance.root / error['file'], error['error'], 'instance.contribution-not-applied')
     for value in (people_rows, family_rows, [r for _, r in versions_rows]) if selected is None else []:
         for error in assertions(value):
             fail(snapshot, error, 'instance.error')

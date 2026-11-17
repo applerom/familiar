@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.31.3 — 17 November 2026
+
+- We resolve sources across contributions in the same family, including mutual references, without
+  depending on filename order. Rejected packages remain atomic and never reach a working tree, desk
+  build or reader export. Whole-instance and selected-file checks now report their file, claim and cause.
+- Hosts whose trees already omitted a contribution will now see a blocking `instance check` finding.
+  Declare the missing source in a family contribution or evidence, or repair the named claim and rerun
+  the check before rebuilding. Stored data forms are unchanged.
+- Unknown references list known ids, including version people and record subjects.
+
 ## 0.31.2 — 17 November 2026
 
 - We build the independently read Russian fictional family at `/ru/` alongside the English demo in one

@@ -6,6 +6,7 @@
 # - sources-only packages publish no reader update [review: engine lead]
 # - duplicate source declarations name both owners and keep intake ownership explicit [review: engine lead]
 # - replayed claims cannot reactivate a fact retained in retiredFacts [review: engine lead]
+# - source references resolve across family packages, including mutual dependencies, without publishing rejected packages [review: engine lead]
 # - displayed update order follows recorded dates and sources, never checkout file times [review: engine lead]
 # CHANGES_WITH:
 # - MOD-FAMILY-GATE (the shared family boundary contract)
@@ -19,6 +20,27 @@ import hashlib
 import json
 import re
 from datetime import UTC, datetime
+
+
+def _read_package(path, project):
+    from familiar.instance.gate import require_assertions
+
+    pack = json.loads(path.read_text(encoding="utf-8-sig"))
+    require_assertions(pack)
+    author = pack["author"]
+    if (not isinstance(author, str) or author != path.parent.name
+            or not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]{0,63}", author)):
+        raise ValueError("Автор не совпадает с собственной папкой")
+    if pack.get("schema") != 1:
+        raise ValueError("Ожидается schema: 1")
+    for sid, source in pack.get("sources", {}).items():
+        if not isinstance(source, dict):
+            raise ValueError("Ожидается объект источника: " + sid)
+        if source.get("local"):
+            target = (project / source["local"]).resolve()
+            if not target.is_relative_to(project.resolve()) or not target.is_file():
+                raise ValueError("Источник недоступен: " + sid)
+    return pack
 
 
 def _merge_contributions(
@@ -43,43 +65,47 @@ def _merge_contributions(
     unused_warnings = []
     pending = sorted(directory.glob("*/*.json"))
     owners = {sid: evidence_path for sid in sources}
+    packages, declared = {}, {}
+    # Resolve declarations independently of claims: two otherwise valid packages
+    # may cite each other's sources. Only applied packages commit their sources.
+    failures = (OSError, ValueError, KeyError, TypeError, AttributeError, RecursionError)
+    for path in pending:
+        try:
+            pack = _read_package(path, project)
+            packages[path] = pack
+            for sid, source in pack.get('sources', {}).items():
+                declared.setdefault(sid, source)
+        except failures as exc:
+            packages[path] = exc
     seen = set()
     while pending:
         before = len(applied)
         retry, errors = [], []
         for path in pending:
+            claim = 'package'
             try:
-                pack = json.loads(path.read_text(encoding="utf-8-sig"))
+                pack = packages[path]
+                if isinstance(pack, Exception):
+                    raise pack
                 if path not in seen:
                     revisions.append(pack)
                     seen.add(path)
-                from familiar.instance.gate import require_assertions
-                require_assertions(pack)
                 author = pack["author"]
-                if (
-                    not isinstance(author, str)
-                    or author != path.parent.name
-                    or not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]{0,63}", author)
-                ):
-                    raise ValueError("Автор не совпадает с собственной папкой")
-                if pack.get("schema") != 1:
-                    raise ValueError("Ожидается schema: 1")
                 pp, ee, ss = copy.deepcopy(people), copy.deepcopy(edges), copy.deepcopy(sources)
                 ff = copy.deepcopy(families)
                 for sid, source in pack.get("sources", {}).items():
+                    claim = 'sources[' + sid + ']'
                     if sid in ss and (ss[sid] != source or owners.get(sid) == evidence_path):
                         other = str(owners[sid].relative_to(project)) if owners.get(sid) else 'ранее объявленный источник'
                         hint = ('Объявлением владеет приём; в evidence нужна только ссылка на ID источника, '
                                 'без повторной записи в sources.' if source.get('intake') or ss[sid].get('intake') else
                                 'Оставьте одно объявление; в evidence используйте ссылку на ID источника.')
                         raise ValueError(f'Источник {sid} объявлен дважды: {other} и {path.relative_to(project)}. {hint}')
-                    if source.get("local"):
-                        target = (project / source["local"]).resolve()
-                        if not target.is_relative_to(project.resolve()) or not target.is_file():
-                            raise ValueError("Источник недоступен: " + sid)
                     ss[sid] = source
 
-                def check_fact(fact, ss=ss):
+                resolved = declared | ss
+
+                def check_fact(fact, resolved=resolved):
                     if fact.get("status") not in (
                         "verified",
                         "hypothesis",
@@ -87,10 +113,16 @@ def _merge_contributions(
                         "export",
                     ) or not fact.get("text"):
                         raise ValueError("Утверждение без текста / статуса")
-                    if not fact.get("sources") or any(s not in ss for s in fact["sources"]):
-                        raise ValueError("Утверждение без разрешимых источников")
+                    refs = fact.get('sources')
+                    if not isinstance(refs, list) or not refs:
+                        raise ValueError("Утверждение без списка источников: " + str(fact.get('text')))
+                    missing = [s for s in refs if not isinstance(s, str) or s not in resolved]
+                    if missing:
+                        raise ValueError(f"Утверждение {fact.get('text')!r}: неизвестные источники {missing}; "
+                                         "объявите их в sources вклада этой семьи или в evidence")
 
                 for pid, person in pack.get("people", {}).items():
+                    claim = 'people[' + pid + ']'
                     if pid in pp:
                         raise ValueError("Карточка уже существует; используйте facts: " + pid)
                     if not person.get("name"):
@@ -101,14 +133,17 @@ def _merge_contributions(
                         author=author,
                         origin=labels.get("contribution_origin", "Research record · ") + author,
                     )
-                    for fact in pp[pid].get("facts", []):
+                    for n, fact in enumerate(pp[pid].get("facts", [])):
+                        claim = f'people[{pid}].facts[{n}]'
                         check_fact(fact)
                         fact["author"] = author
                         fact["_contribution_file"] = str(path.relative_to(project))
                 for pid, facts in pack.get("facts", {}).items():
+                    claim = 'facts[' + pid + ']'
                     if pid not in pp:
                         raise ValueError("Неизвестный человек: " + pid)
-                    for fact in facts:
+                    for n, fact in enumerate(facts):
+                        claim = f'facts[{pid}][{n}]'
                         check_fact(fact)
                         fact = dict(
                             fact, author=author, _contribution_file=str(path.relative_to(project))
@@ -122,13 +157,14 @@ def _merge_contributions(
                         ):
                             pp[pid]["facts"].append(fact)
                 for pid, confirmation in pack.get("confirmations", {}).items():
+                    claim = 'confirmations[' + pid + ']'
                     if pid not in pp:
                         raise ValueError("Подтверждение неизвестного человека: " + pid)
                     level = confirmation.get("level")
                     if level not in ("document", "family", "mention"):
                         raise ValueError("Неизвестное основание подтверждения: " + pid)
                     if not confirmation.get("sources") or any(
-                        s not in ss for s in confirmation["sources"]
+                        s not in resolved for s in confirmation["sources"]
                     ):
                         raise ValueError("Подтверждение без разрешимых источников: " + pid)
                     if not all(confirmation.get("basis", {}).get(lang) for lang in languages):
@@ -147,7 +183,8 @@ def _merge_contributions(
                         raise ValueError("Конфликт подтверждения: " + pid)
                     pp[pid]["confirmation"] = copy.deepcopy(confirmation)
                 pairs = {(e["child"], e["parent"]) for e in ee}
-                for edge in pack.get("edges", []):
+                for n, edge in enumerate(pack.get("edges", [])):
+                    claim = f'edges[{n}] ({edge.get("child")} → {edge.get("parent")})'
                     check_fact(edge)
                     pair = (edge["child"], edge["parent"])
                     if pair[0] not in pp or pair[1] not in pp:
@@ -157,7 +194,12 @@ def _merge_contributions(
                     ee.append(dict(edge, author=author))
                     pairs.add(pair)
                 from .revisions import apply
-                apply(pack, pp, ee, ff, ss, check_fact, author, record_ids)
+                for section in ('relationship_decisions', 'fact_replacements', 'events', 'media'):
+                    rows = pack.get(section, {}) if section in ('events', 'media') else pack.get(section, [])
+                    for key, row in (rows.items() if isinstance(rows, dict) else enumerate(rows)):
+                        claim = f'{section}[{key}]'
+                        selected = {key: row} if isinstance(rows, dict) else [row]
+                        apply({section: selected}, pp, ee, ff, resolved, check_fact, author, record_ids)
                 # Retirement belongs to the claim (literal text and evidence),
                 # not the filename or author of a later copy of that claim.
                 for person in pp.values():
@@ -168,6 +210,7 @@ def _merge_contributions(
                                                       set(f.get('sources', [])) == set(r.get('sources', []))
                                                       for r in retired)]
                 parents = {}
+                claim = 'ancestry'
                 for edge in ee:
                     parents.setdefault(edge["child"], []).append(edge["parent"])
                 done, active = set(), set()
@@ -187,6 +230,7 @@ def _merge_contributions(
                     visit(pid)
                 update = None
                 if "update" in pack:
+                    claim = 'update'
                     update = dict(pack["update"], author=author)
                     update["published_at"] = datetime.fromtimestamp(
                         path.stat().st_mtime, UTC
@@ -211,9 +255,9 @@ def _merge_contributions(
                 applied.append(
                     {"file": str(path.relative_to(project)), "author": author, "update": update}
                 )
-            except (OSError, ValueError, KeyError, TypeError, RecursionError) as exc:
+            except failures as exc:
                 retry.append(path)
-                errors.append({"file": str(path.relative_to(project)), "error": str(exc)})
+                errors.append({"file": str(path.relative_to(project)), "error": claim + ': ' + str(exc)})
         # Later packages may introduce referenced people or sources. Failed
         # packages remain atomic and are retried only while a pass adds data.
         if len(applied) == before:

@@ -23,6 +23,8 @@
   </FEATURE_INSTANCE>
 
   <MODULE_INSTANCE_VALIDATION ID="MOD-INSTANCE-VALIDATION" FILE="src/familiar/instance/validation.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Rejected tree contributions are blocking data findings with file, claim and cause, including selected-file checks.</INVARIANT>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-TREE-BUILDER"/>
     <INVARIANT REVIEW="engine lead">A saved controlled zero may support a weak against argument only within its recorded read scope; positive arguments still require findings, and refusals or dubious queries supply no negative evidence.</INVARIANT>
     <PRD_REF>docs/PRD.md#FORMS</PRD_REF>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-ARCHIVE-RIGHTS"/>

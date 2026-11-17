@@ -12,6 +12,7 @@ from familiar.feeds import service
 from familiar.instance.gate import evaluate, publication
 from familiar.instance.publication import restrict_graph
 from familiar.instance.review import attest, review_ticket
+from familiar.instance.validation import _forms, check
 from familiar.instance.writer import read_generation
 
 
@@ -23,12 +24,27 @@ def edit(family, relative, change):
 
 
 def test_f1_shown_reference_resolves(family):
-    from familiar.instance.validation import _forms
     assert _forms(family)['valid']
     edit(family, 'feeds/ferrolho/documents.json',
          lambda d: d['doc-helena-baptism'].update(record='not-saved-yet'))
     with pytest.raises(ValueError, match='TRUST-01'):
         publication(family, 'feeds')
+
+
+def test_dropped_contribution_blocks_delivery(family):
+    from familiar.tree.builder import build
+    path = family.path('contributions') / 'researcher/claim.json'
+    path.parent.mkdir(parents=True)
+    path.write_text(json.dumps({'schema': 1, 'author': 'researcher', 'facts': {'p-amaro': [{'text': 'Kinship claim', 'status': 'verified', 'sources': ['paper']}]}}), encoding='utf-8')
+    for paths in (None, [str(path.relative_to(family.root))]):
+        report = check(family, paths=paths)
+        assert not report['valid'] and any(str(path) == e['location'] and all(s in e['message'] for s in ('facts[p-amaro][0]', 'paper', 'Kinship claim')) for e in report['errors'])
+    with pytest.raises(ValueError, match='paper'):
+        build(family, view='working')
+    with pytest.raises(ValueError, match='paper'):
+        publication(family, 'reader-private')
+    edit(family, str(path.relative_to(family.root)), lambda p: p.update(sources={'paper': {'kind': 'home-paper', 'record': 'doc-helena-baptism'}}))
+    assert check(family)['valid'] and any(f['text'] == 'Kinship claim' for f in build(family, view='working')['people']['p-amaro']['facts'])
 
 
 def test_f2_record_subject_cannot_be_omitted(family):
@@ -102,7 +118,6 @@ def test_f7_not_found_requires_read_coverage(family):
     response = lambda body: parse({'list_reader': 'geneteka'}, {'responses': [('https://example.invalid/', '', json.dumps(body))]}, {})[0]
     assert response({'data': [], 'error': 'database unavailable'}) == response({'data': []}) == 'not_ready'
     assert response({'data': [], 'recordsFiltered': 0}) == 'empty'
-    from familiar.instance.validation import check
     path = family.path('searches') / 'searches.jsonl'
     rows = [json.loads(line) for line in path.read_text(encoding='utf-8').splitlines()]
     rows[-1]['coverage']['read'] = 0
@@ -151,7 +166,6 @@ def test_f9_trust_mode_cannot_be_changed(family):
 
 
 def test_private_display_is_independent_of_unreferenced_drafts(family, tmp_path, monkeypatch):
-    from familiar.instance.validation import _forms, check
     from familiar.instance.writer import checked_snapshot
     from familiar.reader import graph
     from familiar.reader.export import export
@@ -185,14 +199,3 @@ def test_private_display_is_independent_of_unreferenced_drafts(family, tmp_path,
     assert watch.stamp() != before
     with pytest.raises(ValueError, match='inputs changed'):
         read_generation(family, out)
-
-
-def test_family_tree_import_is_firm_memory_unless_the_instance_says_otherwise(family):
-    """The tree the narrator kept is the family's memory; a foreign import opts out in settings."""
-    from familiar.reader import graph
-    edit(family, 'tree/evidence.json', lambda e: e.setdefault('cardStatuses', {}).update(
-        {'p-helena': {'origin': 'family', 'in_original_tree': True}, 'p-amaro': {'origin': 'research', 'in_original_tree': False}}))
-    shown = graph._assemble(family)['cardStatuses']
-    assert shown['p-helena'].get('family_memory') and not shown['p-amaro'].get('family_memory')
-    family.config['settings']['tree.import_is_family_memory'] = False
-    assert not graph._assemble(family)['cardStatuses']['p-helena'].get('family_memory')

@@ -7,13 +7,14 @@
     <INTENT>Combine canonical attributed snapshots, additive evidence, identity decisions and effective life assessments without family-specific engine code.</INTENT>
     <INVARIANT REVIEW="engine lead">Accepted cross-intake identity unifies cards without promoting imported hypotheses, and removing the decision restores the source graph.</INVARIANT>
     <PRD_REF>docs/PRD.md#FEATURES</PRD_REF>
-    <INVARIANT REVIEW="engine lead">Rejected packages remain observable and block the build command.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Rejected packages name their file, claim and cause in family checks and block every working or reader graph, including desk and reader delivery.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Final ancestry is acyclic and the root resolves after identity decisions.</INVARIANT>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-TREE-BUILDER"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-TREE-LIFE"/>
     <INVARIANT REVIEW="engine lead">Consumers can enrich pre-identity cards before applying decisions once.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Public presentation enrichment runs before one identity pass and cannot bypass the declared privacy projection.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Sources may be registered without a reader update.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Sources resolve across contributions regardless of file order or mutual source dependencies; only applied packages commit graph data.</INVARIANT>
     <INVARIANT REVIEW="engine lead">An intake source has one declaration owner; duplicate diagnostics identify the contribution and configured evidence file and explain reference-only evidence.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Life bounds include direct verified/export parent edges regardless of parent sex, exclude hypothetical edges, and never propagate estimated generations. Dated canonical record roles supply conservative birth bounds without resolving hypothetical identities.</INVARIANT>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-TREE-CONTRIBUTIONS"/>
