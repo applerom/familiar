@@ -18,7 +18,7 @@ Requirements: Python 3.11+, [uv](https://docs.astral.sh/uv/) and an agent that
 can run shell commands.
 
 ```sh
-uv tool install "familiar[images] @ git+https://github.com/applerom/familiar@v0.32.0"
+uv tool install "familiar[images] @ git+https://github.com/applerom/familiar@v0.33.0"
 familiar --version
 familiar instance init ./new-family --title "Invented example" --language en
 familiar --root ./new-family instance check
@@ -27,7 +27,7 @@ familiar --root ./new-family instance check
 Install a release tag, never `main`: `main` moves several times a day (see
 [upgrading](upgrading.md)). The `images` extra adds Pillow for document
 cropping; drop it for a text-only engine. To try a command without installing
-anything: `uvx --from "git+https://github.com/applerom/familiar@v0.32.0" familiar --version`.
+anything: `uvx --from "git+https://github.com/applerom/familiar@v0.33.0" familiar --version`.
 The name `familiar` on PyPI belongs to an unrelated project: install from this
 repository.
 
@@ -35,7 +35,7 @@ A family that wants its own pinned engine keeps a private environment instead:
 
 ```sh
 uv venv ./familiar-env
-uv pip install --python ./familiar-env/bin/python "familiar[images] @ git+https://github.com/applerom/familiar@v0.32.0"
+uv pip install --python ./familiar-env/bin/python "familiar[images] @ git+https://github.com/applerom/familiar@v0.33.0"
 ```
 
 (`./familiar-env/Scripts/python.exe` on Windows; then call
@@ -175,11 +175,9 @@ and PowerShell 7; `Set-Content -Encoding utf8` adds a BOM on version 5 and must
 not be used for these JSON inputs.
 
 Identifiers such as `bea-city`, `bea-first` and `bea-paper` deliberately include
-the example's name and a hyphen: ordinary words such as `city`, `first` and
-`paper` can collide with the filter that keeps internal identifiers out of host
-prose. A collision refusal names the identifier and its declaration file; choose
-a non-word id and update its references. The filter does not infer whether a
-word was intended as prose or as a reference.
+the example's name and a hyphen. Ordinary words such as `city`, `first` and
+`paper` remain ordinary prose even if they also name a research item. Explicit
+working references are hidden with a notice; the remaining text stays visible.
 
 **One subscription is enough:** the agent writes; the host or another person
 reads the exact review material, including tree, documents and every language,

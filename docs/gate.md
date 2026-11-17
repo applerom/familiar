@@ -11,6 +11,8 @@ data finding in whole-instance and selected-file checks, naming its file, claim
 and cause. Source ids resolve across contributions in the same family, including
 mutual references. Packages remain atomic; no working graph or reader/desk output
 can be delivered after any package fails to apply.
+Person references use the working tree (snapshot plus applied contributions), including merged ids resolved to their successors; inspect ids with `tree build --view working` or `tree person ID`.
+In host text an id leaks only when non-alphabetic, explicitly delimited as a reference, part of a path, or immediately qualified by an id/person/version/question/case/record/source type; we hide the reference with a notice and preserve the remaining prose.
 Privacy configuration stays strict. Invalid presentation preferences use engine
 defaults without changing the stored family file; unknown nonprivacy preferences
 and stale text-lexicon paths cannot stop display. Setting weights use the same

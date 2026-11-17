@@ -5,7 +5,7 @@
 # - missing host wording never silently falls back to another language [review: engine lead]
 # - exact dates and elapsed integer days use the selected pack's forms [review: cold reviewer]
 # - private prose never becomes a reader publication [review: engine lead]
-# - identifier refusals name the matching ID and its declaration file [review: cold reviewer]
+# - word-shaped ids in prose survive; explicit references are hidden without suppressing other text [review: engine lead]
 # - one compiled identifier matcher preserves exact token boundaries across fragments and the final surface [review: engine lead]
 # CHANGES_WITH:
 # - regions/demo-english/pack.toml (host template keys)
@@ -90,6 +90,7 @@ class HostData:
     def __init__(self, instance):
         self.instance, self.words = instance, HostWords(instance)
         self.used_people, self.used_records = {}, set()
+        self.hidden = False
         self.people = _known_people(instance)
         privacy = load(instance.path('privacy'), {})
         self.living = {pid for pid, p in self.people.items() if life_status(p, privacy) != 'dead'}
@@ -143,9 +144,7 @@ class HostData:
         if not isinstance(value, str):
             return ''
         value = plain_text(value).strip()
-        self._check_ids(value)
-        if re.search(r'@I\d+@|\b\w+_\w+\b|[A-Za-z]:[\\/]|(?:\w+[\\/])+\w+|\.(?:jsonl?|toml|md|jpg|png)\b', value):
-            return ''
+        value = self._check_ids(self._locators(value))
         for pid in set(subjects) & self.people.keys():
             self.used_people.setdefault(pid, set()).add('prose')
         return value
@@ -185,24 +184,32 @@ class HostData:
         return ids
 
     def _check_ids(self, text):
-        match = self.internal_ids.search(text)
-        if match:
+        def replace(match):
             ident = match.group()
-            path = self.id_locations[ident]
-            if path.is_relative_to(self.instance.root):
-                path = path.relative_to(self.instance.root)
-            raise ValueError(f'Host text contains internal identifier {ident!r}, declared in {path}; '
-                             'nothing was printed. Choose a non-word ID there and update its '
-                             'references, or remove the ID from the host prose. '
-                             'For imported people, change the intake form and re-create the '
-                             'practice family; do not edit the generated tree snapshot.')
+            before, after = text[:match.start()], text[match.end():]
+            delimited = (before[-1:] in ('`', '@', '#', '/', '\\', '[', '{') or
+                         after[:1] in ('`', '@', '/', '\\', ']', '}'))
+            typed = re.search(r'(?i)\b(?:id|person|people|version|question|case|record|source|'
+                              r'человек|версия|версии|вопрос|дело|запись|источник)\s*[=:№#]?\s*[\"\x27]?$', before)
+            if ident.isalpha() and not (delimited or typed):
+                return ident
+            self.hidden = True
+            return self.words('internal_hidden')
+        return self.internal_ids.sub(replace, text)
+
+    def _locators(self, text):
+        def replace(match):
+            self.hidden = True
+            return self.words('internal_hidden')
+        return re.sub(r'@I\d+@|\b\w+_\w+\b|[A-Za-z]:[\\/]\S*|'
+                      r'(?:[\w.-]+[\\/])+[\w.-]+|\b[\w.-]+\.(?:jsonl?|toml|md|jpg|png)\b', replace, text)
 
     def finish(self, text):
         # Recheck the final surface, including pack wording, not just input fragments.
         plain_text(text)
-        self._check_ids(text)
-        if re.search(r'@I\d+@|\b\w+_\w+\b|[A-Za-z]:[\\/]|(?:\w+[\\/])+\w+|\.(?:jsonl?|toml|md|jpg|png)\b', text):
-            raise ValueError('Host text contains working vocabulary or a file path; nothing was printed.')
+        text = self._check_ids(self._locators(text))
+        if self.hidden:
+            text += '\n\n' + self.words('internal_notice')
         return text
 
     def uses(self, view):

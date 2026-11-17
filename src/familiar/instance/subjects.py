@@ -85,7 +85,7 @@ def closure(instance, value, *, shape='chapter', documents=None, pictures=None, 
         pid = normalized(pid)
         row = known.get(pid)
         if row is None:
-            raise ValueError('TRUST-01: unknown canonical person id: ' + str(pid))
+            raise ValueError('TRUST-01: unknown canonical person id: ' + str(pid) + '; inspect ids with tree build --view working')
         result.people.add(row.get('id', pid))
 
     def record(rid, excerpt=None):

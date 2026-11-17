@@ -8,6 +8,7 @@
 # - replayed claims cannot reactivate a fact retained in retiredFacts [review: engine lead]
 # - source references resolve across family packages, including mutual dependencies, without publishing rejected packages [review: engine lead]
 # - displayed update order follows recorded dates and sources, never checkout file times [review: engine lead]
+# - people may fill an unnamed existing card with sourced name parts while retaining its earlier name [review: engine lead]
 # CHANGES_WITH:
 # - MOD-FAMILY-GATE (the shared family boundary contract)
 # - docs/PRD.md#INSTANCE
@@ -124,7 +125,26 @@ def _merge_contributions(
                 for pid, person in pack.get("people", {}).items():
                     claim = 'people[' + pid + ']'
                     if pid in pp:
-                        raise ValueError("Карточка уже существует; используйте facts: " + pid)
+                        prior = pp[pid]
+                        if prior.get('name') or any(any(n.get(k) for k in ('display', 'given', 'patronymic', 'surname')) for n in prior.get('names', [])):
+                            raise ValueError("Карточка уже имеет имя; используйте facts: " + pid)
+                        if set(person) - {'name', 'names'} or not person.get('names'):
+                            raise ValueError('Naming an unnamed card needs only name and sourced names: ' + pid)
+                        names = copy.deepcopy(person['names'])
+                        for name in names:
+                            display = ' '.join(filter(None, (name.get(k) for k in ('given', 'patronymic', 'surname'))))
+                            check_fact({'text': display, 'status': 'export', 'sources': name.get('provenance')})
+                            name['display'] = display
+                        display = names[0]['display']
+                        if person.get('name', display) != display:
+                            raise ValueError('Name must match the recorded name parts: ' + pid)
+                        prior.setdefault('nameHistory', []).append({'name': prior.get('name', ''),
+                            'names': copy.deepcopy(prior.get('names', [])), 'author': author,
+                            **({'placeholder': prior['placeholder']} if 'placeholder' in prior else {}),
+                            'contribution': str(path.relative_to(project))})
+                        prior.update(name=display, names=names)
+                        prior.pop('placeholder', None)
+                        continue
                     if not person.get("name"):
                         raise ValueError("Нет имени: " + pid)
                     pp[pid] = dict(
@@ -133,6 +153,7 @@ def _merge_contributions(
                         author=author,
                         origin=labels.get("contribution_origin", "Research record · ") + author,
                     )
+                    pp[pid].setdefault('facts', [])
                     for n, fact in enumerate(pp[pid].get("facts", [])):
                         claim = f'people[{pid}].facts[{n}]'
                         check_fact(fact)

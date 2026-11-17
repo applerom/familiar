@@ -453,7 +453,7 @@ def matrix(data):
 def person_card(data, pid):
     person = data['tree'].person(pid)
     if not person:
-        raise ValueError(f'unknown person: {pid}')
+        raise ValueError(f'unknown person: {pid}; inspect ids with tree build --view working')
     pid = person['id']
     seen = {sid: cell_view(data, pid, sid) for sid in data['sources'] if (pid, sid) in data['cells']}
     excluded = {sid: applicability(data, pid, sid) for sid in data['sources'] if not sid.startswith('~')}

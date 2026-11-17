@@ -2,6 +2,7 @@
 # PURPOSE: Resolve every structured chapter participant and enforce living-person publication permissions.
 # PRD_REF: docs/PRD.md#TRUST
 # INVARIANTS:
+# - merged participants retain their recorded publication permissions [review: engine lead]
 # - subjects outside chapter.people cannot bypass privacy [test: tests/gate/test_data_guarantees.py::test_f2_record_subject_cannot_be_omitted]
 # - nested and cover images obey the same prohibitions [test: tests/gate/test_data_guarantees.py::test_f6_reconstruction_cannot_be_a_portrait]
 # CHANGES_WITH:
@@ -18,7 +19,7 @@ def _violations(chapter, refs, pics, documents, instance, people, pictures=None)
     privacy = load(instance.path('privacy'), {})
     from familiar.instance.publication import allowed as recorded_permissions
     def permissions(person):
-        return recorded_permissions(privacy, person.get('id'))
+        return recorded_permissions(privacy, person)
     try:
         resolved = closure(instance, dict(chapter, figures=pics, picture=None), documents=documents, pictures=pictures, people=people)
     except ValueError as exc:

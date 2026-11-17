@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.33.0 — 17 November 2026
+
+- We resolve person references against the working tree, including applied research
+  contributions and explicit identity successors: records, versions, questions, letters,
+  document cut-outs, privacy, search coverage, feeds and research packets use the same people.
+- We let a contribution name an existing unnamed person with sourced name parts, retaining
+  the earlier state in working history without adding and merging another card.
+- We keep word-shaped identifiers in ordinary host prose. Explicit references and working
+  locators are hidden with an explanation while the remaining text stays visible.
+- Stored forms are unchanged. Existing unlinked records, contribution death events and
+  identity-merge workarounds remain valid without edits.
+
 ## 0.32.0 — 17 November 2026
 
 - We serialize family cloud commands, recheck personal entry immediately before upload, resume interrupted

@@ -66,7 +66,7 @@ def errors(instance):
 
     for pid, patch in patches.items():
         if pid not in known:
-            yield f'edition: unknown person: {pid}'
+            yield f'edition: unknown person: {pid}; inspect ids with tree build --view working'
         for key in ('media', 'illustrations'):
             for image in patch.get(key, []):
                 if not isinstance(image, dict) or not image.get('asset'):

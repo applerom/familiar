@@ -2,6 +2,7 @@
 # PURPOSE: Own engine filesystem mutation, staged item validation and checked atomic generations.
 # PRD_REF: docs/PRD.md#FORMS
 # INVARIANTS:
+# - generation permission checks resolve merged person references [review: engine lead]
 # - engine modules cannot write around this component [review: engine lead]
 # - upload staging excludes owner correspondence for shared login; loopback feedback origin is explicit [review: engine lead]
 # - unadopted collector records and journals never enter output snapshots; selected-input race rejection remains complete [review: engine lead]
@@ -915,7 +916,7 @@ def _check_uses(instance, manifest):
             removed.append(use['item'] + ':generated:' + str(pid))
         if use.get('permission') == 'never-if-living' and status != 'dead':
             removed.append(use['item'] + ':' + field + ':' + str(pid))
-        permission = allowed(privacy, pid)
+        permission = allowed(privacy, known.get(pid, {'id': pid}))
         if pid not in known or (status != 'dead' and field not in {'name', 'kinship'} and
                 (field not in INFO_FIELDS or (field not in permission and use.get('permission') not in permission))):
             removed.append(use['item'] + ':' + field + ':' + pid)

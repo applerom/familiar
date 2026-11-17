@@ -2,6 +2,7 @@
 # PURPOSE: Declare reader fields and seal distinct public and non-publishable host-private projections.
 # PRD_REF: docs/PRD.md#FORMS
 # INVARIANTS:
+# - recorded permissions on merged ids follow the active person [review: engine lead]
 # - publication asset failures retain each unique URL across feeds [review: engine lead]
 # - both reader modes exclude protected documents using accumulated structured attachments [review: engine lead]
 # - living name parts inferred by researchers are omitted from canonical names; reported kin wording remains permissible kinship [review: engine lead]
@@ -230,7 +231,9 @@ def _project(value, shape, languages, surfaces=None, path='root'):
 
 
 def allowed(privacy, pid):
-    row = next((p for p in privacy.get('living', []) if isinstance(p, dict) and p.get('id') == pid), {})
+    ids = [pid.get('id'), *pid.get('identityAliases', [])] if isinstance(pid, dict) else [pid]
+    rows = {p['id']: p for p in privacy.get('living', []) if isinstance(p, dict)}
+    row = next((rows[ident] for ident in ids if ident in rows), {})
     consent = row.get('consent')
     if not isinstance(consent, dict) or not consent.get('by') or not consent.get('at'):
         return set()
@@ -268,7 +271,7 @@ def restrict_graph(instance, graph, *, host_private=False):
             # the effective assessment, including the common age horizon.
             person['living'] = False
         if life_status(known.get(pid, {'id': pid}), privacy) != 'dead':
-            permission = allowed(privacy, pid)
+            permission = allowed(privacy, known.get(pid, {'id': pid}))
             # Preserve the reader's original empty containers without exposing fields.
             result = {'id': pid, 'name': confirmed_name(person), **({'placeholder': person['placeholder']} if person.get('placeholder') else {}), 'facts': [], 'events': [], 'media': []}
             first_name = next((n for n in person.get('names', []) if n), {})
@@ -309,7 +312,7 @@ def restrict_graph(instance, graph, *, host_private=False):
     for family in graph.get('families', []):
         members = [family.get('husband'), family.get('wife'), *family.get('children', [])]
         if any(pid and life_status(known.get(pid, {'id': pid}), privacy) != 'dead' and
-               'events' not in allowed(privacy, pid) for pid in members):
+               'events' not in allowed(privacy, known.get(pid, {'id': pid})) for pid in members):
             family['events'] = []
             family.pop('basis', None)
         elif any(pid and life_status(known.get(pid, {'id': pid}), privacy) != 'dead' for pid in members):
@@ -363,7 +366,7 @@ def scan(instance, value, shape, *, host_private=False):
             if image_subjects.records and (any(life_status(known[pid], privacy) != 'dead' for pid in subjects) or
                     any(record.get('privacy') in {'living', 'living-possible'} for record in image_subjects.records.values())):
                 raise ValueError('TRUST-06: living person document cannot be shown as a tree image')
-            if any(life_status(known[pid], privacy) != 'dead' and 'pictures' not in allowed(privacy, pid) for pid in subjects):
+            if any(life_status(known[pid], privacy) != 'dead' and 'pictures' not in allowed(privacy, known.get(pid, {'id': pid})) for pid in subjects):
                 raise ValueError('TRUST-06: living picture subject lacks recorded picture permission')
             if generated(image) and (image.get('role') in {'portrait', 'document'} or image.get('is_portrait') or
                     image.get('subject_living') or image.get('subject_child') or

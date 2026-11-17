@@ -2,6 +2,7 @@
 # PURPOSE: Recover primary line evidence independently of an owner's selection and stage its argument for review.
 # PRD_REF: docs/PRD.md#FORMS
 # INVARIANTS:
+# - packet selection uses applied working people rather than unvalidated declarations [review: engine lead]
 # - graph-only people and additive evidence retain their contribution locators [review: engine lead]
 # - reviewer evidence excludes owner weights until the argument stage [review: engine lead]
 # - bounded packets name omitted entries and missing collections [review: engine lead]
@@ -79,21 +80,24 @@ def _packet(instance, *, case=None, people=(), mode='owner', stage='evidence', m
     if case and not selected_cases:
         raise ValueError(f'unknown case {case}')
     qids = {r['data']['question'] for r in selected_cases}
+    from familiar.checks.engine import _known_people
+    known = _known_people(instance)
+    def canonical(ids):
+        return {known[p]['id'] if p in known else p for p in ids}
     selected_people = set(people)
-    versions = [r for r in collections['versions'] if r['data'].get('id') in qids or selected_people.intersection(r['data'].get('people', []))]
+    versions = [r for r in collections['versions'] if r['data'].get('id') in qids or canonical(selected_people).intersection(canonical(r['data'].get('people', [])))]
     for row in versions:
         qids.add(row['data']['id'])
         selected_people.update(row['data']['people'])
     if not case:
         selected_cases = [r for r in collections['cases'] if r['data'].get('question') in qids]
     snapshot = instance.path('tree_snapshot') / 'people.json'
-    raw = json.loads(snapshot.read_text(encoding='utf-8')) if snapshot.exists() else []
-    cards = raw.get('people', []) if isinstance(raw, dict) else raw
-    known = {r['id'] for r in cards}
+    cards = list({p['id']: p for p in known.values()}.values())
     contributions = _collect(instance.path('contributions'))
-    known.update(pid for r in contributions for pid in r['data'].get('people', {}))
-    if selected_people - known:
-        raise ValueError(f'unknown people: {sorted(selected_people - known)}')
+    locators = {pid: row['locator'] for row in contributions for pid in row['data'].get('people', {})}
+    if selected_people - known.keys():
+        raise ValueError(f'unknown people: {sorted(selected_people - known.keys())}; inspect ids with tree build --view working')
+    selected_people = {known[p]['id'] for p in selected_people}
     if not selected_people:
         raise ValueError('select a case or at least one person')
     requests = [r for r in collections['questions'] if r['data'].get('question') in qids or r['data'].get('case') == case and case]
@@ -111,7 +115,7 @@ def _packet(instance, *, case=None, people=(), mode='owner', stage='evidence', m
         'contributions_superset': observed(contributions),
         'evidence_superset': _collect(instance.path('evidence')),
         'associations_superset': _collect(instance.path('associations')),
-        'person_cards': [{'locator': str(snapshot), 'data': r} for r in cards if r['id'] in selected_people],
+        'person_cards': [{'locator': locators.get(r['id'], str(snapshot)), 'data': observed(r)} for r in cards if r['id'] in selected_people],
         'memory_superset': collections['memory'],
         'answers': [r for r in collections['answers'] if r['data'].get('request') in request_ids or set(r['data'].get('people', [])).intersection(selected_people)],
         'records_superset': collections['records'],

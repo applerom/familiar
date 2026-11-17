@@ -2,6 +2,7 @@
 # PURPOSE: Attach an existing graph person and language forms to authored feed data.
 # PRD_REF: docs/PRD.md#FORMS
 # INVARIANTS:
+# - attachment resolves working research people and merged ids [review: engine lead]
 # - person insertion refuses a feed outside the instance feed directory [review: engine lead]
 # CHANGES_WITH:
 # - MOD-PUBLICATION (declared reader surfaces and default-deny policy)
@@ -52,23 +53,17 @@ from familiar.instance.gate import boundary
 def add(instance, feed_id, tree_id, symbol=None, source_name=None, year=None, chapter=None, role=None, highlight=False, dry_run=False):
     """Returns the report lines; writes the feed files unless dry_run."""
     folder = instance.path('feeds') / feed_id
-    GRAPH = instance.path('feed_graph')
     if not folder.resolve().is_relative_to(instance.path('feeds')):
         raise ValueError('invalid feed')
     meta = load(folder / 'feed.json')
     if meta is None:
         raise SystemExit(f'{folder}: no feed.json')
-    graph = load(GRAPH, {})
-    if not graph:
-        people = load(instance.path('tree_snapshot') / 'people.json', [])
-        if isinstance(people, dict) and isinstance(people.get('people'), list):
-            people = people['people']
-        graph = {'people': {p['id']: p for p in people} if isinstance(people, list) else people}
-        extra = load(instance.path('evidence'), {}).get('people', {})
-        graph['people'].update({p['id']: p for p in extra} if isinstance(extra, list) else extra)
-    pid, person = resolve(graph, tree_id)
+    from familiar.checks.engine import _known_people
+    people = _known_people(instance)
+    person = people.get(tree_id)
     if person is None:
-        raise SystemExit(f'{tree_id}: not in the tree ({GRAPH.name})')
+        raise SystemExit(f'{tree_id}: unknown working person; inspect ids with tree build --view working')
+    pid = person['id']
     source, targets = instance.source_language, [x for x in instance.languages if x != instance.source_language]
     name = person.get('name') or pid
     if name == pid and person.get('names'):

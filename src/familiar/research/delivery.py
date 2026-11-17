@@ -4,6 +4,7 @@
 # INVARIANTS:
 # - document intake preserves literal reading and registers checksummed media with every named subject [review: engine lead]
 # - an existing contribution or record is never silently replaced [review: engine lead]
+# - document subjects resolve against working people, including merged research ids [review: engine lead]
 # CHANGES_WITH:
 # - MOD-TREE-REVISIONS (contribution revision fields)
 # - MOD-READER-ASSETS (permanent manifest)
@@ -34,11 +35,13 @@ def document(instance, data, input_path, author):
     rid, author = token(record['id']), token(author)
     record_path = instance.path('records') / (rid + '.json')
     target = instance.path('contributions') / author / (rid + '.json')
-    from familiar.tree.builder import build
+    from familiar.tree.builder import build, people_index
     graph = build(instance, view='working')
+    people = people_index(graph)
     subjects = data.get('subjects', [])
-    if not isinstance(subjects, list) or not subjects or any(p not in graph['people'] for p in subjects):
-        raise ValueError('Document subjects must name existing canonical people')
+    if not isinstance(subjects, list) or not subjects or any(not isinstance(p, str) or p not in people for p in subjects):
+        raise ValueError('Document subjects must name working people; inspect ids with tree build --view working or tree person')
+    subjects = list(dict.fromkeys(people[p]['id'] for p in subjects))
     record['subjects'] = list(record.get('subjects', [])) + list(subjects)
     source = {'kind': record['kind'], 'record': rid, 'title': record['title'], 'subjects': subjects}
     package = {'schema': 1, 'author': author, 'sources': {rid: source}, 'media': {}, 'facts': {}}

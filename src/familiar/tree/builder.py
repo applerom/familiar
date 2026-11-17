@@ -8,6 +8,7 @@
 # - the private working view retains living data beside unfinished publications [review: engine lead]
 # - cheap normalization is recomputed before global identity and relationship checks; it requires no per-person cache files [review: engine lead]
 # - no working or reader graph is returned when a contribution was rejected [review: engine lead]
+# - one reference index includes active people and resolves every merged id to its successor [review: engine lead]
 # CHANGES_WITH:
 # - MOD-PUBLICATION (declared reader surfaces and default-deny policy)
 # - MOD-FAMILY-WRITER (the sole filesystem and generation boundary)
@@ -26,6 +27,12 @@ from .identities import _apply_identities
 def read_json(path, default=None):
     from familiar.instance.subjects import normalized
     return normalized(json.loads(path.read_text(encoding="utf-8-sig"))) if path.exists() else default
+
+
+def people_index(graph):
+    """Working people, including immutable references to explicitly merged cards."""
+    people = graph['people']
+    return people | {alias: people[target] for alias, target in graph.get('identityAliases', {}).items()}
 
 
 def _snapshot_graph(instance, raw, *, apply_identity=True):

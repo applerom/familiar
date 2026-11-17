@@ -2,6 +2,7 @@
 # PURPOSE: Materialize authored feed catalogs without executing family programs or writing family inputs.
 # PRD_REF: docs/PRD.md#PIPELINE
 # INVARIANTS:
+# - feed references resolve from working people rather than a delivered graph [review: engine lead]
 # - unresolved people and documents stop output [test: tests/gate/test_data_guarantees.py::test_f1_shown_reference_resolves]
 # - document subjects reach reader export as canonical people rather than feed symbols [test: tests/journeys/test_installed_engine.py::test_installed_engine]
 # CHANGES_WITH:
@@ -56,16 +57,9 @@ class _Feed:
         self.names = read(self.dir / 'names.json', {})
         self.holes = []
         self.notes = []
-        tree = read(context.get().path('feed_graph'))
-        if tree is None:
-            people = read(context.get().path('tree_snapshot') / 'people.json', [])
-            if isinstance(people, dict) and isinstance(people.get('people'), list):
-                people = people['people']
-            evidence = read(context.get().path('evidence'), {})
-            tree = {'people': {p['id']: p for p in people} if isinstance(people, list) else people}
-            extra = evidence.get('people', {})
-            tree['people'].update({p['id']: p for p in extra} if isinstance(extra, list) else extra)
-        self.tree = set(tree.get('people', {})) | set(tree.get('identityAliases', {}))
+        from familiar.checks.engine import _known_people
+        self.people = _known_people(context.get())
+        self.tree = set(self.people)
 
     def hole(self, where, what, check=None):
         from familiar.check_policy import decision
@@ -79,7 +73,7 @@ class _Feed:
             self.hole(where, f'person "{sym}" is not in feed.json persons', 'feed.person-reference')
         elif pid not in self.tree:
             self.hole(where, f'person {sym} = {pid} is not in the tree (public/graph.json)', 'feed.person-reference')
-        return pid
+        return self.people[pid]['id'] if pid in self.people else pid
 
     def picture(self, key, where):
         """A picture key, or a list of candidate keys (the first that exists wins)."""

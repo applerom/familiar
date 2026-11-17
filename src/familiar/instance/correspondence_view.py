@@ -27,7 +27,7 @@ def project(instance):
     for _, row in entries:
         validate(row)
         if any(pid not in data.people for pid in row['people']):
-            raise ValueError('Correspondence refers to an unknown person')
+            raise ValueError('Correspondence refers to an unknown person; inspect ids with tree build --view working')
         for key, collection in (('question', 'versions'), ('request', 'questions')):
             if row.get(key) and not data.find(collection, row[key]):
                 raise ValueError('Correspondence refers to an unknown ' + key)
@@ -35,9 +35,11 @@ def project(instance):
         # host fragments, literal letters can contain recipient URLs and filenames.
         def prose(value):
             value = plain_text(value or '')
-            data._check_ids(value)
-            if re.search(r'@I\d+@|[A-Za-z]:[\\/]|(?<![\w:/])(?:family|research|tree|work|originals)[\\/]', value):
-                raise ValueError('Correspondence prose contains an internal locator')
+            def hide(match):
+                data.hidden = True
+                return data.words('internal_hidden')
+            value = re.sub(r'@I\d+@|(?<!\w)[A-Za-z]:[\\/]\S*|(?<![\w:/])(?:family|research|tree|work|originals)[\\/]\S*', hide, value)
+            value = data._check_ids(value)
             return value
         context = [data.name(pid) for pid in row['people']]
         request = data.find('questions', row.get('request'))
@@ -68,4 +70,7 @@ def project(instance):
             for reply in item['replies']:
                 sections.extend([reply['by'] + ' · ' + reply['at'], reply['text'], reply['meaning']])
             letters.append('\n\n'.join(filter(None, sections)))
-    return {'items': projected, 'text': '\n\n—\n\n'.join(letters) or w['empty']}
+    text = '\n\n—\n\n'.join(letters) or w['empty']
+    if data.hidden:
+        text += '\n\n' + data.words('internal_notice')
+    return {'items': projected, 'text': text}

@@ -23,6 +23,7 @@
   </FEATURE_INSTANCE>
 
   <MODULE_INSTANCE_VALIDATION ID="MOD-INSTANCE-VALIDATION" FILE="src/familiar/instance/validation.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">All person references resolve applied contributions and identity successors; invalid ids name the working-tree commands.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Rejected tree contributions are blocking data findings with file, claim and cause, including selected-file checks.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-TREE-BUILDER"/>
     <INVARIANT REVIEW="engine lead">A saved controlled zero may support a weak against argument only within its recorded read scope; positive arguments still require findings, and refusals or dubious queries supply no negative evidence.</INVARIANT>
@@ -72,10 +73,13 @@
   </MODULE_INSTANCE_CLI>
   <MODULE_INSTANCE_PACKS ID="MOD-INSTANCE-PACKS" FILE="src/familiar/instance/packs.py" STATE="IMPLEMENTED"/>
   <MODULE_INTAKE_TABLE_REVIEW ID="MOD-INTAKE-TABLE-REVIEW" FILE="src/familiar/intake/table_review.py" STATE="IMPLEMENTED"/>
-  <MODULE_INTAKE_FEEDBACK ID="MOD-INTAKE-FEEDBACK" FILE="src/familiar/intake/feedback.py" STATE="IMPLEMENTED"/>
+  <MODULE_INTAKE_FEEDBACK ID="MOD-INTAKE-FEEDBACK" FILE="src/familiar/intake/feedback.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Feedback anchors include research people and resolve identity successors.</INVARIANT>
+  </MODULE_INTAKE_FEEDBACK>
   <MODULE_INTAKE_TABLE ID="MOD-INTAKE-TABLE" FILE="src/familiar/intake/table.py" STATE="IMPLEMENTED"/>
   <MODULE_INTAKE_SHEET ID="MOD-INTAKE-SHEET" FILE="src/familiar/intake/sheet.py" STATE="IMPLEMENTED"/>
   <MODULE_INTAKE_CORE ID="MOD-INTAKE-CORE" FILE="src/familiar/intake/core.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Existing intake anchors resolve working people and identity successors; research claims remain contributions.</INVARIANT>
     <!-- Literal union notes remain attributed snapshot input across repeat exchange. -->
     <REL TYPE="DEPENDS_ON" TARGET="MOD-INTAKE-GEDCOM"/>
   </MODULE_INTAKE_CORE>
@@ -92,6 +96,7 @@
     <REL TYPE="DEPENDS_ON" TARGET="MOD-SUBJECT-CLOSURE"/>
   </MODULE_FAMILY_GATE>
   <MODULE_FAMILY_WRITER ID="MOD-FAMILY-WRITER" FILE="src/familiar/instance/writer.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Generation permission checks resolve merged person references.</INVARIANT>
     <!-- Hosted upload stages the verified delivery, excluding correspondence for shared login; local feedback carries an explicit origin. -->
     <!-- Standalone demo storage accepts only a checked fictional desk and an empty
          destination; the ordinary private-reader publication refusal is unchanged. -->
@@ -101,6 +106,7 @@
     <REL TYPE="DEPENDS_ON" TARGET="MOD-OUTPUT-REVIEW"/>
   </MODULE_FAMILY_WRITER>
   <MODULE_PUBLICATION ID="MOD-PUBLICATION" FILE="src/familiar/instance/publication.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Merged person references retain recorded privacy permissions.</INVARIANT>
     <!-- Plain card serialization is cheaper than reading and checking hundreds
          of cache payloads; the full declared projection is always applied. -->
     <!-- Serializer validates term declarations once; semantic worklist matches
@@ -112,11 +118,14 @@
     <REL TYPE="DEPENDS_ON" TARGET="MOD-SUBJECT-CLOSURE"/>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-NARRATIVE-DISCLOSURE"/>
   </MODULE_PUBLICATION>
-  <MODULE_NARRATIVE_DISCLOSURE ID="MOD-NARRATIVE-DISCLOSURE" FILE="src/familiar/instance/narrative.py" STATE="IMPLEMENTED"/>
+  <MODULE_NARRATIVE_DISCLOSURE ID="MOD-NARRATIVE-DISCLOSURE" FILE="src/familiar/instance/narrative.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Merged participant permissions follow the active person.</INVARIANT>
+  </MODULE_NARRATIVE_DISCLOSURE>
   <MODULE_SUBJECT_CLOSURE ID="MOD-SUBJECT-CLOSURE" FILE="src/familiar/instance/subjects.py" STATE="IMPLEMENTED">
     <!-- Structured gallery, chapter and fact attachments accumulate across shared document identities before either reader projection. -->
   </MODULE_SUBJECT_CLOSURE>
   <MODULE_OUTPUT_REVIEW ID="MOD-OUTPUT-REVIEW" FILE="src/familiar/instance/review.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Review permissions and their input digests include merged person references.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-SUBJECT-CLOSURE"/>
   </MODULE_OUTPUT_REVIEW>
   <MODULE_METHOD_VOCABULARY ID="MOD-METHOD-VOCABULARY" FILE="method/vocabulary.toml" STATE="IMPLEMENTED"/>
@@ -133,7 +142,8 @@
     <REL TYPE="DEPENDS_ON" TARGET="MOD-FAMILY-GATE"/>
   </MODULE_HOST_CLI>
   <MODULE_HOST_LANGUAGE ID="MOD-HOST-LANGUAGE" FILE="src/familiar/instance/host_language.py" STATE="IMPLEMENTED">
-    <!-- Compile the bounded internal-ID matcher once per host view, retaining fragment and final-surface checks. A refusal names the matched ID and its declaration file. -->
+    <INVARIANT REVIEW="engine lead">Word-shaped ids are prose unless written as explicit references; hidden references preserve the rest of the text with a localized notice.</INVARIANT>
+    <!-- Compile one bounded matcher per host view; redact explicit references in fragments and the final surface. -->
   </MODULE_HOST_LANGUAGE>
   <MODULE_HOST_TEXT ID="MOD-HOST-TEXT" FILE="src/familiar/instance/host_text.py" STATE="IMPLEMENTED">
     <REL TYPE="DEPENDS_ON" TARGET="MOD-HOST-LANGUAGE"/>

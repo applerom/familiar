@@ -92,6 +92,8 @@ action = "review-only"
 
 # Wording for the host; these templates do not add linguistic check resources.
 [host]
+internal_hidden = "[ukryty odsyłacz roboczy]"
+internal_notice = "Ukryto robocze identyfikatory lub ścieżki plików; pozostały tekst jest widoczny."
 consent_forward = "W tym samym liście są pytania o zgodę na opowieść. Jeśli pytanie dotyczy innej osoby, przekaż je proszę osobie wskazanej; tylko ona może udzielić zgody."
 hidden_count = "Czytelnicy nie widzą jeszcze części opowieści o tej osobie: {name} ({chapters}; {paragraphs})."
 hidden_other = "Nie pokazano także: {details}."

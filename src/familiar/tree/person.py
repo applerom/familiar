@@ -2,6 +2,7 @@
 # PURPOSE: Gather one person with attributed claims and unresolved research without selecting a winning version.
 # PRD_REF: docs/PRD.md#FORMS
 # INVARIANTS:
+# - attached records and versions follow merged ids to their working successor [review: engine lead]
 # - author commands preserve explicit evidence boundaries [review: engine lead]
 # CHANGES_WITH:
 # - MOD-PUBLICATION (declared reader surfaces and default-deny policy)
@@ -22,17 +23,20 @@ def person(instance, ident):
     graph = _build(instance)
     ident = graph.get('identityAliases', {}).get(ident, ident)
     if ident not in graph['people']:
-        raise ValueError(f'unknown person: {ident}')
+        raise ValueError(f'unknown person: {ident}; inspect ids with tree build --view working')
     snapshot = instance.path('tree_snapshot') / 'people.json'
     raw = read_json(snapshot, {'people': []})
     cards = raw['people']
     card = next((p for p in cards if p['id'] == ident), {})
-    versions = [r for r in _collect(instance.path('versions')) if ident in r['data'].get('people', [])]
+    aliases = graph.get('identityAliases', {})
+    def canonical(ids):
+        return {aliases.get(pid, pid) for pid in ids}
+    versions = [r for r in _collect(instance.path('versions')) if ident in canonical(r['data'].get('people', []))]
     questions = {r['data']['id'] for r in versions}
     def touches(row):
         data = row['data']
-        people = data.get('people', [])
-        return ident in (people.values() if isinstance(people, dict) else people) or data.get('question') in questions
+        from familiar.instance.subjects import explicit_subjects
+        return ident in canonical(explicit_subjects(data)) or data.get('question') in questions
     result = {'id': ident, 'person': graph['people'][ident],
               'names': card.get('names', []), 'events': card.get('events', []),
               'snapshot_locator': str(snapshot.relative_to(instance.root)) if card else None,

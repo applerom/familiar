@@ -2,6 +2,7 @@
 # PURPOSE: Assess life status consistently from dated generations and reversible family decisions.
 # PRD_REF: docs/PRD.md#TRUST
 # INVARIANTS:
+# - life declarations for merged people follow their active successors [review: engine lead]
 # - unknown status remains protected and revoking a death decision restores protection [review: engine lead]
 # - direct verified/export parent links bound either endpoint regardless of sex; hypotheses do not [review: engine lead]
 # - only adopted canonical records bound birth; collector drafts and hypothetical attributions never do [review: engine lead]
@@ -154,9 +155,11 @@ def _assess(instance, graph):
             old = bounds[pid]
             bounds[pid] = (old[0], max(old[1], interval[1]), old[2])
     decisions = privacy.get('life_decisions', [])
-    declared_living = {p if isinstance(p, str) else p['id'] for p in privacy.get('living', [])}
+    aliases = graph.get('identityAliases', {})
+    declared_living = {aliases.get(p if isinstance(p, str) else p['id'], p if isinstance(p, str) else p['id'])
+                       for p in privacy.get('living', [])}
     for pid, person in people.items():
-        decision = next((d for d in reversed(decisions) if d['person'] == pid and not d.get('revoked')), None)
+        decision = next((d for d in reversed(decisions) if aliases.get(d['person'], d['person']) == pid and not d.get('revoked')), None)
         if pid in declared_living:
             status, basis = 'living', 'explicit living privacy declaration'
         elif decision:

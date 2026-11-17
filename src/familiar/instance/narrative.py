@@ -2,6 +2,7 @@
 # PURPOSE: Project subject-linked story passages quietly for readers and retain the exact omissions for private family action.
 # PRD_REF: docs/PRD.md#FORMS
 # INVARIANTS:
+# - merged participant permissions resolve through the active person [review: engine lead]
 # - an author's alternative passage obeys the same canonical subject permissions as the original [test: tests/gate/test_data_guarantees.py::test_f3_living_fields_require_permission_and_exclude_addresses]
 # - unattributed nested prose conservatively inherits its chapter's subjects [review: engine lead]
 # - protected canonical names in feed signatures and tree nodes exclude inferred components [review: engine lead]
@@ -36,7 +37,7 @@ def restrict_feed(instance, feed, *, hidden=None, host_private=False):
         for pid in ids:
             if pid not in known:
                 raise ValueError('TRUST-01: unknown narrative subject: ' + str(pid))
-            if life_status(known[pid], privacy) != 'dead' and field not in allowed(privacy, pid):
+            if life_status(known[pid], privacy) != 'dead' and field not in allowed(privacy, known.get(pid, {'id': pid})):
                 result.append(known[pid].get('id', pid))
         return list(dict.fromkeys(result))
 

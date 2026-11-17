@@ -2,6 +2,7 @@
 # PURPOSE: Build isolated feed artifacts and compare chapter dependencies with recorded approvals.
 # PRD_REF: docs/PRD.md#PIPELINE
 # INVARIANTS:
+# - materialization membership and its cache track working people and their successors [review: engine lead]
 # - output is refused before writing on a blocking trust finding [review: engine lead]
 # - permission content changes invalidate chapter approvals [review: engine lead]
 # - builds write only beneath the selected output directory [review: engine lead]
@@ -42,15 +43,8 @@ def _materialize(instance, folder):
     from familiar.instance.writer import _BUILD_CACHE, cached
     if _BUILD_CACHE.get() is None or not (instance.path('media') / 'manifest.json').is_file():
         return _materialize_uncached(instance, folder)
-    tree = read(instance.path('feed_graph'), {})
-    if tree:
-        ids = sorted(set(tree.get('people', {})) | set(tree.get('identityAliases', {})))
-    else:
-        raw = read(instance.path('tree_snapshot') / 'people.json', {})
-        ids = sorted(p['id'] for p in raw.get('people', []))
-        evidence = read(instance.path('evidence'), {})
-        extra = evidence.get('people', {})
-        ids += sorted(p['id'] for p in extra) if isinstance(extra, list) else sorted(extra)
+    from familiar.checks.engine import _known_people
+    ids = {pid: p['id'] for pid, p in _known_people(instance).items()}
     # Materialization looks up membership, not a person's biographical fields.
     dependencies = [ids, instance.languages, instance.source_language, instance.config.get('settings'),
                     instance.config.get('feed'),

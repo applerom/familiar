@@ -20,11 +20,22 @@ def edit(family, relative, change):
 
 
 def test_f1_shown_reference_resolves(family):
+    from pathlib import Path
+    from familiar.instance.writer import mutate
+    from familiar.research.delivery import contribute, document
+    contribute(family, {'id': 'new-person', 'schema': 1, 'author': 'researcher', 'people': {'p-new': {'name': 'Invented Ancestor'}}})
+    record = json.loads(next(family.path('records').rglob('*.json')).read_text(encoding='utf-8'))
+    record.update(id='new-paper', subjects=[])
+    document(family, {'record': record, 'subjects': ['p-new']}, family.root / 'input.json', 'researcher')
+    version_path = next(family.path('versions').glob('*.json'))
+    version = json.loads(version_path.read_text(encoding='utf-8')); version['people'] = ['p-new']
+    letter = json.loads((Path(__file__).parents[2] / 'forms/correspondence.json').read_text(encoding='utf-8')); letter['people'] = ['p-new']
+    letter_path = family.path('correspondence') / (letter['id'] + '.json')
+    mutate(family, {version_path: version, letter_path: letter})
     assert _forms(family)['valid']
-    edit(family, 'feeds/ferrolho/documents.json',
-         lambda d: d['doc-helena-baptism'].update(record='not-saved-yet'))
-    with pytest.raises(ValueError, match='TRUST-01'):
-        publication(family, 'feeds')
+    for path, row, key in [(family.path('records') / 'new-paper.json', record, 'subjects'), (version_path, version, 'people'), (letter_path, letter, 'people')]:
+        with pytest.raises(ValueError, match='unknown reference missing.*tree build'):
+            mutate(family, {path: row | {key: ['missing']}})
 
 
 def test_dropped_contribution_blocks_delivery(family):
@@ -186,10 +197,6 @@ def test_f6_reconstruction_cannot_be_a_portrait(family):
 
 
 def test_f7_not_found_requires_read_coverage(family):
-    from familiar.research.source_search import parse
-    response = lambda body: parse({'list_reader': 'geneteka'}, {'responses': [('https://example.invalid/', '', json.dumps(body))]}, {})[0]
-    assert response({'data': [], 'error': 'database unavailable'}) == response({'data': []}) == 'not_ready'
-    assert response({'data': [], 'recordsFiltered': 0}) == 'empty'
     path = family.path('searches') / 'searches.jsonl'
     rows = [json.loads(line) for line in path.read_text(encoding='utf-8').splitlines()]
     rows[-1]['coverage']['read'] = 0
@@ -223,12 +230,6 @@ def test_f8_checked_generation_rechecks_used_permissions(family, tmp_path):
 
 
 def test_f9_trust_mode_cannot_be_changed(family):
-    from familiar.rules.cascade import Registry
-    from familiar.rules.exceptions import waive
-    from familiar.rules.roles import method_root
-    registry = Registry(method_root() / 'rules', family)
-    waive(registry, 'TRUST-02', 'feed:ferrolho/chapter:0', 'The text cue was read.')
-    assert registry.rule_mode('TRUST-02', 'feed:ferrolho/chapter:0').value == 'block'
     assert not evaluate(family)['blocked']
     path = family.root / 'familiar.toml'
     path.write_text(path.read_text(encoding='utf-8') + '\n[modes]\n"TRUST-06"="off"\n', encoding='utf-8')

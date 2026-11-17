@@ -13,6 +13,7 @@
 # - search journal rows outside the ledger form are advice that names the migration command, never a refusal [review: engine lead]
 # - a controlled saved zero supports only against arguments; missing read scope or doubtful queries remain unusable [review: engine lead]
 # - whole and selected-file checks report rejected contributions with their claim and cause [review: engine lead]
+# - all person references use applied contributions and resolve merged ids to active people [review: engine lead]
 # CHANGES_WITH:
 # - MOD-FAMILY-GATE (the shared family boundary contract)
 # - docs/PRD.md#FORMS
@@ -270,6 +271,8 @@ def _check(instance, selected=None):
             hint = ', '.join(ids[:20]) or '(none declared)'
             if len(ids) > 20:
                 hint += f', … ({len(ids)} total); inspect the family declarations with instance paths'
+            if known is people:
+                hint += '; inspect working person ids with tree build --view working or tree person'
             fail(where, f'unknown reference {value}; known ids: {hint}', 'instance.f-unknown-reference-value')
 
     snapshot = instance.path('tree_snapshot')
@@ -286,7 +289,16 @@ def _check(instance, selected=None):
             people_rows = [p for p in people_rows if isinstance(p, dict)] if isinstance(people_rows, list) else []
         if str(snapshot / 'families.json') not in selected:
             family_rows = [p for p in family_rows if isinstance(p, dict)] if isinstance(family_rows, list) else []
-    people = index([(snapshot, p) for p in people_rows], 'person')
+    snapshot_people = index([(snapshot, p) for p in people_rows], 'person')
+    from familiar.tree.builder import _snapshot_graph, people_index
+    graph = _snapshot_graph(instance, people_data, apply_identity=False)
+    contribution_files = list(instance.path('contributions').glob('*/*.json'))
+    if selected is None or any(str(path) in selected for path in contribution_files):
+        for error in graph['research']['contributions']['errors']:
+            fail(instance.root / error['file'], error['error'], 'instance.contribution-not-applied')
+    from familiar.tree.identities import _apply_identities
+    from familiar.tree.builder import read_json
+    people = people_index(_apply_identities(graph, read_json(instance.path('identity_decisions'), {})))
     from familiar.tree.surnames import decision_errors
     metadata_path = instance.path('tree_metadata')
     metadata = load(metadata_path, {})
@@ -341,7 +353,7 @@ def _check(instance, selected=None):
     def chosen(path):
         return selected is None or str(path) in selected
 
-    for ident, person in people.items():
+    for ident, person in snapshot_people.items():
         if not chosen(ident):
             continue
         required(person, 'id names events notes', ident)
@@ -464,6 +476,10 @@ def _check(instance, selected=None):
         if not chosen(path):
             continue
         required(row, 'id case question our_version paper why_this_paper outcomes addressee holder_reason state', path)
+        for person in row.get('people', []):
+            ref(person, people, path)
+        if row.get('addressee') not in {'host', 'relative'}:
+            ref(row.get('addressee'), people, path)
         ref(row.get('case'), cases, path)
         question_ref(row, path)
         if row.get('state') == 'answered':
@@ -505,6 +521,8 @@ def _check(instance, selected=None):
         if not chosen(path):
             continue
         required(row, 'id at by source question query coverage hits', path)
+        for person in row.get('people', []):
+            ref(person, people, path)
         question_ref(row, path)
         coverage = row.get('coverage', {})
         if not isinstance(coverage, dict):
@@ -565,12 +583,6 @@ def _check(instance, selected=None):
                         fail(path, f'malformed form: {exc}', 'instance.f-malformed-form-exc')
             except (ValueError, OSError) as exc:
                 fail(path, str(exc), 'instance.str-exc')
-    contribution_files = list(instance.path('contributions').glob('*/*.json'))
-    if contribution_files and (selected is None or any(chosen(path) for path in contribution_files)):
-        from familiar.tree.builder import _snapshot_graph
-        graph = _snapshot_graph(instance, people_data, apply_identity=False)
-        for error in graph['research']['contributions']['errors']:
-            fail(instance.root / error['file'], error['error'], 'instance.contribution-not-applied')
     for value in (people_rows, family_rows, [r for _, r in versions_rows]) if selected is None else []:
         for error in assertions(value):
             fail(snapshot, error, 'instance.error')

@@ -2,6 +2,7 @@
 # PURPOSE: Make an editable memory draft from literal feedback, without accepting it.
 # PRD_REF: docs/PRD.md#FORMS
 # INVARIANTS:
+# - feedback anchors resolve applied research people and identity successors [review: engine lead]
 # - original messages remain traceable and relationships are proposed hypotheses [review: engine lead]
 # CHANGES_WITH:
 # - MOD-INTAKE-CORE
@@ -25,15 +26,16 @@ def prepare(instance, identities, output, ident=None, told_by='Рассказч�
     target = (output if output.is_absolute() else instance.root / output).resolve()
     if not target.is_relative_to(instance.root) or target.exists():
         raise ValueError('Draft must be a new file inside the family')
-    snapshot = safe(instance, 'tree_snapshot')
-    people = {p['id']: p for p in read(snapshot / 'people.json', {'people': []})['people']}
-    families = read(snapshot / 'families.json', {'families': []})['families']
+    from familiar.tree.builder import _build, people_index
+    graph = _build(instance)
+    people, families = people_index(graph), graph['families']
     data = {'id': ident, 'told_by': told_by, 'date': date.today().isoformat(), 'items': [], 'people': [], 'families': []}
     comments, refs, seen, inferred_families = [], {}, set(), {}
 
     def existing(pid):
         if pid not in people:
-            raise ValueError(f'Unknown anchor or parent: {pid}')
+            raise ValueError(f'Unknown anchor or parent: {pid}; inspect ids with tree build --view working')
+        pid = people[pid]['id']
         if pid not in refs:
             refs[pid] = f'existing{len(refs) + 1}'
             data['people'].append({'id': refs[pid], 'existing': pid, 'names': [], 'events': [], 'notes': []})

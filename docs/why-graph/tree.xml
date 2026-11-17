@@ -25,14 +25,17 @@
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-TREE-CLI"/>
   </FEATURE_TREE>
   <MODULE_TREE_BUILDER ID="MOD-TREE-BUILDER" FILE="src/familiar/tree/builder.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">The working reference index resolves active people and immutable merged ids.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-TREE-SURNAMES"/>
     <!-- Normalization is cheaper than reading a cache entry; whole-graph checks remain. -->
     <REL TYPE="DEPENDS_ON" TARGET="MOD-TREE-LIFE"/>
   </MODULE_TREE_BUILDER>
   <MODULE_TREE_LIFE ID="MOD-TREE-LIFE" FILE="src/familiar/tree/life.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Privacy life declarations on merged ids follow their active successors.</INVARIANT>
     <!-- Life assessment consumes only records adopted by authored family references, never unrelated collector drafts. -->
   </MODULE_TREE_LIFE>
   <MODULE_TREE_CONTRIBUTIONS ID="MOD-TREE-CONTRIBUTIONS" FILE="src/familiar/tree/contributions.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">An existing unnamed person can receive sourced name parts through people, retaining the earlier name in working nameHistory.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Reader update order uses recorded dates and source ids so a clean archive preserves inspected bytes across filesystems.</INVARIANT>
     <!-- A replay cannot reactivate the same literal fact/evidence claim kept in retiredFacts. -->
     <REL TYPE="DEPENDS_ON" TARGET="MOD-TREE-REVISIONS"/>

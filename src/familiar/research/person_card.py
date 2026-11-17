@@ -286,9 +286,10 @@ def person_card(instance, query, *, catalog=None, aliases=(), relatives=(), max_
     query = graph.get('identityAliases', {}).get(query, query)
     people = graph['people']
     selected = {query} if query in people else {pid for pid, p in people.items() if fold(query) in {fold(n) for n in _names(p)}}
+    relatives = tuple(graph.get('identityAliases', {}).get(pid, pid) for pid in relatives)
     unknown = set(relatives) - people.keys()
     if unknown:
-        raise ValueError('unknown relative seeds: ' + ', '.join(sorted(unknown)))
+        raise ValueError('unknown relative seeds: ' + ', '.join(sorted(unknown)) + '; inspect ids with tree build --view working')
     near = _neighbours(graph, selected)
     for pid in relatives:
         near.setdefault(pid, []).append({'role': 'research seed; kinship not established', 'basis': 'explicit --relative'})

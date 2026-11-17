@@ -19,9 +19,13 @@
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RESEARCH-DELIVERY"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INSTANCE-RESEARCH-FORMS"/>
   </FEATURE_LINE_PACKET>
-  <MODULE_RESEARCH_PACKET ID="MOD-RESEARCH-PACKET" FILE="src/familiar/research/packet.py" STATE="IMPLEMENTED"/>
+  <MODULE_RESEARCH_PACKET ID="MOD-RESEARCH-PACKET" FILE="src/familiar/research/packet.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Research packet selections resolve applied working people and identity successors.</INVARIANT>
+  </MODULE_RESEARCH_PACKET>
   <MODULE_RESEARCH_CLI ID="MOD-RESEARCH-CLI" FILE="src/familiar/research/cli.py" STATE="IMPLEMENTED"/>
-  <MODULE_RESEARCH_DELIVERY ID="MOD-RESEARCH-DELIVERY" FILE="src/familiar/research/delivery.py" STATE="IMPLEMENTED"/>
+  <MODULE_RESEARCH_DELIVERY ID="MOD-RESEARCH-DELIVERY" FILE="src/familiar/research/delivery.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Documents attach to working people and resolve merged ids before saving media.</INVARIANT>
+  </MODULE_RESEARCH_DELIVERY>
   <MODULE_RESEARCH_FORMS ID="MOD-INSTANCE-RESEARCH-FORMS" FILE="src/familiar/instance/research_forms.py" STATE="IMPLEMENTED"/>
   <FEATURE_PERSON_CARD ID="FEAT-PERSON-CARD" STATE="IMPLEMENTED">
     <INTENT>A story author recovers a person's nearest family, competing readings, namesakes and local copies through instance-declared collections, including JSONL search coverage, without filtering contrary dates.</INTENT>

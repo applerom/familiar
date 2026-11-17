@@ -18,6 +18,8 @@ plain = ["home"]
 
 # Host wording is separate from linguistic checks; it makes no claim of check coverage.
 [host]
+internal_hidden = "[hidden working reference]"
+internal_notice = "Working identifiers or file paths were hidden; the remaining text is shown."
 consent_forward = "This same letter includes permission questions. If a question names someone else, please pass it to them; only that person can give their permission."
 hidden_count = "Not yet shown to readers about {name}: {chapters}; {paragraphs}."
 hidden_other = "Also omitted: {details}."

@@ -398,6 +398,14 @@ The reader does not repeat a death cause already present in its death fact.
 
 Reader bundles carry the declared `paths.world_map` atlas and feed `play.json`: interactive picture spots, choice/lot games and registered panorama images. Public atlases retain only deceased attributed participants and visible route stops; the local host view retains the atlas. Game document rewards follow the enclosing chapter’s document exclusions. These are typed data, never executable family content.
 
+**Naming an unnamed tree person.** A contribution may use its existing
+`people` map to fill an existing card whose `name` and all recorded name parts
+are empty. Supply only `names` (given/patronymic/surname with resolved
+`provenance` source ids), optionally the matching `name`. The working card
+retains the earlier `name` and `names` in `nameHistory`, with author and
+contribution locator. A named card still refuses replacement; use a separate
+evidence decision for a correction. No duplicate person or merge is needed.
+
 **Text for the host.** `family requests [REQUEST] --text` renders one letter per
 paper, with a greeting, family-history purpose, an unprompted question before
 our version, one paper and why, a useful no-paper answer and a closing.

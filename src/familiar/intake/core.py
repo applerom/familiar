@@ -2,6 +2,7 @@
 # PURPOSE: Turn attributed family inputs into traceable snapshot assertions without guessing identity.
 # PRD_REF: docs/PRD.md#FORMS
 # INVARIANTS:
+# - existing person anchors resolve working research people and identity successors [review: engine lead]
 # - repeated input is idempotent and names alone produce only candidates [review: engine lead]
 # - missing readings and escaping destinations are rejected before writing [review: engine lead]
 # - imported tree claims remain hypotheses with source text through merge and undo [review: engine lead]
@@ -91,6 +92,8 @@ def ingest(instance, data, kind, original=None, accepted_by=None):
     people = read(snapshot / "people.json", {"people": []})["people"] if changes_tree else []
     families = read(snapshot / "families.json", {"families": []})["families"] if changes_tree else []
     known = {p["id"]: p for p in people}
+    from familiar.checks.engine import _known_people
+    working = _known_people(instance) if changes_tree else {}
     refs, candidates = {}, []
     items = data.get("items", [])
     grounds = {ident}
@@ -132,9 +135,16 @@ def ingest(instance, data, kind, original=None, accepted_by=None):
         if row.get("living") is not None and type(row["living"]) is not bool:
             raise ValueError("living must be boolean")
         pid = row.get("existing", f"{ident}-{local}")
-        if row.get("existing") and pid not in known:
-            raise ValueError(f"unknown existing person: {pid}")
+        if row.get("existing"):
+            if pid not in working:
+                raise ValueError(f"unknown existing person: {pid}; inspect ids with tree build --view working")
+            pid = working[pid]['id']
         refs[local] = pid
+        if row.get('existing') and pid not in known:
+            if any(row.get(key) for key in ('names', 'events', 'notes')) or row.get('living') is not None:
+                raise ValueError('Use research contribute for claims about a research person; intake existing may anchor kinship only')
+            known[pid] = dict(working[pid], names=working[pid].get('names', []))
+            continue
         names = []
         for name in row.get("names", []):
             names.append(
