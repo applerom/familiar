@@ -3,7 +3,7 @@
 # PRD_REF: docs/PRD.md#TRUST
 # INVARIANTS:
 # - merges retain each participant's protection unless a canonical life decision resolves it [test: tests/gate/test_data_guarantees.py::test_f3_living_fields_require_permission_and_exclude_addresses]
-# - a death before the youngest plausible birth remains a protected conflict [review: engine lead]
+# - a death before the person's own dated birth remains a protected conflict [review: engine lead]
 # - life declarations for merged people follow their active successors [review: engine lead]
 # - unknown status remains protected and revoking a death decision restores protection [review: engine lead]
 # - direct verified/export parent links bound either endpoint regardless of sex; hypotheses do not [review: engine lead]
@@ -192,7 +192,10 @@ def _assess(instance, graph):
         conflicts = []
         death_dates = [_birth_bounds(e.get('date', '')) for e in person.get('events', [])
                        if e.get('type') == 'death' and e.get('status') != 'hypothesis'] + deaths.get(pid, [])
-        early_death = any(d and pid in bounds and d[1] < bounds[pid][1] for d in death_dates)
+        # Only the person's own dated birth contradicts a death; a loose generation bound does not.
+        births = [_birth_bounds(e.get('date', '')) for e in person.get('events', [])
+                  if e.get('type') == 'birth' and e.get('status') != 'hypothesis']
+        early_death = any(d and b and d[1] < b[0] for d in death_dates for b in births)
         participants = _participants(person)
         merged_aliases = [alias for alias, target in aliases.items() if target == pid]
         merged = bool(merged_aliases)
@@ -218,7 +221,7 @@ def _assess(instance, graph):
             if not resolved or early_death:
                 conflicts.append(f"Life conflict for {pid} (merged with {', '.join(merged_aliases) or 'none'}): "
                     f"{'; '.join(owners)}; protected participants: {', '.join(protected) or 'none'}; "
-                    f"death before birth upper bound: {early_death}. "
+                    f"death before own birth: {early_death}. "
                     f"Record privacy.life_decisions for canonical {pid} with a death basis, or undo the merge; correct conflicting dates.")
         person['life_assessment'] = {'status': status, 'basis': basis,
                                      **({'conflicts': conflicts} if conflicts else {}),
