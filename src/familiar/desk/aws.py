@@ -3,7 +3,7 @@
 # PRD_REF: docs/PRD.md#FAMILY-DESK
 # INVARIANTS:
 # - upload follows external 401 checks and a fresh comparison with the authorized local build [review: engine lead]
-# - shared uploads contain no correspondence; personal uploads retain owner-only edge protection [review: engine lead]
+# - shared entry opens only after owner bytes are withdrawn and CDN invalidation completes [review: engine lead]
 # - existing stacks must carry the exact project and family tags before any mutation [review: engine lead]
 # - retrieved feedback is append-only, byte-preserving and never automatically accepted [review: engine lead]
 # - failed provisioning retains recoverable credentials and diagnoses incomplete state before deployment use [review: engine lead]
@@ -151,6 +151,22 @@ def provision(instance):
                          'restore its private state backup; refusing to adopt it')
     if before and state.get('stack_id') != before['StackId']:
         raise ValueError('Desk stack identity changed; refusing mutation')
+    if before and login_mode == 'shared' and (state.get('login_mode') == 'personal'
+                                              or _outputs(before).get('UserPool')):
+        if before['StackStatus'].endswith('_IN_PROGRESS'):
+            raise ValueError('Wait for the personal stack deployment, then rerun desk provision')
+        outputs = _outputs(before)
+        if any(state.get(k) != outputs.get(v) for k, v in
+               [('bucket', 'Bucket'), ('distribution', 'Distribution'), ('url', 'Url')]):
+            raise ValueError('Restore the personal deployment state before switching to shared login')
+        _anonymous(state)
+        print('Withdrawing correspondence before opening shared login; '
+              'a checked desk build and completed CDN invalidation are required', flush=True)
+        try:
+            _upload(instance, state, personal=False)
+        except (ValueError, RuntimeError) as error:
+            raise RuntimeError('Shared login was not opened. Run desk build, then rerun desk provision; '
+                               'wait for CDN invalidation to complete. ' + str(error)) from error
     auth_hash = hashlib.sha256(_authorization(state).encode()).hexdigest()
     template = package_files('familiar.desk').joinpath('aws', 'stack.yaml')
     operation = 'update-stack' if before else 'create-stack'
@@ -239,7 +255,6 @@ def provision(instance):
 
 @boundary('consume')
 def publish(instance):
-    from familiar.instance.writer import desk_upload
     state = secrets(instance)
     from .accounts import mode
     if state.get('login_mode', 'shared') != mode(instance):
@@ -252,15 +267,25 @@ def publish(instance):
            [('bucket', 'Bucket'), ('distribution', 'Distribution'), ('url', 'Url')]):
         raise ValueError('Desk deployment state differs from the owned stack')
     _anonymous(state)
-    # Sync only staged hosted bytes; --delete withdraws any previous owner page.
-    with desk_upload(instance, personal=mode(instance) == 'personal') as (directory, count):
-        _aws(instance, 's3', 'sync', str(directory), 's3://' + state['bucket'] + '/site/',
-             '--delete', '--cache-control', 'max-age=0,s-maxage=300,must-revalidate',
-             '--only-show-errors', binary=True, timeout=300)
-    _aws(instance, 'cloudfront', 'create-invalidation', '--distribution-id', state['distribution'], '--paths', '/*')
+    count = _upload(instance, state, personal=mode(instance) == 'personal')
     return ('Desk published: ' + str(count) + ' delivery files; credentials remain in .secrets/desk.txt'
             + ('; correspondence is not published; enable personal logins to include it'
                if mode(instance) == 'shared' else ''))
+
+
+def _upload(instance, state, *, personal):
+    from familiar.instance.writer import desk_upload
+    # Sync only staged hosted bytes; --delete withdraws any previous owner page.
+    with desk_upload(instance, personal=personal) as (directory, count):
+        _aws(instance, 's3', 'sync', str(directory), 's3://' + state['bucket'] + '/site/',
+             '--delete', '--cache-control', 'max-age=0,s-maxage=300,must-revalidate',
+             '--only-show-errors', binary=True, timeout=300)
+    invalidation = _aws(instance, 'cloudfront', 'create-invalidation',
+                        '--distribution-id', state['distribution'], '--paths', '/*')
+    print('Waiting for desk CDN invalidation to complete', flush=True)
+    _aws(instance, 'cloudfront', 'wait', 'invalidation-completed',
+         '--distribution-id', state['distribution'], '--id', invalidation['Invalidation']['Id'], timeout=600)
+    return count
 
 
 @boundary('consume')

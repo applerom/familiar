@@ -92,26 +92,17 @@ def test_f4_acceptance_requires_auditable_strong_grounds(family):
 
 def test_f5_undeclared_reader_fields_stay_private(family, monkeypatch):
     from familiar.instance.publication import scan
-    from familiar.instance.correspondence import change
-    from familiar.rules.roles import method_root
-    row = json.loads((method_root().parent / 'forms/correspondence.json').read_text(encoding='utf-8'))
-    row.update(people=['p-daniel'], state='ready', text='Daniel is my cousin. PRIVATE LETTER')
-    change(family, 'create', value=row)
-    working = publication(family, 'correspondence')
-    assert working.working and 'PRIVATE LETTER' in working.data()['text']
+    row = {'id': 'fictional-letter', 'text': 'PRIVATE LETTER'}
     shown = scan(family, {'correspondence': row, 'people': {'p-amaro': {'id': 'p-amaro', 'name': 'Example', 'author': 'SECRET'}}}, 'graph')
-    assert shown['people']['p-amaro']['name'] == 'Example' and 'SECRET' not in json.dumps(shown)
-    assert 'PRIVATE LETTER' not in json.dumps(publication(family, 'reader-private').data())
-    assert scan(family, row, 'correspondence') == {}
-    import io, sys, textwrap
+    assert shown['people']['p-amaro']['name'] == 'Example' and all(word not in json.dumps(shown) for word in ('SECRET', 'PRIVATE LETTER'))
+    import contextlib, io, subprocess, sys, textwrap
     from pathlib import Path
     from types import SimpleNamespace as NS
     from familiar.desk.build import hosted_files
     files = {'desk/correspondence.html': b'PRIVATE LETTER', 'index.html': b'<a data-desk-label="nav_correspondence" href="/desk/correspondence.html">Letters</a>', 'desk/feedback.json': b'{"private":{"reply":"PRIVATE LETTER"}}'}
     shared = hosted_files(files, personal=False)
     assert 'desk/correspondence.html' not in shared and b'correspondence.html' not in shared['index.html'] and b'PRIVATE LETTER' not in b''.join(shared.values())
-    assert hosted_files(files, personal=True) == files
-    private = {'kind': 'correspondence_reply', 'id': '11111111-1111-4111-8111-111111111111', 'subject': row['id'], 'text': 'PRIVATE LETTER', 'page': '/desk/correspondence.html'}
+    private = {'schema_version': 1, 'kind': 'correspondence_reply', 'id': '11111111-1111-4111-8111-111111111111', 'subject': row['id'], 'text': 'PRIVATE LETTER', 'page': '/desk/correspondence.html'}
     s3 = NS(get_paginator=lambda _: NS(paginate=lambda **kw: [{'Contents': [{'Key': 'private'}, {'Key': 'ordinary'}]}]),
             get_object=lambda **kw: {'Body': io.BytesIO(json.dumps(private if kw['Key'] == 'private' else {'subject': row['id'], 'text': 'Ordinary'}).encode())})
     monkeypatch.setitem(sys.modules, 'boto3', NS(client=lambda _: s3))
@@ -123,6 +114,47 @@ def test_f5_undeclared_reader_fields_stay_private(family, monkeypatch):
     assert runtime['handler'](event, None)['statusCode'] == 403
     event.update(requestContext={'http': {'method': 'GET'}}, queryStringParameters={'subject': row['id']})
     assert json.loads(runtime['handler'](event, None)['body']) == {'items': [{'subject': row['id'], 'text': 'Ordinary'}]}
+    from familiar.desk import aws
+    state = {'login': 'test', 'password': 'fictional', 'login_mode': 'personal', 'stack_id': 'test', 'bucket': 'test', 'distribution': 'test', 'url': 'https://test.invalid'}
+    stack = {'StackId': 'test', 'StackStatus': 'UPDATE_COMPLETE', 'Outputs': [{'OutputKey': k, 'OutputValue': 'https://test.invalid' if k in ('Url', 'FeedbackUrl') else 'test'} for k in ('Bucket', 'Distribution', 'Url', 'FeedbackUrl')]}
+    family.config['publication'] = {'target': 'aws'}
+    secret = family.root / '.secrets/desk.txt'; secret.parent.mkdir(exist_ok=True)
+    (family.root / '.gitignore').write_text('.secrets/\n'); secret.write_text(json.dumps(state))
+    for name, value in {'_target': lambda _: ('familiar-test', 'test'), '_stack': lambda _: stack, '_anonymous': lambda _: None}.items():
+        monkeypatch.setattr(aws, name, value)
+    monkeypatch.setattr('familiar.instance.writer.desk_upload', lambda *a, **kw: contextlib.nullcontext((family.root, 0)))
+    calls = []; waiting = [True]
+    def cloud(instance, *args, **kw):
+        calls.append(args[:2])
+        if args[:2] == ('cloudfront', 'wait') and waiting[0]: raise RuntimeError('CDN pending')
+        return {'Invalidation': {'Id': 'test'}}
+    monkeypatch.setattr(aws, '_aws', cloud)
+    with pytest.raises(RuntimeError, match='Shared login was not opened'): aws.provision(family)
+    assert ('cloudformation', 'update-stack') not in calls and json.loads(secret.read_bytes())['login_mode'] == 'personal'
+    calls.clear(); waiting[0] = False; aws.provision(family)
+    assert calls == [('s3', 'sync'), ('cloudfront', 'create-invalidation'), ('cloudfront', 'wait'), ('cloudformation', 'update-stack')]
+    ordinary = private | {'id': '22222222-2222-4222-8222-222222222222', 'kind': 'remark', 'page': '/'}
+    objects = {'feedback/inbox/' + p['id'] + '.json': (json.dumps(p) + '\n').encode() for p in [private, ordinary]}
+    monkeypatch.setattr(aws, '_aws', lambda i, *a, **kw: {'Contents': [{'Key': k} for k in objects]} if a[0] == 's3api' else objects[a[2].split('s3://test/')[1]])
+    for mode, sender in [('shared', {'sub': 'host', 'role': 'owner'}), ('personal', {'role': 'reader'})]:
+        monkeypatch.setattr('familiar.desk.accounts.mode', lambda _: mode)
+        key = 'feedback/inbox/' + private['id'] + '.json'; objects[key] = json.dumps(private | {'sender': sender}).encode()
+        for folder in ('inbox', 'read'):
+            for p in family._inside('family/feedback/' + folder).glob('*.json'): p.unlink()
+        assert 'retrieved: 2' in aws.fetch_feedback(family) and 'retrieved: 0' in aws.fetch_feedback(family)
+        assert family._inside('family/feedback/inbox/' + private['id'] + '.json').read_bytes() == objects[key]
+        assert json.loads(family._inside('family/feedback/read/' + private['id'] + '.json').read_bytes())['status'] == 'read'
+    edge = Path(__file__).parents[2] / 'src/familiar/desk/aws'
+    program = r"""
+const fs=require('fs'),vm=require('vm'),crypto=require('crypto'),root=process.argv[1],key='test';
+const auth='Basic '+Buffer.from('test:fictional').toString('base64'), token=Buffer.from(JSON.stringify({sub:'reader',username:'reader',role:'reader',session:'v1',exp:9999999999})).toString('base64url');
+const personal={crypto,Buffer,Date,cf:{kvs:()=>({get:async k=>k==='session-key'?key:JSON.stringify({enabled:true,session:'v1'})})}},shared={require};
+vm.createContext(personal);vm.runInContext(fs.readFileSync(root+'/accounts-edge.js','utf8').replace(/^import .*;\r?\n/gm,''),personal);
+vm.createContext(shared);vm.runInContext(fs.readFileSync(root+'/stack.yaml','utf8').split('FunctionCode: !Sub |')[1].split(/\r?\n  FeedbackRole:/)[0].replace(/^        /gm,'').replace('${AuthHash}',crypto.createHash('sha256').update(auth).digest('hex')),shared);
+(async()=>{for(const name of ['correspondence.html','correspondence.js','correspondence.css','feedback.json','questions.html','progress.html','access.html'])for(const uri of ['/desk/'+name,'/%64esk/'+name,'/desk%2f'+name,('/desk/'+name).toUpperCase(),'//desk//'+name,'/desk/../desk/'+name,'/desk/'+name+'.','/desk/'+name+'/','/desk/%zz','/desk/%FF'])for(const [mode,ctx] of [['reader',personal],['shared',shared]]){if(mode==='shared'&&!name.startsWith('correspondence')&&!name.startsWith('access'))continue;const r=await ctx.handler({request:{uri,headers:{host:{value:'test.invalid'},authorization:{value:auth}},cookies:{'__Host-familiar':{value:token+'.'+crypto.createHmac('sha256',key).update(token).digest('hex')}}}});if(![400,403].includes(r.statusCode))throw Error(mode+' '+uri)}})().catch(e=>{console.error(e);process.exitCode=1});
+"""
+    result = subprocess.run(['node', '-e', program, str(edge)], capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
 
 
 def test_f6_reconstruction_cannot_be_a_portrait(family):

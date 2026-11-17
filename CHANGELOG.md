@@ -8,6 +8,8 @@
   Agents prepare; people send. Shared-login publication omits correspondence pages, navigation and data
   and refuses its feedback actions; personal logins enable owner access. Reader roles and public reader
   demos cannot access correspondence. Local loopback desks remain owner workspaces.
+- We withdraw correspondence and wait for CDN invalidation before switching to shared login, normalize
+  protected paths, and retain unauthorized legacy actions without blocking feedback intake.
 - Family commands create and update drafts, mark sending, preserve replies and their original files, interpret and close
   conversations. Researchers receive the family setting `host.correspondence_voice`, with a neutral
   polite default. Outgoing living-person details remain limited to names and kinship.

@@ -87,7 +87,7 @@
     <INVARIANT TEST="tests/gate/test_desk_guarantees.py::test_desk_requires_host_decision">A desk cannot deliver a family's accepted personal dataset without the recorded host decision for its narrator.</INVARIANT>
     <INVARIANT REVIEW="engine lead">The desk contains only reader delivery, declared narrator pages and trusted desk assets; input files and secrets are absent.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Local desks pin the checked build, cheaply guard its metadata and reverify a changed build record; both local servers use persistent conditional HTTP and same-origin localhost aliases. Consecutive local feedback has no cooldown.</INVARIANT>
-    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_f5_undeclared_reader_fields_stay_private">Shared login publishes no correspondence or navigation and neither returns its feedback nor accepts its marks; local origin is explicit.</INVARIANT>
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_f5_undeclared_reader_fields_stay_private">Shared login, including a transition from personal login, opens only after correspondence, data and receipts are withdrawn and CDN invalidation completes; normalized paths remain private, and rejected legacy actions never block feedback intake. Local origin is explicit.</INVARIANT>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DESK-MODEL"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DESK-BUILD"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DESK-CLI"/>
@@ -114,7 +114,7 @@
   </MODULE_DESK_BUILD>
   <MODULE_DESK_CLI ID="MOD-DESK-CLI" FILE="src/familiar/desk/cli.py" STATE="IMPLEMENTED"/>
   <MODULE_DESK_AWS ID="MOD-DESK-AWS" FILE="src/familiar/desk/aws.py" STATE="IMPLEMENTED">
-    <INVARIANT REVIEW="engine lead">Shared uploads stage no owner correspondence; sync deletes withdrawn files and invalidates edge caches.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Shared uploads stage no owner correspondence; sync deletes withdrawn files and waits for completed edge invalidation before opening shared entry.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-DESK-AWS-TEMPLATE"/>
   </MODULE_DESK_AWS>
   <MODULE_DESK_AWS_TEMPLATE ID="MOD-DESK-AWS-TEMPLATE" FILE="src/familiar/desk/aws/stack.yaml" STATE="IMPLEMENTED"/>

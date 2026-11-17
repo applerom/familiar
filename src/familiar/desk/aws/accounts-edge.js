@@ -10,8 +10,8 @@ function response(status, body, location) {
 }
 async function handler(event) {
   const r = event.request;
-  // S3 decodes object paths. Reject ambiguous encodings before role matching.
-  if (/%|\\|\/\/|(?:^|\/)\.{1,2}(?:\/|$)/.test(r.uri)) return response(400, 'Invalid resource path');
+  const path = resourcePath(r.uri);
+  if (path === null) return response(400, 'Invalid resource path');
   // Nothing supplied by the viewer may impersonate an authenticated principal.
   ['x-familiar-user', 'x-familiar-role', 'x-familiar-person', 'x-familiar-host'].forEach(k => delete r.headers[k]);
   r.headers['x-familiar-host'] = {value: r.headers.host.value};
@@ -37,8 +37,8 @@ async function handler(event) {
     return response(302, 'Sign in', '/auth/login');
   }
   // Reader resources are allow-listed. New desk service pages default to owner-only.
-  if (user.role !== 'owner' && r.uri.indexOf('/desk/') === 0 &&
-      !/^\/desk\/(?:desk\.(?:js|css)|tree-add\.(?:js|css)|session\.js|words\.json|stories\/[A-Za-z0-9_-]+\.html)$/.test(r.uri)) {
+  if (user.role !== 'owner' && (path === '/api/access' || path === '/desk' || path.indexOf('/desk/') === 0 &&
+      !/^\/desk\/(?:desk\.(?:js|css)|tree-add\.(?:js|css)|session\.js|words\.json|stories\/[a-z0-9_-]+\.html)$/.test(path))) {
     return response(403, 'This page is for the family owner. / Эта страница доступна хозяину семьи.');
   }
   r.headers['x-familiar-user'] = {value: user.sub};
@@ -47,4 +47,20 @@ async function handler(event) {
   // control characters in an otherwise valid ID must not invalidate the request.
   if (r.uri === '/') r.uri = '/index.html';
   return r;
+}
+
+// Compare meaning before role checks; reject malformed and multiply encoded paths.
+function resourcePath(uri) {
+  try {
+    if (typeof uri !== 'string' || uri[0] !== '/') return null;
+    const decoded = decodeURIComponent(uri).toLowerCase();
+    if (decoded[0] !== '/' || /[%\\?#\s\x00-\x1f\x7f]/.test(decoded)) return null;
+    const parts = [];
+    for (const part of decoded.split('/')) {
+      if (!part || part === '.') continue;
+      if (part === '..') { if (!parts.length) return null; parts.pop(); }
+      else { const clean = part.replace(/\.+$/, ''); if (!clean) return null; parts.push(clean); }
+    }
+    return '/' + parts.join('/');
+  } catch (_) { return null; }
 }

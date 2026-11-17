@@ -83,12 +83,30 @@ Resources:
               'strict-transport-security': {value: 'max-age=31536000'},
               'content-type': {value: 'text/plain; charset=utf-8'}}, body: 'Authentication required'};
           }
-          if (request.uri.indexOf('/desk/correspondence.') === 0) {
+          var path = resourcePath(request.uri);
+          if (path === null) {
+            return {statusCode: 400, headers: {'cache-control': {value: 'no-store'}}};
+          }
+          if (/^\/desk\/(?:correspondence|access)(?:[./]|$)/.test(path) || path === '/api/access') {
             return {statusCode: 403, statusDescription: 'Forbidden', headers: {'cache-control': {value: 'no-store'}}};
           }
           delete request.headers.authorization;
           if (request.uri === '/') request.uri = '/index.html';
           return request;
+        }
+        function resourcePath(uri) {
+          try {
+            if (typeof uri !== 'string' || uri[0] !== '/') return null;
+            const decoded = decodeURIComponent(uri).toLowerCase();
+            if (decoded[0] !== '/' || /[%\\?#\s\x00-\x1f\x7f]/.test(decoded)) return null;
+            const parts = [];
+            for (const part of decoded.split('/')) {
+              if (!part || part === '.') continue;
+              if (part === '..') { if (!parts.length) return null; parts.pop(); }
+              else { const clean = part.replace(/\.+$/, ''); if (!clean) return null; parts.push(clean); }
+            }
+            return '/' + parts.join('/');
+          } catch (_) { return null; }
         }
   FeedbackRole:
     Type: AWS::IAM::Role
@@ -155,6 +173,7 @@ Resources:
           import os
           import uuid
           from datetime import datetime, timezone
+          from urllib.parse import unquote
           import boto3
           from botocore.exceptions import ClientError
           s3 = boto3.client('s3')
@@ -163,9 +182,23 @@ Resources:
                   'cache-control': 'no-store', 'x-content-type-options': 'nosniff'},
                   'body': json.dumps(value)}
           def owner_only(data):
+              try:
+                  page = unquote(data.get('page', ''), errors='strict').lower().split('?', 1)[0]
+                  if '%' in page or '\\' in page or any(ord(c) < 32 for c in page):
+                      return True
+                  parts = []
+                  for part in page.split('/'):
+                      if part == '..':
+                          if parts:
+                              parts.pop()
+                      elif part and part != '.':
+                          parts.append(part.rstrip('.'))
+                  page = '/' + '/'.join(parts)
+              except (TypeError, ValueError, UnicodeError, AttributeError):
+                  return True
               return (data.get('kind') in {'correspondence_sent', 'correspondence_reply'}
-                      or data.get('screen') == 'correspondence'
-                      or data.get('page', '').split('?', 1)[0] == '/desk/correspondence.html')
+                      or data.get('screen', '').lower() == 'correspondence'
+                      or page.startswith('/desk/correspondence'))
           def handler(event, context):
               method = event.get('requestContext', {}).get('http', {}).get('method')
               if event.get('rawPath') != '/api/feedback' or method not in {'POST', 'GET'}:

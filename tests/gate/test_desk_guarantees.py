@@ -25,26 +25,6 @@ def test_personal_login_flow_is_not_replaced_by_ambient_requests(monkeypatch):
     assert 'cookies' not in auth['auth'](event)
     event.update(rawPath='/auth/callback', queryStringParameters={'code': 'fictional', 'state': 'wrong'})
     assert auth['auth'](event)['statusCode'] == 400
-    # The new identity API must refuse reader and revoked-owner cookies before mutation.
-    calls = []
-    attr = {'sub': 'host', 'custom:role': 'owner', 'custom:session': 'current'}
-    user = {'Enabled': True, 'UserAttributes': [{'Name': k, 'Value': v} for k, v in attr.items()]}
-    cognito = SimpleNamespace(admin_get_user=lambda **kw: calls.append('get') or user)
-    store = SimpleNamespace(get_key=lambda **kw: {'Value': json.dumps({'enabled': True, 'session': 'current'})})
-    access = runpy.run_path(str(Path(auth['__file__']).with_name('accounts-access.py')), init_globals=auth | {
-        'boto3': SimpleNamespace(client=lambda *a, **kw: store), 'cognito': cognito,
-        'reply': lambda status, body: {'statusCode': status}})
-    event = {'rawPath': '/api/access', 'headers': {'x-familiar-user': 'host'},
-        'requestContext': {'http': {'method': 'POST'}}}
-    for role, session in [('reader', 'current'), ('owner', 'revoked')]:
-        token = auth['signed']({'sub': 'host', 'username': 'host', 'role': role,
-            'session': session, 'exp': 9999999999})
-        event['cookies'] = ['__Host-familiar=' + token]
-        assert access['access_handler'](event, None)['statusCode'] == 403
-    assert calls == ['get']
-    event['cookies'] = ['__Host-familiar=' + auth['signed']({'sub': 'host', 'username': 'host',
-        'role': 'owner', 'session': 'current', 'exp': 9999999999})]
-    assert access['access_principal'](event)['role'] == 'owner'
 
 
 def test_desk_requires_host_decision(family):

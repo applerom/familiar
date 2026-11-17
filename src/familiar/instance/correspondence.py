@@ -3,7 +3,7 @@
 # PRD_REF: docs/PRD.md#FAMILY-DESK
 # INVARIANTS:
 # - only the family writer changes records, original replies and feedback receipts [review: engine lead]
-# - feedback is applied once with its authenticated sender; no reply accepts a tree assertion [review: engine lead]
+# - feedback applies once with an owner; unauthorized actions are receipted without blocking intake [review: engine lead]
 # - owner correspondence is a sealed working view, never a reader field [review: engine lead]
 # - hosted marks require an identified personal owner; loopback origin is explicit [review: engine lead]
 # CHANGES_WITH:
@@ -139,13 +139,17 @@ def reply_changes(instance, row, raw, *, by, at, source, meaning='', literal_tex
 def apply_feedback(instance, data, *, local=False):
     if data.get('kind') not in ACTIONS:
         return
-    principal = data.get('sender', {})
-    from familiar.desk.accounts import mode
-    if not local and (mode(instance) != 'personal' or not principal.get('sub') or principal.get('role') != 'owner'):
-        raise ValueError('Only the family owner can mark correspondence')
     from .writer import mutate
     mark = instance._inside('family/feedback/read/' + data['id'] + '.json')
     if mark.exists():
+        return
+    principal = data.get('sender') or {}
+    from familiar.desk.accounts import mode
+    if not local and (mode(instance) != 'personal' or not isinstance(principal, dict)
+                      or not principal.get('sub') or principal.get('role') != 'owner'):
+        mutate(instance, {mark: {'status': 'read', 'reply': '',
+                                'correspondence': data.get('subject'),
+                                'at': data.get('received_at')}})
         return
     path, row = record(instance, data.get('subject'))
     by = principal.get('username') or row['sender']['name']

@@ -13,6 +13,7 @@
 import json
 import uuid
 from datetime import UTC, datetime
+from urllib.parse import unquote
 
 FIELDS = {'id', 'text', 'kind', 'page', 'person', 'question', 'ask_id', 'finding',
           'client_time', 'subject', 'anchor', 'relation', 'place', 'where', 'screen',
@@ -40,9 +41,24 @@ def new_person_valid(data):
 
 
 def owner_only(data):
+    # Legacy receipts may name the page through an encoded or normalized alias.
+    try:
+        page = unquote(data.get('page', ''), errors='strict').lower().split('?', 1)[0]
+        if '%' in page or '\\' in page or any(ord(c) < 32 for c in page):
+            return True
+        parts = []
+        for part in page.split('/'):
+            if part == '..':
+                if parts:
+                    parts.pop()
+            elif part and part != '.':
+                parts.append(part.rstrip('.'))
+        page = '/' + '/'.join(parts)
+    except (TypeError, ValueError, UnicodeError, AttributeError):
+        return True
     return (data.get('kind') in {'correspondence_sent', 'correspondence_reply'}
-            or data.get('screen') == 'correspondence'
-            or data.get('page', '').split('?', 1)[0] == '/desk/correspondence.html')
+            or data.get('screen', '').lower() == 'correspondence'
+            or page.startswith('/desk/correspondence'))
 
 
 def validate(body):
