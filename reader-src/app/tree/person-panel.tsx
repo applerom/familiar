@@ -8,7 +8,7 @@ import Feedback from './feedback';
 import ConfirmationMark,{confirmationText} from './confirmation';
 import Lightbox,{type Doc} from './lightbox';
 import {storyParts,storyText} from '../stories';
-import {tr,type Feed} from '../feed';
+import {FeedFigure,tr,type Feed} from '../feed';
 import {growthWords} from './growth';
 import {plural,type Language} from '../i18n';
 const LIFE=/^(Рождение|Смерть|Брак|Погреб|Крещени|Иммигр|Проживан|Образован)/i;
@@ -70,7 +70,7 @@ export default function PersonPanel({data,model,id,go,labels,language,expanded,s
  // then documents that merely name the person, then gravestones.
  const docs:Doc[]=useMemo(()=>{const lifeSids=new Set(lifeFacts.flatMap(f=>f.sources||[]));const year=(t:string)=>Number((/\b(1[5-9]\d\d|20\d\d)\b/.exec(t)||[])[1])||9999;
   const rank=(s:Row)=>s.photo?(s.type==='grave'||/памятник|могил|надгроб|grave|nagrob/i.test(s.title||'')?3:0):(s.mentionRole&&!['child','groom','bride','deceased','self'].includes(s.mentionRole))||(!s.mentionRole&&!lifeSids.has(s.sid))?2:1;
-  return [...(p.media||[])].filter((s:Row)=>s.asset).sort((a:Row,b:Row)=>rank(a)-rank(b)||year(a.title||'')-year(b.title||'')).flatMap((s:Row):Doc[]=>{
+  return [...(p.media||[])].filter((s:Row)=>s.asset&&s.kind!=='photo-restoration'&&s.ours?.kind!=='photo-restoration').sort((a:Row,b:Row)=>rank(a)-rank(b)||year(a.title||'')-year(b.title||'')).flatMap((s:Row):Doc[]=>{
    const base={sid:s.sid,sourceSid:s.sourceSid||s.sid,title:[s.title,data.sources[s.sourceSid||s.sid]?.title].filter((x,i,a)=>x&&a.indexOf(x)===i).join(' · '),reading:translated(s.description,language),asset:s.asset,originalAsset:s.originalAsset,photo:s.photo===true,kind:rank(s)};
    if(!base.photo&&s.originalAsset&&s.originalAsset!==s.asset)return [
     {...base,sid:s.sid+':detail',view:'detail',title:base.title+' · '+labels.detail},
@@ -79,7 +79,9 @@ export default function PersonPanel({data,model,id,go,labels,language,expanded,s
    return [base];
   })},[p,labels,lifeFacts]);
  // A story may have a simple part first and details after a line of dashes; illustrations are period pictures, not family documents.
- const pics:Doc[]=useMemo(()=>(p.illustrations||[]).filter((s:Row)=>s.asset).map((s:Row,i:number)=>({sid:'ill:'+i,title:[s.caption?.[language]||s.caption?.en||s.caption?.ru||s.caption,s.credit].filter(Boolean).join(' · '),asset:s.asset,photo:true,href:s.url,hrefLabel:labels.storyPicSource})),[p,language,labels]);
+ const paired=(s:Row)=>s.kind==='photo-restoration'||s.ours?.kind==='photo-restoration';
+ const restored=[...(p.illustrations||[]),...(p.media||[])].filter(paired);
+ const pics:Doc[]=useMemo(()=>(p.illustrations||[]).filter((s:Row)=>s.asset&&!paired(s)).map((s:Row,i:number)=>({sid:'ill:'+i,title:[s.caption?.[language]||s.caption?.en||s.caption?.ru||s.caption,s.credit].filter(Boolean).join(' · '),asset:s.asset,photo:true,href:s.url,hrefLabel:labels.storyPicSource})),[p,language,labels]);
  const viewer=[...docs,...pics];
  const shown=all?memories:memories.slice(0,3);
  const {slots,extra}=model.parents(id);const parents=slots.filter(Boolean) as Slot[];
@@ -117,6 +119,7 @@ export default function PersonPanel({data,model,id,go,labels,language,expanded,s
     :<>{kin.map((k,i)=><span key={i}>{k}</span>)}<small><button className="link" onClick={()=>setPick(!pick)}>{labels.whoLooks}</button></small></>}
     {pick&&<div className="me-pick"><p>{labels.meHint}</p><input autoFocus aria-label={labels.meSearch} placeholder={labels.meSearch} value={meQuery} onChange={e=>setMeQuery(e.target.value)}/>{meHits.map(i=><button key={i.id} className="chip" onClick={()=>{setMe(i.id);setPick(false);setMeQuery('')}}><b className={i.unnamed?'unnamed':undefined}>{i.short}</b>{(data.people[i.id]?.disambiguator?.[language]||i.life)&&<small>{[data.people[i.id]?.disambiguator?.[language],lifeLabel(i,labels,language)].filter(Boolean).join(' · ')}</small>}</button>)}</div>}
    </div>
+   {restored.map((f:Row,i:number)=><FeedFigure key={'restored:'+id+':'+i} f={f as any} labels={labels} language={language}/>)}
    {connection&&info.connectionShort&&Object.keys(info.connectionShort).length>0&&<p className="connection-lead"><b>{labels.connection}</b><br/>{connection}</p>}
    {(docs.length>0||growth.documents.length>0)&&<section className="group"><h3>{labels.docs}</h3><div className="strip">{docs.map((d,i)=><button key={d.sid} className={'thumb'+(d.view==='detail'?' record':'')} onClick={()=>setLb(i)}>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={d.asset} alt={d.title} loading="lazy"/><i>{d.view?labels[d.view]:d.kind===3?labels.docGrave:d.kind===2?labels.docMention:d.photo?labels.docPhoto:labels.original}</i><span>{d.title}</span></button>)}</div>{growth.documents.filter(sid=>!docs.some(d=>d.asset===data.sources[sid]?.asset)).map(sid=>{const s=data.sources[sid];return <p className="note" key={sid}>{s.asset?<a href={s.asset} target="_blank" rel="noreferrer">{s.title||labels.source} ↗</a>:s.title||labels.source}</p>})}</section>}
    {found.length>0&&<section className="group"><h3>{labels.known}</h3>{found.map((f:Row,i:number)=><Fact key={`found:${i}`} f={f} data={data} labels={labels} subject={id} language={language} docs={docs} open={setLb}/>)}</section>}

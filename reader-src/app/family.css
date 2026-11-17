@@ -558,7 +558,17 @@ html:has(.feed-viewer),html:has(.feed-viewer) body{overflow:hidden}
 .feed-ask b{display:block;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:#2f6db0;margin-bottom:2px}
 .feed-ask p{margin:4px 0;color:#1d2a38}
 .feed-figure-frame{position:relative}
+.feed-figure.photo-restoration{width:min(100%,640px);margin:16px auto}
+.photo-restoration .feed-figure-frame>img{max-height:60vh;object-fit:contain}
+.restoration-variants{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.restoration-variants button{border:1px solid var(--ink-mute);border-radius:8px;background:transparent;color:inherit;padding:8px 12px;cursor:pointer;overflow-wrap:anywhere}
+.restoration-variants button[aria-pressed=true]{border-color:var(--act);font-weight:700}
+.restoration-recipe{font-size:12px;margin:10px 0;max-width:100%}
+.restoration-recipe summary{cursor:pointer}
+.restoration-recipe pre{white-space:pre-wrap;overflow-wrap:anywhere;max-width:100%}
+.panel .feed-figure figcaption{color:var(--muted)}
 .feed-figure-orig{position:absolute;right:8px;bottom:8px;width:72px;padding:0;border:1.5px solid rgba(241,217,138,.9);border-radius:8px;overflow:hidden;background:#1b211d;cursor:zoom-in;box-shadow:0 2px 8px rgba(0,0,0,.45)}
+.photo-restoration .feed-figure-orig{top:8px;bottom:auto}
 .feed-figure-orig img{display:block;width:100%;height:48px;object-fit:cover;border-radius:0}
 .feed-figure-orig span{display:block;font-size:10px;line-height:1;padding:3px 0;color:#f1d98a;text-align:center;letter-spacing:.02em}
 .feed-figure-over{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;background:rgba(10,13,11,.94);cursor:zoom-out}

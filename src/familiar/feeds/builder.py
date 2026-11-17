@@ -81,6 +81,10 @@ class _Feed:
         keys = key if isinstance(key, list) else [key]
         for k in keys:
             p = self.pictures.get(k)
+            if p and p.get('kind') == 'photo-restoration':
+                from familiar.instance.subjects import photo_pair
+                p = copy.deepcopy(p)
+                photo_pair(context.get(), p)
             if p and asset_exists(p['asset']):
                 p = copy.deepcopy(p)
                 p.pop('card', None)

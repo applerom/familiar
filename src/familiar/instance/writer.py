@@ -7,6 +7,7 @@
 # - upload staging excludes owner correspondence for shared login; loopback feedback origin is explicit [review: engine lead]
 # - unadopted collector records and journals never enter output snapshots; selected-input race rejection remains complete [review: engine lead]
 # - changed inputs cannot commit a clean generation [review: engine lead]
+# - saved photo restoration versions are append-only across family transactions [review: engine lead]
 # - a pinned reader snapshot is invalidated by input additions, removals or metadata changes [review: engine lead]
 # - absent or invalid-name dependencies stay absent in snapshots and watches until a real input appears [test: tests/journeys/test_installed_engine.py::test_installed_engine]
 # - private diagnostics cannot alias declared family inputs [review: engine lead]
@@ -584,6 +585,14 @@ def mutate(instance, changes=None, *, exclusive=(), working_journals=False):
             raise ValueError('working journal carry-over may only change paths.searches')
     if any(Path(p).exists() for p in exclusive):
         raise ValueError('refusing to replace existing family data')
+    from .restorations import preserve
+    for path, value in changes.items():
+        if path.suffix == '.json' and path.is_file():
+            try:
+                before_json = json.loads(path.read_bytes())
+            except ValueError:
+                before_json = {}  # An invalid old JSON file may still be repaired.
+            preserve(before_json, json.loads(value))
     transaction = fresh(instance)
     transaction._research_work_scope = True
     with snapshot(transaction) as (staged, before):

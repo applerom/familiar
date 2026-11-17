@@ -95,7 +95,7 @@ def _output_uses(instance, kind, data, feed=None):
         from familiar.checks.engine import generated
         image_rights(item, pic)
         for pid in closure(instance, pic, shape='image', people=people).people:
-            add(item, pid, 'pictures', permission='never-if-living' if pic.get('kind') == 'photo-treatment' else None,
+            add(item, pid, 'pictures', permission='never-if-living' if pic.get('kind') in {'photo-treatment', 'photo-restoration'} else None,
                 generated=generated(pic), subject_child=pic.get('subject_child', False))
     if kind in {'tree', 'reader'}:
         resolved = closure(instance, data, shape='graph', people=known)

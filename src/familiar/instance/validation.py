@@ -667,7 +667,7 @@ def _check(instance, selected=None):
         images = [v for v in pictures.values() if isinstance(v, dict)]
         images += [c['picture'] for c in chapters if isinstance(c.get('picture'), dict)]
         for image in images:
-            if 'kind' in image and image['kind'] not in {'period-picture', 'family-photograph', 'document-scan', 'photo-treatment', 'generated-reconstruction', 'ours-drawing', 'reconstruction', 'generated'}:
+            if 'kind' in image and image['kind'] not in {'period-picture', 'family-photograph', 'document-scan', 'photo-treatment', 'photo-restoration', 'generated-reconstruction', 'ours-drawing', 'reconstruction', 'generated'}:
                 fail(directory / 'pictures.json', 'unknown image kind', 'instance.unknown-image-kind')
             if 'subjects' in image:
                 if not isinstance(image['subjects'], list):

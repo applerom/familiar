@@ -57,7 +57,7 @@ class Context:
 
 def generated(pic):
     return (pic.get('generated') is True or pic.get('kind') in
-            {'ours-drawing', 'reconstruction', 'generated', 'generated-reconstruction'} or
+            {'ours-drawing', 'reconstruction', 'generated', 'generated-reconstruction', 'photo-restoration'} or
             (pic.get('kind') != 'photo-treatment' and '/gen/' in pic.get('asset', '')))
 
 

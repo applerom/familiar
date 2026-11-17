@@ -9,6 +9,7 @@
 # - linked document subjects accumulate across galleries, chapters and facts before any reader filtering [review: engine lead]
 # - a narrator reference on reported kinship resolves to a canonical family person [review: engine lead]
 # - declared cut-out subjects cannot replace corpus subjects; chapter context is only a fallback [review: engine lead]
+# - generated photo restorations bind real originals and deceased subjects before any privacy omission [review: engine lead]
 # CHANGES_WITH:
 # - MOD-PUBLICATION
 # - MOD-CHECKS-PRIVACY
@@ -76,6 +77,17 @@ def _excerpt(data, fields):
 
 def photo_pair(instance, image):
     """Bind a treatment to its real frame; dimensions cannot establish facial fidelity."""
+    if image.get('kind') == 'photo-restoration':
+        original = image.get('orig')
+        if not isinstance(original, dict):
+            raise ValueError('TRUST-08: photo restoration needs its real original frame')
+        from .restorations import bind
+        bind(instance, original, image)
+        return
+    if image.get('ours', {}).get('kind') == 'photo-restoration':
+        from .restorations import bind
+        bind(instance, image, image['ours'])
+        return
     if image.get('kind') == 'photo-treatment':
         original = image.get('orig')
         if not isinstance(original, dict) or original.get('kind') == 'photo-treatment':
@@ -126,6 +138,11 @@ def closure(instance, value, *, shape='chapter', documents=None, pictures=None, 
     known = _known_people(instance) if people is None else people
     documents, pictures = documents or {}, pictures or {}
     result = Closure()
+
+    from .restorations import restorations
+    restored_assets = {v.get('asset') for r in restorations(value)
+                       for v in (r['versions'] if isinstance(r.get('versions'), list) else [])
+                       if isinstance(v, dict)}
 
     def person(pid):
         pid = normalized(pid)
@@ -178,6 +195,10 @@ def closure(instance, value, *, shape='chapter', documents=None, pictures=None, 
             return
         if kind not in SCHEMAS or not isinstance(node, dict):
             return
+        if kind in {'document', 'source', 'snippet'} and (node.get('kind') == 'photo-restoration' or
+                any(node.get(k) in restored_assets for k in ('asset', 'full') if node.get(k)) or
+                any(restorations(node))):
+            raise ValueError('TRUST-08: photo restoration is never a document or source')
         if kind == 'person':
             person(node['id'])
         if kind == 'image':
@@ -341,3 +362,6 @@ def attribute_documents(instance, graph):
                 node['_document_private'] = True
         node['subjects'] = sorted(people)
         node['_document_attributed'] = True
+    from .restorations import restorations
+    if any(restorations(graph)):
+        closure(instance, graph, shape='graph', people=known)

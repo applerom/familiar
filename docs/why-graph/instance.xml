@@ -108,6 +108,7 @@
     <REL TYPE="DEPENDS_ON" TARGET="MOD-OUTPUT-REVIEW"/>
   </MODULE_FAMILY_WRITER>
   <MODULE_PUBLICATION ID="MOD-PUBLICATION" FILE="src/familiar/instance/publication.py" STATE="IMPLEMENTED">
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_photo_treatment_stays_local_for_living_subject">Restorations refuse living or unknown subjects everywhere and require original frames and version recipes; deceased pairs reach both views.</INVARIANT>
     <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_photo_treatment_stays_local_for_living_subject">Living photo treatments need picture permission and stay local; public generations track dead-only treatment uses.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Merged person references retain recorded privacy permissions.</INVARIANT>
     <!-- Plain card serialization is cheaper than reading and checking hundreds
@@ -125,9 +126,13 @@
     <INVARIANT REVIEW="engine lead">Merged participant permissions follow the active person.</INVARIANT>
   </MODULE_NARRATIVE_DISCLOSURE>
   <MODULE_SUBJECT_CLOSURE ID="MOD-SUBJECT-CLOSURE" FILE="src/familiar/instance/subjects.py" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-PHOTO-RESTORATIONS"/>
     <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_f2_record_subject_cannot_be_omitted">Declared cut-out subjects agree with corpus subjects; chapter context is only a fallback, while protected shared scans retain their full closure.</INVARIANT>
     <!-- Structured gallery, chapter and fact attachments accumulate across shared document identities before either reader projection. -->
   </MODULE_SUBJECT_CLOSURE>
+  <MODULE_PHOTO_RESTORATIONS ID="MOD-PHOTO-RESTORATIONS" FILE="src/familiar/instance/restorations.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Every generated restoration binds a real frame, deceased subjects and append-only version recipes; original and alternative versions remain reachable.</INVARIANT>
+  </MODULE_PHOTO_RESTORATIONS>
   <MODULE_OUTPUT_REVIEW ID="MOD-OUTPUT-REVIEW" FILE="src/familiar/instance/review.py" STATE="IMPLEMENTED">
     <INVARIANT REVIEW="engine lead">Media uses follow displayed records and pictures rather than withheld authoring dependencies.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Review permissions and their input digests include merged person references.</INVARIANT>

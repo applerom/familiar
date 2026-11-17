@@ -1,0 +1,50 @@
+{
+  "kind": "family-photograph",
+  "asset": "/portraits/invented-original.png",
+  "caption": "Original fictional family photograph; the print includes a caption below the frame",
+  "holder": "Invented Example family",
+  "subjects": ["person-example"],
+  "ours": {
+    "kind": "photo-restoration",
+    "id": "example-portrait",
+    "primary": "v1-front",
+    "versions": [
+      {
+        "id": "v1-front",
+        "asset": "/portraits/invented-v1-front.png",
+        "caption": "Generated restoration, looking towards the camera",
+        "disclosure": "Face details are inferred from a poor print; compare with the original",
+        "recipe": {
+          "version": 1,
+          "original_asset": "/portraits/invented-original.png",
+          "original_sha256": "REPLACE_WITH_ORIGINAL_SHA256",
+          "sha256": "REPLACE_WITH_VERSION_SHA256",
+          "crop": [0, 0, 600, 800],
+          "model": "Fictional image model, revision A",
+          "date": "2026-11-17",
+          "prompt": "Restore this frame as a sharp colour photograph, retaining pose, hair, clothing and background. No new insignia or smile. This is a fictional example; use the actual prompt for real work.",
+          "invented": ["Eye colour", "Hair and fabric colours", "Fine facial detail", "Gaze direction"],
+          "comparison": {"attempts": 3, "chosen_attempt": 2, "reduced_width_px": 150, "blur_radius_px": 1.2, "mean_absolute_error": 8.4}
+        }
+      },
+      {
+        "id": "v1-side",
+        "asset": "/portraits/invented-v1-side.png",
+        "caption": "Alternative generated restoration, looking aside",
+        "disclosure": "The original does not resolve the gaze; this is an alternative",
+        "recipe": {
+          "version": 1,
+          "original_asset": "/portraits/invented-original.png",
+          "original_sha256": "REPLACE_WITH_ORIGINAL_SHA256",
+          "sha256": "REPLACE_WITH_VERSION_SHA256",
+          "crop": [0, 0, 600, 800],
+          "model": "Fictional image model, revision A",
+          "date": "2026-11-17",
+          "prompt": "Same restoration prompt, with the uncertain gaze directed aside. Fictional example.",
+          "invented": ["Eye colour", "Hair and fabric colours", "Fine facial detail", "Gaze direction"],
+          "comparison": {"attempts": 3, "chosen_attempt": 3, "reduced_width_px": 150, "blur_radius_px": 1.2, "mean_absolute_error": 8.7}
+        }
+      }
+    ]
+  }
+}

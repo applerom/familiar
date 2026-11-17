@@ -2,6 +2,10 @@
 
 ## 0.33.0 — 17 November 2026
 
+- We add deceased-only `photo-restoration` pairs: generated photographs with a
+  one-tap real original, disclosed inventions, reader-selectable variants and
+  append-only version recipes bound to both files. `feed restorations` lists
+  recipes and their age for future regeneration; photo-treatment rules stay strict.
 - We keep an explicitly attributed cut-out with its corpus subjects instead of
   adding chapter participants; conflicting subjects refuse delivery and shared
   protected scans stay private. Withheld chapter media and game evidence now

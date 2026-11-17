@@ -22,7 +22,10 @@ from .service import build, folders, inspect
 def execute(args):
     try:
         instance = Instance(args.root)
-        if args.feed_command == 'pages':
+        if args.feed_command == 'restorations':
+            from familiar.instance.restorations import inventory
+            print(json.dumps(inventory(instance), ensure_ascii=False, indent=2))
+        elif args.feed_command == 'pages':
             if args.text:
                 from familiar.instance.host_cli import deliver
                 print(deliver(instance, 'pages', feed=args.feed, selection=args.page))
@@ -143,7 +146,7 @@ def register(commands):
     # Reuse the parser owned by checks; the check command remains unchanged.
     feed = commands.choices['feed']
     sub = next(a for a in feed._actions if hasattr(a, 'choices') and isinstance(a.choices, dict))
-    for name in ('build', 'status', 'new', 'pages', 'read', 'worklist', 'review'):
+    for name in ('build', 'status', 'new', 'pages', 'read', 'worklist', 'review', 'restorations'):
         command = sub.add_parser(name)
         command.add_argument('feed', nargs=None if name == 'new' else '?')
         if name == 'pages':

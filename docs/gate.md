@@ -46,6 +46,32 @@ living or unknown subjects require recorded `pictures` permission and remain
 local to the host, excluded from reader exports and publication. Protected
 documents remain excluded in both views. Existing stored forms are unchanged.
 
+A `photo-restoration` generates a sharp photograph from an existing real frame,
+only when every original subject is known dead. Living or unknown subjects are
+refused even in the local host display, regardless of consent. It never supplies
+a document, source, cut-out or game evidence. The original retains its own rights
+and privacy rules, and is one tap away in both the chapter and person card.
+See `forms/photo-restoration.json`: put the restoration under the original's
+`ours`, assign its stable `id`, list `versions`, and choose a `primary` version id.
+All saved variants are available to readers; the selected primary opens first.
+Each version has its own asset, caption, disclosure and `recipe`: positive version
+number, exact model revision, ISO run date, literal prompt (or a durable local
+reference), invented details, original/output SHA-256 and numeric comparison
+measurements. `comparison` records attempts, chosen attempt, reduced width in
+pixels, blur radius in pixels and mean absolute error (0–255 intensity scale).
+These numbers describe the comparison; they do not certify facial identity.
+Optional `crop` is `[left, top, width, height]` in original pixels, excluding a
+printed caption. Output size may differ; aspect ratio must stay within 2% of that
+crop. Install the `images` extra. Replace example hashes with actual file hashes.
+Family writer transactions preserve every saved version; append a new version
+and asset instead of editing or deleting the old one. Bound hashes also reject
+changed original/output bytes during display. Direct manual edits to family JSON
+have no independent historical baseline: retain old files and recipes yourself.
+`familiar --root FAMILY feed restorations` lists all authored versions and recipes,
+including model, date and age in days, for future regeneration in the host's
+environment. The engine does not invoke an image model. Existing forms need no
+carry-over; `photo-treatment` still forbids generation and requires equal sizes.
+
 Collector captures and unreferenced original, import and media archive bytes are
 research working material, outside the snapshot and input watch; only declared
 file references, import JSON and the media manifest select them. Cleanup remains

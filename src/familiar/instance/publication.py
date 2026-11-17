@@ -55,6 +55,10 @@ SCHEMAS['fact'] |= fields('uncertainty eventType detailOnly', 'scalar')
 SCHEMAS['snippet'] = fields('asset', 'reference') | fields('field read')
 SCHEMAS['document'] = fields('kind caption source where read title field') | fields('asset full record', 'reference') | fields('fictional image_seen kids', 'scalar') | fields('subjects excerpt', ['reference']) | fields('parts snippets', ['snippet'])
 SCHEMAS['image'] = fields('caption alt title description source credit holder license url disclosure') | fields('asset full record', 'reference') | fields('generated kind role is_portrait reconstruction subject_living subject_child fictional', 'scalar') | fields('subjects', ['reference']) | fields('orig ours', 'image')
+SCHEMAS['restoration-comparison'] = fields('attempts chosen_attempt reduced_width_px blur_radius_px mean_absolute_error', 'scalar')
+SCHEMAS['restoration-recipe'] = fields('model date prompt original_sha256 sha256') | fields('original_asset', 'reference') | fields('version', 'scalar') | fields('invented', ['text']) | fields('crop', ['scalar']) | fields('comparison', 'restoration-comparison')
+SCHEMAS['restoration-version'] = fields('id', 'scalar') | fields('asset', 'reference') | fields('caption disclosure') | fields('recipe', 'restoration-recipe')
+SCHEMAS['image'] |= fields('id primary', 'scalar') | fields('versions', ['restoration-version'])
 SCHEMAS['link'] = fields('label title text') | fields('url kind', 'scalar')
 SCHEMAS['place'] = fields('name note') | fields('url', 'scalar')
 SCHEMAS['variant'] = fields('title text more') | fields('version', 'scalar')
@@ -353,6 +357,11 @@ def scan(instance, value, shape, *, host_private=False):
         value = restrict_feed(instance, value)
     surfaces = []
     projected = project(value, shape, instance.languages, surfaces)
+    # Recheck pairs on the exact declared bytes, including the local host projection.
+    from .restorations import restorations
+    if any(restorations(projected)):
+        from .subjects import closure
+        closure(instance, projected, shape=shape)
     if shape == 'graph' and not host_private:
         for person in projected.get('people', {}).values():
             person.pop('coverage', None)  # the host-private display field has no public path

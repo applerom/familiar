@@ -27,6 +27,37 @@ A drawing invents or reconstructs a scene; a `photo-treatment` processes the sam
 For treatments, preserve subjects and dimensions; a living subject requires picture consent and local host display, never reader publication. This does not authorize sending a living photograph to a generator.
 Never transplant or blend faces; the author and reader verify unchanged features, which pixel dimensions alone cannot prove.
 
+## Восстановление снимка
+
+Когда человек умер и настоящий снимок есть, мы можем восстановить живую,
+резкую цветную фотографию генератором: `photo-restoration`, а не `photo-treatment`
+и не новый документ. Сначала подтвердить смерть всех людей кадра и права на
+оригинал. Живой или неизвестный статус запрещает генерацию и любой показ,
+включая местный кабинет хозяина, без исключений по согласию.
+
+Сделать до трёх попыток. Каждую уменьшить до размера оригинала и размыть
+для сопоставимой резкости; сравнить позу, контур лица, расстояния между
+чертами, причёску, одежду и фон. Записать число попыток, выбранную попытку,
+ширину сравнения, радиус размытия и среднюю абсолютную разницу интенсивности
+0–255. Числа помогают повторить сверку, но не доказывают сходство лица.
+Выбрать ближайшую к кадру, а не самую красивую. Спорное направление взгляда
+или другую неразрешимую деталь сохранить отдельными вариантами.
+Не предлагать бледную раскраску размытого кадра как готовый результат.
+
+Нельзя пересаживать или смешивать лица, добавлять улыбку, знаки отличия,
+форму или детали, которых нет на кадре, выдавать генерацию за оригинал.
+Сохранять позу, одежду и фон; цвета и достроенные черты назвать в `invented`
+и в подписи. Оригинал всегда рядом одним нажатием. Подпись под оттиском
+исключить через `recipe.crop`, сам оригинал не менять.
+
+Форма — `forms/photo-restoration.json`; `ours.kind: photo-restoration`, `id`,
+`primary` и `versions`. У каждой версии свой файл, подпись, раскрытие и рецепт:
+исходный кадр, SHA-256 обоих файлов, модель с ревизией, дата, точный запрос
+или постоянная местная ссылка на него, список додуманного, числа сверки и
+номер версии. Старые файлы и версии не перезаписывать. Все варианты доступны
+читателю; основной открывается первым. Список для будущей пересборки:
+`familiar --root FAMILY feed restorations`. Генерирует среда хозяина, не движок.
+
 The card is the authority on what the picture shows; you are the authority on
 whether the picture shows it. You do not invent the scene again and you do not
 fix the card in silence. Found an error in the card: record it, change in the
@@ -72,7 +103,7 @@ it, and say which in your report.
 2. **Clear the references.** List every image you mean to give the model: the
    style sample, the card's samples, sheets of characters, an old version.
    For each image that shows a person, run `familiar tree person` and write
-   their status at the date of the photograph. A living person, a child, or a
+   their current life status and age shown in the photograph. A living person, a child, or a
    person of unknown status: the image does not go. A photograph of a dead
    person goes only when the card names it as the face source. Write the
    cleared list into the log first.
@@ -121,8 +152,9 @@ it, and say which in your report.
 - **Twins in a crowd.** All differ in face, age, height, clothes; no more than
   two in one pose.
 - **The caption promises more** than the picture shows: fix one of them.
-- **Colouring a real photograph** is not a drawing: a generator repaints faces
-  and letters. Use colour transfer, a separate tool.
+- **Conservative photo-treatment:** a generator repaints faces and letters;
+  use a separate non-generative tool. For a generated photo-restoration, follow
+  the deceased-only procedure above and disclose every inferred detail.
 
 ## Forks
 

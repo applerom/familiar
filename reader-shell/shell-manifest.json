@@ -15,13 +15,13 @@
     "size": 1069
   },
   "files": {
-    "assets/index-0jb-cpOC.css": {
-      "sha256": "940587dda7a798d2ea8df74b6ef32f246e5ae76b9560e244f85bd8883773c995",
-      "size": 83407
+    "assets/index-B71sFrkR.css": {
+      "sha256": "ef582a80267db61556b753e0585bddb9049bc09426361f655fb9f3a640535787",
+      "size": 84175
     },
-    "assets/index-DGK5Z4W9.js": {
-      "sha256": "19870a08dcb84e7a8eb4cf5dcb0b0e3ed2344f25020eb69fd107a6faf1b118b8",
-      "size": 207097
+    "assets/index-CbnetHVp.js": {
+      "sha256": "9bd59428d43311e4806877f4d355646583c1e7563b2ab8e8c8994d959b57f49f",
+      "size": 208650
     },
     "assets/Literata-CuqrGnnX.woff2": {
       "sha256": "fbf8199381bc34ce9318bef1f612ecd58fac5ece5225c637dcbb7fd79866e15e",
@@ -52,7 +52,7 @@
       "size": 2204
     },
     "index.html": {
-      "sha256": "5853022bd01b54bc43a93ed8a26dfbaae2be9a3941167631c6feb0ee2293c79b",
+      "sha256": "95f3842672904c643277ec298aa3572beebad05be9799b1752b95fc32aabac3c",
       "size": 610
     },
     "THIRD_PARTY_NOTICES.txt": {

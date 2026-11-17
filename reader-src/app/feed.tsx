@@ -14,7 +14,9 @@ export type ChapterKind='version'|'truth'|'visit'|'famous'|'fork'|'surname';
 /** `kind:'ours'` marks a drawing made for the feed ("наша версия": our people, or the paper the text speaks of, drawn after a real one) — never
  *  a document or a portrait. `ours` pairs a real period picture with such a drawing: the page opens on the drawing and the reader switches
  *  «Наша версия» / «Как было». No badge on the picture (the author, 31.10.2026: it distracts from the story); the credit says it under «Подробнее». */
-export type Picture={asset:string;caption?:Row;disclosure?:Row;credit?:string;url?:string;license?:string;kind?:'ours'|'photo-treatment';ours?:Picture;orig?:string|Picture;spots?:Spot[];pano?:Pano;small?:boolean};
+type RestorationRecipe={version:number;model:string;date:string;prompt:string;invented:string[];comparison:Record<string,number>;original_asset:string;crop?:number[];original_sha256:string;sha256:string};
+type RestorationVersion={id:string;asset:string;caption:Row;disclosure:Row;recipe:RestorationRecipe};
+export type Picture={asset:string;caption?:Row;disclosure?:Row;credit?:string;url?:string;license?:string;kind?:'ours'|'photo-treatment'|'photo-restoration';primary?:string;versions?:RestorationVersion[];ours?:Picture;orig?:string|Picture;spots?:Spot[];pano?:Pano;small?:boolean};
 /** A thing on a picture (play layer, 2.11.2026, `scripts/feed-play.py`): a box in percent of the picture from the top left, its name and two lines
  *  on why it is here; `kids` replaces `text` in the children's mode; `find` is the task of the «Найди» game. */
 export type Spot={x:number;y:number;w:number;h:number;label:Row;text:Row;kids?:Row;find?:Row};
@@ -141,7 +143,7 @@ export function FeedViewer({feed,step,setStep,onClose,go,model,labels,language,c
    {reader&&<div className="feed-reader-actions"><button onClick={share}>{copied?labels.feedCopied:labels.feedShare}</button><button onClick={()=>{setMe('');setPick(false)}}>{labels.meReset}</button></div>}
   </div>}
   <PlayFeed.Provider value={feed.id}><div ref={body} className="feed-body">
-   {c.picture?.ours||c.picture?.kind==='photo-treatment'?<><FeedFigure key={feed.id+'-'+i} f={c.picture} labels={labels} language={language} {...play}/><p className="feed-year">{c.year}</p></>:<div className={c.picture?'feed-pic-mat':undefined}><SpotFrame key={feed.id+'-'+i} className={'feed-pic'+(c.picture?'':' empty')} spots={c.picture?.spots} asset={c.picture?.asset} pano={c.picture?.pano} labels={labels} language={language} {...play}>{c.picture?/* eslint-disable-next-line @next/next/no-img-element */<img key={c.picture.asset} src={c.picture.asset} alt={tr(c.picture.caption,language)}/>:null}
+   {c.picture?.ours||['photo-treatment','photo-restoration'].includes(c.picture?.kind||'')?<><FeedFigure key={feed.id+'-'+i} f={c.picture!} labels={labels} language={language} {...play}/><p className="feed-year">{c.year}</p></>:<div className={c.picture?'feed-pic-mat':undefined}><SpotFrame key={feed.id+'-'+i} className={'feed-pic'+(c.picture?'':' empty')} spots={c.picture?.spots} asset={c.picture?.asset} pano={c.picture?.pano} labels={labels} language={language} {...play}>{c.picture?/* eslint-disable-next-line @next/next/no-img-element */<img key={c.picture.asset} src={c.picture.asset} alt={tr(c.picture.caption,language)}/>:null}
     <span className="feed-year" style={c.tone?{background:c.tone}:undefined}>{c.year}</span>
     {c.picture&&<button className="feed-credit-btn" onClick={()=>setCredit(v=>!v)} aria-expanded={credit}>i</button>}
     {credit&&c.picture&&<p className="feed-credit">{[tr(c.picture.caption,language),c.picture.credit].filter(Boolean).join(' · ')}{c.picture.url&&<> · <a href={c.picture.url} target="_blank" rel="noreferrer">{labels.storyPicSource} ↗</a></>}{c.picture.orig&&<> · <a href={typeof c.picture.orig==='string'?c.picture.orig:c.picture.orig.asset} target="_blank" rel="noreferrer">{labels.feedRealTab} ↗</a></>}</p>}
@@ -190,17 +192,25 @@ const ROMAN=['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
 /** The line of generations, oldest on the left; the chapter's generation is lit, the ones before it are passed. */
 /** A picture inside the text. A real picture with a paired drawing shows the drawing, and the real one sits in its corner as a small
  *  «Оригинал» inset: a tap opens it over the feed, so the page never jumps and the scene keeps its rhythm (author, 31.10.2026). */
-function FeedFigure({f,labels,language,kids=false,offer='look'}:{f:Picture;labels:Row;language:Language;kids?:boolean;offer?:Offer}){
+export function FeedFigure({f,labels,language,kids=false,offer='look'}:{f:Picture;labels:Row;language:Language;kids?:boolean;offer?:Offer}){
  const [real,setReal]=useState(false);
- const p=f.ours||f, original=f.ours?f:(typeof f.orig==='object'?f.orig:null);
+ const base=f.ours||f, original=f.ours?f:(typeof f.orig==='object'?f.orig:null);
+ const [choice,setChoice]=useState(base.primary);
+ const version=base.versions?.find(v=>v.id===(choice||base.primary));
+ const p=version?{...base,...version}:base;
+ const words=language==='ru'?['Восстановление снимка · сгенерировано','Вариант','Рецепт восстановления','Додумано']:language==='pl'?['Odtworzenie zdjęcia · wygenerowane','Wariant','Przepis odtworzenia','Dopowiedziane']:['Photo restoration · generated','Variant','Restoration recipe','Invented'];
  useEffect(()=>{if(!real)return;const key=(e:KeyboardEvent)=>{if(e.key==='Escape'){e.stopImmediatePropagation();setReal(false)}};
   addEventListener('keydown',key,true);return()=>removeEventListener('keydown',key,true)},[real]);
- return <figure className={'feed-figure'+(p.small?' small':'')}>
-  <SpotFrame className="feed-figure-frame" spots={p.spots} asset={p.asset} pano={p.pano} kids={kids} offer={offer} labels={labels} language={language}>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={p.asset} alt={tr(p.caption,language)} loading="lazy"/>
+ return <figure className={'feed-figure'+(p.small?' small':'')+(base.kind==='photo-restoration'?' photo-restoration':'')}>
+  <SpotFrame className="feed-figure-frame" spots={base.kind==='photo-restoration'?undefined:p.spots} asset={p.asset} pano={base.kind==='photo-restoration'?undefined:p.pano} kids={kids} offer={base.kind==='photo-restoration'?'look':offer} labels={labels} language={language}>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={p.asset} alt={tr(p.caption,language)} loading="lazy"/>
    {original&&<button className="feed-figure-orig" onClick={e=>{e.stopPropagation();setReal(true)}} aria-label={labels.feedRealTab}>
     {/* eslint-disable-next-line @next/next/no-img-element */}<img src={original.asset} alt="" loading="lazy"/><span>{labels.feedRealTab}</span></button>}
   </SpotFrame>
-  <figcaption>{[tr(p.caption,language),tr(p.disclosure,language)].filter(Boolean).join(' · ')}</figcaption>
+  <figcaption>{[base.kind==='photo-restoration'?words[0]:'',tr(p.caption,language),tr(p.disclosure,language)].filter(Boolean).join(' · ')}
+   {version&&<><p>{words[1]}: {version.id} · v{version.recipe.version} · {version.recipe.model} · {version.recipe.date}</p><p>{words[3]}: {version.recipe.invented.join('; ')}</p></>}
+  </figcaption>
+  {(base.versions?.length||0)>1&&<div className="restoration-variants">{base.versions!.map(v=><button key={v.id} aria-pressed={v.id===version?.id} onClick={()=>{setChoice(v.id);setReal(false)}}>{words[1]}: {v.id}</button>)}</div>}
+  {version&&<details className="restoration-recipe"><summary>{words[2]}</summary><pre>{JSON.stringify(version.recipe,null,2)}</pre></details>}
   {real&&original&&<div className="feed-figure-over" role="dialog" aria-label={labels.feedRealTab} onClick={e=>{e.stopPropagation();setReal(false)}}>
    {/* eslint-disable-next-line @next/next/no-img-element */}<img src={original.asset} alt={tr(original.caption,language)}/>
    <p>{tr(original.caption,language)}</p></div>}
