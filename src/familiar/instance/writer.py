@@ -3,6 +3,7 @@
 # PRD_REF: docs/PRD.md#FORMS
 # INVARIANTS:
 # - engine modules cannot write around this component [review: engine lead]
+# - upload staging excludes owner correspondence for shared login; loopback feedback origin is explicit [review: engine lead]
 # - unadopted collector records and journals never enter output snapshots; selected-input race rejection remains complete [review: engine lead]
 # - changed inputs cannot commit a clean generation [review: engine lead]
 # - a pinned reader snapshot is invalidated by input additions, removals or metadata changes [review: engine lead]
@@ -619,10 +620,15 @@ def initialize(root, config):
         from .gate import require
         require(Instance(staged))
     root.mkdir(parents=True, exist_ok=True)
-    for name, content in {'.gitattributes': '* -text\n', '.gitignore': '.venv/\nvenv/\n__pycache__/\n.state/\n.build/\nexport/\nreader-bundles/\n'}.items():
+    for name, content in {'.gitattributes': '* -text\n', '.gitignore': '.venv/\nvenv/\n__pycache__/\n.state/\n.build/\nexport/\nreader-bundles/\n.secrets/\n'}.items():
         if not (root / name).exists():
             with (root / name).open('xb') as stream:
                 stream.write(content.encode('utf-8'))
+    ignore = root / '.gitignore'
+    ignored = ignore.read_text(encoding='utf-8')
+    if '.secrets/' not in ignored.splitlines():
+        with ignore.open('ab') as stream:
+            stream.write(('' if ignored.endswith('\n') else '\n').encode() + b'.secrets/\n')
     with (root / 'familiar.toml').open('xb') as stream:
         stream.write(config.encode('utf-8'))
 
@@ -1119,6 +1125,24 @@ def store_desk(instance, bundle):
         _put(instance._inside('.secrets/desk-build.json'), encode(manifest))
 
 
+@contextmanager
+def desk_upload(instance, *, personal):
+    """Stage only the verified hosted projection; local owner bytes stay intact."""
+    from familiar.desk.build import CheckedDesk, hosted_files
+    from familiar.desk.feedback import owner_only
+    from familiar.desk.model import source
+    checked = CheckedDesk(instance)
+    public_ids = {p.stem for p in source(instance)._inside('family/feedback/inbox').glob('*.json')
+                  if not owner_only(json.loads(p.read_bytes()))} if not personal else set()
+    files = hosted_files(checked.files, personal=personal, feedback_ids=public_ids)
+    with tempfile.TemporaryDirectory(prefix='familiar-desk-upload-') as directory:
+        root = Path(directory)
+        for name, content in files.items():
+            _put(_relative(root, name), content)
+        checked.check()
+        yield root, len(files)
+
+
 @boundary('writer')
 def save_demo_site(instance, out, bundle):
     """Store a checked fictional desk without granting real private publication."""
@@ -1142,7 +1166,7 @@ def save_demo_site(instance, out, bundle):
 
 
 @boundary('writer')
-def desk_feedback(instance, identity, content):
+def desk_feedback(instance, identity, content, *, local=False):
     """Incoming narrator words are append-only raw JSON, never accepted memory."""
     import uuid
     identity = str(uuid.UUID(identity))
@@ -1155,4 +1179,4 @@ def desk_feedback(instance, identity, content):
         if path.read_bytes() != content:
             raise ValueError('Feedback collision; original narrator words were retained') from None
     from .correspondence import apply_feedback
-    apply_feedback(instance, json.loads(content))
+    apply_feedback(instance, json.loads(content), local=local)

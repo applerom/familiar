@@ -256,7 +256,7 @@ export function buildModel(data:Row,labels:Row={}){
  const reach=new Map<string,Map<string,{n:number;g:'m'|'f'|'';sure:boolean;path?:string[]}>>();
  homes.forEach(h=>{const m=new Map<string,{n:number;g:'m'|'f'|'';sure:boolean;path?:string[]}>();const q=[h];m.set(h,{n:0,g:'',sure:true});for(let i=0;i<q.length;i++){const x=q[i];const cur=m.get(x)!;parents(x).slots.forEach(s=>{if(s&&!m.has(s.id)){m.set(s.id,{n:cur.n+1,g:s.role==='отец'?'m':s.role==='мать'?'f':'',sure:cur.sure&&connectionLevel(s)<3});q.push(s.id)}})}reach.set(h,m)});
  const kinship=(id:string):Kin[]=>{const out:Kin[]=[];
-  for(const h of homes){if(h===id)continue;const r=reach.get(h)!.get(id);const hn=info[h].short.split(' ')[0];const g=info[id].isWoman?'f':info[id].unknownSurname?'':'m';
+  for(const h of homes){if(h===id)continue;const r=reach.get(h)!.get(id);const hn=info[h].short.split(' ')[0];const s=String(data.people[id]?.sex||'').toLowerCase();const g:'m'|'f'|''=s==='m'||s==='f'?s:'';
    if(r){out.push({home:hn,homeId:h,kind:'ancestor',n:r.n,g:r.g,sure:r.sure});continue}
    if(spouses(h)[0]===id)out.push({home:hn,homeId:h,kind:'spouse',n:0,g,sure:true});
    else if(children(h).includes(id))out.push({home:hn,homeId:h,kind:'child',n:0,g,sure:connectionLevel(parents(id).slots.find(s=>s?.id===h)||{})<3})}

@@ -5,6 +5,7 @@
 # - every viewer behavior authenticates before origin access; the template contains only a credential hash [review: engine lead]
 # - the bucket denies public access and both origins allow only this distribution [review: engine lead]
 # - feedback retains bounded literal text, extensible context and atomic idempotency without a cooldown [review: engine lead]
+# - shared login never identifies an owner: correspondence pages and feedback are refused or excluded [review: engine lead]
 # CHANGES_WITH:
 # - MOD-DESK-AWS (stack parameters and outputs)
 # - MOD-DESK-CLIENT (body digest and request schema)
@@ -82,6 +83,9 @@ Resources:
               'strict-transport-security': {value: 'max-age=31536000'},
               'content-type': {value: 'text/plain; charset=utf-8'}}, body: 'Authentication required'};
           }
+          if (request.uri.indexOf('/desk/correspondence.') === 0) {
+            return {statusCode: 403, statusDescription: 'Forbidden', headers: {'cache-control': {value: 'no-store'}}};
+          }
           delete request.headers.authorization;
           if (request.uri === '/') request.uri = '/index.html';
           return request;
@@ -158,6 +162,10 @@ Resources:
               return {'statusCode': status, 'headers': {'content-type': 'application/json',
                   'cache-control': 'no-store', 'x-content-type-options': 'nosniff'},
                   'body': json.dumps(value)}
+          def owner_only(data):
+              return (data.get('kind') in {'correspondence_sent', 'correspondence_reply'}
+                      or data.get('screen') == 'correspondence'
+                      or data.get('page', '').split('?', 1)[0] == '/desk/correspondence.html')
           def handler(event, context):
               method = event.get('requestContext', {}).get('http', {}).get('method')
               if event.get('rawPath') != '/api/feedback' or method not in {'POST', 'GET'}:
@@ -172,6 +180,8 @@ Resources:
                   for page in s3.get_paginator('list_objects_v2').paginate(Bucket=os.environ['BUCKET'], Prefix='feedback/inbox/'):
                       for obj in page.get('Contents', []):
                           item = json.loads(s3.get_object(Bucket=os.environ['BUCKET'], Key=obj['Key'])['Body'].read())
+                          if owner_only(item):
+                              continue
                           if item.get('id') in identities or subject and any(item.get(k) == subject for k in ('subject', 'anchor', 'question', 'ask_id', 'person')):
                               items.append({k: v for k, v in item.items() if k not in {'status', 'reply'}})
                   return reply(200, {'items': items})
@@ -210,6 +220,9 @@ Resources:
                   identity = str(uuid.UUID(data['id']))
               except (ValueError, TypeError, KeyError, UnicodeError):
                   return reply(400, {'error': 'invalid_feedback'})
+              if owner_only(data):
+                  return reply(403, {'error': 'owner_required'})
+              data = {k: v for k, v in data.items() if k in allowed or k == 'new_person'}
               key = 'feedback/inbox/' + identity + '.json'
               existing = s3.list_objects_v2(Bucket=os.environ['BUCKET'], Prefix=key, MaxKeys=1)
               if any(obj['Key'] == key for obj in existing.get('Contents', [])):

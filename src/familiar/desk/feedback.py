@@ -3,6 +3,7 @@
 # PRD_REF: docs/PRD.md#FAMILY-DESK
 # INVARIANTS:
 # - accepted feedback is bounded literal text, never a tree mutation [review: engine lead]
+# - correspondence feedback is owner-only, including remarks from its page [review: engine lead]
 # - add_person fields stay the narrator's bounded strings beside the readable text [review: engine lead]
 # CHANGES_WITH:
 # - MOD-DESK-AWS-TEMPLATE (identical envelope and subject matching; no cooldown)
@@ -36,6 +37,12 @@ def new_person_valid(data):
     return (data.get('kind') == 'add_person' and isinstance(person, dict) and not set(person) - set(NEW_PERSON)
             and all(isinstance(v, str) and len(v) <= NEW_PERSON[k] for k, v in person.items())
             and all(person.get(k, '') in v | {''} for k, v in CHOICES.items()))
+
+
+def owner_only(data):
+    return (data.get('kind') in {'correspondence_sent', 'correspondence_reply'}
+            or data.get('screen') == 'correspondence'
+            or data.get('page', '').split('?', 1)[0] == '/desk/correspondence.html')
 
 
 def validate(body):

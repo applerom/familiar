@@ -1679,8 +1679,10 @@ Local receipt applies marks through the family writer; `desk fetch-feedback`
 does the same for hosted feedback, retaining its signed login identity and raw
 envelope. Retries do not duplicate replies. Researchers rebuild the desk after
 interpretation; a hosted mark is pending locally until feedback is fetched.
-Reader roles cannot fetch this page or forge its actions; public demo exports
-omit correspondence. Familiar sends nothing and signs into no external service.
+Shared-login publication omits correspondence, its navigation and feedback data,
+and refuses its actions: a shared password identifies no owner. Personal hosted
+marks require an identified owner; loopback origin is explicit. Reader roles
+cannot fetch this page or forge its actions; public demo exports omit correspondence. Familiar sends nothing and signs into no external service.
 
 Personal AWS desks offer an owner-only Access page for issuing a tree-linked
 login, resetting its password, enabling/disabling or deleting it. Each API call

@@ -92,6 +92,7 @@
     <REL TYPE="DEPENDS_ON" TARGET="MOD-SUBJECT-CLOSURE"/>
   </MODULE_FAMILY_GATE>
   <MODULE_FAMILY_WRITER ID="MOD-FAMILY-WRITER" FILE="src/familiar/instance/writer.py" STATE="IMPLEMENTED">
+    <!-- Hosted upload stages the verified delivery, excluding correspondence for shared login; local feedback carries an explicit origin. -->
     <!-- Standalone demo storage accepts only a checked fictional desk and an empty
          destination; the ordinary private-reader publication refusal is unchanged. -->
     <!-- Dependency watches reuse the selection's record index; digest identity
@@ -146,7 +147,7 @@
   <FEATURE_CORRESPONDENCE ID="FEAT-CORRESPONDENCE" STATE="IMPLEMENTED">
     <INTENT>Agents prepare linked letters in the host's voice; people send, record replies and read what they change.</INTENT>
     <PRD_REF>docs/PRD.md#FAMILY-DESK</PRD_REF>
-    <INVARIANT REVIEW="engine lead">Literal replies and feedback principals survive; owner correspondence has a working seal and no public reader field.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Literal replies and feedback principals survive; hosted correspondence requires an identified personal owner, local origin is explicit, and no public reader field exposes it.</INVARIANT>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-CORRESPONDENCE"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-CORRESPONDENCE-VIEW"/>
   </FEATURE_CORRESPONDENCE>

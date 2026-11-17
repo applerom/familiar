@@ -3,6 +3,7 @@
 # PRD_REF: docs/PRD.md#FAMILY-DESK
 # INVARIANTS:
 # - upload follows external 401 checks and a fresh comparison with the authorized local build [review: engine lead]
+# - shared uploads contain no correspondence; personal uploads retain owner-only edge protection [review: engine lead]
 # - existing stacks must carry the exact project and family tags before any mutation [review: engine lead]
 # - retrieved feedback is append-only, byte-preserving and never automatically accepted [review: engine lead]
 # - failed provisioning retains recoverable credentials and diagnoses incomplete state before deployment use [review: engine lead]
@@ -232,12 +233,13 @@ def provision(instance):
     desk_secret(instance, state)
     return ('Desk provisioned; anonymous requests redirect to personal sign-in; create identities with desk user add'
             if login_mode == 'personal' else
-            'Desk provisioned; anonymous requests: 401; address and login saved in .secrets/desk.txt')
+            'Desk provisioned; anonymous requests: 401; address and login saved in .secrets/desk.txt; '
+            'correspondence is not published; enable personal logins to include it')
 
 
 @boundary('consume')
 def publish(instance):
-    from .build import read_build
+    from familiar.instance.writer import desk_upload
     state = secrets(instance)
     from .accounts import mode
     if state.get('login_mode', 'shared') != mode(instance):
@@ -250,15 +252,15 @@ def publish(instance):
            [('bucket', 'Bucket'), ('distribution', 'Distribution'), ('url', 'Url')]):
         raise ValueError('Desk deployment state differs from the owned stack')
     _anonymous(state)
-    actual = read_build(instance)
-    # One CLI process handles parallel uploads to this owned site prefix.
-    # Ask for edge-cache invalidation without waiting for its completion.
-    from .model import output
-    _aws(instance, 's3', 'sync', str(output(instance)), 's3://' + state['bucket'] + '/site/',
-         '--delete', '--cache-control', 'max-age=0,s-maxage=300,must-revalidate',
-         '--only-show-errors', binary=True, timeout=300)
+    # Sync only staged hosted bytes; --delete withdraws any previous owner page.
+    with desk_upload(instance, personal=mode(instance) == 'personal') as (directory, count):
+        _aws(instance, 's3', 'sync', str(directory), 's3://' + state['bucket'] + '/site/',
+             '--delete', '--cache-control', 'max-age=0,s-maxage=300,must-revalidate',
+             '--only-show-errors', binary=True, timeout=300)
     _aws(instance, 'cloudfront', 'create-invalidation', '--distribution-id', state['distribution'], '--paths', '/*')
-    return 'Desk published: ' + str(len(actual)) + ' delivery files; credentials remain in .secrets/desk.txt'
+    return ('Desk published: ' + str(count) + ' delivery files; credentials remain in .secrets/desk.txt'
+            + ('; correspondence is not published; enable personal logins to include it'
+               if mode(instance) == 'shared' else ''))
 
 
 @boundary('consume')

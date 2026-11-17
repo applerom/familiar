@@ -5,6 +5,7 @@
 # - only the family writer changes records, original replies and feedback receipts [review: engine lead]
 # - feedback is applied once with its authenticated sender; no reply accepts a tree assertion [review: engine lead]
 # - owner correspondence is a sealed working view, never a reader field [review: engine lead]
+# - hosted marks require an identified personal owner; loopback origin is explicit [review: engine lead]
 # CHANGES_WITH:
 # - MOD-FAMILY-GATE
 # - MOD-DESK-FEEDBACK
@@ -135,11 +136,12 @@ def reply_changes(instance, row, raw, *, by, at, source, meaning='', literal_tex
 
 
 @boundary('transaction')
-def apply_feedback(instance, data):
+def apply_feedback(instance, data, *, local=False):
     if data.get('kind') not in ACTIONS:
         return
     principal = data.get('sender', {})
-    if principal and principal.get('role') != 'owner':
+    from familiar.desk.accounts import mode
+    if not local and (mode(instance) != 'personal' or not principal.get('sub') or principal.get('role') != 'owner'):
         raise ValueError('Only the family owner can mark correspondence')
     from .writer import mutate
     mark = instance._inside('family/feedback/read/' + data['id'] + '.json')

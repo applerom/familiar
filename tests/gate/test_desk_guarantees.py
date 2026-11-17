@@ -6,8 +6,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from familiar.desk.model import decision, words
-from familiar.desk.show import project
+from familiar.desk.model import decision
 
 
 def test_personal_login_flow_is_not_replaced_by_ambient_requests(monkeypatch):
@@ -26,9 +25,6 @@ def test_personal_login_flow_is_not_replaced_by_ambient_requests(monkeypatch):
     assert 'cookies' not in auth['auth'](event)
     event.update(rawPath='/auth/callback', queryStringParameters={'code': 'fictional', 'state': 'wrong'})
     assert auth['auth'](event)['statusCode'] == 400
-    person = '@fictional@/;\r\n' + '\U0001f332' * 185
-    signed = auth['signed']({'person': person, 'exp': 9999999999})
-    assert auth['unsign'](signed)['person'] == person and len(signed) < 3000
     # The new identity API must refuse reader and revoked-owner cookies before mutation.
     calls = []
     attr = {'sub': 'host', 'custom:role': 'owner', 'custom:session': 'current'}
@@ -65,14 +61,3 @@ def test_desk_requires_host_decision(family):
     (family.root / 'family/desk-access.json').write_text(json.dumps(row), encoding='utf-8')
     with pytest.raises(ValueError, match='does not authorize'):
         decision(family)
-
-    family.path('versions').mkdir(exist_ok=True)
-    for person in ('accepted', 'not-in-reader'):
-        (family.path('versions') / (person + '.json')).write_text(json.dumps({'id': person,
-            'people': [person], 'title': 'D:/private/research.json',
-            'versions': [{'id': 'v', 'label': 'versions/private.json', 'weight': .4,
-                          'status': 'rejected', 'against': [{'text': 'D:/private/rejected.md'}]}]}), encoding='utf-8')
-    result, _, _ = project(family, {'people': {'accepted': {'living': False}}}, words(family)['show'] | {'tree': 'Tree'})
-    assert len(result['versions']) == 1 and not any(s in json.dumps(result) for s in (
-        'research.json', 'versions/private.json', 'rejected.md', 'not-in-reader'))
-    assert result['summary']['dropped'] == 1 and result['versions'][0]['reason'] == ''

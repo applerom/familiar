@@ -1,8 +1,4 @@
-"""One honest error and its control per data guarantee in docs/gate.md.
-
-These are representatives, not a matrix of every adapter, spelling and surface.
-Meaning, method prose and implementation structure belong to review.
-"""
+"""Representative data and privacy failures with a successful control."""
 import copy
 import json
 
@@ -94,7 +90,7 @@ def test_f4_acceptance_requires_auditable_strong_grounds(family):
     assert evaluate(family)['blocked']
 
 
-def test_f5_undeclared_reader_fields_stay_private(family):
+def test_f5_undeclared_reader_fields_stay_private(family, monkeypatch):
     from familiar.instance.publication import scan
     from familiar.instance.correspondence import change
     from familiar.rules.roles import method_root
@@ -107,6 +103,26 @@ def test_f5_undeclared_reader_fields_stay_private(family):
     assert shown['people']['p-amaro']['name'] == 'Example' and 'SECRET' not in json.dumps(shown)
     assert 'PRIVATE LETTER' not in json.dumps(publication(family, 'reader-private').data())
     assert scan(family, row, 'correspondence') == {}
+    import io, sys, textwrap
+    from pathlib import Path
+    from types import SimpleNamespace as NS
+    from familiar.desk.build import hosted_files
+    files = {'desk/correspondence.html': b'PRIVATE LETTER', 'index.html': b'<a data-desk-label="nav_correspondence" href="/desk/correspondence.html">Letters</a>', 'desk/feedback.json': b'{"private":{"reply":"PRIVATE LETTER"}}'}
+    shared = hosted_files(files, personal=False)
+    assert 'desk/correspondence.html' not in shared and b'correspondence.html' not in shared['index.html'] and b'PRIVATE LETTER' not in b''.join(shared.values())
+    assert hosted_files(files, personal=True) == files
+    private = {'kind': 'correspondence_reply', 'id': '11111111-1111-4111-8111-111111111111', 'subject': row['id'], 'text': 'PRIVATE LETTER', 'page': '/desk/correspondence.html'}
+    s3 = NS(get_paginator=lambda _: NS(paginate=lambda **kw: [{'Contents': [{'Key': 'private'}, {'Key': 'ordinary'}]}]),
+            get_object=lambda **kw: {'Body': io.BytesIO(json.dumps(private if kw['Key'] == 'private' else {'subject': row['id'], 'text': 'Ordinary'}).encode())})
+    monkeypatch.setitem(sys.modules, 'boto3', NS(client=lambda _: s3))
+    monkeypatch.setitem(sys.modules, 'botocore.exceptions', NS(ClientError=RuntimeError))
+    monkeypatch.setenv('BUCKET', 'fictional')
+    block = (Path(__file__).parents[2] / 'src/familiar/desk/aws/stack.yaml').read_text(encoding='utf-8').split('ZipFile: |', 1)[1].split('\n  FeedbackUrl:', 1)[0]
+    runtime = {}; exec(textwrap.dedent(block), runtime)
+    event = {'rawPath': '/api/feedback', 'requestContext': {'http': {'method': 'POST'}}, 'headers': {'content-type': 'application/json'}, 'body': json.dumps(private | {'sender': {'role': 'owner', 'sub': 'spoofed'}})}
+    assert runtime['handler'](event, None)['statusCode'] == 403
+    event.update(requestContext={'http': {'method': 'GET'}}, queryStringParameters={'subject': row['id']})
+    assert json.loads(runtime['handler'](event, None)['body']) == {'items': [{'subject': row['id'], 'text': 'Ordinary'}]}
 
 
 def test_f6_reconstruction_cannot_be_a_portrait(family):

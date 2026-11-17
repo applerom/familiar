@@ -5,7 +5,9 @@
 - We keep agent-prepared correspondence beside family questions: recipient, sending and reply links,
   literal letters, named senders, sending history, original replies and researcher interpretations.
   The owner has a phone-first Correspondence page with copy, sent and reply actions through feedback.
-  Agents prepare; people send. Reader roles and public reader demos cannot access correspondence.
+  Agents prepare; people send. Shared-login publication omits correspondence pages, navigation and data
+  and refuses its feedback actions; personal logins enable owner access. Reader roles and public reader
+  demos cannot access correspondence. Local loopback desks remain owner workspaces.
 - Family commands create and update drafts, mark sending, preserve replies and their original files, interpret and close
   conversations. Researchers receive the family setting `host.correspondence_voice`, with a neutral
   polite default. Outgoing living-person details remain limited to names and kinship.

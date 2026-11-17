@@ -1,9 +1,9 @@
 # START_MODULE_CONTRACT: MOD-DESK-SERVER
-# PURPOSE: Let the host review the exact publishable desk on loopback with working narrator feedback.
+# PURPOSE: Let the host use the owner desk on loopback with working narrator feedback.
 # PRD_REF: docs/PRD.md#FAMILY-DESK
 # INVARIANTS:
 # - only a decision-bound built allowlist is served, on 127.0.0.1 exclusively [review: engine lead]
-# - local feedback uses the family writer and the hosted envelope without editing accepted memory [review: engine lead]
+# - local feedback uses the family writer with explicit loopback origin, without editing accepted memory [review: engine lead]
 # - localhost aliases require their own origin; consecutive feedback has no local cooldown [review: engine lead]
 # - requested reader receipts reflect current read marks without rebuilding the checked desk [review: engine lead]
 # CHANGES_WITH:
@@ -90,12 +90,12 @@ def server(instance, port=0):
                 data = validate(self.rfile.read(size))
                 path = instance._inside('family/feedback/inbox/' + data['id'] + '.json')
                 if path.exists():
-                    desk_feedback(instance, data['id'], path.read_bytes())
+                    desk_feedback(instance, data['id'], path.read_bytes(), local=True)
                     return self.reply(200, encode({'id': data['id'], 'duplicate': True}))
                 from .model import decision
                 host = json.loads(decision(instance)[1])['host']
                 envelope = received(data) | {'sender': {'role': 'owner', 'username': host}}
-                desk_feedback(instance, data['id'], encode(envelope))
+                desk_feedback(instance, data['id'], encode(envelope), local=True)
                 return self.reply(201, encode({'id': data['id']}))
             except (ValueError, TypeError, KeyError, UnicodeError):
                 return self.reply(400, encode({'error': 'invalid_feedback'}))

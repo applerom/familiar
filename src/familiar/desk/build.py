@@ -7,6 +7,7 @@
 # - building with a different engine release warns before assembling the desk [review: engine lead]
 # - shell or desk wording updates consume the existing private reader without exporting family data again [review: engine lead]
 # - desk assembly depends on host authorization and family inputs, never a publication target [review: engine lead]
+# - shared hosted projection omits correspondence pages, navigation and receipts [review: engine lead]
 # - local serving pins verified bytes, reloads a changed build record and refuses changed file-set metadata [review: engine lead]
 # - reader receipts use only explicit status and reply fields bound to the assembled mark bytes [review: engine lead]
 # - privacy, engine version and navigation share a static lower row on every desk HTML [review: engine lead]
@@ -33,6 +34,23 @@ from familiar.instance.gate import boundary
 from familiar.instance.writer import encode
 
 from .model import decision, listing, relative, settings, sha, source, words
+
+
+def hosted_files(files, *, personal, feedback_ids=()):
+    if personal:
+        return files
+    result = {name: raw for name, raw in files.items() if not name.startswith('desk/correspondence.')}
+    for name, raw in result.items():
+        if name.endswith('.html'):
+            result[name] = re.sub(rb'<a data-desk-label="nav_correspondence"[^>]*>.*?</a>', b'', raw)
+    if 'desk/feedback.json' in result:
+        result['desk/feedback.json'] = encode({k: v for k, v in json.loads(result['desk/feedback.json']).items()
+                                               if k in feedback_ids})
+    if 'reader-manifest.json' in result:
+        manifest = json.loads(result['reader-manifest.json'])
+        manifest['files'] = {name: sha(result[name]) for name in manifest['files']}
+        result['reader-manifest.json'] = encode(manifest)
+    return result
 
 
 def shell():
@@ -119,14 +137,14 @@ def _assemble_checked(instance, active, config, delivered, watch, stamp, *, publ
         pages.update(correspondence_pages)
         inputs.update(correspondence_inputs)
         listings.update(correspondence_listings)
-    from .feedback import receipt
+    from .feedback import receipt, owner_only
     inbox = active._inside('family/feedback/inbox')
     inbox_paths, listings[inbox, '*.json'] = listing(inbox, '*.json')
     def read_mark(path):
         raw = path.read_bytes() if path.is_file() else None
         inputs[path] = raw
         return raw
-    pages['desk/feedback.json'] = encode({p.stem: receipt(active, p.stem, read_mark) for p in inbox_paths})
+    pages['desk/feedback.json'] = encode({p.stem: receipt(active, p.stem, read_mark) for p in inbox_paths if not owner_only(json.loads(p.read_bytes()))})
     for item in inbox_paths:
         inputs[item] = item.read_bytes()
     if set(files) & (set(pages) | {'desk/desk.js', 'desk/desk.css', 'desk/words.json', 'robots.txt'}):
