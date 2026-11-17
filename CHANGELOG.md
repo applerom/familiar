@@ -9,6 +9,8 @@
   the earlier state in working history without adding and merging another card.
 - We keep word-shaped identifiers in ordinary host prose. Explicit references and working
   locators are hidden with an explanation while the remaining text stays visible.
+- A family question is addressed to a role (`host`, `relative`, `narrator`) or to one person
+  of the working tree; any other addressee is refused with the known ids.
 - Stored forms are unchanged. Existing unlinked records, contribution death events and
   identity-merge workarounds remain valid without edits.
 

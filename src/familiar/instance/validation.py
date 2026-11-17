@@ -478,7 +478,9 @@ def _check(instance, selected=None):
         required(row, 'id case question our_version paper why_this_paper outcomes addressee holder_reason state', path)
         for person in row.get('people', []):
             ref(person, people, path)
-        if row.get('addressee') not in {'host', 'relative'}:
+        # An addressee is a role of the family (the host, the narrator named in the tree
+        # metadata, some relative) or one person of the working tree.
+        if row.get('addressee') not in {'host', 'relative', 'narrator'}:
             ref(row.get('addressee'), people, path)
         ref(row.get('case'), cases, path)
         question_ref(row, path)
