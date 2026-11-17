@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.31.2 — 17 November 2026
+
+- We build the independently read Russian fictional family at `/ru/` alongside the English demo in one
+  Pages run. Its public reader keeps the chapter, literal document excerpt and child question while
+  excluding living-person prose. We corrected unsupported story details and an unconfirmed imported
+  death on the tree; the original GEDCOM remains intact. Two Russian screenshots accompany the demo.
+- Static demo export accepts `--public-reader` to wrap the accepted public projection. The English
+  reader shell and accepted family inputs stay unchanged; language links appear throughout the Russian
+  desk and on the English investigation pages. Builds use disposable family copies and never attest.
+
 ## 0.31.1 — 17 November 2026
 
 - The first-family tutorial and installed journey use one fictional Bea and Ben Example family, with

@@ -1,0 +1,19 @@
+{
+  "_about": "Invented host decision for the fictional Russian demonstration; no real family data.",
+  "schema_version": 1,
+  "family_id": "russian-invented-week",
+  "host": "Fictional demonstration host",
+  "recipient": "Visitors to the fictional demonstration",
+  "decided_at": "2026-11-17",
+  "reason": "Show the accepted public reader and investigation of an invented family; feedback is disabled.",
+  "projection": "reader-private",
+  "dataset": "accepted-family-reader",
+  "pages": [
+    "reader",
+    "journal",
+    "stories",
+    "cases",
+    "plan",
+    "questions"
+  ]
+}

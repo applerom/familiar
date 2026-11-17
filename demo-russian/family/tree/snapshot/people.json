@@ -132,6 +132,13 @@
             "ir-gottlieb"
           ],
           "tag": "EVENT"
+        },
+        {
+          "type": "birth",
+          "date": "1899",
+          "provenance": [
+            "spravka-emma-1994"
+          ]
         }
       ],
       "notes": []
@@ -442,20 +449,6 @@
           "place": "Norka, Saratow, Russisches Reich",
           "source_text": [
             "@S2@; MyHeritage Smart Matches; MyHeritage; PAGE: Smart Match: Gottlieb Schmidt, geb. 1899 Norka (4 Stammbäume); QUAY: 0"
-          ],
-          "status": "hypothesis"
-        },
-        {
-          "type": "death",
-          "tag": "DEAT",
-          "date": "14 FEB 1943",
-          "value": "",
-          "provenance": [
-            "export-wagner-2026-11"
-          ],
-          "place": "Krasnoturinsk, Bogoslowlag",
-          "source_text": [
-            "@S3@; Gedenkbuch Trudarmee (Teilindex, fremder Eintrag); PAGE: Gedenkbuch der Trudarmisten: Schmidt Gottlieb Johannes, 1899; QUAY: 1"
           ],
           "status": "hypothesis"
         }

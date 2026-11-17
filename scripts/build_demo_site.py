@@ -1,10 +1,38 @@
 """Build the fictional public desk through the installed engine commands."""
 import argparse
+import html
 import os
 import shutil
 import subprocess
 import tempfile
 from pathlib import Path
+
+
+def language_link(out, href, label, *, investigation_only=False):
+    """Keep language navigation outside the accepted reader's data and shell."""
+    for path in out.rglob('*.html'):
+        if investigation_only and path.relative_to(out).as_posix() not in {
+                'desk/progress.html', 'desk/questions.html'}:
+            continue
+        text = path.read_text(encoding='utf-8')
+        link = ('<a class="demo-language" href="' + html.escape(href, quote=True)
+                + '" style="display:inline-flex;align-items:center;min-height:44px;'
+                + 'font-size:13px;color:var(--act);white-space:nowrap">'
+                + html.escape(label) + '</a>')
+        text = text.replace('<span id="desk-feedback-entry"></span>',
+                            '<span id="desk-feedback-entry">' + link + '</span>')
+        path.write_text(text, encoding='utf-8', newline='')
+
+
+def build_family(root, family, out, environment, *, public_reader=False):
+    command = [shutil.which('familiar') or 'familiar', '--root', str(family)]
+    # Acceptance is committed family data; builds never create reader verdicts.
+    with tempfile.TemporaryDirectory(prefix='familiar-demo-reader-') as directory:
+        subprocess.run(command + ['reader', 'export', '--output', directory], cwd=root,
+                       check=True, timeout=600, env=environment)
+    subprocess.run(command + ['desk', 'export-demo', '--output', str(out)]
+                   + (['--public-reader'] if public_reader else []), cwd=root,
+                   check=True, timeout=600, env=environment)
 
 
 def main():
@@ -13,15 +41,21 @@ def main():
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     out = args.out.resolve()
-    command = [shutil.which('familiar') or 'familiar', '--root', str(root / 'demo')]
     environment = dict(os.environ, PYTHONUTF8='1')
-    # Exercise the same public export advertised to a new user. Acceptance is
-    # committed demo data; a build never invents or refreshes reader attestations.
-    with tempfile.TemporaryDirectory(prefix='familiar-demo-reader-') as directory:
-        subprocess.run(command + ['reader', 'export', '--output', directory], cwd=root,
-                       check=True, timeout=600, env=environment)
-    subprocess.run(command + ['desk', 'export-demo', '--output', str(out)], cwd=root,
-                   check=True, timeout=600, env=environment)
+    # Build disposable copies, leaving the independently read source families alone.
+    with tempfile.TemporaryDirectory(prefix='familiar-demo-families-') as directory:
+        temporary = Path(directory)
+        for name, source, destination in (
+                ('en', root / 'demo', out),
+                ('ru', root / 'demo-russian' / 'family', out / 'ru')):
+            family = temporary / name
+            shutil.copytree(source, family, ignore=shutil.ignore_patterns(
+                '.secrets', '.build', 'build-cache', 'snapshots', 'export', '__pycache__'))
+            build_family(root, family, destination, environment, public_reader=name == 'ru')
+    # The English reader HTML and its accepted bytes stay unchanged. Its
+    # investigation is a derived page, so the reciprocal link belongs there.
+    language_link(out, 'ru/', 'По-русски', investigation_only=True)
+    language_link(out / 'ru', '../', 'English')
 
 
 if __name__ == '__main__':

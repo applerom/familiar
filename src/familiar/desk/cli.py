@@ -28,6 +28,8 @@ def register(commands):
     local.set_defaults(run=execute)
     demo = actions.add_parser('export-demo', help='Export a fictional desk as a standalone static site')
     demo.add_argument('--output', required=True, type=Path)
+    demo.add_argument('--public-reader', action='store_true',
+                      help='Use the accepted public reader, excluding living-person prose')
     demo.set_defaults(run=execute)
     users = actions.add_parser('user', help='Host-managed personal Cognito logins')
     user_actions = users.add_subparsers(dest='user_action', required=True)
@@ -58,7 +60,7 @@ def execute(args):
             serve(instance, args.port)
         elif args.desk_action == 'export-demo':
             from .build import export_demo
-            print(f'Demo exported: {export_demo(instance, args.output)} delivery files')
+            print(f'Demo exported: {export_demo(instance, args.output, public_reader=args.public_reader)} delivery files')
         elif args.desk_action == 'build':
             from .build import build
             print(f'Desk built: {build(instance)} delivery files')

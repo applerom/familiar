@@ -13,6 +13,7 @@
 # - every screen consumes the same available reader links and investigation entry [review: browser walk]
 # - reader and supplemental pages use one packaged page-top component with reserved control slots [review: browser walk]
 # - fictional demo exports use portable links and omit server-backed editing controls [review: engine lead]
+# - public-reader demos consume the permission-filtered, independently read seal instead of the host-private projection [review: engine lead]
 # CHANGES_WITH:
 # - MOD-READER-SERVER (packaged shell manifest)
 # - MOD-FAMILY-WRITER (checked reader consumption and desk output)
@@ -86,10 +87,11 @@ def assemble(instance):
     return _assemble_checked(instance, active, config, delivered, watch, stamp)
 
 
-def _assemble_checked(instance, active, config, delivered, watch, stamp):
+def _assemble_checked(instance, active, config, delivered, watch, stamp, *, public_reader=False):
     bundle = json.loads(delivered['bundle.json'])
-    if bundle.get('state') != 'host-private':
-        raise ValueError('desk requires a checked host-private reader generation')
+    expected = 'clean' if public_reader else 'host-private'
+    if bundle.get('state') != expected:
+        raise ValueError(f'desk requires a checked {expected} reader generation')
     delivery = {name: delivered[name] for name in bundle['files']}
     path, raw = decision(instance)
     w = words(instance)
@@ -281,13 +283,26 @@ def build(instance):
 
 
 @boundary('consume')
-def export_demo(instance, out):
+def export_demo(instance, out, *, public_reader=False):
     """A portable, read-only desk for an explicitly fictional family only."""
     if instance.config.get('family', {}).get('fictional') is not True:
         raise ValueError('Static demo export requires family.fictional = true')
     from familiar.instance.gate import publication
-    publication(instance, 'reader').check(instance)
-    bundle = assemble(instance)
+    checked = publication(instance, 'reader')
+    checked.check(instance)
+    if public_reader:
+        from familiar.instance.writer import InputWatch
+        decision(instance)
+        active = source(instance)
+        if active.id != instance.id or active.root != instance.root:
+            raise ValueError('Public demo reader must use its own family root')
+        watch = InputWatch(active)
+        stamp = watch.stamp()
+        checked.check(active)
+        bundle = _assemble_checked(instance, active, settings(instance), checked.files(),
+                                   watch, stamp, public_reader=True)
+    else:
+        bundle = assemble(instance)
     files = bundle.files
     # Personal desk scripts require a feedback/auth server. The public demo has
     # neither; retain only the reader, investigation and their static navigation.
@@ -320,8 +335,10 @@ def export_demo(instance, out):
             text = re.sub(r'(<head\b[^>]*>)', r'\1' + head, text, count=1)
         else:
             text = re.sub(r'(<html\b[^>]*>)', r'\1<head>' + head + '</head>', text, count=1)
+        notice = ('Вымышленная семья · показ' if public_reader and instance.source_language == 'ru'
+                  else 'Fictional family · demonstration')
         text = re.sub(r'(<span class="desk-private-label">).*?(</span>)',
-                      r'\1Fictional family · demonstration\2', text)
+                      lambda m: m[1] + notice + m[2], text)
         text = re.sub(r'<form\b[^>]*class="desk-answer".*?</form>', '', text, flags=re.DOTALL)
         files[name] = text.encode('utf-8')
     # This is a derived display, not a reader generation to be consumed again.

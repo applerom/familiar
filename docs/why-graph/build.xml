@@ -107,6 +107,7 @@
   <MODULE_DESK_ACCOUNTS ID="MOD-DESK-ACCOUNTS" FILE="src/familiar/desk/accounts.py" STATE="IMPLEMENTED"/>
   <MODULE_DESK_ACCESS ID="MOD-DESK-ACCESS" FILE="src/familiar/desk/aws/accounts-access.py" STATE="IMPLEMENTED"/>
   <MODULE_DESK_BUILD ID="MOD-DESK-BUILD" FILE="src/familiar/desk/build.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">A public-reader fictional demo wraps the accepted public projection; it never substitutes the host-private reader.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-READER-EXPORT"/>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-DESK-MODEL"/>
   </MODULE_DESK_BUILD>

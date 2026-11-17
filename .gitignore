@@ -8,7 +8,10 @@ tmp/
 .pytest_cache/
 .ruff_cache/
 
-demo-russian/family/.state/
+demo-russian/family/.state/*
+!demo-russian/family/.state/attestations.json
+!demo-russian/family/.state/CONTRACT.md
+demo-russian/family/.secrets/
 demo-russian/family/originals/
 demo-russian/results/reader-feeds/
 .check-*/
