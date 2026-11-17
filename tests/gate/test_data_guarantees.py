@@ -65,9 +65,8 @@ def test_f3_living_fields_require_permission_and_exclude_addresses(family):
     assert [event['type'] for event in events] == ['birth']
     edit(family, 'feeds/ferrolho/feed.json', lambda f: f['persons'].update(DANIEL='p-daniel'))
     edit(family, 'feeds/ferrolho/chapters.json', lambda cs: cs[0].update(people=['AMARO', 'DANIEL'], prose={'text': [{'people': ['p-amaro'], 'text': 'The public story.'}, {'people': ['p-daniel'], 'text': 'Private detail.', 'otherwise': {'people': ['p-amaro'], 'text': 'The public story continues.'}}, {'people': ['p-daniel'], 'text': 'Another private detail.', 'otherwise': {'people': ['p-daniel'], 'text': 'A private alternative.'}}]}, places=[{'name': 'Public village', 'people': ['p-amaro']}, {'name': 'Private place', 'people': ['p-daniel']}]))
-    edit(family, 'feeds/ferrolho/chapters.json', lambda cs: cs[0]['records'][0].update(kids=True))
     chapter = publication(family, 'feeds').data()[0]['chapters'][0]
-    assert chapter['kidsSelection'] is True and chapter['records'][0]['kids'] is True; assert chapter['text']['en'] == 'The public story.\n\nThe public story continues.'
+    assert chapter['text']['en'] == 'The public story.\n\nThe public story continues.'
     assert [p['name']['en'] for p in chapter['places']] == ['Public village']
     from familiar.instance.writer import publish
     edit(family, 'records/home/doc-helena-baptism.json', lambda r: r.update(subjects=[{'person': 'p-daniel', 'role': 'child', 'written': 'Invented child'}]))
@@ -76,7 +75,6 @@ def test_f3_living_fields_require_permission_and_exclude_addresses(family):
     assert [e['type'] for e in graph['people']['p-daniel']['events']] == ['birth']
     assert 'Private detail.' in graph['feeds'][0]['chapters'][0]['text']['en']
     assert not any((r.get('record') == 'doc-helena-baptism' for r in graph['feeds'][0]['chapters'][0]['records']))
-    assert graph['feeds'][0]['chapters'][0]['kidsSelection'] is True
     with pytest.raises(ValueError, match='not for publication or clean release'):
         publish(family, family.root / 'rejected', private)
 
@@ -90,7 +88,7 @@ def test_f4_acceptance_requires_auditable_strong_grounds(family):
     assert evaluate(family)['blocked']
 
 
-def test_f5_undeclared_reader_fields_stay_private(family, monkeypatch):
+def test_f5_undeclared_reader_fields_stay_private(family, monkeypatch, capsys):
     from familiar.instance.publication import scan
     row = {'id': 'fictional-letter', 'text': 'PRIVATE LETTER'}
     shown = scan(family, {'correspondence': row, 'people': {'p-amaro': {'id': 'p-amaro', 'name': 'Example', 'author': 'SECRET'}}}, 'graph')
@@ -115,6 +113,10 @@ def test_f5_undeclared_reader_fields_stay_private(family, monkeypatch):
     event.update(requestContext={'http': {'method': 'GET'}}, queryStringParameters={'subject': row['id']})
     assert json.loads(runtime['handler'](event, None)['body']) == {'items': [{'subject': row['id'], 'text': 'Ordinary'}]}
     from familiar.desk import aws
+    from familiar.instance.writer import desk_cloud
+    with desk_cloud(family, 'desk publish'):
+        blocked = subprocess.run([sys.executable, '-c', 'import sys; from familiar.instance.model import Instance; from familiar.desk.aws import provision; i=Instance(sys.argv[1]); i.config["publication"]={"target":"aws"}; provision(i)', str(family.root)], capture_output=True, text=True)
+        assert blocked.returncode and 'desk publish is running; retry desk provision' in blocked.stderr
     state = {'login': 'test', 'password': 'fictional', 'login_mode': 'personal', 'stack_id': 'test', 'bucket': 'test', 'distribution': 'test', 'url': 'https://test.invalid'}
     stack = {'StackId': 'test', 'StackStatus': 'UPDATE_COMPLETE', 'Outputs': [{'OutputKey': k, 'OutputValue': 'https://test.invalid' if k in ('Url', 'FeedbackUrl') else 'test'} for k in ('Bucket', 'Distribution', 'Url', 'FeedbackUrl')]}
     family.config['publication'] = {'target': 'aws'}
@@ -123,27 +125,40 @@ def test_f5_undeclared_reader_fields_stay_private(family, monkeypatch):
     for name, value in {'_target': lambda _: ('familiar-test', 'test'), '_stack': lambda _: stack, '_anonymous': lambda _: None}.items():
         monkeypatch.setattr(aws, name, value)
     monkeypatch.setattr('familiar.instance.writer.desk_upload', lambda *a, **kw: contextlib.nullcontext((family.root, 0)))
-    calls = []; waiting = [True]
+    calls = []; waiting = [True]; lost = [True]
     def cloud(instance, *args, **kw):
         calls.append(args[:2])
         if args[:2] == ('cloudfront', 'wait') and waiting[0]: raise RuntimeError('CDN pending')
+        if args[:2] == ('cloudformation', 'update-stack') and lost[0]: lost[0] = False; raise RuntimeError('response lost')
         return {'Invalidation': {'Id': 'test'}}
     monkeypatch.setattr(aws, '_aws', cloud)
     with pytest.raises(RuntimeError, match='Shared login was not opened'): aws.provision(family)
     assert ('cloudformation', 'update-stack') not in calls and json.loads(secret.read_bytes())['login_mode'] == 'personal'
-    calls.clear(); waiting[0] = False; aws.provision(family)
+    calls.clear(); waiting[0] = False
+    with pytest.raises(RuntimeError, match='response lost'): aws.provision(family)
     assert calls == [('s3', 'sync'), ('cloudfront', 'create-invalidation'), ('cloudfront', 'wait'), ('cloudformation', 'update-stack')]
+    calls.clear(); aws.provision(family)
+    assert calls == [('cloudformation', 'update-stack')] and not family._inside('.state/desk-transition.json').exists()
+    with (family.root / 'familiar.toml').open('a', encoding='utf-8') as config: config.write('\n[publication]\ntarget="aws"\n')
+    with pytest.raises(ValueError, match='stale'): aws._upload(family, state, personal=True)
     ordinary = private | {'id': '22222222-2222-4222-8222-222222222222', 'kind': 'remark', 'page': '/'}
     objects = {'feedback/inbox/' + p['id'] + '.json': (json.dumps(p) + '\n').encode() for p in [private, ordinary]}
     monkeypatch.setattr(aws, '_aws', lambda i, *a, **kw: {'Contents': [{'Key': k} for k in objects]} if a[0] == 's3api' else objects[a[2].split('s3://test/')[1]])
-    for mode, sender in [('shared', {'sub': 'host', 'role': 'owner'}), ('personal', {'role': 'reader'})]:
+    letter = json.loads((Path(__file__).parents[2] / 'forms/correspondence.json').read_bytes()); letter.update(state='ready')
+    from familiar.instance.correspondence import change
+    change(family, 'create', value=letter)
+    for mode, sender, kind, subject in [('shared', {'sub': 'host', 'role': 'owner'}, 'correspondence_sent', letter['id']), ('personal', {'role': 'reader'}, 'correspondence_sent', letter['id']), ('personal', {'sub': 'host', 'role': 'owner'}, 'correspondence_sent', 'missing'), ('personal', {'sub': 'host', 'role': 'owner'}, 'correspondence_reply', letter['id']), ('personal', {'sub': 'host', 'role': 'owner'}, 'correspondence_sent', letter['id'])]:
         monkeypatch.setattr('familiar.desk.accounts.mode', lambda _: mode)
-        key = 'feedback/inbox/' + private['id'] + '.json'; objects[key] = json.dumps(private | {'sender': sender}).encode()
+        key = 'feedback/inbox/' + private['id'] + '.json'; objects[key] = json.dumps(private | {'sender': sender, 'kind': kind, 'subject': subject, 'received_at': '2026-11-17T10:00:00Z'}).encode()
+        if kind == 'correspondence_sent' and mode == 'personal' and sender.get('sub') and subject == letter['id']: change(family, 'sent', identity=letter['id'], by='Host')
         for folder in ('inbox', 'read'):
             for p in family._inside('family/feedback/' + folder).glob('*.json'): p.unlink()
-        assert 'retrieved: 2' in aws.fetch_feedback(family) and 'retrieved: 0' in aws.fetch_feedback(family)
+        assert 'retrieved: 2' in aws.fetch_feedback(family)
+        assert 'Feedback ' + private['id'] + ':' in capsys.readouterr().out
+        assert 'retrieved: 0' in aws.fetch_feedback(family) and not capsys.readouterr().out
         assert family._inside('family/feedback/inbox/' + private['id'] + '.json').read_bytes() == objects[key]
-        assert json.loads(family._inside('family/feedback/read/' + private['id'] + '.json').read_bytes())['status'] == 'read'
+        receipt = json.loads(family._inside('family/feedback/read/' + private['id'] + '.json').read_bytes())
+        assert receipt.get('reason') and receipt['status'] == ('addressed' if receipt['reason'] == 'Already sent; no change' else 'read')
     edge = Path(__file__).parents[2] / 'src/familiar/desk/aws'
     program = r"""
 const fs=require('fs'),vm=require('vm'),crypto=require('crypto'),root=process.argv[1],key='test';

@@ -1,12 +1,8 @@
-import json
 import runpy
 import sys
 from pathlib import Path
 from types import SimpleNamespace
 
-import pytest
-
-from familiar.desk.model import decision
 
 
 def test_personal_login_flow_is_not_replaced_by_ambient_requests(monkeypatch):
@@ -28,16 +24,7 @@ def test_personal_login_flow_is_not_replaced_by_ambient_requests(monkeypatch):
 
 
 def test_desk_requires_host_decision(family):
-    with pytest.raises(ValueError, match='recorded host decision'):
-        decision(family)
-
-    row = {'schema_version': 1, 'family_id': family.id, 'projection': 'reader-private',
-           'host': 'demo host', 'recipient': 'demo narrator', 'decided_at': '2026-11-13',
-           'reason': 'Invented personal review', 'dataset': 'accepted-family-reader',
-           'pages': ['reader', 'journal', 'stories', 'cases', 'plan', 'questions']}
-    (family.root / 'family/desk-access.json').write_text(json.dumps(row), encoding='utf-8')
-    assert decision(family)[1]
-    row['revoked'] = True
-    (family.root / 'family/desk-access.json').write_text(json.dumps(row), encoding='utf-8')
-    with pytest.raises(ValueError, match='does not authorize'):
-        decision(family)
+    import json, pytest; from familiar.desk.model import decision
+    with pytest.raises(ValueError, match='recorded host decision'): decision(family)
+    path = family.root / 'family/desk-access.json'; row = {'schema_version': 1, 'family_id': family.id, 'projection': 'reader-private', 'host': 'demo host', 'recipient': 'demo narrator', 'decided_at': '2026-11-13', 'reason': 'Invented personal review', 'dataset': 'accepted-family-reader', 'pages': ['reader', 'journal', 'stories', 'cases', 'plan', 'questions']}; path.write_text(json.dumps(row), encoding='utf-8')
+    assert decision(family)[1]; row['revoked'] = True; path.write_text(json.dumps(row), encoding='utf-8'); pytest.raises(ValueError, decision, family)

@@ -8,6 +8,7 @@
 # - shell or desk wording updates consume the existing private reader without exporting family data again [review: engine lead]
 # - desk assembly depends on host authorization and family inputs, never a publication target [review: engine lead]
 # - shared hosted projection omits correspondence pages, navigation and receipts [review: engine lead]
+# - personal staging also removes correspondence receipts from the common feedback file [review: engine lead]
 # - local serving pins verified bytes, reloads a changed build record and refuses changed file-set metadata [review: engine lead]
 # - reader receipts use only explicit status and reply fields bound to the assembled mark bytes [review: engine lead]
 # - privacy, engine version and navigation share a static lower row on every desk HTML [review: engine lead]
@@ -37,11 +38,10 @@ from .model import decision, listing, relative, settings, sha, source, words
 
 
 def hosted_files(files, *, personal, feedback_ids=()):
-    if personal:
-        return files
-    result = {name: raw for name, raw in files.items() if not name.startswith('desk/correspondence.')}
+    result = {name: raw for name, raw in files.items()
+              if personal or not name.startswith('desk/correspondence.')}
     for name, raw in result.items():
-        if name.endswith('.html'):
+        if not personal and name.endswith('.html'):
             result[name] = re.sub(rb'<a data-desk-label="nav_correspondence"[^>]*>.*?</a>', b'', raw)
     if 'desk/feedback.json' in result:
         result['desk/feedback.json'] = encode({k: v for k, v in json.loads(result['desk/feedback.json']).items()

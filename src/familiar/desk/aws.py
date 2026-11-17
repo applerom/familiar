@@ -7,6 +7,8 @@
 # - existing stacks must carry the exact project and family tags before any mutation [review: engine lead]
 # - retrieved feedback is append-only, byte-preserving and never automatically accepted [review: engine lead]
 # - failed provisioning retains recoverable credentials and diagnoses incomplete state before deployment use [review: engine lead]
+# - cloud mutations share a crash-released family lock; login transitions resume from non-data state [review: engine lead]
+# - personal uploads recheck the current stack and external gate after staging, immediately before sync [review: engine lead]
 # CHANGES_WITH:
 # - MOD-DESK-AWS-TEMPLATE (logical outputs)
 # - MOD-FAMILY-WRITER (secrets and feedback inbox)
@@ -22,11 +24,24 @@ import time
 import urllib.error
 import urllib.request
 import uuid
+from functools import wraps
 from importlib.resources import files as package_files
 
 from familiar.instance.gate import boundary
 
 from .model import publication, secret_path, secrets
+
+
+def cloud_command(function):
+    @wraps(function)
+    def locked(instance, *args, **kwargs):
+        from familiar.instance.writer import desk_cloud
+        publication(instance)  # Refuse an unselected target before even creating a lock.
+        command = 'desk ' + ('user ' + args[0].user_action if function.__name__ == 'execute'
+                             else function.__name__.replace('_', '-'))
+        with desk_cloud(instance, command):
+            return function(instance, *args, **kwargs)
+    return locked
 
 
 def _aws(instance, *args, binary=False, missing=False, timeout=55):
@@ -130,8 +145,9 @@ def _anonymous(state):
 
 
 @boundary('consume')
+@cloud_command
 def provision(instance):
-    from familiar.instance.writer import desk_secret
+    from familiar.instance.writer import desk_secret, desk_transition
     from .accounts import mode
     login_mode = mode(instance)
     stack_name, family = _target(instance)
@@ -151,8 +167,24 @@ def provision(instance):
                          'restore its private state backup; refusing to adopt it')
     if before and state.get('stack_id') != before['StackId']:
         raise ValueError('Desk stack identity changed; refusing mutation')
+    journal = instance._inside('.state/desk-transition.json')
+    transition = json.loads(journal.read_bytes()) if journal.exists() else None
+    resuming = transition is not None
+    if transition:
+        if not before or transition['stack_id'] != before['StackId']:
+            raise ValueError('Desk transition stack identity changed; refusing mutation')
+        if transition['to'] != login_mode:
+            raise ValueError('Resume desk provision with publication.login=' + transition['to']
+                             + ' before choosing another login mode')
+        print('Resuming desk login transition; reconciling the owned stack and external gate', flush=True)
+    elif before and state.get('login_mode', 'shared') != login_mode:
+        transition = {'stack_id': before['StackId'], 'from': state.get('login_mode', 'shared'),
+                      'to': login_mode, 'stage': 'withdrawing'}
+        desk_transition(instance, transition)
+    switched = (transition and transition['stage'] == 'updating'
+                and bool(_outputs(before).get('UserPool')) == (login_mode == 'personal'))
     if before and login_mode == 'shared' and (state.get('login_mode') == 'personal'
-                                              or _outputs(before).get('UserPool')):
+                                              or _outputs(before).get('UserPool')) and not switched:
         if before['StackStatus'].endswith('_IN_PROGRESS'):
             raise ValueError('Wait for the personal stack deployment, then rerun desk provision')
         outputs = _outputs(before)
@@ -167,6 +199,9 @@ def provision(instance):
         except (ValueError, RuntimeError) as error:
             raise RuntimeError('Shared login was not opened. Run desk build, then rerun desk provision; '
                                'wait for CDN invalidation to complete. ' + str(error)) from error
+    if transition:
+        transition['stage'] = 'updating'
+        desk_transition(instance, transition)  # Persist intent before an accepted-but-lost response.
     auth_hash = hashlib.sha256(_authorization(state).encode()).hexdigest()
     template = package_files('familiar.desk').joinpath('aws', 'stack.yaml')
     operation = 'update-stack' if before else 'create-stack'
@@ -247,13 +282,16 @@ def provision(instance):
             time.sleep(15)
     state['anonymous_gate_verified'] = True
     desk_secret(instance, state)
-    return ('Desk provisioned; anonymous requests redirect to personal sign-in; create identities with desk user add'
+    desk_transition(instance, None)
+    return ('Desk login transition resumed and completed. ' if resuming else '') + (
+            'Desk provisioned; anonymous requests redirect to personal sign-in; create identities with desk user add'
             if login_mode == 'personal' else
             'Desk provisioned; anonymous requests: 401; address and login saved in .secrets/desk.txt; '
             'correspondence is not published; enable personal logins to include it')
 
 
 @boundary('consume')
+@cloud_command
 def publish(instance):
     state = secrets(instance)
     from .accounts import mode
@@ -277,6 +315,20 @@ def _upload(instance, state, *, personal):
     from familiar.instance.writer import desk_upload
     # Sync only staged hosted bytes; --delete withdraws any previous owner page.
     with desk_upload(instance, personal=personal) as (directory, count):
+        if personal:
+            from familiar.instance.model import Instance
+            from .accounts import mode
+            fresh = Instance(instance.root)
+            current = _stack(fresh)
+            latest = secrets(fresh)
+            if (mode(fresh) != 'personal' or latest.get('login_mode') != 'personal'
+                    or not current or current['StackId'] != state['stack_id']
+                    or current['StackStatus'] not in {'CREATE_COMPLETE', 'UPDATE_COMPLETE'}
+                    or not _outputs(current).get('UserPool')
+                    or any(_outputs(current).get(v) != state.get(k) for k, v in
+                           [('bucket', 'Bucket'), ('distribution', 'Distribution'), ('url', 'Url')])):
+                raise ValueError('Personal upload is stale; run desk provision, then desk build and desk publish')
+            _anonymous(latest)  # After staging, immediately before sending any owner bytes.
         _aws(instance, 's3', 'sync', str(directory), 's3://' + state['bucket'] + '/site/',
              '--delete', '--cache-control', 'max-age=0,s-maxage=300,must-revalidate',
              '--only-show-errors', binary=True, timeout=300)
@@ -308,6 +360,7 @@ def verify(instance):
 
 
 @boundary('consume')
+@cloud_command
 def fetch_feedback(instance):
     from familiar.instance.writer import desk_feedback
     state = secrets(instance)
@@ -332,14 +385,19 @@ def fetch_feedback(instance):
         if destination.exists():
             if destination.read_bytes() != content:
                 raise ValueError('Feedback id collision; local and remote copies retained')
-            desk_feedback(instance, identity, content)
+            reason = desk_feedback(instance, identity, content)
+            if reason:
+                print(f'Feedback {identity}: {reason}')
             continue
-        desk_feedback(instance, identity, content)
+        reason = desk_feedback(instance, identity, content)
+        if reason:
+            print(f'Feedback {identity}: {reason}')
         saved += 1
     return f'Feedback retrieved: {saved}; original remote objects retained; no memory accepted'
 
 
 @boundary('consume')
+@cloud_command
 def delete_stack(instance):
     """An explicit host operation, confined to this desk's tagged stack."""
     state = secrets(instance)

@@ -11,6 +11,7 @@
 # - private diagnostics cannot alias declared family inputs [review: engine lead]
 # - release provenance is stored only under the instance's work directory [review: engine lead]
 # - competing publishers refuse clearly and can retry without corrupting generations [review: engine lead]
+# - desk cloud locks are kernel-owned; transition intent is atomic non-data bookkeeping under .state [review: engine lead]
 # - generated output is withdrawn on a living correction despite ordinary consent [review: engine lead]
 # - desk cache integrity and metadata-bound media reuse are checked here; a cache never supplies public publication authority [test: tests/journeys/test_installed_engine.py::test_installed_engine]
 # - build-local input projections bind file identity and metadata; referenced paths are resolved again by each dependency check [review: engine lead]
@@ -988,6 +989,50 @@ def desk_private(instance, name, value):
     return path
 
 
+@contextmanager
+def desk_cloud(instance, command):
+    """One foreground cloud operation per family; kernel locks die with the process."""
+    path = instance._inside('.state/desk-cloud.lock')
+    path.parent.mkdir(parents=True, exist_ok=True)
+    # Keep the inode: unlinking a released lock permits two different lock owners.
+    with path.open('a+b') as stream:
+        stream.seek(0)
+        try:
+            if os.name == 'nt':
+                import msvcrt
+                msvcrt.locking(stream.fileno(), msvcrt.LK_NBLCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            stream.seek(1)
+            active = stream.read().decode('utf-8', errors='replace').strip() or 'desk cloud command'
+            raise RuntimeError(f'{active} is running; retry {command} after it finishes') from None
+        try:
+            stream.seek(1)
+            stream.truncate()
+            stream.write(command.encode('utf-8'))
+            stream.flush()
+            yield
+        finally:
+            stream.seek(0)
+            if os.name == 'nt':
+                msvcrt.locking(stream.fileno(), msvcrt.LK_UNLCK, 1)
+            else:
+                fcntl.flock(stream, fcntl.LOCK_UN)
+
+
+def desk_transition(instance, value):
+    """Resumable deployment bookkeeping, not a stored family data form."""
+    path = instance._inside('.state/desk-transition.json')
+    if value is None:
+        path.unlink(missing_ok=True)
+    else:
+        temporary = path.with_suffix('.tmp')
+        _put(temporary, encode(value))
+        os.replace(temporary, path)
+
+
 def _coverage_inputs(instance):
     """Name, size and time of every file the host-private coverage block reads."""
     paths = set()
@@ -1133,7 +1178,7 @@ def desk_upload(instance, *, personal):
     from familiar.desk.model import source
     checked = CheckedDesk(instance)
     public_ids = {p.stem for p in source(instance)._inside('family/feedback/inbox').glob('*.json')
-                  if not owner_only(json.loads(p.read_bytes()))} if not personal else set()
+                  if not owner_only(json.loads(p.read_bytes()))}
     files = hosted_files(checked.files, personal=personal, feedback_ids=public_ids)
     with tempfile.TemporaryDirectory(prefix='familiar-desk-upload-') as directory:
         root = Path(directory)
@@ -1179,4 +1224,4 @@ def desk_feedback(instance, identity, content, *, local=False):
         if path.read_bytes() != content:
             raise ValueError('Feedback collision; original narrator words were retained') from None
     from .correspondence import apply_feedback
-    apply_feedback(instance, json.loads(content), local=local)
+    return apply_feedback(instance, json.loads(content), local=local)

@@ -3,6 +3,7 @@
 # PRD_REF: docs/PRD.md#FAMILY-DESK
 # INVARIANTS:
 # - every identity mutation verifies the exact tagged stack and pool before use [review: engine lead]
+# - host CLI identity operations share the family's cloud-command lock [review: engine lead]
 # - temporary passwords travel through a private CLI input file and ignored writer storage only [review: engine lead]
 # - temporary passwords are plain to read and type (login + birth year, else this year); first sign-in replaces them [review: engine lead]
 # - disabling, removal and reset revoke edge sessions before changing Cognito [review: engine lead]
@@ -21,6 +22,7 @@ from importlib.resources import files
 from familiar.instance.gate import boundary
 
 from .model import publication
+from .aws import cloud_command
 
 
 def mode(instance):
@@ -200,6 +202,7 @@ def _private_call(instance, operation, payload):
 
 
 @boundary('consume')
+@cloud_command
 def execute(instance, args):
     from familiar.instance.writer import desk_private
     from .aws import _aws

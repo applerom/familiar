@@ -3,7 +3,7 @@
 # PRD_REF: docs/PRD.md#FAMILY-DESK
 # INVARIANTS:
 # - only the family writer changes records, original replies and feedback receipts [review: engine lead]
-# - feedback applies once with an owner; unauthorized actions are receipted without blocking intake [review: engine lead]
+# - feedback applies once with an owner; inapplicable actions are receipted with a reason and never block intake [review: engine lead]
 # - owner correspondence is a sealed working view, never a reader field [review: engine lead]
 # - hosted marks require an identified personal owner; loopback origin is explicit [review: engine lead]
 # CHANGES_WITH:
@@ -145,25 +145,40 @@ def apply_feedback(instance, data, *, local=False):
         return
     principal = data.get('sender') or {}
     from familiar.desk.accounts import mode
+    receipt = {'status': 'read', 'reply': '', 'correspondence': data.get('subject'),
+               'at': data.get('received_at')}
+    reason = None
     if not local and (mode(instance) != 'personal' or not isinstance(principal, dict)
-                      or not principal.get('sub') or principal.get('role') != 'owner'):
-        mutate(instance, {mark: {'status': 'read', 'reply': '',
-                                'correspondence': data.get('subject'),
-                                'at': data.get('received_at')}})
-        return
-    path, row = record(instance, data.get('subject'))
-    by = principal.get('username') or row['sender']['name']
-    at = data['received_at']
+                      or not isinstance(principal.get('sub'), str) or not principal['sub'].strip()
+                      or principal.get('role') != 'owner'):
+        reason = 'Not applied: correspondence requires a personal owner login'
+    principal = principal if isinstance(principal, dict) else {}
     changes = {}
-    if data['kind'] == 'correspondence_sent':
-        sent(row, by, at, principal=principal, feedback=data['id'])
-    else:
-        changes.update(reply_changes(instance, row, data['text'].encode('utf-8'),
-            by=row['recipient'], at=at, source=row.get('follow_up') or row['destination'],
-            received_by=principal, feedback=data['id']))
-    changes.update({path: row, mark: {'status': 'addressed', 'reply': '', 'at': at,
-                                     'correspondence': row['id']}})
+    if reason is None:
+        try:
+            path, row = record(instance, data.get('subject'))
+            by = principal.get('username') or row['sender']['name']
+            at = data['received_at']
+            if data['kind'] == 'correspondence_sent' and row.get('sent'):
+                reason = 'Already sent; no change'
+            elif data['kind'] == 'correspondence_sent':
+                sent(row, by, at, principal=principal, feedback=data['id'])
+            else:
+                changes.update(reply_changes(instance, row, data['text'].encode('utf-8'),
+                    by=row['recipient'], at=at, source=row.get('follow_up') or row['destination'],
+                    received_by=principal, feedback=data['id']))
+            validate(row)
+            receipt['status'] = 'addressed'
+            if reason is None:
+                changes[path] = row
+        except (ValueError, TypeError, KeyError) as error:
+            changes.clear()
+            reason = 'Not applied: ' + ' '.join(str(error).split())
+    if reason:
+        receipt['reason'] = reason
+    changes[mark] = receipt
     mutate(instance, changes)
+    return reason
 
 
 @boundary('transaction')

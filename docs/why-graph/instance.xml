@@ -152,7 +152,7 @@
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-CORRESPONDENCE-VIEW"/>
   </FEATURE_CORRESPONDENCE>
   <MODULE_CORRESPONDENCE ID="MOD-CORRESPONDENCE" FILE="src/familiar/instance/correspondence.py" STATE="IMPLEMENTED">
-    <INVARIANT REVIEW="engine lead">Reply references select original bytes in private snapshots; repeated feedback applies at most once; unauthorized legacy actions retain original bytes and a processed receipt without blocking later feedback.</INVARIANT>
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_f5_undeclared_reader_fields_stay_private">Reply references select original bytes in private snapshots; inapplicable actions retain bytes and a processed reason without blocking later feedback; repeated sent is a no-op.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-FAMILY-WRITER"/>
   </MODULE_CORRESPONDENCE>
   <MODULE_CORRESPONDENCE_VIEW ID="MOD-CORRESPONDENCE-VIEW" FILE="src/familiar/instance/correspondence_view.py" STATE="IMPLEMENTED">

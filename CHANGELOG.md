@@ -2,6 +2,8 @@
 
 ## 0.32.0 — 17 November 2026
 
+- We serialize family cloud commands, recheck personal entry immediately before upload, resume interrupted
+  login transitions from non-data `.state` bookkeeping, and receipt inapplicable actions without blocking feedback.
 - We keep agent-prepared correspondence beside family questions: recipient, sending and reply links,
   literal letters, named senders, sending history, original replies and researcher interpretations.
   The owner has a phone-first Correspondence page with copy, sent and reply actions through feedback.
