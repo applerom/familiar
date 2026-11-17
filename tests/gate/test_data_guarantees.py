@@ -96,8 +96,17 @@ def test_f4_acceptance_requires_auditable_strong_grounds(family):
 
 def test_f5_undeclared_reader_fields_stay_private(family):
     from familiar.instance.publication import scan
-    shown = scan(family, {'people': {'p-amaro': {'id': 'p-amaro', 'name': 'Example', 'author': 'SECRET'}}}, 'graph')['people']['p-amaro']
-    assert shown['name'] == 'Example' and 'author' not in shown
+    from familiar.instance.correspondence import change
+    from familiar.rules.roles import method_root
+    row = json.loads((method_root().parent / 'forms/correspondence.json').read_text(encoding='utf-8'))
+    row.update(people=['p-daniel'], state='ready', text='Daniel is my cousin. PRIVATE LETTER')
+    change(family, 'create', value=row)
+    working = publication(family, 'correspondence')
+    assert working.working and 'PRIVATE LETTER' in working.data()['text']
+    shown = scan(family, {'correspondence': row, 'people': {'p-amaro': {'id': 'p-amaro', 'name': 'Example', 'author': 'SECRET'}}}, 'graph')
+    assert shown['people']['p-amaro']['name'] == 'Example' and 'SECRET' not in json.dumps(shown)
+    assert 'PRIVATE LETTER' not in json.dumps(publication(family, 'reader-private').data())
+    assert scan(family, row, 'correspondence') == {}
 
 
 def test_f6_reconstruction_cannot_be_a_portrait(family):

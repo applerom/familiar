@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.32.0 — 17 November 2026
+
+- We keep agent-prepared correspondence beside family questions: recipient, sending and reply links,
+  literal letters, named senders, sending history, original replies and researcher interpretations.
+  The owner has a phone-first Correspondence page with copy, sent and reply actions through feedback.
+  Agents prepare; people send. Reader roles and public reader demos cannot access correspondence.
+- Family commands create and update drafts, mark sending, preserve replies and their original files, interpret and close
+  conversations. Researchers receive the family setting `host.correspondence_voice`, with a neutral
+  polite default. Outgoing living-person details remain limited to names and kinship.
+- This is a new optional stored form; there are no prior correspondence records to carry over.
+
 ## 0.31.3 — 17 November 2026
 
 - We resolve sources across contributions in the same family, including mutual references, without

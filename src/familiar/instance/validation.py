@@ -20,9 +20,11 @@
 # - MOD-INSTANCE-RESEARCH-FORMS
 # - MOD-SEARCH-LEDGER (ledger findings)
 # :END_MODULE_CONTRACT
+import hashlib
 import json
 import math
 import re
+import unicodedata
 
 from .gate import boundary
 from .research_forms import request_storage_errors
@@ -467,6 +469,33 @@ def _check(instance, selected=None):
         if row.get('state') == 'answered':
             required(row, 'answer', path)
             ref(row.get('answer'), answers, path)
+    from .correspondence import validate as validate_correspondence
+    for path, row in rows('correspondence'):
+        if not chosen(path):
+            continue
+        try:
+            validate_correspondence(row)
+        except (ValueError, TypeError, KeyError) as exc:
+            fail(path, str(exc), 'instance.required-identity-privacy-fields-or-executable-collection-container')
+            continue
+        if path.stem != row['id']:
+            fail(path, 'correspondence id differs from filename', 'instance.required-identity-privacy-fields-or-executable-collection')
+        for person in row['people']:
+            ref(person, people, path)
+        if row.get('question'):
+            question_ref(row, path)
+        if row.get('request'):
+            ref(row['request'], requests, path)
+        for reply in row.get('replies', []):
+            original = instance._inside(reply['original'])
+            if not original.is_relative_to(instance.path('originals')) or not original.is_file():
+                fail(path, 'reply original must exist inside originals', 'instance.required-identity-privacy-fields-or-executable-collection')
+            else:
+                raw = original.read_bytes()
+                if reply.get('original_sha256') and hashlib.sha256(raw).hexdigest() != reply['original_sha256']:
+                    fail(path, 'reply original bytes changed', 'instance.required-identity-privacy-fields-or-executable-collection')
+                if not reply.get('transcript') and unicodedata.normalize('NFC', raw.decode('utf-8-sig')) != reply['text']:
+                    fail(path, 'reply differs from literal original', 'instance.required-identity-privacy-fields-or-executable-collection')
     for path, row in rows('answers'):
         if not chosen(path):
             continue

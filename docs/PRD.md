@@ -1649,6 +1649,39 @@ attestations across different projections or permissions.
 ## Private narrator desk
 <!-- PRD_ANCHOR: FAMILY-DESK -->
 
+The owner's Correspondence page keeps prepared letters beside family questions.
+`family/correspondence` (or `paths.correspondence`) stores recipient, channel
+(`forum`, `archive`, `message`, `relative`), destination email/HTTP(S) URL, reply
+URL, recipient language, literal text, person/question/request references and a
+host or named relative as sender. States are `draft`, `ready`, `sent`, `answered`,
+`closed`; sending records who and when. Replies preserve literal text, author,
+date, origin, original UTF-8 bytes and the researcher's interpretation.
+An interpretation is research advice; it never changes the tree automatically.
+We add an optional form without changing existing stored forms or migrating data.
+
+`research form correspondence` supplies a fictional example. Under
+`family correspondence`, use `create FILE`, `update ID PATCH`, `sent ID --by NAME`,
+`reply ID --text TEXT` (or `--file UTF8_FILE`) `--by NAME --source ORIGIN`,
+`interpret ID --reply 1 --meaning TEXT`, `close ID`, or `--text` to list open work.
+For a binary original, combine `--file FILE --text LITERAL_TRANSCRIPT`; we retain
+the original and its digest, marking the supplied text as a transcript rather
+than claiming that the engine read the file.
+`--at` records a known sending/reply date; without it the current UTC time is used.
+Updates change draft/ready letter fields; sent text and literal replies remain history.
+Researchers receive `"host.correspondence_voice"` from the family's `[settings]`;
+the default is neutral and polite. They review outgoing living-person prose with
+the same rules as family letters: names and kinship only.
+
+The phone page shows Send, Waiting for a reply and Replies in one column.
+Copy preserves the complete prepared text; destination and reply links open the
+host's own mail or website. Sent and reply actions use the existing feedback inbox.
+Local receipt applies marks through the family writer; `desk fetch-feedback`
+does the same for hosted feedback, retaining its signed login identity and raw
+envelope. Retries do not duplicate replies. Researchers rebuild the desk after
+interpretation; a hosted mark is pending locally until feedback is fetched.
+Reader roles cannot fetch this page or forge its actions; public demo exports
+omit correspondence. Familiar sends nothing and signs into no external service.
+
 Personal AWS desks offer an owner-only Access page for issuing a tree-linked
 login, resetting its password, enabling/disabling or deleting it. Each API call
 verifies the signed owner cookie against current Cognito attributes and KVS.

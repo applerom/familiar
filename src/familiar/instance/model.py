@@ -31,6 +31,7 @@ DEFAULTS = {
     "evidence": "tree/evidence.json", "contributions": "tree/contributions",
     "identity_decisions": "tree/identity-decisions.json", "cases": "cases",
     "versions": "versions", "questions": "family/questions", "answers": "family/answers",
+    "correspondence": "family/correspondence",
     "memory": "family/memory", "research_permission": "family/research-permission.json",
     "privacy": "family/privacy.json", "archive_rights": "family/archive-rights.json", "variant_overrides": "family/variants.json",
     "feeds": "feeds", "edition": "edition/cards.json", "gallery": "edition/gallery.json",

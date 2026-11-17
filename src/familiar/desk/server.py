@@ -90,8 +90,12 @@ def server(instance, port=0):
                 data = validate(self.rfile.read(size))
                 path = instance._inside('family/feedback/inbox/' + data['id'] + '.json')
                 if path.exists():
+                    desk_feedback(instance, data['id'], path.read_bytes())
                     return self.reply(200, encode({'id': data['id'], 'duplicate': True}))
-                desk_feedback(instance, data['id'], encode(received(data)))
+                from .model import decision
+                host = json.loads(decision(instance)[1])['host']
+                envelope = received(data) | {'sender': {'role': 'owner', 'username': host}}
+                desk_feedback(instance, data['id'], encode(envelope))
                 return self.reply(201, encode({'id': data['id']}))
             except (ValueError, TypeError, KeyError, UnicodeError):
                 return self.reply(400, encode({'error': 'invalid_feedback'}))

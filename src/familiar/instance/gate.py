@@ -54,7 +54,7 @@ def boundary(kind):
                 before = fingerprints(instance)
             working_tree = (kind == 'working' or (kind == 'tree-view' and kwargs.get('view') == 'working') or
                             kwargs.get('host_private') is True or
-                            (fn.__name__ == 'publication' and (args[0] if args else kwargs.get('kind')) in {'host', 'reader-private'}))
+                            (fn.__name__ == 'publication' and (args[0] if args else kwargs.get('kind')) in {'host', 'correspondence', 'reader-private'}))
             if kind not in {'diagnostic', 'transaction', 'writer', 'consume'} and not working_tree:
                 active = getattr(instance, 'instance', instance)
                 if not (getattr(active, '_legacy_rules', False) and 'schema_version' not in active.config):
@@ -193,7 +193,7 @@ def publication(instance, kind, feed=None, *, for_review=False, tree_enrich=None
         raise ValueError('tree_enrich must be callable and is only supported for tree publications')
     with snapshot(instance) as (active, inputs):
         private = kind == 'reader-private'
-        verdict = {'valid': True, 'state': 'host-private' if private else 'working'} if kind in {'host', 'reader-private'} else require(active)
+        verdict = {'valid': True, 'state': 'host-private' if private else 'working'} if kind in {'host', 'correspondence', 'reader-private'} else require(active)
         def original_locations(value):
             if isinstance(value, dict):
                 return {k: original_locations(v) for k, v in value.items()}
@@ -203,6 +203,14 @@ def publication(instance, kind, feed=None, *, for_review=False, tree_enrich=None
                 return value.replace(str(active.root), str(instance.root))
             return value
         verdict = original_locations(verdict)
+        if kind == 'correspondence':
+            from .correspondence_view import project
+            from .writer import encode
+            data = scan(active, project(active), 'correspondence-view')
+            result = _seal(inputs, {'correspondence.json': encode(data)}, data, verdict,
+                           {'state': 'working', 'kind': 'correspondence'})
+            result.check(instance)
+            return result
         if kind == 'host':
             from .host_text import _build
             from .review import _review_manifest, _review_units

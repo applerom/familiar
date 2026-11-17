@@ -1154,3 +1154,5 @@ def desk_feedback(instance, identity, content):
     except FileExistsError:
         if path.read_bytes() != content:
             raise ValueError('Feedback collision; original narrator words were retained') from None
+    from .correspondence import apply_feedback
+    apply_feedback(instance, json.loads(content))

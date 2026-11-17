@@ -305,6 +305,7 @@ def fetch_feedback(instance):
         if destination.exists():
             if destination.read_bytes() != content:
                 raise ValueError('Feedback id collision; local and remote copies retained')
+            desk_feedback(instance, identity, content)
             continue
         desk_feedback(instance, identity, content)
         saved += 1

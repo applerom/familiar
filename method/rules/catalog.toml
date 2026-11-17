@@ -25,6 +25,16 @@
 # =====================================================================
 
 [[rule]]
+id = "CRAFT-CORRESPONDENCE"
+kind = "craft"
+statement = "Keep drafts, sending marks and literal replies in family correspondence, linked to questions. Write in the recipient language and the host correspondence voice; the agent prepares and the human sends. Outgoing text about living people contains only names and kinship, just like family letters; review the complete text before making it ready."
+roles = ["researcher", "lead"]
+serves = "UC-RESEARCH"
+check = "review:second-look"
+mode = "advise"
+reads = ["host.correspondence_voice"]
+
+[[rule]]
 id = "CRAFT-RESEARCH-BEFORE-TEXT"
 kind = "craft"
 statement = "Before the scenario, collect the whole line with siblings, a table of each person's age in the main years of the region, what lay within a day's travel by year, and how each step of a fate was actually done (papers, fares, prices, conscription)."

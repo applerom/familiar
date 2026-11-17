@@ -113,6 +113,12 @@ def _assemble_checked(instance, active, config, delivered, watch, stamp, *, publ
     from .show import page as show_page
     pages['desk/progress.html'] = show_page(active, w, 'desk/journal.html' in pages)
     pages['desk/questions.html'] = pages['desk/progress.html']
+    if not public_reader:
+        from .correspondence import project as project_correspondence
+        correspondence_pages, correspondence_inputs, correspondence_listings = project_correspondence(active, w)
+        pages.update(correspondence_pages)
+        inputs.update(correspondence_inputs)
+        listings.update(correspondence_listings)
     from .feedback import receipt
     inbox = active._inside('family/feedback/inbox')
     inbox_paths, listings[inbox, '*.json'] = listing(inbox, '*.json')
@@ -128,7 +134,7 @@ def _assemble_checked(instance, active, config, delivered, watch, stamp, *, publ
     files.update(pages)
     assets = package_files('familiar.desk').joinpath('assets')
     files.update({'desk/' + name: assets.joinpath(name).read_bytes()
-                  for name in ('desk.js', 'desk.css', 'session.js', 'show.js', 'show.css', 'tree-add.js', 'tree-add.css', 'access.js', 'access.css')})
+                  for name in ('desk.js', 'desk.css', 'session.js', 'show.js', 'show.css', 'tree-add.js', 'tree-add.css', 'access.js', 'access.css', 'correspondence.js', 'correspondence.css')})
     files['desk/access.html'] = assets.joinpath('access.html').read_bytes()
     files['desk/words.json'] = encode(w | {'languages': {lang: words(instance, lang)
         for lang in instance.languages}, 'engine_version': __version__, 'build': build_id,
@@ -150,6 +156,8 @@ def _assemble_checked(instance, active, config, delivered, watch, stamp, *, publ
            or any(i.get('asset') for i in p.get('illustrations', [])) for p in people):
         navigation.append(('nav_photos', '/#view=photos'))
     navigation.append(('nav_progress', '/desk/progress.html'))
+    if not public_reader:
+        navigation.append(('nav_correspondence', '/desk/correspondence.html'))
     links = ''.join('<a data-desk-label="' + label + '" href="' + href + '">'
                     + html.escape(w[label]) + '</a>' for label, href in navigation)
     banner = (styles + '<footer id="desk-footer"><aside id="desk-notice" role="note"><span class="desk-private-label">' + html.escape(w['private_notice']) + '</span>'
@@ -307,7 +315,8 @@ def export_demo(instance, out, *, public_reader=False):
     # Personal desk scripts require a feedback/auth server. The public demo has
     # neither; retain only the reader, investigation and their static navigation.
     omitted = {'desk/desk.js', 'desk/session.js', 'desk/tree-add.js', 'desk/tree-add.css',
-               'desk/access.html', 'desk/access.js', 'desk/access.css', 'desk/feedback.json'}
+               'desk/access.html', 'desk/access.js', 'desk/access.css', 'desk/feedback.json',
+               'desk/correspondence.html', 'desk/correspondence.js', 'desk/correspondence.css'}
     for name in omitted:
         files.pop(name, None)
     def links(value, key=''):
@@ -323,6 +332,7 @@ def export_demo(instance, out, *, public_reader=False):
         if not name.endswith('.html'):
             continue
         text = raw.decode('utf-8')
+        text = re.sub(r'<a data-desk-label="nav_correspondence"[^>]*>.*?</a>', '', text)
         text = re.sub(r'<script\b[^>]*src="/(' + '|'.join(re.escape(n) for n in omitted)
                       + r')"[^>]*></script>', '', text)
         text = re.sub(r'<link\b[^>]*href="/desk/tree-add.css"[^>]*>', '', text)

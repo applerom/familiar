@@ -143,4 +143,18 @@
     <REL TYPE="DEPENDS_ON" TARGET="MOD-OUTPUT-REVIEW"/>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-PUBLICATION"/>
   </MODULE_HOST_PAGES>
+  <FEATURE_CORRESPONDENCE ID="FEAT-CORRESPONDENCE" STATE="IMPLEMENTED">
+    <INTENT>Agents prepare linked letters in the host's voice; people send, record replies and read what they change.</INTENT>
+    <PRD_REF>docs/PRD.md#FAMILY-DESK</PRD_REF>
+    <INVARIANT REVIEW="engine lead">Literal replies and feedback principals survive; owner correspondence has a working seal and no public reader field.</INVARIANT>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-CORRESPONDENCE"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-CORRESPONDENCE-VIEW"/>
+  </FEATURE_CORRESPONDENCE>
+  <MODULE_CORRESPONDENCE ID="MOD-CORRESPONDENCE" FILE="src/familiar/instance/correspondence.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Reply references select original bytes in private snapshots; repeated feedback applies at most once.</INVARIANT>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-FAMILY-WRITER"/>
+  </MODULE_CORRESPONDENCE>
+  <MODULE_CORRESPONDENCE_VIEW ID="MOD-CORRESPONDENCE-VIEW" FILE="src/familiar/instance/correspondence_view.py" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-PUBLICATION"/>
+  </MODULE_CORRESPONDENCE_VIEW>
 </Why_Graph_Shard>

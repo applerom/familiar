@@ -1,8 +1,8 @@
 # START_MODULE_CONTRACT: MOD-HOST-CLI
-# PURPOSE: Give the family five read-only text commands without exposing the engine's storage vocabulary.
+# PURPOSE: Give the family private text views and human-sent correspondence commands.
 # PRD_REF: docs/PRD.md#USE-CASES
 # INVARIANTS:
-# - all host commands deliver a sealed publication without modifying the family [review: engine lead]
+# - host text views deliver a sealed publication; correspondence edits use the writer [review: engine lead]
 # - requests in the mistaken default folder cannot yield a silent empty request list [review: engine lead]
 # CHANGES_WITH:
 # - MOD-FAMILY-GATE (declared host publication view)
@@ -17,6 +17,8 @@ from .model import Instance
 def register(commands):
     family = commands.add_parser('family', help='Read requests, next steps and a family summary as plain text')
     actions = family.add_subparsers(dest='host_view', required=True)
+    from .correspondence import register as correspondence_commands
+    correspondence_commands(actions)
     for name, help_text in (
         ('requests', 'Letters ready for the host to forward to relatives'),
         ('summary', 'What rests on papers, memory and open questions'),

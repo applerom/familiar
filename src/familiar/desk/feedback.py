@@ -53,12 +53,16 @@ def validate(body):
         raise ValueError('invalid_feedback')
     if not new_person_valid(data):
         raise ValueError('invalid_feedback')
+    from familiar.instance.correspondence import ACTIONS, token
+    if data['kind'] in ACTIONS:
+        token(data.get('subject'))
     data['id'] = str(uuid.UUID(data['id']))
     return data
 
 
 def received(data):
-    return data | {'schema_version': 1, 'received_at': datetime.now(UTC).isoformat()}
+    return {k: v for k, v in data.items() if k != 'sender'} | {
+        'schema_version': 1, 'received_at': datetime.now(UTC).isoformat()}
 
 
 def matches(data, subject):

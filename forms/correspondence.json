@@ -1,0 +1,17 @@
+{
+  "_about": "Save through family correspondence create FILE. This optional owner-only form lives at paths.correspondence (default family/correspondence). Agents prepare; humans send. Review outgoing prose like family requests: about living people only names and kinship. Link people, request (family question ID) and question (versions-file ID) when known; null leaves the link unassigned. Reply commands preserve original UTF-8 bytes; interpret adds research meaning without changing the literal reply.",
+  "id": "archive-bea-letter",
+  "title": "Ask about Bea's baptism register",
+  "recipient": "Fictional town archive",
+  "channel": "archive",
+  "destination": "archive@example.invalid",
+  "follow_up": "https://mail.example.invalid/",
+  "language": "en",
+  "text": "Hello,\n\nDo you hold the baptism register for the fictional village of Brookfield for 1890? I am researching my great-grandmother Bea. Please let me know the reference and how to request a copy.\n\nThank you,\nAlex",
+  "people": [],
+  "question": null,
+  "request": null,
+  "sender": {"kind": "host", "name": "Alex"},
+  "state": "draft",
+  "replies": []
+}

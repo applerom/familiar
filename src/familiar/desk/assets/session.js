@@ -7,7 +7,7 @@ window.familiarDeskIdentity.then(user => {
   if (!user) return;
   document.documentElement.dataset.deskRole = user.role;
   if (user.role === 'reader') {
-    document.querySelectorAll('[href="/desk/progress.html"]').forEach(n => n.remove());
+    document.querySelectorAll('[href="/desk/progress.html"],[href="/desk/correspondence.html"]').forEach(n => n.remove());
   }
   if (user.role === 'owner') {
     const access = document.createElement('a'); access.href = '/desk/access.html';

@@ -8,6 +8,7 @@
 # - absolute originals resolve only within the family or its host-mapped originals root [test: tests/journeys/test_installed_engine.py::test_installed_engine]
 # - build-local reference indexes reuse unchanged JSON; each check resolves distinct local paths anew [review: engine lead]
 # - only explicitly adopted research records and search files enter output snapshots and watches [review: engine lead]
+# - correspondence reply originals bind literal bytes, not existence placeholders [review: engine lead]
 # CHANGES_WITH:
 # - MOD-FAMILY-WRITER
 # - MOD-READER-ASSETS
@@ -21,7 +22,7 @@ from functools import cache
 from .subjects import normalized
 
 EXCLUDED = {'records', 'searches', 'originals', 'captures', 'imports', 'media', 'media_archive',
-            'cases', 'versions', 'questions', 'answers', 'research_permission', 'variant_overrides',
+            'cases', 'versions', 'questions', 'answers', 'correspondence', 'research_permission', 'variant_overrides',
             'working_version', 'card_reviews', 'associations'}
 
 
@@ -31,7 +32,7 @@ def _within(path, root):
     return path == root or path.startswith(root.rstrip(os.sep) + os.sep)
 
 
-def _references(path, record, derived):
+def _references(path, record, derived, *, literal_originals=False):
     refs, assets, local = set(), set(), set()
 
     def walk(value, key='', owner=False):
@@ -49,7 +50,7 @@ def _references(path, record, derived):
             if key in {'record', 'records', 'sources', 'provenance', 'intake', 'basis', 'saved'}:
                 refs.add(normalized(value))
             if not record and key in {'local', 'saved_result', 'original', 'image', 'scan'} and value and not re.match(r'(?:[a-z]+:)?//|[a-z]+://', value, re.IGNORECASE):
-                local.add((value, owner))
+                local.add((value, owner or literal_originals and key == 'original'))
             if key in {'asset', 'full', 'orig', 'originalAsset', 'cover'} and value.startswith('/') and not value.startswith('//'):
                 assets.add(value[1:])
             assets.update(re.findall(r'(?:src=["\']|\]\()/([^"\'\s)<>]+)', value))
@@ -79,6 +80,8 @@ def reference_paths(instance):
     roots = [instance.path(k) for k in ('tree_snapshot', 'tree_metadata', 'feed_graph',
         'evidence', 'contributions', 'feeds', 'edition', 'gallery', 'world_map', 'memory',
         'identity_decisions', 'privacy', 'versions', 'cases')]
+    if not getattr(instance, '_display_scope', False):
+        roots.append(instance.path('correspondence'))
     return {p for root in roots for p in ([root] if root.is_file() else root.rglob('*'))
             if p.is_file() and p.suffix in {'.json', '.jsonl'}}
 
@@ -155,8 +158,9 @@ def dependencies(instance, *, public=False, research_only=False):
     context = tuple(sorted(derived))
     def read(path, *, record=False):
         from .writer import input_projection
-        found, media, links = input_projection(path, (record, context),
-                                               lambda: _references(path, record, derived))
+        literal_originals = path.is_relative_to(instance.path('correspondence'))
+        found, media, links = input_projection(path, (record, context, literal_originals),
+            lambda: _references(path, record, derived, literal_originals=literal_originals))
         refs.update(found)
         assets.update(media)
         if not research_only:

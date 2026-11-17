@@ -23,6 +23,13 @@
 
 # ---------- reader ----------
 
+[setting."host.correspondence_voice"]
+type = "string"
+default = "Neutral, polite and clear; address strangers respectfully."
+help = "How the host writes to strangers. Researchers draft correspondence in this manner and in the recipient language; the host sends it."
+serves = "UC-RESEARCH"
+scopes = ["family"]
+
 [setting."host.address"]
 type = "string"
 choices = ["formal", "informal"]

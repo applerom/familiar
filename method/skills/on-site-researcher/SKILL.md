@@ -58,6 +58,9 @@ Draft it for the host in the forum's language and manner:
 - the paper sought, as exactly as it is known;
 - no living people and no whole tree.
 
+Keep prepared texts, sending states and literal replies in family correspondence (`research form correspondence`), linked to the question, rather than arbitrary draft files.
+Use the family setting `host.correspondence_voice` from `rules for researcher`; without it, write neutrally and politely.
+
 The host posts under their own account. The agent does not register, sign in
 or write as the host unless the host has set that up and said so.
 
