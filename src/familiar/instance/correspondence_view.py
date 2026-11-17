@@ -49,9 +49,16 @@ def project(instance):
         if title:
             context.append(title)
         sent = row.get('sent', {})
-        item = {k: prose(row[k]) for k in ('title', 'recipient', 'text')}
+        item = {k: prose(row.get(k, '')) for k in
+                ('title', 'recipient', 'text', 'subject', 'how', 'relevance', 'cost_note', 'destination')}
+        try:
+            destination_link = address(row.get('destination'), email=True)
+        except ValueError:
+            destination_link = ''  # A postal address is copyable, never an invented URL.
         item.update(id=row['id'], state=row['state'], language=row['language'],
-            destination=address(row['destination'], email=True) if row.get('destination') else '', follow_up=address(row['follow_up']) if row.get('follow_up') else '',
+            destination_link=destination_link, follow_up=address(row['follow_up']) if row.get('follow_up') else '',
+            priority=row.get('priority') or '', cost=row.get('cost') or 'unknown',
+            kind=row.get('kind') or {'archive': 'archive', 'forum': 'forum'}.get(row['channel'], 'person'),
             sender=prose(row['sender']['name']), context=' · '.join(context),
             sent_by=prose(sent.get('by', '')), sent_at=sent.get('at', ''),
             replies=[{k: prose(reply.get(k, '')) for k in ('text', 'by', 'at', 'meaning')} | {'feedback': reply.get('feedback', '')}
@@ -60,9 +67,11 @@ def project(instance):
         # auto-redaction can certify the meaning of an agent's prose.
         scan(instance, {'text': item['text'], 'people': row['people']}, 'host-text')
         projected.append(item)
-        if row['state'] != 'closed':
-            sections = [item['title'], w['to'] + ': ' + item['recipient'],
+        if row['state'] not in {'closed', 'not_needed'}:
+            sections = [item['subject'] or item['title'], w['to'] + ': ' + item['recipient'],
                 w['sender'] + ': ' + item['sender'], w['state_' + row['state']],
+                w.get('priority_' + item['priority'], w['priority_unset']),
+                w.get('cost_' + item['cost'], w['cost_unknown']), item['cost_note'], item['how'], item['relevance'],
                 row.get('destination') and w['destination'] + ': ' + row['destination'],
                 row.get('follow_up') and w['follow_up'] + ': ' + row['follow_up'],
                 item['context'] and w['about'] + ': ' + item['context'], item['text']]
@@ -74,4 +83,5 @@ def project(instance):
     text = '\n\n—\n\n'.join(letters) or w['empty']
     if data.hidden:
         text += '\n\n' + data.words('internal_notice')
+    projected.sort(key=lambda item: (bool(item['relevance']), {'first': 0, 'later': 2}.get(item['priority'], 1), item['title']))
     return {'items': projected, 'text': text}

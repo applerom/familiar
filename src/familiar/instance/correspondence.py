@@ -22,10 +22,11 @@ from urllib.parse import urlsplit
 
 from .gate import boundary
 
-STATES = {'draft', 'ready', 'sent', 'answered', 'closed'}
+STATES = {'draft', 'ready', 'sent', 'answered', 'closed', 'not_needed'}
 CHANNELS = {'forum', 'archive', 'message', 'relative'}
+PLANNING = {'priority', 'cost', 'cost_note', 'kind', 'how', 'relevance'}
 EDITABLE = {'title', 'recipient', 'channel', 'destination', 'follow_up', 'language',
-            'text', 'people', 'question', 'request', 'sender'}
+            'text', 'people', 'question', 'request', 'sender', 'subject'} | PLANNING
 ACTIONS = {'correspondence_sent', 'correspondence_reply'}
 
 
@@ -55,8 +56,6 @@ def validate(row):
             raise ValueError('Correspondence requires text: ' + key)
     if row.get('state') not in STATES or row.get('channel') not in CHANNELS:
         raise ValueError('Unknown correspondence state or channel')
-    if row.get('destination') is not None:
-        address(row['destination'], email=True)
     # Null: the answer returns to the sender's own mailbox, which is not ours to name.
     if row.get('follow_up') is not None:
         address(row['follow_up'])
@@ -192,8 +191,8 @@ def change(instance, action, *, identity=None, value=None, by=None, at=None,
         row = copy.deepcopy(value)
         row.setdefault('state', 'draft')
         row.setdefault('replies', [])
-        if row['state'] not in {'draft', 'ready'} or row['replies'] or row.get('sent'):
-            raise ValueError('Create a draft or ready letter; use sent/reply for later steps')
+        if row['state'] not in {'draft', 'ready', 'not_needed'} or row['replies'] or row.get('sent'):
+            raise ValueError('Create a draft, ready or not-needed letter; use sent/reply for history')
         validate(row)
         path = instance.path('correspondence') / (row['id'] + '.json')
         exclusive = (path,)
@@ -202,10 +201,14 @@ def change(instance, action, *, identity=None, value=None, by=None, at=None,
         if action == 'update':
             if not isinstance(value, dict) or set(value) - EDITABLE - {'state'}:
                 raise ValueError('Update only letter fields; use sent, reply, interpret or close for history')
-            if row['state'] not in {'draft', 'ready'}:
+            historical = bool(row.get('sent')) or row['state'] == 'closed'
+            if historical and set(value) - PLANNING - {'state'}:
                 raise ValueError('A sent letter is literal history; create a new letter to send again')
+            allowed_states = {'not_needed', row['state']} if historical else {'draft', 'ready', 'not_needed'}
+            if row['state'] == 'not_needed' and row.get('sent'):
+                allowed_states.add('answered' if row.get('replies') else 'sent')
             row.update(value)
-            if row['state'] not in {'draft', 'ready'}:
+            if row['state'] not in allowed_states:
                 raise ValueError('Use sent, reply or close to change the correspondence state')
         elif action == 'sent':
             sent(row, by, at or now())

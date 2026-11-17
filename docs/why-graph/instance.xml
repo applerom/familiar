@@ -169,13 +169,14 @@
     <REL TYPE="DEPENDS_ON" TARGET="MOD-PUBLICATION"/>
   </MODULE_HOST_PAGES>
   <FEATURE_CORRESPONDENCE ID="FEAT-CORRESPONDENCE" STATE="IMPLEMENTED">
-    <INTENT>Agents prepare linked letters in the host's voice; people send, record replies and read what they change.</INTENT>
+    <INTENT>Agents prepare linked letters in the host's voice; a compact mailbox shows priority, cost and relevance while people send and record replies.</INTENT>
     <PRD_REF>docs/PRD.md#FAMILY-DESK</PRD_REF>
     <INVARIANT REVIEW="engine lead">Literal replies and feedback principals survive; hosted correspondence requires an identified personal owner, local origin is explicit, and no public reader field exposes it.</INVARIANT>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-CORRESPONDENCE"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-CORRESPONDENCE-VIEW"/>
   </FEATURE_CORRESPONDENCE>
   <MODULE_CORRESPONDENCE ID="MOD-CORRESPONDENCE" FILE="src/familiar/instance/correspondence.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Planning metadata and not-needed state can change without rewriting sent text or replies.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Letters without a destination retain text and literal reply history.</INVARIANT>
     <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_f5_undeclared_reader_fields_stay_private">Reply references select original bytes in private snapshots; inapplicable actions retain bytes and a processed reason without blocking later feedback; repeated sent is a no-op.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-FAMILY-WRITER"/>

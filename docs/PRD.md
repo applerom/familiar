@@ -1676,13 +1676,21 @@ the original and its digest, marking the supplied text as a transcript rather
 than claiming that the engine read the file.
 `--at` records a known sending/reply date; without it the current UTC time is used.
 Updates change draft/ready letter fields; sent text and literal replies remain history.
+Optional `subject`, `priority` (`first`/`later`), `cost` (`free`/`paid`/`unknown`),
+`cost_note`, recipient `kind` (`archive`/`forum`/`person`/`specialist`), `how` and
+`relevance` describe the next human action. Planning metadata can change after
+sending; `state=not_needed` shelves an unnecessary letter without losing its history.
+`destination` may also be a postal address; only email and HTTP(S) destinations open links.
 Researchers receive `"host.correspondence_voice"` from the family's `[settings]`;
 the default is neutral and polite. They review outgoing living-person prose with
 the same rules as family letters: names and kinship only.
 
-The phone page shows Send, Waiting for a reply and Replies in one column.
-Copy preserves the complete prepared text; destination and reply links open the
-host's own mail or website. Sent and reply actions use the existing feedback inbox.
+The mailbox groups ready letters, awaited replies, answers and unnecessary letters,
+with recipient chips and priority ordering. Each compact row opens its letter
+inline on a phone or in a wide reading pane. Missing priority is explicit;
+relevance reasons mute letters and move them below more useful letters.
+Copy preserves the destination, subject or complete text separately, with text
+selection when the clipboard is unavailable. Sent and reply actions use the existing feedback inbox.
 Local receipt applies marks through the family writer; `desk fetch-feedback`
 does the same for hosted feedback, retaining its signed login identity and raw
 envelope. Retries do not duplicate replies. Researchers rebuild the desk after

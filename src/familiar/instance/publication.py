@@ -129,8 +129,8 @@ SCHEMAS['profile'] = fields('schema_version', 'scalar') | fields('data', 'refere
 SCHEMAS['host-text'] = fields('text') | fields('people', ['reference'])
 # A separate working seal: these fields are never added to graph/feed schemas.
 SCHEMAS['correspondence-reply'] = fields('text by at meaning') | fields('feedback', 'reference')
-SCHEMAS['correspondence-item'] = (fields('title recipient text sender context sent_by sent_at')
-    | fields('id state language destination follow_up', 'reference')
+SCHEMAS['correspondence-item'] = (fields('title subject recipient text sender context sent_by sent_at how relevance cost_note destination')
+    | fields('id state language destination_link follow_up priority cost kind', 'reference')
     | fields('replies', ['correspondence-reply']))
 SCHEMAS['correspondence-view'] = fields('text') | fields('items', ['correspondence-item'])
 SCHEMAS['record'] = fields('interest', policy='never') | fields('id', 'reference') | fields('kind fictional privacy', 'scalar') | fields('title reading') | fields('fields', 'literal') | fields('events', ['event'])
@@ -141,7 +141,7 @@ STORAGE_ONLY = {
     'case': 'id question state waiting_on story_level basis narrative outcome waiting budget second_looks',
     'search': 'interest id at by source question query hits coverage meaning strict control saved result result_state provenance candidate_forms',
     'request': 'id case question our_version paper why_this_paper outcomes addressee holder_reason state answer witness_question fallback priority asked_at answered_at paper_description look_in photograph call_as sender_name host_next',
-    'correspondence': 'id title recipient channel destination follow_up language text people question request sender state sent replies closed_at',
+    'correspondence': 'id title subject recipient channel destination follow_up language text people question request sender state sent replies closed_at priority cost cost_note kind how relevance',
     'answer': 'id request by at text', 'scenario': 'level basis through_object rows hardship_map not_taken',
     'privacy': 'closed_topics living living_rule people life_decisions',
     'attestation': 'page language reviewer author digest safety_digest inspection_digest rules verdict at stage',

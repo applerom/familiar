@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.35.0 — 17 November 2026
+
+- We turn correspondence into a mailbox: compact letter rows, status and recipient
+  groups, an inline phone letter and a wide reading pane. Copy the destination,
+  subject and text separately; people still send and record replies themselves.
+- Letters accept optional `subject`, `priority` (`first`/`later`), `cost`
+  (`free`/`paid`/`unknown`), `cost_note`, recipient `kind`, `how`, `relevance`
+  and state `not_needed` through `family correspondence create` and `update`.
+  Planning can change after sending while the sent text and replies stay literal.
+  Postal destinations are copyable text. Existing letters need no migration.
+
 ## 0.34.0 — 17 November 2026
 
 - We tell family stories about everyone, including living people and people whose
