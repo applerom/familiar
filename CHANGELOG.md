@@ -9,6 +9,8 @@
 - Family commands create and update drafts, mark sending, preserve replies and their original files, interpret and close
   conversations. Researchers receive the family setting `host.correspondence_voice`, with a neutral
   polite default. Outgoing living-person details remain limited to names and kinship.
+- A letter answered to the sender's own mailbox carries no follow-up address (`follow_up: null`); the page then
+  says the reply returns to where it was sent from. The card labels whom the letter is about.
 - This is a new optional stored form; there are no prior correspondence records to carry over.
 
 ## 0.31.3 — 17 November 2026

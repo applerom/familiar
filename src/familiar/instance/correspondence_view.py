@@ -48,7 +48,7 @@ def project(instance):
         sent = row.get('sent', {})
         item = {k: prose(row[k]) for k in ('title', 'recipient', 'text')}
         item.update(id=row['id'], state=row['state'], language=row['language'],
-            destination=address(row['destination'], email=True), follow_up=address(row['follow_up']),
+            destination=address(row['destination'], email=True), follow_up=address(row['follow_up']) if row.get('follow_up') else '',
             sender=prose(row['sender']['name']), context=' · '.join(context),
             sent_by=prose(sent.get('by', '')), sent_at=sent.get('at', ''),
             replies=[{k: prose(reply.get(k, '')) for k in ('text', 'by', 'at', 'meaning')} | {'feedback': reply.get('feedback', '')}
@@ -61,7 +61,7 @@ def project(instance):
             sections = [item['title'], w['to'] + ': ' + item['recipient'],
                 w['sender'] + ': ' + item['sender'], w['state_' + row['state']],
                 w['destination'] + ': ' + row['destination'],
-                w['follow_up'] + ': ' + row['follow_up'],
+                row.get('follow_up') and w['follow_up'] + ': ' + row['follow_up'],
                 item['context'] and w['about'] + ': ' + item['context'], item['text']]
             if sent:
                 sections.append(w['sent_info'].format(by=item['sent_by'], at=item['sent_at']))

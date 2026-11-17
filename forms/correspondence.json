@@ -1,5 +1,5 @@
 {
-  "_about": "Save through family correspondence create FILE. This optional owner-only form lives at paths.correspondence (default family/correspondence). Agents prepare; humans send. Review outgoing prose like family requests: about living people only names and kinship. Link people, request (family question ID) and question (versions-file ID) when known; null leaves the link unassigned. Reply commands preserve original UTF-8 bytes; interpret adds research meaning without changing the literal reply.",
+  "_about": "Save through family correspondence create FILE. This optional owner-only form lives at paths.correspondence (default family/correspondence). Agents prepare; humans send. Review outgoing prose like family requests: about living people only names and kinship. Link people, request (family question ID) and question (versions-file ID) when known; null leaves the link unassigned. follow_up is where the sender watches for the answer (a forum thread, a site inbox); null when the answer returns to the sender's own mailbox. Reply commands preserve original UTF-8 bytes; interpret adds research meaning without changing the literal reply.",
   "id": "archive-bea-letter",
   "title": "Ask about Bea's baptism register",
   "recipient": "Fictional town archive",

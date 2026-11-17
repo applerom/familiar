@@ -46,7 +46,7 @@ def project(instance, w):
             content += '<button type="button" data-sent>' + e(c['sent']) + '</button></div>'
         else:
             content += '<details><summary>' + e(c['letter']) + '</summary><div class="desk-prose correspondence-letter" lang="' + e(row['language']) + '">' + e(row['text']) + '</div></details>'
-        content += '<div data-follow' + (' hidden' if group == 'ready' else '') + '>' + link(row['follow_up'], c['follow_up']) + '</div>'
+        content += '<div data-follow' + (' hidden' if group == 'ready' else '') + '>' + (link(row['follow_up'], c['follow_up']) if row['follow_up'] else text(c['follow_up_own'], 'correspondence-meta')) + '</div>'
         for reply in row['replies']:
             content += '<div class="correspondence-reply" data-feedback="' + e(reply['feedback']) + '">' + text(reply['by'] + ' · ' + date(reply['at']), 'correspondence-meta')
             content += text(reply['text']) + '<h4>' + e(c['meaning']) + '</h4>'

@@ -54,7 +54,9 @@ def validate(row):
     if row.get('state') not in STATES or row.get('channel') not in CHANNELS:
         raise ValueError('Unknown correspondence state or channel')
     address(row.get('destination'), email=True)
-    address(row.get('follow_up'))
+    # Null: the answer returns to the sender's own mailbox, which is not ours to name.
+    if row.get('follow_up') is not None:
+        address(row['follow_up'])
     if not isinstance(row.get('people'), list) or any(not isinstance(p, str) for p in row['people']):
         raise ValueError('Correspondence people must be an array of person IDs')
     sender = row.get('sender')
@@ -151,7 +153,7 @@ def apply_feedback(instance, data):
         sent(row, by, at, principal=principal, feedback=data['id'])
     else:
         changes.update(reply_changes(instance, row, data['text'].encode('utf-8'),
-            by=row['recipient'], at=at, source=row['follow_up'],
+            by=row['recipient'], at=at, source=row.get('follow_up') or row['destination'],
             received_by=principal, feedback=data['id']))
     changes.update({path: row, mark: {'status': 'addressed', 'reply': '', 'at': at,
                                      'correspondence': row['id']}})
