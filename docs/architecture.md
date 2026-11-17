@@ -104,13 +104,17 @@ was adopted from other projects is recorded where it landed (`method/NOTICE.*`,
 | Family settings, languages, packs, engine pin | `<family>/familiar.toml` | plain text, versioned with the family |
 | Who may see what (privacy, consent, desk decision) | `<family>/family/` | family data, read by the gate |
 | Desk address, shared login and password, stack ids | `<family>/.secrets/desk.txt` | written by `desk provision`; git-ignored; never printed |
-| Initial passwords of personal logins | `<family>/.secrets/desk-user-<login>.json` | printed once, valid for a limited time, replaced at first sign-in |
+| First-sign-in passwords of personal logins | issued by `desk user add\|reset`: shown once and kept in `<family>/.secrets/desk-user-<login>.json`; issued on the Access page: shown once in the browser, stored nowhere locally | valid for a limited time, replaced at first sign-in |
+| Who confirmed which page, and the host's desk decisions | `<family>/.state/attestations.json` and neighbours | not derivable; `.state/` is left out of the family's version control, so it must be in the backup |
 | AWS account access | the AWS CLI's own store (profile, SSO) | the family names only the profile in `[publication]` |
 | Logins to archives and genealogy sites | the host's browser profile or the agent's environment | never in the family, never in the engine |
 | The agent's subscription | the agent's own sign-in | invisible to the engine |
 
-Back up `.secrets/` only into a private backup together with the family. A
-lost `.secrets/` means a new `desk provision`, not lost family data.
+Keep `.secrets/` and `.state/` in a private backup together with the family.
+Losing `.secrets/` loses no family data, but the engine will not adopt an
+existing AWS stack without its local state: restore the directory from the
+backup. Losing `.state/attestations.json` returns every confirmed page to
+"unread".
 
 ## Who administers relatives' access
 
@@ -135,5 +139,5 @@ site, no e-mail invitations and no roles beyond `owner` and `reader`
 memory and papers → `intake` → attributed tree → research (`records`,
 `searches`, `versions`, coverage) → stories (`feed`) → independent reading →
 `reader export` / `desk build` → local pages → optional publication.
-Originals are copied byte for byte and never rewritten; everything under
-`.state/` and every export can be rebuilt from the inputs.
+Originals are copied byte for byte and never rewritten. Builds, exports and
+caches can be rebuilt from the inputs; reading confirmations cannot.

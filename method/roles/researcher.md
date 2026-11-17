@@ -66,6 +66,7 @@ for a corpus record and cut-outs; `research form contribution.json` then
 | scene support | a scene a feed wants to tell | `research-versions` | the feed's research notes: observation, inference, objections, coverage |
 | generation review | one generation that has duplicates or gaps | `generation-review` | identity decisions, card facts, an audit for an independent refuter |
 | wide hypotheses | a load-bearing zero or a broken line, named by the lead | `wide-hypotheses` (no site work) | weighted behaviour hypotheses, traces, a test plan for a collector |
+| on-site order | open sources of the place are read and the needed book lies in a reading room | `on-site-researcher` | a draft post and an exact order for the host; returned photographs taken in as papers |
 
 The modes differ only in who asks the question. The method is the same.
 

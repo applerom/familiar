@@ -14,8 +14,10 @@ CHANGES_WITH:
 -->
 # Familiar
 
-Works with Familiar **0.30 and later 0.x**. The installed engine's own role
-sheets and skills are authoritative; this file only routes you to them.
+Checked with Familiar **0.30 and 0.31**. Commands may change in any later
+0.x release: with another version, read the entry skill shipped beside that
+release. The installed engine's own role sheets and skills are authoritative;
+this file only routes you to them.
 
 1. Run `familiar --version`. If the engine is absent, install a tagged release
    (`docs/first-family.md` in the repository). If the family's `familiar.toml`
@@ -27,8 +29,13 @@ sheets and skills are authoritative; this file only routes you to them.
    `familiar method show skill <id>` from this installed release.
 4. Read `familiar --root <family-root> rules for <role>` (add `--feed <id>`
    for feed-specific work), then inspect `instance paths` and the task's forms.
-5. Write to the family only through engine commands. Prepare inputs outside
-   the family; if a required write has no command, report that gap to the host.
+5. Take memory, papers, tables and decisions in through engine commands.
+   Inputs you author as whole files — a feed's `feed.json`, `chapters.json`
+   and `documents.json`, a versions file, the desk decision, the engine pin in
+   `familiar.toml` — are written where `instance paths` and the form say, and
+   checked at once with `instance check`. Never edit by hand what the engine
+   derives: `tree/snapshot`, `.state/`, builds and exports. If a write has
+   neither a command nor a form, report that gap to the host.
    Preserve literal sources, uncertainty and the distinction between a record,
    identity and kinship. Follow the installed role and skill for the actual work.
 

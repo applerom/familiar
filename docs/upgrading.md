@@ -14,14 +14,19 @@ This page says what you can rely on anyway.
    release changes a stored form, the same release ships the command that
    carries existing data over, and the changelog entry says so on a line that
    starts with **`Data:`**.
-2. **Everything derived can be rebuilt.** `.state/`, reader exports, desk
-   builds and caches are outputs. An upgrade may ask for a rebuild; it never
-   asks you to re-enter anything.
+2. **Everything derived can be rebuilt.** Reader exports, desk builds and
+   caches are outputs. An upgrade may ask for a rebuild; it never asks you to
+   re-enter anything. Not everything under `.state/` is derived:
+   `.state/attestations.json` records who confirmed which page, and a new
+   family's `.gitignore` leaves `.state/` out of version control. Back up the
+   whole family directory, `.state/` and `.secrets/` included.
 3. **A family is pinned to the release it was checked with.**
    `familiar.toml` carries `[engine] version = "0.MINOR.PATCH"`. A different
    installed engine is reported by `instance check` with both numbers; it is a
-   warning, because different numbers alone do not prove incompatibility. A
-   wrong data form always stops the work, whatever the numbers say.
+   warning, because different numbers alone do not prove incompatibility. An
+   accepted input in a form the engine no longer reads stops the output that
+   needs it, whatever the numbers say; working drafts and old search journals
+   may stay as findings that block nothing.
 4. **Published releases are tags.** `main` moves many times a day and may be
    between two steps of one change. A tag `vX.Y.Z` with a GitHub release is a
    state the maintainers' own families were actually running.
@@ -40,7 +45,7 @@ This page says what you can rely on anyway.
 ```sh
 familiar --version                                   # what is installed now
 familiar --root ./family instance check              # clean before you start
-# back up the family directory, or commit it in its private repository
+# back up the whole family directory (version control alone skips .state/)
 uv tool install --reinstall "familiar[images] @ git+https://github.com/applerom/familiar@vX.Y.Z"
 # read CHANGELOG.md from the pinned version up to vX.Y.Z; run every `Data:` step
 familiar --root ./family instance check              # reports pin and findings
@@ -54,8 +59,8 @@ stay on the previous tag (reinstall it; your data was not changed by the
 check) and open an issue with the finding's text, without family data.
 
 Going back is the same command with the previous tag. A carry-over step that
-rewrote stored forms is undone from your backup or your family's version
-control, which is why step three above is not optional.
+rewrote stored forms is undone from your backup, which is why the backup step
+above is not optional.
 
 ## Why not a stable 1.0 now
 

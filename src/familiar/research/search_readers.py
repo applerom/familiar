@@ -202,5 +202,5 @@ def geneteka_read(responses, params=None, final=False, known=None):
     kind = {'B': 'крещения', 'S': 'браки', 'D': 'смерти'}.get(bdm, bdm)
     head = f'# {kind}: {total}; в ответе {len(data)}'
     if marks:
-        head += f'; из них уже локально {len(marks)} (programs/reconstitution: корпус или выгрузка)'
+        head += f'; из них уже локально {len(marks)} (локальный корпус или выгрузка)'
     return 'results', total, [head] + lines

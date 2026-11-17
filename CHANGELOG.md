@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.31.0 — 17 November 2026
+
+- New method skill `on-site-researcher` and a researcher mode for it: when the open sources of a place are
+  read and the needed book lies in a reading room, find a person who works in that archive through the
+  regional forum, order by a unit, and take the returned photograph in as a paper with a reading of its
+  own. The host posts, pays and sends; a helper's "nothing found" counts only with its coverage. The forum
+  card of the Belarus and Podlasie pack describes the route as reported.
+- README names the neighbouring open projects and where Familiar stands among them, and says that the
+  maintainers also run research for families who ask.
+- Documentation corrected after an independent cold walk: reading confirmations under `.state/` are not
+  derivable and belong in the backup; a lost `.secrets/` is restored from the backup, not by a new
+  provision; which inputs an agent writes as files and which only through commands; the fonts' licence
+  beside MIT.
+
 ## 0.30.0 — 17 November 2026
 
 First public release. Install tags, not `main`; see `docs/upgrading.md` for what a release promises.

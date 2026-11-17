@@ -53,7 +53,8 @@ copy a site's text or data: describe the source in your own words and link it.
 
 ## Licence of contributions
 
-Everything in this repository is MIT. By contributing you confirm that you
-have the right to submit the material and that it is offered under MIT.
-Third-party material keeps its own notice: add it to
-`THIRD_PARTY_NOTICES.txt` or the pack's `NOTICE.md` in the same change.
+The project's own code, method and packs are MIT. By contributing you confirm
+that you have the right to submit the material and that it is offered under
+MIT. Bundled third-party material stays under its own licence — the fonts,
+for example, are under the SIL Open Font License — and keeps its notice: add
+it to `THIRD_PARTY_NOTICES.txt` or the pack's `NOTICE.md` in the same change.

@@ -11,9 +11,11 @@ security defect, whether or not it looks like a classic vulnerability.
   withheld.
 - A way around the sign-in of a published desk, or a way for a `reader` login
   to reach what only an `owner` may see.
-- A command that writes outside the chosen family root, or reads another
-  family.
-- Secrets printed to output or written outside `.secrets/`.
+- A command that writes outside the chosen family root other than to an
+  output directory the host named, or reads another family.
+- Secrets shown or stored where they were not asked for. (Handing over a
+  first-sign-in password once, on `desk user add|reset` or on the Access
+  page, is the intended behaviour.)
 
 ## How
 
