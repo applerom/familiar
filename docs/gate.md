@@ -26,8 +26,8 @@ Read this before you add a form, a reader surface, an output or a check.
 We report withheld chapter cut-outs, pictures and game evidence as private advice
 in `feed check` and `feed pages --text`, separately for the local host and readers.
 Advice names the item, protected subjects and life status, and the next action:
-clarify life status, record picture permission, or separate a deceased-only excerpt.
-Consent never releases a living person's full document. Omission remains safe and
+clarify life status or separate a deceased-only excerpt.
+A living person’s full document remains excluded. Omission remains safe and
 does not itself block a build; conflicting subjects still refuse it.
 
 A `photo-treatment` is the same real photographic frame with colour or print
@@ -42,13 +42,13 @@ and reader must verify that claim. No face transplant or blending is permitted.
 Captions identify the real original; the processed caption discloses the changes,
 and the reader opens the original through the existing pair control. A treatment
 inherits original privacy: deceased subjects follow the original's display rules;
-living or unknown subjects require recorded `pictures` permission and remain
-local to the host, excluded from reader exports and publication. Protected
+living or unknown subjects remain in the family display and are excluded
+from public reader exports. Protected
 documents remain excluded in both views. Existing stored forms are unchanged.
 
 A `photo-restoration` generates a sharp photograph from an existing real frame,
 only when every original subject is known dead. Living or unknown subjects are
-refused even in the local host display, regardless of consent. It never supplies
+refused even in the local host display, in every display. It never supplies
 a document, source, cut-out or game evidence. The original retains its own rights
 and privacy rules, and is one tap away in both the chapter and person card.
 See `forms/photo-restoration.json`: put the restoration under the original's
@@ -84,10 +84,10 @@ feeds, cases or versions adopt their research dependencies recursively; those
 records and journals must validate and remain stable throughout every output build.
 
 The reader card dictionary in PRD FORMS declares compound name, confirmation,
-retired-fact and card-status surfaces. These require a known-dead owner; status
-relationship explanations require known-dead endpoints too. Existing permissions
-do not widen these compound surfaces. Stored generations track these uses, so a
-new living/unknown assessment requires removing them before consumption.
+retired-fact and card-status surfaces. Family display includes them for everyone.
+Public output requires a known-dead owner and known-dead relationship endpoints.
+Stored public generations track these uses, so a new living/unknown assessment
+requires removing them before consumption.
 
 Private display scopes are a local delivery policy, never a narrower public
 verdict. They copy mutable forms and only referenced corpus records/captures,
@@ -103,7 +103,7 @@ owner-process exit; old unmarked system-temp copies are outside auto-cleanup.
 The gate protects a family's readers and its living members from **honest
 mistakes**: an agent that mislabels a picture, forgets a subject, copies an
 example, marks a weak version accepted; an import that brings addresses,
-undeclared private fields; a consent withdrawn after a build; two
+undeclared private fields; a life assessment changed after a build; two
 agents working at once.
 
 It is not a security boundary against:
@@ -135,12 +135,12 @@ an honest mistake gets past it is a defect of the gate.
 |---|---|---|
 | F1 | Every shown document, record, picture, cover and person resolves to a local item by its exact canonical id. Ids are compared after NFC; case, spacing and mixed-script variants are unknown ids that fail, never fuzzy matches. | 01, 10 |
 | F2 | **Subject closure.** The people an output shows are computed by the engine from structured links: chapter people, document and picture subjects, the explicit subjects of every record a document or a picture points to (including `document-scan` pictures), tree and clan members, covers, nested image variants, records behind tree sources. An author's list can add people, never remove them. | 06 |
-| F3 | **Living projection.** A person not known to be dead (unknown counts as living) projects to name and kinship. A field widens only by that person's recorded permission naming a canonical information kind. **Exclusions have no path, whatever the permission:** address-kind data (typed address or residence events, address fields); any full record whose subject closure contains a living person, and that record's descriptive strings anywhere, including tree sources; a typed text excerpt resolves its selected literal fields and their recorded subjects independently (at most a neutral citation stub); generated images with a living or child subject. | 06, 08 |
+| F3 | **Living projection.** Family display tells stories about everyone. Public output limits living and unknown people to name and kinship, without a consent widening path. In both modes, addresses and protected full documents are excluded; literal excerpts resolve their selected fields and recorded subjects independently. Real living/child photos never go to a generator; face restoration requires deceased subjects. | 06, 08 |
 | F4 | **Acceptance.** An assertion shown as accepted has a strong status, a finite weight in its declared range, sources, a basis and a decision. Contradictory flags fail. A weak version is shown only as a version. | 04 |
 | F5 | **Declared projection.** Every reader surface is declared and treated as literal Unicode text in NFC; rendering escapes text. A field without a declaration does not exist in output. Text-form lint does not refuse markup-like spellings, character references or typographic controls. | 02, 07 |
 | F6 | **Disclosure form.** A generated reconstruction never occupies a portrait or document role; a `document-scan` names its record. | 08 |
 | F7 | **Coverage form.** "Not found" carries typed coverage; zero read is an access gap, never negative evidence. | 05 |
-| F8 | **Generations.** An output is built from one snapshot and committed atomically. Its manifest records, for every shown item, the people and fields it uses and the permission each use relied on, plus digests of the safety inputs (privacy and consent, restriction lists, archive rights, life status). The checked reader refuses a generation whose uses are no longer permitted and names what must be removed. A change in any other input marks it *outdated*, not unsafe. | 06, 11 |
+| F8 | **Generations.** An output is built from one snapshot and committed atomically. Its manifest records, for every shown item, the people and fields it uses and its public exclusions, plus digests of the safety inputs (privacy, restriction lists, archive rights, life status). The checked reader refuses a generation whose uses are no longer permitted and names what must be removed. A change in any other input marks it *outdated*, not unsafe. | 06, 11 |
 | F9 | No layer, feed or exception changes a trust rule's mode. | all |
 
 ### Class R: properties of meaning. The machine helps, a reader confirms
@@ -207,7 +207,7 @@ discipline of engine code, not a trust guarantee.
 
 ## Extending
 
-- **A form.** Declare every field: shape; policy `always`, `permission:<kind>`
+- **A form.** Declare every field: shape; policy `always`, `host-private`
   or `never`; and whether it carries person references. A person reference
   feeds the subject closure. A field that can carry an address is never
   `always`; event types are a closed list with an exclusion set.
@@ -248,23 +248,15 @@ The read-only private `host` view supplies `family requests --text`, `family
 summary`, `family next`, `family confirmation` and `feed pages --text`. It uses
 an immutable snapshot, declared plain text and a final fingerprint check, but
 is not reader publication: the writer refuses its working seal. The host sees
-their own words and papers even beside unrelated publication failures. A notice
-explains what readers may receive, whose consent is needed, and the permanent
-exclusions. Host story labels concern reading of those full source bytes.
+their own words and papers even beside unrelated publication failures. The family display tells stories about everyone; documents and addresses
+remain excluded. It asks relatives about the past without requesting permission. Host story labels concern reading of those full source bytes.
 
 For readers, narrative blocks are associated with canonical people through
-chapter and feed `prose` links; unsplit text defaults to their declared people. Blocks without
-required summary permission are silently omitted, or replaced by an author's
-`otherwise` passage with its own permitted canonical subjects. Other people's
-blocks remain. Chapter kinds are authoring metadata, absent from the reader
-schema. A nested place, fact, variant, extra, link or children's object can
-declare its own people; without that declaration it inherits chapter subjects.
-The private family views count the exact omissions per person and turn them into
-a life-status question or an exact-text permission request in the family letter.
-They never grant permission. Matches of name words
-remain class-R worklist cues and never create an identity or suppress a text.
-Block attribution and literal field subject assignment are semantic judgements
-requiring R1 reading; the engine enforces the declared links, not their truth.
+chapter and feed `prose` links; unsplit text defaults to their declared people.
+The family display includes every passage. Public output silently omits blocks
+about living or unknown people, or uses an authored `otherwise` passage about
+deceased people. Nested prose inherits chapter subjects unless declared separately.
+No omissions are turned into permission requests.
 
 Life assessments use one registered horizon (default 110) for all intake kinds.
 Unknown is represented separately and is protected. Direct-generation estimates
@@ -276,7 +268,7 @@ A document `excerpt` selects exact literal record field keys with recorded
 links refuse. Its subject closure and generation uses follow only selected
 fields, and are rechecked on consumption. A full document retains all subjects
 and cannot be cleared by an author's shorter list. A selected living subject
-refuses even with broad consent. Pixel crops are not certified by this text route.
+refuses in every display. Pixel crops are not certified by this text route.
 
 The fast level has one honest-error/control check for each data guarantee F1-F9
 and one for the mechanical review binding. The full level adds the single
@@ -329,8 +321,8 @@ Publishers take an exclusive per-destination lock before generation or pointer
 changes. A second publisher receives "Publication in progress ... retry" and
 can repeat after the first finishes. A lock left by a process/OS crash requires
 host inspection and removal; automatic crash recovery is not claimed.
-Generated-image/document exclusions and used-person life/consent safety changes
-are rechecked on every checked consumption, even with broad ordinary consent.
+Generated-image/document exclusions and used-person life-status safety changes
+are rechecked on every checked consumption, in every display.
 
 Still deferred before further hardening: junction policy inside the root and
 broader diagnostic-root overlap checks. The gate is an honest-error boundary; engine structural tripwires are

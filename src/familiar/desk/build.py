@@ -15,7 +15,7 @@
 # - every screen consumes the same available reader links and investigation entry [review: browser walk]
 # - reader and supplemental pages use one packaged page-top component with reserved control slots [review: browser walk]
 # - fictional demo exports use portable links and omit server-backed editing controls [review: engine lead]
-# - public-reader demos consume the permission-filtered, independently read seal instead of the host-private projection [review: engine lead]
+# - public-reader demos consume the public, independently read seal instead of the host-private projection [review: engine lead]
 # CHANGES_WITH:
 # - MOD-READER-SERVER (packaged shell manifest)
 # - MOD-FAMILY-WRITER (checked reader consumption and desk output)

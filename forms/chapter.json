@@ -5,11 +5,6 @@
   "people": [
     "bea-subject"
   ],
-  "published_fields": {
-    "bea-subject": [
-      "name"
-    ]
-  },
   "records": [
     {
       "doc": "bea-paper",

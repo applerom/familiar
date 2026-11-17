@@ -2,7 +2,7 @@
 # PURPOSE: Assess life status consistently from dated generations and reversible family decisions.
 # PRD_REF: docs/PRD.md#TRUST
 # INVARIANTS:
-# - merges retain each participant's protection unless a canonical life decision resolves it [test: tests/gate/test_data_guarantees.py::test_f3_living_fields_require_permission_and_exclude_addresses]
+# - merges retain each participant's protection unless a canonical life decision resolves it [test: tests/gate/test_data_guarantees.py::test_f3_public_name_and_kinship_and_private_address_exclusion]
 # - a death before the person's own dated birth remains a protected conflict [review: engine lead]
 # - life declarations for merged people follow their active successors [review: engine lead]
 # - unknown status remains protected and revoking a death decision restores protection [review: engine lead]

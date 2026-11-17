@@ -32,8 +32,9 @@ invented family, in Russian, is [live here](https://applerom.github.io/familiar/
   layer for children, documents as small cut-outs with a literal reading.
 - **Pages relatives open on a phone.** A local reader and a narrator's desk;
   optionally a private site behind logins; a print book.
-- **Privacy by construction.** In what is shown to readers, living people
-  have a name and kinship and nothing else unless consent is recorded.
+- **Privacy by construction.** The family display tells stories about everyone, including
+  living people and people whose life status is unknown. Without login, outsiders
+  receive only their names and kinship.
   Addresses and documents of the living are withheld from every reader, the
   host's own private view included.
 

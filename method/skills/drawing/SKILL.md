@@ -24,7 +24,7 @@ CHANGES_WITH:
 # Drawing
 
 A drawing invents or reconstructs a scene; a `photo-treatment` processes the same real frame, with its original and explicit disclosure (`forms/photo-treatment.json`).
-For treatments, preserve subjects and dimensions; a living subject requires picture consent and local host display, never reader publication. This does not authorize sending a living photograph to a generator.
+For treatments, preserve subjects and dimensions; a living subject stays in the family display, never public output. This does not authorize sending a living photograph to a generator.
 Never transplant or blend faces; the author and reader verify unchanged features, which pixel dimensions alone cannot prove.
 
 ## Восстановление снимка

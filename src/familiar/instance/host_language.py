@@ -20,7 +20,7 @@ import re
 from datetime import date
 from string import Formatter
 
-from familiar.checks.engine import _known_people, life_status, load
+from familiar.checks.engine import _known_people, load
 
 from .publication import plain_text
 
@@ -93,9 +93,6 @@ class HostData:
         self.used_people, self.used_records = {}, set()
         self.hidden = False
         self.people = _known_people(instance)
-        privacy = load(instance.path('privacy'), {})
-        self.living = {pid for pid, p in self.people.items() if life_status(p, privacy) != 'dead'}
-        self.unknown = {pid for pid, p in self.people.items() if life_status(p, privacy) == 'unknown'}
         self.ids = set(self.people)
         self.id_locations = {pid: instance.path('tree_snapshot') / 'people.json'
                              for pid in self.people}

@@ -99,7 +99,7 @@
     <REL TYPE="DEPENDS_ON" TARGET="MOD-SUBJECT-CLOSURE"/>
   </MODULE_FAMILY_GATE>
   <MODULE_FAMILY_WRITER ID="MOD-FAMILY-WRITER" FILE="src/familiar/instance/writer.py" STATE="IMPLEMENTED">
-    <INVARIANT REVIEW="engine lead">Generation permission checks resolve merged person references.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Generation exclusions resolve merged person references.</INVARIANT>
     <!-- Hosted upload stages the verified delivery, excluding correspondence for shared login; local feedback carries an explicit origin. -->
     <!-- Standalone demo storage accepts only a checked fictional desk and an empty
          destination; the ordinary private-reader publication refusal is unchanged. -->
@@ -111,21 +111,21 @@
   <MODULE_PUBLICATION ID="MOD-PUBLICATION" FILE="src/familiar/instance/publication.py" STATE="IMPLEMENTED">
     <INVARIANT REVIEW="engine lead">Spouse union weights reach the reader unchanged.</INVARIANT>
     <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_photo_treatment_stays_local_for_living_subject">Restorations refuse living or unknown subjects everywhere and require original frames and version recipes; deceased pairs reach both views.</INVARIANT>
-    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_photo_treatment_stays_local_for_living_subject">Living photo treatments need picture permission and stay local; public generations track dead-only treatment uses.</INVARIANT>
-    <INVARIANT REVIEW="engine lead">Merged person references retain recorded privacy permissions.</INVARIANT>
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_photo_treatment_stays_local_for_living_subject">Living photo treatments stay in the family display; public generations track dead-only treatment uses.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Family display includes living and unknown people; public output retains only names and kinship.</INVARIANT>
     <!-- Plain card serialization is cheaper than reading and checking hundreds
          of cache payloads; the full declared projection is always applied. -->
     <!-- Serializer validates term declarations once; semantic worklist matches
          remain in text inspection rather than an output-discarding regex pass. -->
     <!-- TRUST-03 collects every displayed internal locator; typed references and manuscript rows remain valid. -->
-    <!-- Card surfaces and their dead-only/never policies: PRD FORMS dictionary. -->
+    <!-- Card surfaces and their public/never policies: PRD FORMS dictionary. -->
     <PRD_REF>docs/PRD.md#TRUST</PRD_REF>
     <PRD_REF>docs/PRD.md#FORMS</PRD_REF>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-SUBJECT-CLOSURE"/>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-NARRATIVE-DISCLOSURE"/>
   </MODULE_PUBLICATION>
   <MODULE_NARRATIVE_DISCLOSURE ID="MOD-NARRATIVE-DISCLOSURE" FILE="src/familiar/instance/narrative.py" STATE="IMPLEMENTED">
-    <INVARIANT REVIEW="engine lead">Merged participant permissions follow the active person.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Public exclusions follow the active person’s life classification.</INVARIANT>
   </MODULE_NARRATIVE_DISCLOSURE>
   <MODULE_SUBJECT_CLOSURE ID="MOD-SUBJECT-CLOSURE" FILE="src/familiar/instance/subjects.py" STATE="IMPLEMENTED">
     <REL TYPE="DEPENDS_ON" TARGET="MOD-PHOTO-RESTORATIONS"/>
@@ -137,12 +137,12 @@
   </MODULE_PHOTO_RESTORATIONS>
   <MODULE_OUTPUT_REVIEW ID="MOD-OUTPUT-REVIEW" FILE="src/familiar/instance/review.py" STATE="IMPLEMENTED">
     <INVARIANT REVIEW="engine lead">Media uses follow displayed records and pictures rather than withheld authoring dependencies.</INVARIANT>
-    <INVARIANT REVIEW="engine lead">Review permissions and their input digests include merged person references.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Review safety inputs and their digests include merged person references.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-SUBJECT-CLOSURE"/>
   </MODULE_OUTPUT_REVIEW>
   <MODULE_METHOD_VOCABULARY ID="MOD-METHOD-VOCABULARY" FILE="method/vocabulary.toml" STATE="IMPLEMENTED"/>
   <FEATURE_HOST_TEXT ID="FEAT-HOST-TEXT" STATE="IMPLEMENTED">
-    <INTENT>The host gets private reading, evidence and forwardable letters; exact reader omissions become counted life-status questions or permission requests in the existing family letter. Text pages and summaries distinguish current reader acceptance from separate feed review, without transferring attestations.</INTENT>
+    <INTENT>The host gets private reading, evidence and forwardable letters; family letters ask about the past without requesting permission. Text pages and summaries distinguish current reader acceptance from separate feed review, without transferring attestations.</INTENT>
     <PRD_REF>docs/PRD.md#FORMS</PRD_REF>
     <INVARIANT REVIEW="cold reviewer">Next actions distinguish empty, tree-only and accepted-material starts. Minimal and detailed letters in each shipped host language ask a witness before the guess, name one paper and purpose, and omit missing guidance.</INVARIANT>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-HOST-CLI"/>

@@ -263,16 +263,9 @@ def _inspect_family(registry, feed_ids=None):
         if isinstance(cover, dict):
             chapters = [*chapters, {'id': '__cover__', 'title': feed.get('title', ''),
                                     'text': feed.get('lead', ''), 'picture': cover,
-                                    'people': feed.get('people', []), 'more': 'Cover',
-                                    'published_fields': {}}]
+                                    'people': feed.get('people', []), 'more': 'Cover'}]
         for i, chapter in enumerate(chapters):
             scope = f'feed:{folder.name}/chapter:{i}'
-            if 'published_fields' not in chapter:
-                findings.append({'certainty': 'review', 'rule': 'TRUST-06',
-                                 'check': 'check:living-protected', 'scope': scope,
-                                 'chapter_id': chapter.get('id'), 'location': 'subjects-unknown',
-                                 'mode': 'block', 'exception': None,
-                                 'message': 'Published subject/field coverage undeclared; review prose for unlisted living people.'})
             for rule in registry.rules.values():
                 if not isinstance(rule['check'], str) or rule['check'].removeprefix('check:') not in CHECKS:
                     continue
@@ -283,7 +276,7 @@ def _inspect_family(registry, feed_ids=None):
                 coverage[-1]['checks_run'] += 1
                 ctx = Context(registry, rule, scope)
                 for location, message in _inspect(ctx, chapter, documents, pictures, instance, people):
-                    signal = (rule['kind'] != 'trust' or location.endswith(('unknown', 'subjects-unknown', 'permission-review', '.omitted')) or
+                    signal = (rule['kind'] != 'trust' or location.endswith(('unknown', 'subjects-unknown', '.omitted')) or
                               rule['check'].removeprefix('check:') == 'closed-topics-and-politics')
                     exception = (registry.text_exception(rule['id'], scope)
                                  if rule['check'] == 'check:closed-topics-and-politics'

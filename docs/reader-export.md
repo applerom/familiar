@@ -47,7 +47,8 @@ Optional `paths.world_map` declares an atlas (people, homes, places, paths; sche
 Local host view: `familiar --root FAMILY reader export --host-private --output PRIVATE-DIR`,
 then `familiar --root FAMILY reader serve --host-private --output PRIVATE-DIR`.
 Serve also creates a missing private bundle. An explicit separate output is mandatory.
-Living/unknown dates, places, facts and narrative need no consent prompts here.
+The family display tells stories about living, unknown and deceased people alike,
+including dates, places, facts, captions, games and authored cards. No permissions are requested.
 Living documents (and documents without resolved subjects), structured address
 events/fields and their repeated literal values are excluded. Unclassified addresses
 in prose still require human review. State is `host-private`, never a clean release;
@@ -72,7 +73,7 @@ snapshot, Familiar reaps only its new lease-marked directories older than one
 day whose owner PID is confirmed gone; it emits one cleanup line. Unmarked
 and legacy system-temp leftovers are deliberately untouched.
 
-`reader preview` prints what permissions currently allow readers to see, before
+`reader preview` prints the public projection, before
 independent reading. `reader preview --output NEW-DIR` saves exact review material
 and its ticket. Neither route creates a generation or authorizes publication.
 
@@ -84,13 +85,12 @@ its reading and local source link share the same exclusion. Literal text excerpt
 remain scoped to their declared fields and have no full-document link.
 
 Family editorial cards are declared by `paths.edition` (PRD FORMS). Both tree and
-reader delivery apply the same card decisions before enforcing privacy. Names
-remain available; stories and compound name/date explanations require a deceased
-owner. Existing picture consent permits only photographs on protected cards,
-never documents. All selected files must resolve locally. The edition is a
+reader delivery apply the same card decisions before enforcing privacy. The family display includes stories, photographs and compound
+name/date explanations for everyone. Public output limits living and unknown
+people to names and kinship. All selected files must resolve locally. The edition is a
 fingerprinted family input: changing it makes previous reader generations stale
 and requires reviewing the changed card bytes. It never changes research events,
-life assessments, consent or source originals.
+life assessments or source originals.
 
 `familiar --root <family> reader export --output <empty-directory>` writes only
 there. Omitting output uses `paths.export`. The destination must be disjoint from
@@ -284,7 +284,7 @@ older browsers may ignore them. Inspect the resulting PDF before printing.
 
 The factory is `gate.publication(reader|reader-private, for_review=True)`, not
 raw feed materialization. Public mode keeps the full family gate, default-deny
-projection, consent, living-document and address exclusions. Host-private mode
+projection, living-document and address exclusions. Host-private mode
 uses the same local display scope and privacy exclusions as `reader export
 --host-private`; it is labelled family-only and is no authority to publish.
 
@@ -320,7 +320,7 @@ is a registered consumption adapter: the factory owns the full gate, so the
 book wrapper does not repeat that same family verdict a third time. The result
 is a final static delivery, like paper, not a stored reader generation or a source
 for another engine output. It cannot recall already printed pages or recheck
-consent offline. Rebuild from current family inputs before a new distribution.
+family inputs offline. Rebuild from current family inputs before a new distribution.
 The source review ticket, private inputs and research record files are absent.
 
 ## Contents and language

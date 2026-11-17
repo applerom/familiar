@@ -2,10 +2,9 @@
 # PURPOSE: Declare reader fields and seal distinct public and non-publishable host-private projections.
 # PRD_REF: docs/PRD.md#FORMS
 # INVARIANTS:
-# - recorded permissions on merged ids follow the active person [review: engine lead]
 # - publication asset failures retain each unique URL across feeds [review: engine lead]
 # - both reader modes exclude protected documents using accumulated structured attachments [review: engine lead]
-# - photo treatments inherit original privacy; living treatments require local picture consent [review: engine lead]
+# - photo treatments inherit original privacy [review: engine lead]
 # - living name parts inferred by researchers are omitted from canonical names; reported kin wording remains permissible kinship [review: engine lead]
 # - the person's `coverage` (where it was looked for) is declared for the host-private reader only and is dropped from every public projection [review: engine lead]
 # - undeclared nested fields have no publication path [test: tests/gate/test_data_guarantees.py::test_f5_undeclared_reader_fields_stay_private]
@@ -18,7 +17,7 @@
 # - MOD-FAMILY-GATE
 # - MOD-FAMILY-WRITER
 # - MOD-SUBJECT-CLOSURE
-# - MOD-NARRATIVE-DISCLOSURE (quiet reader omissions and private omission accounting)
+# - MOD-NARRATIVE-DISCLOSURE (public narrative projection)
 # - MOD-TREE-SURNAMES (clan display is applied after editorial name patches)
 # - docs/PRD.md#FORMS (reader card surface dictionary and disclosure policies)
 # - docs/gate.md
@@ -94,22 +93,22 @@ SCHEMAS['world'] = fields('schema_version', 'scalar') | fields('homes', ['world-
 SCHEMAS['names'] = fields('short', 'text')
 SCHEMAS['chapter']['hardships'] = Field(['hardship'])
 SCHEMAS['feed'] = fields('title lead period line') | fields('id cover', 'reference') | fields('people', ['reference']) | fields('gens', ['gen']) | fields('chapters', ['chapter']) | fields('names', ('map', 'name-row'))
-SCHEMAS['person'] = fields('id', 'reference') | fields('sex living origin', 'scalar') | fields('name placeholder') | fields('names', ['name']) | fields('events', ['event'], 'permission:events') | fields('notes', ['note'], 'permission:notes') | fields('facts', ['fact'], 'permission:facts') | fields('summary', 'text', 'permission:summary') | fields('media', ['image'], 'permission:pictures') | fields('cardPresentation', 'card', 'permission:events')
+SCHEMAS['person'] = fields('id', 'reference') | fields('sex living origin', 'scalar') | fields('name placeholder') | fields('names', ['name']) | fields('events', ['event']) | fields('notes', ['note']) | fields('facts', ['fact']) | fields('summary', 'text') | fields('media', ['image']) | fields('cardPresentation', 'card')
 SCHEMAS['reported-kinship'] = fields('viewer', 'reference') | fields('text') | fields('sources', ['reference'])
 SCHEMAS['person']['reportedKinship'] = Field(['reported-kinship'])
 SCHEMAS['person']['treeName'] = Field()
 SCHEMAS['surname-display'] = fields('clan', 'reference') | fields('form origin') | fields('written', ['text']) | fields('children', ['reference'])
-SCHEMAS['person']['surnameDisplay'] = Field('surname-display', 'dead-only')
-SCHEMAS['person'] |= fields('namePresentation', 'name-presentation', 'dead-only') | fields('confirmation', 'confirmation', 'dead-only') | fields('retiredFacts', ['retired-fact'], 'dead-only') | fields('public_fact status', policy='dead-only') | fields('identityAliases', ['reference'], 'dead-only') | fields('living_basis author imported_context', policy='never')
+SCHEMAS['person']['surnameDisplay'] = Field('surname-display')
+SCHEMAS['person'] |= fields('namePresentation', 'name-presentation') | fields('confirmation', 'confirmation') | fields('retiredFacts', ['retired-fact']) | fields('public_fact status') | fields('identityAliases', ['reference']) | fields('living_basis author imported_context', policy='never')
 SCHEMAS['birth-guess-anchor'] = fields('id', 'reference') | fields('year guessed age offset', 'scalar')
 SCHEMAS['birth-guess'] = fields('year exact relation', 'scalar') | fields('anchors', ['birth-guess-anchor'])
-SCHEMAS['person']['birthGuess'] = Field('birth-guess', 'dead-only')
+SCHEMAS['person']['birthGuess'] = Field('birth-guess')
 # Where the person was looked for: the host-private reader only, never a public field.
 SCHEMAS['coverage-source'] = fields('title') | fields('id', 'reference') | fields('outcome last strength identified recordRead surnameSearch placeSearch planComplete missingMore', 'scalar') | fields('forms missingForms', ['text'])
 SCHEMAS['coverage-never'] = fields('title') | fields('id', 'reference')
 SCHEMAS['coverage'] = fields('searched found identified recheck neverMore', 'scalar') | fields('sources', ['coverage-source']) | fields('never', ['coverage-never'])
 SCHEMAS['person']['coverage'] = Field('coverage', 'host-private')
-SCHEMAS['person'] |= fields('story storyMore', policy='dead-only') | fields('illustrations', ['image'], 'dead-only') | fields('relationshipUncertain', 'scalar', 'dead-only')
+SCHEMAS['person'] |= fields('story storyMore') | fields('illustrations', ['image']) | fields('relationshipUncertain', 'scalar')
 SCHEMAS['image'] |= fields('sid sourceSid originalAsset', 'reference') | fields('photo', 'scalar') | fields('mentionRole basis')
 SCHEMAS['name-presentation'] = fields('display full sourceName note patronymic maidenSurname') | fields('isWoman isWife surnameUnknown maidenStatus', 'scalar') | fields('maidenSources', ['reference'])
 SCHEMAS['confirmation'] = fields('basis') | fields('level research identityAccepted', 'scalar') | fields('sources', ['reference'])
@@ -151,11 +150,8 @@ STORAGE_ONLY = {
 for name, names in STORAGE_ONLY.items():
     SCHEMAS[name] = fields(names, policy='never')
 
-INFO_FIELDS = frozenset({'name', 'kinship', 'birth', 'death', 'events', 'notes', 'facts', 'summary', 'pictures', 'sex'})
-
 EVENT_KINDS = {'BIRT': 'birth', 'DEAT': 'death', 'MARR': 'marriage',
                'RESI': 'address', 'ADDR': 'address', 'address': 'address', 'residence': 'address'}
-SAFE_EVENTS = frozenset({'birth', 'death', 'marriage', 'baptism', 'burial', 'emigration', 'immigration', 'occupation', 'education', 'military'})
 
 
 def event_kind(event):
@@ -163,11 +159,6 @@ def event_kind(event):
     if any(EVENT_KINDS.get(event.get(key), event.get(key)) == 'address' for key in ('type', 'tag')):
         return 'address'
     return EVENT_KINDS.get(value, value)
-
-
-def permitted_events(events, permission):
-    return [e for e in events if event_kind(e) in SAFE_EVENTS and
-            ('events' in permission or event_kind(e) in permission)]
 
 
 def plain_text(text):
@@ -236,16 +227,6 @@ def _project(value, shape, languages, surfaces=None, path='root'):
             for k, v in value.items() if k in schema and schema[k].policy != 'never'}
 
 
-def allowed(privacy, pid):
-    ids = [pid.get('id'), *pid.get('identityAliases', [])] if isinstance(pid, dict) else [pid]
-    rows = {p['id']: p for p in privacy.get('living', []) if isinstance(p, dict)}
-    row = next((rows[ident] for ident in ids if ident in rows), {})
-    consent = row.get('consent')
-    if not isinstance(consent, dict) or not consent.get('by') or not consent.get('at'):
-        return set()
-    return set(row.get('allowed', [])) & INFO_FIELDS
-
-
 def confirmed_name(person):
     """No inferred part of a protected person's canonical name becomes reader fact."""
     names = person.get('names', [])
@@ -277,7 +258,6 @@ def restrict_graph(instance, graph, *, host_private=False):
             # the effective assessment, including the common age horizon.
             person['living'] = False
         if life_status(known.get(pid, {'id': pid}), privacy) != 'dead':
-            permission = allowed(privacy, known.get(pid, {'id': pid}))
             # Preserve the reader's original empty containers without exposing fields.
             result = {'id': pid, 'name': confirmed_name(person), **({'placeholder': person['placeholder']} if person.get('placeholder') else {}), 'facts': [], 'events': [], 'media': []}
             first_name = next((n for n in person.get('names', []) if n), {})
@@ -285,25 +265,8 @@ def restrict_graph(instance, graph, *, host_private=False):
             result['treeName'] = ' '.join(result['name'].replace(patronymic, '').split()) if patronymic else result['name']
             if person.get('reportedKinship'):
                 result['reportedKinship'] = person['reportedKinship']
-            for key, rule in SCHEMAS['person'].items():
-                info = rule.policy.removeprefix('permission:')
-                if key in person and rule.policy.startswith('permission:') and info in permission:
-                    result[key] = person[key]
-            result['events'] = permitted_events(person.get('events', []), permission)
-            # Picture consent never releases documents in a curated gallery.
-            result['media'] = [m for m in result.get('media', []) if (m.get('photo') is True or m.get('kind') == 'family-photograph') and not m.get('record') and m.get('kind') != 'document-scan']
-            if 'cardPresentation' in result:
-                result.pop('cardPresentation')
-            card = {key: val for key, val in person.get('cardPresentation', {}).items()
-                    if key in {'birth', 'birthKind'} and ('birth' in permission or 'events' in permission) or
-                    key in {'death', 'deathKind'} and ('death' in permission or 'events' in permission)}
-            if card:
-                result['cardPresentation'] = card
-            if 'sex' in permission and 'sex' in person:
-                result['sex'] = person['sex']
             graph['people'][pid] = result
     # Card explanations can contain dates, evidence and superseded claims.
-    # Existing name/event/fact consent never grants these compound surfaces.
     statuses = graph.get('cardStatuses', {})
     for pid in list(statuses):
         if life_status(known.get(pid, {'id': pid}), privacy) != 'dead':
@@ -317,12 +280,8 @@ def restrict_graph(instance, graph, *, host_private=False):
                     for member in (edge.get(k) for k in ('from', 'to', 'parent', 'child')) if member)]
     for family in graph.get('families', []):
         members = [family.get('husband'), family.get('wife'), *family.get('children', [])]
-        if any(pid and life_status(known.get(pid, {'id': pid}), privacy) != 'dead' and
-               'events' not in allowed(privacy, known.get(pid, {'id': pid})) for pid in members):
+        if any(pid and life_status(known.get(pid, {'id': pid}), privacy) != 'dead' for pid in members):
             family['events'] = []
-            family.pop('basis', None)
-        elif any(pid and life_status(known.get(pid, {'id': pid}), privacy) != 'dead' for pid in members):
-            family['events'] = permitted_events(family.get('events', []), {'events'})
             family.pop('basis', None)
     from .subjects import closure
     for sid, source in list(graph.get('sources', {}).items()):
@@ -382,8 +341,6 @@ def scan(instance, value, shape, *, host_private=False):
             if image_subjects.records and (any(life_status(known[pid], privacy) != 'dead' for pid in subjects) or
                     any(record.get('privacy') in {'living', 'living-possible'} for record in image_subjects.records.values())):
                 raise ValueError('TRUST-06: living person document cannot be shown as a tree image')
-            if any(life_status(known[pid], privacy) != 'dead' and 'pictures' not in allowed(privacy, known.get(pid, {'id': pid})) for pid in subjects):
-                raise ValueError('TRUST-06: living picture subject lacks recorded picture permission')
             if generated(image) and (image.get('role') in {'portrait', 'document'} or image.get('is_portrait') or
                     image.get('subject_living') or image.get('subject_child') or
                     any(life_status(known[pid], privacy) != 'dead' for pid in subjects)):
@@ -413,7 +370,7 @@ def scan(instance, value, shape, *, host_private=False):
 
 
 def private_graph(instance, graph, *, host_private=True):
-    """Exclude protected documents and addresses; only the host retains private prose."""
+    """Exclude protected documents and addresses from every family display."""
     from familiar.checks.engine import _known_people, life_status, load
 
     from .subjects import closure
@@ -453,11 +410,11 @@ def private_graph(instance, graph, *, host_private=True):
         if treatment.get('kind') == 'photo-treatment':
             resolved = closure(instance, node, shape='image', people=known)
             living = [p for p in resolved.people if life_status(known[p], privacy) != 'dead']
-            if living and (not host_private or any('pictures' not in allowed(privacy, known[p]) for p in living)):
+            if living and not host_private:
                 return True
-        if key in {'media', 'illustrations', 'figures', 'picture'}:
+        if not host_private and key in {'media', 'illustrations', 'figures', 'picture'}:
             resolved = closure(instance, node, shape='image', people=known)
-            if any(life_status(known[p], privacy) != 'dead' and 'pictures' not in allowed(privacy, known[p]) for p in resolved.people):
+            if any(life_status(known[p], privacy) != 'dead' for p in resolved.people):
                 return True
         if key == 'records' or node.get('kind') == 'document-scan' or (key in {'media', 'illustrations', 'figures', 'picture'} and (node.get('record') or node.get('photo') is False)):
             return unsafe_document(node, 'document' if key == 'records' else 'image')
@@ -497,35 +454,34 @@ def media_omissions(instance, feeds):
     attribute_documents(instance, graph)
     known, privacy = _known_people(instance), load(instance.path('privacy'), {})
     rows = []
-    for private in (True, False):
-        shown = private_graph(instance, copy.deepcopy(graph), host_private=private)
-        for feed, visible_feed in zip(graph['feeds'], shown['feeds']):
-            def chapter_media(chapter, visible, cid):
-                for field in ('records', 'picture', 'figures'):
-                    items = chapter.get(field, [])
-                    items = items if isinstance(items, list) else [items]
-                    kept = visible.get(field, [])
-                    kept = kept if isinstance(kept, list) else [kept]
-                    for index, item in enumerate(items):
-                        if not item or any(all(item.get(k) == v.get(k) for k in ('asset', 'record', 'subjects', 'ours')) for v in kept):
-                            continue
-                        resolved = closure(instance, item, shape='document' if field == 'records' else 'image', people=known)
-                        subjects = [known[p].get('name', p) + ' (' + life_status(known[p], privacy) + ')'
-                                    for p in sorted(resolved.people) if life_status(known[p], privacy) != 'dead']
-                        rows.append({'feed': feed['id'], 'chapter': cid, 'view': 'host' if private else 'reader',
-                            'field': field, 'item': item.get('record') or item.get('asset') or str(index + 1),
-                            'label': item.get('title') or item.get('caption') or str(index + 1),
-                            'reason': ', '.join(subjects) or 'protected document or undeclared subjects',
-                            'action': 'document' if field == 'records' or resolved.records else 'picture'})
-                truth = chapter.get('game', {}).get('truth', {}).get('record')
-                if truth and truth != visible.get('game', {}).get('truth', {}).get('record'):
-                    cause = next((r for r in reversed(rows) if r['chapter'] == cid and r['view'] == ('host' if private else 'reader')), {})
-                    rows.append(dict(cause, feed=feed['id'], chapter=cid, view='host' if private else 'reader',
-                                     field='game', item=truth, label=cause.get('label', truth), reason=cause.get('reason', 'withheld document'), action='document'))
-                for index, extra in enumerate(chapter.get('extras', [])):
-                    chapter_media(extra, visible.get('extras', [])[index] if index < len(visible.get('extras', [])) else {}, cid)
-            for chapter, visible in zip(feed.get('chapters', []), visible_feed.get('chapters', [])):
-                chapter_media(chapter, visible, chapter['id'])
+    shown = private_graph(instance, copy.deepcopy(graph))
+    for feed, visible_feed in zip(graph['feeds'], shown['feeds']):
+        def chapter_media(chapter, visible, cid):
+            for field in ('records', 'picture', 'figures'):
+                items = chapter.get(field, [])
+                items = items if isinstance(items, list) else [items]
+                kept = visible.get(field, [])
+                kept = kept if isinstance(kept, list) else [kept]
+                for index, item in enumerate(items):
+                    if not item or any(all(item.get(k) == v.get(k) for k in ('asset', 'record', 'subjects', 'ours')) for v in kept):
+                        continue
+                    resolved = closure(instance, item, shape='document' if field == 'records' else 'image', people=known)
+                    subjects = [known[p].get('name', p) + ' (' + life_status(known[p], privacy) + ')'
+                                for p in sorted(resolved.people) if life_status(known[p], privacy) != 'dead']
+                    rows.append({'feed': feed['id'], 'chapter': cid, 'view': 'host',
+                        'field': field, 'item': item.get('record') or item.get('asset') or str(index + 1),
+                        'label': item.get('title') or item.get('caption') or str(index + 1),
+                        'reason': ', '.join(subjects) or 'protected document or undeclared subjects',
+                        'action': 'document' if field == 'records' or resolved.records else 'picture'})
+            truth = chapter.get('game', {}).get('truth', {}).get('record')
+            if truth and truth != visible.get('game', {}).get('truth', {}).get('record'):
+                cause = next((r for r in reversed(rows) if r['chapter'] == cid and r['view'] == 'host'), {})
+                rows.append(dict(cause, feed=feed['id'], chapter=cid, view='host',
+                                 field='game', item=truth, label=cause.get('label', truth), reason=cause.get('reason', 'withheld document'), action='document'))
+            for index, extra in enumerate(chapter.get('extras', [])):
+                chapter_media(extra, visible.get('extras', [])[index] if index < len(visible.get('extras', [])) else {}, cid)
+        for chapter, visible in zip(feed.get('chapters', []), visible_feed.get('chapters', [])):
+            chapter_media(chapter, visible, chapter['id'])
     return rows
 
 

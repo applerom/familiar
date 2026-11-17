@@ -274,9 +274,7 @@ contract is identical in all three packs. `[host_format]` declares
 `[[host_format.plurals]]` rules (`category`, integer `values`, optional `modulo`
 and `except_mod100`). First matching rule wins, otherwise the default category.
 The `date` template takes `{day}`, `{month}`, `{year}`; `days_<category>` takes
-`{days}`. Omission counts use `hidden_chapters_<category>` and
-`hidden_paragraphs_<category>`, both taking `{count}`. These counts and the exact
-omitted words belong to private family actions, never inserted into reader prose.
+`{days}`.
 Only valid exact ISO dates are formatted; partial or approximate
 dates remain verbatim. These are integer count forms, not a general grammar
 engine or calendar conversion. English declares no grammatical T/V distinction;

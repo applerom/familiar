@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.34.0 — 17 November 2026
+
+- We tell family stories about everyone, including living people and people whose
+  life status is unknown. We remove permission letters and field-by-field consent.
+  Family desks and private reader/book exports retain their stories and captions;
+  public output gives outsiders only names and kinship. Document, address and
+  image-generation exclusions remain.
+- Data: Remove `allowed` and `consent` from each `privacy.json` `living[]` object,
+  keeping `id` (or use the person ID as the entry). No carry-over command is needed:
+  the removed fields are ignored; no family facts change.
+
 ## 0.33.1 — 17 November 2026
 
 - We accept sourced spouse unions through contribution `families`, including a

@@ -1,6 +1,6 @@
 <Why_Graph_Shard project="Familiar" CAPABILITY="CAP-BUILD">
   <MODULE_FAMILY_EDITION ID="MOD-FAMILY-EDITION" FILE="src/familiar/instance/edition.py" STATE="IMPLEMENTED">
-    <!-- Unknown editorial fields are ignored by the whitelist; consent and life classification cannot be overridden. -->
+    <!-- Unknown editorial fields are ignored by the whitelist; document, address and public-display exclusions cannot be overridden. -->
   </MODULE_FAMILY_EDITION>
   <MODULE_READER_PROFILE ID="MOD-READER-PROFILE" FILE="docs/reader-profile.md" STATE="IMPLEMENTED"/>
   <FEATURE_READER_EXPORT ID="FEAT-READER-EXPORT" STATE="STARTED">

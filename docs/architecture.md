@@ -102,7 +102,7 @@ was adopted from other projects is recorded where it landed (`method/NOTICE.*`,
 | What | Where | Notes |
 |---|---|---|
 | Family settings, languages, packs, engine pin | `<family>/familiar.toml` | plain text, versioned with the family |
-| Who may see what (privacy, consent, desk decision) | `<family>/family/` | family data, read by the gate |
+| Display boundaries (life status, documents, addresses, desk access) | `<family>/family/` | family data, read by the gate |
 | Desk address, shared login and password, stack ids | `<family>/.secrets/desk.txt` | written by `desk provision`; git-ignored; never printed |
 | First-sign-in passwords of personal logins | issued by `desk user add\|reset`: shown once and kept in `<family>/.secrets/desk-user-<login>.json`; issued on the Access page: shown once in the browser, stored nowhere locally | valid for a limited time, replaced at first sign-in |
 | Who confirmed which page, and the host's desk decisions | `<family>/.state/attestations.json` and neighbours | not derivable; `.state/` is left out of the family's version control, so it must be in the backup |

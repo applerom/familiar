@@ -14,7 +14,7 @@
 # - release provenance is stored only under the instance's work directory [review: engine lead]
 # - competing publishers refuse clearly and can retry without corrupting generations [review: engine lead]
 # - desk cloud locks are kernel-owned; transition intent is atomic non-data bookkeeping under .state [review: engine lead]
-# - generated output is withdrawn on a living correction despite ordinary consent [review: engine lead]
+# - generated output is withdrawn on a living correction in public output [review: engine lead]
 # - desk cache integrity and metadata-bound media reuse are checked here; a cache never supplies public publication authority [test: tests/journeys/test_installed_engine.py::test_installed_engine]
 # - build-local input projections bind file identity and metadata; referenced paths are resolved again by each dependency check [review: engine lead]
 # - a search journal carry-over changes only paths.searches and keeps the race and input checks while old row flaws do not stop it [review: engine lead]
@@ -795,7 +795,7 @@ def save_book(instance, out, publication, *, language, kids, page_size):
     """Commit a portable print artifact from checked reader bytes, never raw input.
 
     This is a final offline copy, not a reusable reader generation: it cannot
-    recheck consent after leaving the machine, just like a printed paper book.
+    recheck family inputs after leaving the machine, just like a printed paper book.
     """
     from familiar.reader.book import compose
     from familiar.reader.export import output_path
@@ -891,7 +891,6 @@ def read_generation(instance, out):
 def _check_uses(instance, manifest):
     from familiar.checks.engine import _known_people, life_status, load
 
-    from .publication import INFO_FIELDS, allowed
     from .review import _safety_inputs, digest
     instance = fresh(instance)
     if manifest.get('review', {}).get('state') == 'host-private':
@@ -925,9 +924,7 @@ def _check_uses(instance, manifest):
             removed.append(use['item'] + ':generated:' + str(pid))
         if use.get('permission') == 'never-if-living' and status != 'dead':
             removed.append(use['item'] + ':' + field + ':' + str(pid))
-        permission = allowed(privacy, known.get(pid, {'id': pid}))
-        if pid not in known or (status != 'dead' and field not in {'name', 'kinship'} and
-                (field not in INFO_FIELDS or (field not in permission and use.get('permission') not in permission))):
+        if pid not in known or (status != 'dead' and field not in {'name', 'kinship'}):
             removed.append(use['item'] + ':' + field + ':' + pid)
     safety = _safety_inputs(instance, {u['person'] for u in uses if u['person']}, uses)
     old = manifest.get('review', {}).get('safety', {})

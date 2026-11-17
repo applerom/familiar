@@ -72,7 +72,7 @@ reads = []
 [[rule]]
 id = "TRUST-06"
 kind = "trust"
-statement = "Nothing is invented about people the living remember. About a living person only what that person allowed is told, and without a recorded permission that is name and kinship. Their modern documents and addresses are never shown, and photos of children or of the living never go to an image generator."
+statement = "We tell family stories about living and unknown people as we do about ancestors, without asking permission. Their addresses and modern documents are never shown. Without login, outsiders receive only names and kinship. Real photos of living people or children never go to an image generator; face restoration is for deceased people only."
 roles = ["lead", "researcher", "feed-author", "shot-director", "artist", "reviewer", "recipe-searcher", "translator"]
 serves = "UC-READ"
 check = "check:living-protected"

@@ -194,7 +194,7 @@ of stability. Core means the stable data/security/installation responsibility,
 with the observed file churn recorded beside it, not a claim its code never moves.
 
 - `data`, `privacy`, `install` + `core`: block. One honest refusal and a valid
-  control per guarantee; retain exact source, consent and review-byte binding.
+  control per guarantee; retain exact source, privacy boundaries and review-byte binding.
 - `journey`: one installed memory → paper → tree → reader path, blocking.
 - `surface` or `form`: delete; do not write a new check. Only broken references
   that could break a build/package may stay as advice. Missing weight: advice.

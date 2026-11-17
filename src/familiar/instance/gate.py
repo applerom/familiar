@@ -143,7 +143,7 @@ def evaluate(instance, registry=None):
                 for row in media_omissions(instance, [data]):
                     result['findings'].append(dict(certainty='review', rule='TRUST-06', check='media-omitted',
                         scope='feed:' + row['feed'], chapter_id=row['chapter'], location=row['field'],
-                        mode='advise', exception=None, message=f"{row['view']}: {row['field']} {row['item']} withheld: {row['reason']}. Clarify life status; obtain picture permission, or separate a deceased-only excerpt. Full living documents stay excluded.", **{'omission': row}))
+                        mode='advise', exception=None, message=f"{row['view']}: {row['field']} {row['item']} withheld: {row['reason']}. Clarify life status; use a deceased-only public picture, or separate a deceased-only excerpt. Full living documents stay excluded.", **{'omission': row}))
                 projected = scan(instance, data, 'feed')
                 scan_assets(instance, projected, errors=asset_errors, seen=asset_seen)
                 from familiar.checks.engine import inspect_text

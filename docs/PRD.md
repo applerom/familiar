@@ -360,7 +360,7 @@ parts retain their original status. Editable memory/table drafts accept this
 structure; intake does not guess missing components from a parent. Private
 cards mark the particular parts and show their bases. Public canonical names,
 feed name signatures and person nodes omit inferred parts for living/unknown
-people, irrespective of ordinary name consent. Authored free prose still needs
+people. Authored free prose still needs
 independent reading; component metadata cannot classify arbitrary prose.
 
 **Clan surname display.** `tree_metadata.surname_forms[]` stores explicit decisions:
@@ -430,12 +430,12 @@ and support; its first line calls unreviewed, released or changed material a
 draft. A current independent reading of the source page permits the reviewed
 label. The text renderer is a private working view of the family's own page, with its
 papers and words intact. It is labelled working material, not a reader publication.
-A nearby explanation names whose information needs consent or life-status clarification.
+The family display needs no permission requests for living or unknown people.
 
 `family confirmation` explains the machine checks, the reader's job, lapsing
 confirmation and the limits of release; it is also printed before reading or
 blind acceptance. `family next` gives at most two ordinary current actions,
-plus the complete counted list of reader omissions: draft request,
+such as a draft request,
 dated wait, answer and its recorded decision, paper bridge, missing test or
 unreviewed story. An unchanged wait stays a wait, without reissuing the request.
 With accepted memories or papers but no question yet, `family next` asks for a
@@ -502,7 +502,7 @@ A literal text document excerpt names record `excerpt` field keys. The record's
 reading must equal that literal field. An excerpt carries no full reading, scan,
 asset or full-sheet link. Its closure includes only those fields' subjects plus
 any additional author-declared subjects; a full sheet retains every subject.
-Documents about protected people are excluded regardless of any consent.
+Documents about protected people are excluded in every display.
 Document subjects also accumulate from card galleries, chapter attachments and
 facts citing their sources. Shared record, source and scan references retain the
 union of these subjects in both reader modes; a protected attachment cannot be
@@ -675,7 +675,7 @@ and private reading-report research leads; card prose points to the original cel
 at `paths.research_permission` (default `family/research-permission.json`). It records
 authorizer, recipient, date, transmission, research and personal-show scope, excluding
 publication. Summary reports its presence. It grants no publication permission;
-existing privacy consents and independent reading remain required.
+document and address exclusions and independent reading remain required.
 Initialization supplies `* -text` git attributes and ignores environment, state, build
 and default reader-output directories, preserving any existing git policy files.
 
@@ -1113,8 +1113,7 @@ or explicit classification remain unknown and are reported separately.
 | Field | Required | Meaning | Publication |
 |---|---|---|---|
 | `closed_topics[]` | O | Family-defined closed subjects | never (research only) |
-| `living[]` | O | Objects: id (person), allowed[] (canonical INFO_FIELDS identifiers; local labels are separate), consent | never (research only) |
-| `consent` | R if allowed is nonempty | by (giver), at (date); absent/null means no recorded permission | never (research only) |
+| `living[]` | O | Person IDs, or objects containing `id`; classifies living people without field permissions | never (research only) |
 | `living_rule` | O | Family explanation; cannot weaken TRUST-06 | never (research only) |
 
 **Answer (`answers/*.json`)**
@@ -1168,19 +1167,16 @@ boundary; no caller can reinstate private editorial fields after that boundary.
 | `status` | card-level research qualification, separate from fact and relationship status | dead only |
 | `identityAliases[]` | former person references for navigation; global alias map remains navigation | dead only on person |
 | `cardStatuses[person]` | origin flags, badges(text/title/kind), review(kind/likelihood/text/replaces/sources), confirmed facts and documented/candidate edges | dead owner only; relationship explanations also require dead endpoints |
-| `cardPresentation` | birth/death/place and kinds/role; translated connectionNote/connectionShort/dateBasis/dateReference | explanations dead only; existing individual birth/death permissions retain only the corresponding date and kind |
+| `cardPresentation` | birth/death/place and kinds/role; translated connectionNote/connectionShort/dateBasis/dateReference | family display for everyone; public output dead only |
 | `living_basis` | internal assessment supporting privacy classification | never |
 | `author` | internal contributor attribution, potentially an agent identifier | never |
 | `imported_context` | raw import context, possibly private source details and locators | never |
 
-The new compound card surfaces deliberately have no consent widening path.
-Existing `name`, `events`, `facts` and other canonical permissions continue to
-govern their existing fields; they do not authorize an entire card explanation.
-Unknown life status is protected even with all existing permissions. All new
-display text is scanned in every configured language. Reference lists carry IDs,
-not display prose. A generation records card-status owners and relationship
-endpoints so a changed life assessment invalidates consumption.
-An empty allowed list is not consent to publish any other information.
+“Dead only” in this dictionary describes public output.
+The family display includes all declared card surfaces for everyone. Public output
+limits living and unknown people to names and kinship, with no consent widening
+path. Documents and addresses remain excluded in the family display; image rules
+remain unchanged. A changed life assessment invalidates affected public output.
 
 **Legacy, read through adapters.** The existing graph builder's snapshot,
 evidence, identity decisions and contributions remain its adapter inputs; no
@@ -1313,10 +1309,10 @@ Twelve invariants. They are the only rules that are never a setting.
 4. Identity and kinship are versions with weights; a weak version is never
    written into a card as accepted. Nationality is not inferred.
 5. "Not found" always states what was actually covered.
-6. Nothing is invented about the living. About a living person only what that
-   person allowed is told; without a recorded permission that is name and
-   kinship. Their documents and addresses are not shown; photos of children
-   and the living never go to an image generator.
+6. We tell family stories about everyone, including living and unknown people,
+   without requesting permission. Their documents and addresses are not shown.
+   Public output gives outsiders only names and kinship. Real photos of living
+   people or children never go to a generator; face restoration is for the dead.
 7. Closed family topics and present-day politics stay out (lists are family
    data, the mechanism is engine).
 8. A reconstruction is called a reconstruction: a drawing is neither a portrait

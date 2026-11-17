@@ -79,12 +79,9 @@ def test_photo_treatment_stays_local_for_living_subject(family, monkeypatch):
     original = {'kind': 'family-photograph', 'asset': '/original.png', 'caption': 'Original photograph',
         'holder': 'Fictional family', 'subjects': ['p-daniel'], 'ours': {'kind': 'photo-treatment', 'asset': '/treated.png', 'caption': 'Same frame', 'disclosure': 'Colour added'}}
     graph = {'people': {}, 'feeds': [{'id': 'story', 'chapters': [{'id': 'face', 'figures': [original]}]}]}
-    edit(family, 'family/privacy.json', lambda p: p['living'][0].update(allowed=['pictures'], consent={'by': 'subject', 'at': '2026-11-17'}))
     for private in (False, True):
         shown = scan(family, restrict_graph(family, copy.deepcopy(graph), host_private=private), 'graph', host_private=private)
         assert bool(shown['feeds'][0]['chapters'][0]['figures']) == private
-    edit(family, 'family/privacy.json', lambda p: p['living'][0].update(allowed=[]))
-    assert not restrict_graph(family, copy.deepcopy(graph), host_private=True)['feeds'][0]['chapters'][0]['figures']
     import hashlib
     from pathlib import Path
     from familiar.checks.engine import _known_people
@@ -101,7 +98,6 @@ def test_photo_treatment_stays_local_for_living_subject(family, monkeypatch):
         for broken in ({'kind': 'photo-restoration'}, dict(original, ours=dict(original['ours'], versions=[]))):
             with pytest.raises(ValueError, match='original|recipe'): scan(family, {'people': {'p-amaro': {'id': 'p-amaro', 'illustrations': [broken]}}}, 'graph', host_private=private)
     with pytest.raises(ValueError, match='append-only'): preserve(original, dict(original, ours=dict(original['ours'], versions=[])))
-    edit(family, 'family/privacy.json', lambda p: p['living'][0].update(allowed=['pictures']))
     known = _known_people(family)
     for subject, status in (('p-daniel', 'living'), ('p-amaro', 'unknown')):
         original['subjects'] = [subject]; known[subject]['life_assessment'] = {'status': status}
@@ -110,16 +106,13 @@ def test_photo_treatment_stays_local_for_living_subject(family, monkeypatch):
             with pytest.raises(ValueError, match='deceased'): restrict_graph(family, copy.deepcopy(graph), host_private=private)
 
 
-def test_f3_living_fields_require_permission_and_exclude_addresses(family):
+def test_f3_public_name_and_kinship_and_private_address_exclusion(family):
     family.path('edition').parent.mkdir(exist_ok=True)
     family.path('edition').write_text(json.dumps({'people': {p: {'story': {'en': 'A card story.'}} for p in ['p-amaro', 'p-daniel']}}), encoding='utf-8')
     edit(family, 'tree/snapshot/people.json', lambda p: p['people'][-1].update(events=[{'type': kind, 'date': '2011', 'place': 'Private town', 'provenance': ['host']} for kind in ('birth', 'residence')]))
     source = {'people': {pid: {'id': pid, 'name': 'Example', 'events': [{'type': kind, 'date': '2011', 'place': 'Private town'} for kind in ('birth', 'residence')]} for pid in ('p-amaro', 'p-daniel')}}
     shown = restrict_graph(family, copy.deepcopy(source))['people']
     assert shown['p-amaro']['story']['en'] == 'A card story.' and 'story' not in shown['p-daniel'] and (not shown['p-daniel']['events'])
-    edit(family, 'family/privacy.json', lambda p: p['living'][0].update(allowed=['events', 'birth'], consent={'by': 'subject', 'at': '2026-11-12'}))
-    events = restrict_graph(family, copy.deepcopy(source))['people']['p-daniel']['events']
-    assert [event['type'] for event in events] == ['birth']
     edit(family, 'feeds/ferrolho/feed.json', lambda f: f['persons'].update(DANIEL='p-daniel'))
     edit(family, 'feeds/ferrolho/chapters.json', lambda cs: cs[0].update(people=['AMARO', 'DANIEL'], prose={'text': [{'people': ['p-amaro'], 'text': 'The public story.'}, {'people': ['p-daniel'], 'text': 'Private detail.', 'otherwise': {'people': ['p-amaro'], 'text': 'The public story continues.'}}, {'people': ['p-daniel'], 'text': 'Another private detail.', 'otherwise': {'people': ['p-daniel'], 'text': 'A private alternative.'}}]}, places=[{'name': 'Public village', 'people': ['p-amaro']}, {'name': 'Private place', 'people': ['p-daniel']}]))
     chapter = publication(family, 'feeds').data()[0]['chapters'][0]
@@ -236,12 +229,7 @@ def test_f7_not_found_requires_read_coverage(family):
     assert check(family, paths=['searches/searches.jsonl'])['valid']
 
 
-def test_f8_checked_generation_rechecks_used_permissions(family, tmp_path):
-    edit(family, 'feeds/ferrolho/feed.json', lambda f: f['persons'].update(DANIEL='p-daniel'))
-    edit(family, 'feeds/ferrolho/chapters.json', lambda cs: cs[0].update(
-        people=['DANIEL'], published_fields={'DANIEL': ['birth']}))
-    edit(family, 'family/privacy.json', lambda p: p['living'][0].update(
-        allowed=['birth', 'summary'], consent={'by': 'subject', 'at': '2026-11-12'}))
+def test_f8_review_binds_exact_bytes(family, tmp_path):
     material = publication(family, 'feeds', for_review=True)
     assert material.manifest['state'] == 'preview'
     ticket = review_ticket(material)
@@ -253,9 +241,6 @@ def test_f8_checked_generation_rechecks_used_permissions(family, tmp_path):
     edit(family, 'feeds/ferrolho/chapters.json', lambda cs: cs[0].update(text='Edited while reading'))
     with pytest.raises(ValueError, match='review material changed'):
         attest(family, 'feeds', reviewer='reader', author='writer', ticket=ticket)
-    edit(family, 'family/privacy.json', lambda p: p['living'][0].update(allowed=['summary']))
-    with pytest.raises(ValueError, match='withdrawn.*birth:p-daniel'):
-        read_generation(family, out)
 
 
 def test_f9_trust_mode_cannot_be_changed(family):

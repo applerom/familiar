@@ -28,39 +28,11 @@ media_game = "game evidence"
 media_living = "living"
 media_unknown = "life status unknown"
 media_protected = "protected document or undeclared subjects"
-media_action_document = "Clarify life status or separate a deceased-only excerpt; consent cannot release a living person's full document. A game must use a visible excerpt."
-media_action_picture = "Clarify life status or obtain recorded picture permission. A living person's photo treatment stays local to the host."
+media_action_document = "Clarify life status or separate a deceased-only excerpt. A game must use a visible excerpt."
+media_action_picture = "Use a deceased-only picture for public output. Living people’s photographs stay in the family display."
 internal_hidden = "[hidden working reference]"
 internal_notice = "Working identifiers or file paths were hidden; the remaining text is shown."
-consent_forward = "This same letter includes permission questions. If a question names someone else, please pass it to them; only that person can give their permission."
-hidden_count = "Not yet shown to readers about {name}: {chapters}; {paragraphs}."
-hidden_other = "Also omitted: {details}."
-clarify_life = "Question for the researcher: is this person alive — {person}? Check what is known about their life and record a conclusion with its basis. These passages stay private until then."
-ask_consent = "Ask the family host to forward the shared permission request to {name}. The wording is ready in the letters to relatives."
-consent_question = "One more question about our family history. {name}, may we show relatives exactly these words about you?\n\n{passages}\n\nYou may agree to only part or decline. Please name the words that may be shown, to whom, and date your answer. Living people’s documents and addresses remain excluded even with consent."
-consent_no_passage = "The author must first prepare the exact words for you to read and approve or decline."
-disclosure_unavailable = "The complete list of omitted passages could not be prepared. Ask the author to check the drafts; this does not mean everything may be shown."
-hidden_title = "chapter title"
-hidden_period = "story period"
-hidden_line = "family-line caption"
-hidden_facts = "event explanations"
-hidden_variants = "story versions"
-hidden_places = "places and explanations"
-hidden_extras = "additional passages"
-hidden_links = "annotated links"
-hidden_kids = "children’s story"
-hidden_years = "years in the family diagram"
-hidden_chapters_one = "{count} chapter"
-hidden_chapters_few = "{count} chapters"
-hidden_chapters_many = "{count} chapters"
-hidden_chapters_other = "{count} chapters"
-hidden_paragraphs_one = "{count} paragraph"
-hidden_paragraphs_few = "{count} paragraphs"
-hidden_paragraphs_many = "{count} paragraphs"
-hidden_paragraphs_other = "{count} paragraphs"
-unknown_name = '{name} (life status unknown)'
 working_view = 'Private family working view. Your words and papers are shown here; this is not reader publication.'
-reader_limits = 'Readers see only names and kinship without recorded permission for: {names}. Their addresses and documents never go to readers, even with permission. Separate their information or record permission for specific fields; clarify unknown life status.'
 host = "the keeper of the family papers"
 relative = "a relative"
 question = "the family question"
@@ -70,7 +42,7 @@ request = "Could you look for one paper: {paper}? {why}"
 no_paper = "If you do not have this paper, saying so is also an answer. We can look another way."
 not_recorded = "No safe wording of the current guess is recorded."
 purpose_unknown = "It may help answer this question."
-withheld = "This text has been withheld because it may include private information or working references. Ask the researcher for a version containing only permitted names and kinship."
+withheld = "Ask the researcher to supply the missing text without working references."
 no_requests = "There are no requests to relatives yet."
 draft = "Draft — not yet confirmed by an independent reader."
 reviewed = "Read and confirmed by an independent reader."
@@ -116,9 +88,9 @@ event_immigration = "arrival"
 event_occupation = "work"
 confirmation = """What you are confirming
 
-The machine checks the form of the material: named people and papers resolve to local items, weak versions are not presented as accepted facts, and text has no hidden markup. It computes who is shown, including people in pictures and papers. Living people have only their name and kinship unless they have recorded permission for more. Addresses and documents involving living people cannot be released through these checks. Generated pictures of living people or children are excluded. These are checks of data, not proof of historical truth.
+The machine checks the form of the material: named people and papers resolve to local items, weak versions are not presented as accepted facts, and text has no hidden markup. It computes who is shown, including people in pictures and papers. The family display tells stories about everyone. Public output gives outsiders only names and kinship for living or unknown people. Addresses and documents involving living people cannot be released through these checks. Generated pictures of living people or children are excluded. These are checks of data, not proof of historical truth.
 
-You or a reader other than the author must read the whole page, its children's block and what it rests on, and inspect its pictures and captions in every shown language. Check that the prose says only what living people allowed, keeps closed family topics private, tells scenes the evidence can support, and does not blame a whole people or faith. Check who is in each picture, whether reconstruction is labelled, and where the papers or versions disagree. A green automatic check can miss paraphrases, namesakes and meaning; missing language resources mean those checks were not performed.
+You or a reader other than the author must read the whole page, its children's block and what it rests on, and inspect its pictures and captions in every shown language. Check that the prose excludes living people’s addresses and documents, keeps closed family topics private, tells scenes the evidence can support, and does not blame a whole people or faith. Check who is in each picture, whether reconstruction is labelled, and where the papers or versions disagree. A green automatic check can miss paraphrases, namesakes and meaning; missing language resources mean those checks were not performed.
 
 Confirm only the material you actually read. The engine checks that the reader is named and different from the author; it cannot prove that someone read honestly or independently. If nobody reads it, the page remains a draft, and ordinary reader export is refused. A deliberate release by the host is a separate recorded decision and cannot override a failed data check.
 

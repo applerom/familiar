@@ -3,10 +3,10 @@
 # PRD_REF: docs/PRD.md#FORMS
 # INVARIANTS:
 # - photo treatments retain dead-only public permission uses for later withdrawal [review: engine lead]
-# - review uses the active person permissions for merged references [review: engine lead]
+# - review uses the active life classification for merged references [review: engine lead]
 # - unrelated records preserve reading while changed display bytes lapse it [review: engine lead]
 # - namesakes are review cues, not canonical subject identities [review: engine lead]
-# - confirmation compares an inspected ticket instead of certifying a replacement build [test: tests/gate/test_data_guarantees.py::test_f8_checked_generation_rechecks_used_permissions]
+# - confirmation compares an inspected ticket instead of certifying a replacement build [test: tests/gate/test_data_guarantees.py::test_f8_review_binds_exact_bytes]
 # - unnamed role labels and narrator kin words bind respectively to name and kinship uses, without event or narrative permission [review: engine lead]
 # - copied chapters cannot overwrite a reviewed unit [review: engine lead]
 # CHANGES_WITH:
@@ -40,7 +40,6 @@ def _safety_inputs(instance, ids, uses=()):
     from familiar.rules.cascade import Registry
     from familiar.rules.roles import method_root
     known, privacy = _known_people(instance), load(instance.path('privacy'), {})
-    rows = {p['id']: p for p in privacy.get('living', []) if isinstance(p, dict)}
     registry = Registry(method_root() / 'rules', instance)
     lists = {}
     for scope in [None] + ['feed:' + p.name for p in instance.path('feeds').glob('*') if p.is_dir()]:
@@ -68,9 +67,7 @@ def _safety_inputs(instance, ids, uses=()):
             # unrelated drafts/catalogues do not supply this generation's rights.
             photographs(load(instance.path('feeds') / name / 'pictures.json', {}))
         photographs(known)
-    return {'people': {pid: {'life': life_status(known.get(pid, {'id': pid}), privacy),
-                             'permission': [rows[p] for p in [pid, *known.get(pid, {}).get('identityAliases', [])]
-                                            if p in rows]} for pid in sorted(ids)},
+    return {'people': {pid: {'life': life_status(known.get(pid, {'id': pid}), privacy)} for pid in sorted(ids)},
             'closed_topics': privacy.get('closed_topics', []), 'lists': lists,
             'archive_rights': photo_rights,
             'trust': digest([r for r in registry.rules.values() if r['kind'] == 'trust'])}
@@ -145,12 +142,10 @@ def _output_uses(instance, kind, data, feed=None):
             resolved = closure(instance, chapter, shape=shape, documents=docs, pictures=pics, people=aliases)
             for pid in resolved.people:
                 add(item, pid, 'name')
-            from .publication import allowed
             def subjects(block, aliases=aliases, chapter=chapter):
                 return [aliases.get(p, {'id': p})['id'] for p in block.get('people', chapter.get('people', []))]
             def permitted(block):
-                return all(life_status(known.get(pid, {'id': pid}), privacy) == 'dead' or
-                           'summary' in allowed(privacy, known.get(pid, {'id': pid})) for pid in subjects(block))
+                return all(life_status(known.get(pid, {'id': pid}), privacy) == 'dead' for pid in subjects(block))
             fields = ('title', 'lead', 'period', 'line') if shape == 'feed' else ('title', 'text', 'more', 'ask', 'text_kids')
             for field in fields:
                 blocks = chapter.get('prose', {}).get(field, [chapter] if chapter.get(field) else [])
@@ -171,11 +166,6 @@ def _output_uses(instance, kind, data, feed=None):
                 if value and permitted(value):
                     for pid in subjects(value):
                         add(item, pid, 'summary')
-            for alias, fields in chapter.get('published_fields', {}).items():
-                pid = aliases.get(alias, {}).get('id', alias)
-                for field in fields:
-                    if life_status(known.get(pid, {'id': pid}), privacy) == 'dead' or field in {'name', 'kinship'} or field in allowed(privacy, known.get(pid, {'id': pid})):
-                        add(item, pid, field)
             visible = dict(shown, chapters=[]) if shape == 'feed' else next((c for c in shown.get('chapters', []) if c['id'] == chapter['id']), {})
             displayed = closure(instance, visible, shape=shape, people=known)
             for rid, record in displayed.records.items():

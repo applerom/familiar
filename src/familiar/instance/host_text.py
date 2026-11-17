@@ -8,20 +8,19 @@
 # - MOD-INSTANCE-RESEARCH-FORMS (request and case storage vocabulary)
 # - forms/request.json (optional host-facing request fields)
 # - docs/gate.md (host explanation)
-# - MOD-NARRATIVE-DISCLOSURE (private accounting from the reader projection)
 # :END_MODULE_CONTRACT
 from datetime import date
 
 from .host_language import HostData
 
 
-def _letter(data, request, consent=()):
+def _letter(data, request):
     w = data.words
     question = data.find('versions', request.get('question'))
     subjects = data.subjects(question)
     paper = data.text(request.get('paper'), subjects)
     if not paper:
-        return '\n\n'.join([w('greeting'), w('purpose'), *consent, w('closing')]) if consent else w('withheld')
+        return w('withheld')
     title = data.text(question.get('title'), subjects)
     witness = data.text(request.get('witness_question'), subjects) or (w('witness', question=title) if title else '')
     version = data.text(request.get('our_version'), subjects)
@@ -38,39 +37,9 @@ def _letter(data, request, consent=()):
         data.text(request.get('paper_description'), subjects),
         data.text(request.get('look_in'), subjects),
         data.text(request.get('photograph'), subjects),
-        '\n\n'.join(consent),
         w('no_paper_self' if is_self else 'no_paper'),
         '' if is_self else (w('closing_named', name=sender) if sender else w('closing')),
     ]))
-
-
-def _disclosure(data, feed=None):
-    from .narrative import omissions
-    w, notes, consent = data.words, [], {}
-    try:
-        hidden = omissions(data.instance, feed)
-    except (ValueError, OSError, KeyError, TypeError):
-        return [w('disclosure_unavailable')], {}
-    for pid, row in sorted(hidden.items()):
-        name = data.name(pid)
-        count = w('hidden_count', name=name,
-                  chapters=w.number('hidden_chapters', len(row['chapters'])),
-                  paragraphs=w.number('hidden_paragraphs', row['paragraphs']))
-        other = row['fields'] - {'text', 'more', 'ask', 'text_kids', 'lead'}
-        if other:
-            count += ' ' + w('hidden_other', details='; '.join(w('hidden_' + field) for field in sorted(other)))
-        if pid in data.unknown:
-            birth = next((e for e in data.people[pid].get('events', [])
-                          if (e.get('type') == 'birth' or e.get('tag') == 'BIRT') and not e.get('open_question')), {})
-            detail = '; '.join(filter(None, (data.text(w.date(birth.get('date')), [pid]),
-                                             data.text(birth.get('place'), [pid]))))
-            who = name + (' — ' + detail if detail else '')
-            notes.append(count + '\n' + w('clarify_life', person=who))
-        else:
-            passages = '\n\n'.join(filter(None, (data.text(p, [pid]) for p in row['passages'])))
-            consent[pid] = w('consent_question', name=name, passages=passages or w('consent_no_passage'))
-            notes.append(count + '\n' + w('ask_consent', name=name))
-    return notes, consent
 
 
 def _next(data, today):
@@ -210,50 +179,24 @@ def _build(instance, view, selection=None, feed=None, today=None):
     data = HostData(instance)
     w = data.words
     review = None
-    disclosure, consent = _disclosure(data, feed) if view in {'requests', 'next', 'summary'} else ([], {})
     if view == 'confirmation':
         text = w('confirmation')
     elif view == 'requests':
         requests = [r for r in data.rows['questions'] if not selection or r.get('id') == selection]
         if selection and not requests:
             raise ValueError('No such family request.')
-        letters = []
-        used = set()
-        bound = {r.get('addressee') for r in requests}
-        shared = next((r for r in requests if r.get('addressee') != 'host'), None)
-        for request in requests:
-            pid = request.get('addressee')
-            addition = [consent[pid]] if pid in consent and pid not in used else []
-            if addition:
-                used.add(pid)
-            if request is shared and not selection:
-                pending = [text for ident, text in consent.items() if ident not in bound]
-                if pending:
-                    addition += [w('consent_forward'), *pending]
-                    used.update(ident for ident in consent if ident not in bound)
-            letters.append(_letter(data, request, addition))
-        # Unassigned permissions share one forwardable family letter, not one
-        # new letter per protected person. A selected request stays selected.
-        remaining = [text for pid, text in consent.items() if pid not in used]
-        if remaining and not selection:
-            letters.append('\n\n'.join([w('greeting'), w('purpose'), *remaining, w('closing')]))
-        text = '\n\n'.join([*disclosure, *letters]) or w('no_requests')
+        text = '\n\n'.join(_letter(data, request) for request in requests) or w('no_requests')
     elif view == 'pages':
         text, review = _pages(data, feed, selection)
     elif view in {'next', 'summary'}:
         hints = _next(data, today or date.today())
         page_text, _ = _pages(data, feed, titles_only=True)
         if view == 'summary':
-            text = '\n\n'.join([_summary(data, page_text), *disclosure])
+            text = _summary(data, page_text)
         else:
-            text = '\n\n'.join(disclosure + [
-                ' '.join(line.split()) for line in (hints + page_text)[:max(0, 2 - len(disclosure))]]) or w('start')
+            text = '\n\n'.join(' '.join(line.split()) for line in (hints + page_text)[:2]) or w('start')
     else:
         raise ValueError('Unknown host text view.')
     people = sorted(data.used_people)
     text = w('working_view') + '\n\n' + text
-    if data.living and not disclosure:
-        text += '\n\n' + w('reader_limits', names='; '.join(dict.fromkeys(
-            w('unknown_name', name=data.name(pid)) if pid in data.unknown else data.name(pid)
-            for pid in sorted(data.living))))
     return {'text': data.finish(text), 'people': people}, review, data.uses(view)

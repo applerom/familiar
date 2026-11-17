@@ -2,7 +2,7 @@
 # PURPOSE: Carry authored card decisions and selected local galleries into privacy-governed reader projections.
 # PRD_REF: docs/PRD.md#FORMS
 # INVARIANTS:
-# - editorial input cannot override life classification or consent [review: engine lead]
+# - editorial input cannot override document, address or public-display exclusions [review: engine lead]
 # - every selected gallery file must resolve even when its owner is private [review: engine lead]
 # - canonical card decisions win over an alias without losing distinct alias facts [review: engine lead]
 # CHANGES_WITH:
@@ -75,7 +75,7 @@ def errors(instance):
 
 
 def apply(instance, graph):
-    """Overlay only card fields; restrict_graph subsequently enforces every permission."""
+    """Overlay only card fields; restrict_graph subsequently enforces display exclusions."""
     aliases = graph.get('identityAliases', {})
     patches = copy.deepcopy(cards(instance))
     for alias, target in aliases.items():

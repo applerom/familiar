@@ -79,7 +79,7 @@
   <MODULE_COMMAND ID="MOD-FEED-PAGES" FILE="src/familiar/feeds/pages.py" STATE="IMPLEMENTED"/>
   <MODULE_CHECKS_PRIVACY ID="MOD-CHECKS-PRIVACY" FILE="src/familiar/checks/privacy.py" STATE="IMPLEMENTED">
     <INVARIANT REVIEW="engine lead">Living media exclusions advise because projection already withholds the material.</INVARIANT>
-    <INVARIANT REVIEW="engine lead">Merged participant permissions follow the active person.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Public exclusions follow the active person’s life classification.</INVARIANT>
   </MODULE_CHECKS_PRIVACY>
   <MODULE_SKILL_SHOT_CARD ID="MOD-SKILL-SHOT-CARD" FILE="method/skills/shot-card/SKILL.md" STATE="IMPLEMENTED">
     <REL TYPE="DEPENDS_ON" TARGET="MOD-FEED-CLI"/>

@@ -606,19 +606,6 @@ def _check(instance, selected=None):
             fail('privacy', 'life decision needs a written basis, author and date', 'instance.life-decision-needs-a-written-basis-author')
         if 'revoked' in decision and type(decision['revoked']) is not bool:
             fail('privacy', 'life decision revoked must be boolean', 'instance.life-decision-revoked-must-be-boolean')
-    for permission in privacy.get('living', []) if chosen('privacy') else []:
-        if not required(permission, 'id allowed', 'privacy'):
-            continue
-        ref(permission.get('id'), people, 'privacy')
-        allowed = permission.get('allowed')
-        if not isinstance(allowed, list) or not all(isinstance(x, str) and x.strip() for x in allowed):
-            fail('privacy', 'allowed must list kinds of information in family words', 'instance.allowed-must-list-kinds-of-information-in')
-        else:
-            from .publication import INFO_FIELDS
-            if set(allowed) - INFO_FIELDS:
-                fail('privacy', 'allowed must use canonical publication field identifiers; addresses and documents are never permitted', 'instance.allowed-must-use-canonical-publication-field-identifiers')
-        if allowed:
-            required(permission.get('consent'), 'by at', 'privacy')
     evidence = load(instance.path('evidence'), {})
     for source in evidence.get('sources', []) if chosen(instance.path('evidence')) else []:
         required(source, 'id kind record', 'evidence source')

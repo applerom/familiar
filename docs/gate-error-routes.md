@@ -10,14 +10,13 @@ All data are fictional. The checks below live in
 |---|---|---|---|
 | F1 exact local reference | shown document points at an unsaved record -> TRUST-01 refusal | local record and chapter resolve | `test_f1_shown_reference_resolves` |
 | F2 subject closure | record names a living child omitted by the document author -> blocked | original deceased subjects pass | `test_f2_record_subject_cannot_be_omitted` |
-| F3 living projection | birth disclosed without permission, residence under broad event permission -> omitted | recorded birth permission shows birth | `test_f3_living_fields_require_permission_and_exclude_addresses` |
+| F3 living projection | living details in public output -> omitted; private residence -> excluded | family story and birth remain visible privately | `test_f3_public_name_and_kinship_and_private_address_exclusion` |
 | F4 acceptance | weak status and weight labelled accepted -> blocked | strong finite weight, source, basis and decision pass | `test_f4_acceptance_requires_auditable_strong_grounds` |
 | F5 declared projection | undeclared author field -> omitted | declared name survives | `test_f5_undeclared_reader_fields_stay_private` |
 | F6 disclosure form | generated reconstruction assigned portrait role -> blocked | labelled adult reconstruction passes | `test_f6_reconstruction_cannot_be_a_portrait` |
 | F7 coverage form | zero read presented as not found -> blocked | read coverage and explicit access gap pass | `test_f7_not_found_requires_read_coverage` |
-| F8 checked generations | used birth permission revoked -> withdrawal naming what to remove | clean generation reads; unrelated input change is outdated and readable | `test_f8_checked_generation_rechecks_used_permissions` |
 | F9 trust modes | family switches trust mode off -> blocked | default modes pass | `test_f9_trust_mode_cannot_be_changed` |
-| Review binding (class F) | author self-confirms, or confirms an old ticket after a text edit -> refused | independent inspection of unchanged bytes gives clean output | `test_f8_checked_generation_rechecks_used_permissions` |
+| Review binding (class F) | author self-confirms, or confirms an old ticket after a text edit -> refused | independent inspection of unchanged bytes gives clean output | `test_f8_review_binds_exact_bytes` |
 
 `tests/journeys/test_installed_engine.py::test_installed_engine` is the only
 journey and only runs with `--full`: build one wheel, install it into one clean

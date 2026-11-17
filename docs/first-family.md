@@ -297,9 +297,9 @@ The `.json` suffix may be omitted; TOML forms keep their explicit suffix.
 
 Ordinary `feed build` refuses blocking mechanical trust findings before writing
 output. Human historical, prose subject-completeness and visual review remain
-necessary. `published_fields` declares the subjects and fields actually shown;
-name and kinship need no consent, additional living fields need recorded consent.
-Permissions and restricted-vocabulary bytes invalidate previous review marks.
+necessary. The family display tells stories about everyone; public output gives
+only names and kinship for living or unknown people. Life-status and
+restricted-vocabulary changes invalidate affected review marks.
 A build produces JSON catalogues, not a rendered reader page or a publication.
 
 ## Text for the family
