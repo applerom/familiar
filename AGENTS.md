@@ -38,7 +38,7 @@ The engine and method live here; real families live elsewhere. Pin
 - Nonempty test/code lines: at most 3%, blocking. Fast 10 s/full 22 s: advisory
   under every load. A failing weighted core guarantee or the journey still fails.
 - Family checks collect all findings with paths. Only weighted core data/privacy/
-  install findings block delivery. Consent, source fidelity and review-byte binding
+  install findings block delivery. Source fidelity and review-byte binding
   stay strict; unadopted collector drafts remain separate. Presentation preferences
   use safe defaults; they do not change stored inputs or authorize disclosure.
 - `docs/` holds living product docs; reports go outside the repo. Leave no servers.
