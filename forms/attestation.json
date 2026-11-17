@@ -1,11 +1,16 @@
 {
-  "page": "feed:example/chapter-one",
+  "page": "feed:bea-city/bea-first",
   "language": "en",
-  "reviewer": "independent-reviewer",
-  "author": "page-author",
+  "reviewer": "bea-reviewer",
+  "author": "bea-author",
   "digest": "filled by feed accept from the exact projected page and media bytes",
   "safety_digest": "filled by feed accept from scoped safety inputs",
-  "rules": ["R1", "R2", "R3", "R4"],
+  "rules": [
+    "R1",
+    "R2",
+    "R3",
+    "R4"
+  ],
   "verdict": "pass",
   "at": "2026-11-12T00:00:00+00:00",
   "stage": "reading"

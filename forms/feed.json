@@ -1,9 +1,9 @@
 {
-  "id": "city",
+  "id": "bea-city",
   "title": "A city memory",
   "lead": "A remembered life",
   "persons": {
-    "BEA": "telling-bea"
+    "bea-subject": "bea-telling-bea-person"
   },
   "profile": {
     "pictures": "none",

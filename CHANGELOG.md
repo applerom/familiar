@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.31.1 — 17 November 2026
+
+- The first-family tutorial and installed journey use one fictional Bea and Ben Example family, with
+  deceased document subjects and non-word identifiers. The bundled inputs reach reader review without
+  changing their meaning; the guide names files the agent authors and the commands that check them.
+- Host-text refusals name the conflicting internal identifier and its declaration file, including
+  collisions in input prose that previously disappeared silently. Stored family inputs are unchanged.
+
 ## 0.31.0 — 17 November 2026
 
 - New method skill `on-site-researcher` and a researcher mode for it: when the open sources of a place are

@@ -1,16 +1,30 @@
 {
   "_about": "research document FILE.json --author researcher. record is a canonical corpus record. subjects are existing canonical person IDs. snippets are optional; file is relative to this form. Each cut-out needs its own caption and literal read. Use a new record ID; existing originals, records and contributions are never replaced. This attaches a document, without deciding identity or kinship.",
   "record": {
-    "id": "certificate",
+    "id": "bea-marriage",
     "kind": "archive-record",
     "title": "Invented marriage certificate",
-    "source": {"holder": "Invented archive", "locator": "Book one, entry two"},
-    "language": ["en"],
-    "fields": {"Year": "1901"},
-    "reading": "Ada Example and Ben Example married in 1901."
+    "source": {
+      "holder": "Invented archive",
+      "locator": "Book one, entry two"
+    },
+    "language": [
+      "en"
+    ],
+    "fields": {
+      "Year": "1901"
+    },
+    "reading": "Bea Example and Ben Example married in 1901."
   },
-  "subjects": ["person-one", "person-two"],
+  "subjects": [
+    "bea-telling-bea-person",
+    "bea-telling-ben-person"
+  ],
   "snippets": [
-    {"file": "certificate-detail.png", "caption": "The names and year in the marriage entry", "read": "Ada Example and Ben Example, 1901"}
+    {
+      "file": "bea-marriage-detail.png",
+      "caption": "The names and year in the marriage entry",
+      "read": "Bea Example and Ben Example, 1901"
+    }
   ]
 }

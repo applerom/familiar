@@ -1,9 +1,9 @@
 {
-  "record": "paper",
+  "record": "bea-paper",
   "caption": "Invented certificate",
   "source": "Home holder",
   "subjects": [
-    "BEA"
+    "bea-subject"
   ],
   "snippets": [
     {

@@ -5,6 +5,7 @@
 # - missing host wording never silently falls back to another language [review: engine lead]
 # - exact dates and elapsed integer days use the selected pack's forms [review: cold reviewer]
 # - private prose never becomes a reader publication [review: engine lead]
+# - identifier refusals name the matching ID and its declaration file [review: cold reviewer]
 # - one compiled identifier matcher preserves exact token boundaries across fragments and the final surface [review: engine lead]
 # CHANGES_WITH:
 # - regions/demo-english/pack.toml (host template keys)
@@ -93,18 +94,23 @@ class HostData:
         privacy = load(instance.path('privacy'), {})
         self.living = {pid for pid, p in self.people.items() if life_status(p, privacy) != 'dead'}
         self.unknown = {pid for pid, p in self.people.items() if life_status(p, privacy) == 'unknown'}
+        self.ids = set(self.people)
+        self.id_locations = {pid: instance.path('tree_snapshot') / 'people.json'
+                             for pid in self.people}
         self.rows = {key: self._rows(key) for key in
                      ('questions', 'answers', 'versions', 'cases', 'memory', 'records')}
-        self.ids = set(self.people)
-        self._ids(self.rows)
-        self._ids(load(instance.path('tree_snapshot') / 'people.json', {}))
-        self._ids(load(instance.path('tree_snapshot') / 'families.json', {}))
+        for name in ('people', 'families'):
+            path = instance.path('tree_snapshot') / (name + '.json')
+            self._ids(load(path, {}), path)
         for folder in instance.path('feeds').glob('*'):
             for name in ('feed', 'chapters', 'documents', 'pictures'):
-                value = load(folder / (name + '.json'), {})
-                self._ids(value)
+                path = folder / (name + '.json')
+                value = load(path, {})
+                self._ids(value, path)
                 if name == 'feed':
-                    self.ids.update(value.get('persons', {}))
+                    for ident in value.get('persons', {}):
+                        self.ids.add(ident)
+                        self.id_locations[ident] = path
         self.internal_ids = re.compile(r'(?<![\w-])(?:'
                                        + '|'.join(re.escape(ident) for ident in sorted(self.ids))
                                        + r')(?![\w-])') if self.ids else re.compile(r'(?!)')
@@ -113,18 +119,23 @@ class HostData:
         path = self.instance.path(key)
         if not path.exists():
             return []
-        values = [load(p, {}) for p in sorted(path.rglob('*.json'))] if path.is_dir() else [load(path, {})]
+        values = []
+        for source in sorted(path.rglob('*.json')) if path.is_dir() else [path]:
+            value = load(source, {})
+            self._ids(value, source)
+            values.append(value)
         return [row for value in values for row in (value if isinstance(value, list) else [value])]
 
-    def _ids(self, value):
+    def _ids(self, value, path):
         if isinstance(value, dict):
             if isinstance(value.get('id'), str):
                 self.ids.add(value['id'])
+                self.id_locations[value['id']] = path
             for child in value.values():
-                self._ids(child)
+                self._ids(child, path)
         elif isinstance(value, list):
             for child in value:
-                self._ids(child)
+                self._ids(child, path)
 
     def text(self, value, subjects=()):
         if isinstance(value, dict):
@@ -132,8 +143,7 @@ class HostData:
         if not isinstance(value, str):
             return ''
         value = plain_text(value).strip()
-        if self.internal_ids.search(value):
-            return ''
+        self._check_ids(value)
         if re.search(r'@I\d+@|\b\w+_\w+\b|[A-Za-z]:[\\/]|(?:\w+[\\/])+\w+|\.(?:jsonl?|toml|md|jpg|png)\b', value):
             return ''
         for pid in set(subjects) & self.people.keys():
@@ -174,11 +184,23 @@ class HostData:
         ids.update(p for p in row.get('people', []) if isinstance(p, str))
         return ids
 
+    def _check_ids(self, text):
+        match = self.internal_ids.search(text)
+        if match:
+            ident = match.group()
+            path = self.id_locations[ident]
+            if path.is_relative_to(self.instance.root):
+                path = path.relative_to(self.instance.root)
+            raise ValueError(f'Host text contains internal identifier {ident!r}, declared in {path}; '
+                             'nothing was printed. Choose a non-word ID there and update its '
+                             'references, or remove the ID from the host prose. '
+                             'For imported people, change the intake form and re-create the '
+                             'practice family; do not edit the generated tree snapshot.')
+
     def finish(self, text):
         # Recheck the final surface, including pack wording, not just input fragments.
         plain_text(text)
-        if self.internal_ids.search(text):
-            raise ValueError('Host text contains an internal identifier; nothing was printed.')
+        self._check_ids(text)
         if re.search(r'@I\d+@|\b\w+_\w+\b|[A-Za-z]:[\\/]|(?:\w+[\\/])+\w+|\.(?:jsonl?|toml|md|jpg|png)\b', text):
             raise ValueError('Host text contains working vocabulary or a file path; nothing was printed.')
         return text

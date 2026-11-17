@@ -1,9 +1,17 @@
 {
-  "paper": {
-    "record": "paper",
+  "bea-paper": {
+    "record": "bea-paper",
     "caption": "Invented certificate",
     "source": "Home holder",
-    "subjects": ["BEA"],
-    "snippets": [{"read": "Name: Bea Example", "field": "Name", "asset": null}]
+    "subjects": [
+      "bea-subject"
+    ],
+    "snippets": [
+      {
+        "read": "Name: Bea Example",
+        "field": "Name",
+        "asset": null
+      }
+    ]
   }
 }

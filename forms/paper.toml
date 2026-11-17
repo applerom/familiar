@@ -1,14 +1,15 @@
-id="paper"
+# Entirely fictional practice paper; the original contains this literal line.
+id="bea-paper"
 [record]
 title="Invented city certificate"
 source={holder="host"}
 language=["en"]
 fields={Name="Bea Example"}
 reading="Name: Bea Example"
-people={Bea="bea"}
+people={Bea="bea-person"}
 [record.interest]
 level=0.6
-tell="A home paper preserves a name differently from memory."
+tell="A home paper preserves a name alongside family memory."
 [[people]]
-id="bea"
-existing="telling-bea"
+id="bea-person"
+existing="bea-telling-bea-person"

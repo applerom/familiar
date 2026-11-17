@@ -130,7 +130,7 @@
     <REL TYPE="DEPENDS_ON" TARGET="MOD-FAMILY-GATE"/>
   </MODULE_HOST_CLI>
   <MODULE_HOST_LANGUAGE ID="MOD-HOST-LANGUAGE" FILE="src/familiar/instance/host_language.py" STATE="IMPLEMENTED">
-    <!-- Compile the bounded internal-ID matcher once per host view, retaining fragment and final-surface checks. -->
+    <!-- Compile the bounded internal-ID matcher once per host view, retaining fragment and final-surface checks. A refusal names the matched ID and its declaration file. -->
   </MODULE_HOST_LANGUAGE>
   <MODULE_HOST_TEXT ID="MOD-HOST-TEXT" FILE="src/familiar/instance/host_text.py" STATE="IMPLEMENTED">
     <REL TYPE="DEPENDS_ON" TARGET="MOD-HOST-LANGUAGE"/>

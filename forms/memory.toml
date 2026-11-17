@@ -1,18 +1,53 @@
-id="telling"
+# Entirely fictional practice family. Replace for real work.
+id="bea-telling"
 told_by="host"
 date="2026-11-12"
 [[items]]
-id="memory-name"
-text="Bea Example lived in a city."
+id="bea-memory-name"
+text="Bea Example lived in a city. Her family remembers her life as 1880 to 1955."
 strength="hearsay"
 witness="heard from her child"
+[[items]]
+id="bea-memory-marriage"
+text="The family remembers Bea and Ben Example as spouses. Ben lived from 1878 to 1952."
+strength="hearsay"
+witness="heard from their child"
 [[people]]
-id="bea"
-# Optional living: omit when unknown. Age horizon also applies; a reasoned family death decision is recorded in privacy.life_decisions.
-living=true
+id="bea-person"
+living=false
 [[people.names]]
 given="Bea"
 patronymic="" # Optional literal patronymic, included in display when present
 surname="Example"
 type="birth"
-provenance=["memory-name"]
+provenance=["bea-memory-name"]
+[[people.events]]
+type="birth"
+date="1880"
+provenance=["bea-memory-name"]
+[[people.events]]
+type="death"
+date="1955"
+provenance=["bea-memory-name"]
+[[people]]
+id="ben-person"
+living=false
+[[people.names]]
+given="Ben"
+surname="Example"
+type="birth"
+provenance=["bea-memory-marriage"]
+[[people.events]]
+type="birth"
+date="1878"
+provenance=["bea-memory-marriage"]
+[[people.events]]
+type="death"
+date="1952"
+provenance=["bea-memory-marriage"]
+[[families]]
+id="bea-ben-union"
+husband="ben-person"
+wife="bea-person"
+status="hypothesis"
+provenance=["bea-memory-marriage"]

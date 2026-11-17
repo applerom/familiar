@@ -1,6 +1,6 @@
 {
   "_about": "Save as records/<id>.json (nested folders allowed); id must equal the filename stem. kind: home-paper | archive-record | index-entry. Required: id, kind, title, source, language (array), fields (object). Supply nonempty fields OR nonempty literal reading; do not invent a transcript. Optional saved_result on index-entry is a local captured result path. Optional subjects: [{person: canonical-person-id, role: child, written: literal name}]. Check only your files: instance check --path records/your-folder or --prefix records/your-prefix. Optional record_role=analysis for researcher comparisons/summaries, or catalogue for source maps/catalogues: retained as material, excluded from personal source visits.",
-  "id": "paper",
+  "id": "bea-paper",
   "kind": "home-paper",
   "title": "Invented certificate",
   "source": {

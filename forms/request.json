@@ -1,8 +1,8 @@
 {
   "_about": "Save as family/questions/<id>.json under the family root (or the configured paths.questions; inspect with instance paths). family/requests is not the default storage. question is the versions-file ID. witness_question asks for unprompted memory and is shown before our_version; omit it only when no memory question applies.",
-  "id": "birth-paper",
-  "case": "birthplace-case",
-  "question": "birthplace",
+  "id": "bea-birth-request",
+  "case": "bea-birthplace-case",
+  "question": "bea-birthplace",
   "witness_question": "What do you remember about where Bea was born? Please tell it in your own words.",
   "our_version": "The birthplace is unknown.",
   "paper": "Birth certificate",

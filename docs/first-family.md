@@ -3,7 +3,9 @@
 
 This page is written for the agent. The host (the person whose family it is)
 chooses the family directory, tells memories, supplies home papers and reads
-the result; the agent does everything else through the commands below.
+the result; the agent uses the commands below and authors the explicitly named
+input files. Engine-generated snapshots, originals and review marks are written
+only through commands.
 Every block works the same in sh and PowerShell unless two variants are shown.
 
 Familiar works locally without AWS, a cloud account, orchestration tools or
@@ -43,6 +45,7 @@ Use `--language ru --address informal` for Russian ты (`formal` for вы).
 Russian and Polish packs are connected automatically. For English host text,
 add `language_packs = { en = "demo-english" }` at the top of `familiar.toml`,
 before the first table. Keep the generated family id and engine pin.
+Save `familiar.toml` as UTF-8 without a byte-order mark (BOM).
 Put the family directory under its own **private** version control and back it
 up: it is the only copy of what the family told and what was found.
 
@@ -77,10 +80,27 @@ familiar research form paper.toml | Set-Content -Encoding utf8 paper.toml
 lookup or maintenance. Family rules require the explicitly selected root.
 The agent fills the forms from the host's memory and a home paper, retaining
 literal words, attribution and uncertainty. The supplied forms describe an
-**invented** Bea Example: replace their contents for real work. Memory names
+**invented** Bea Example (1880–1955) and her spouse Ben (1878–1952): replace
+their contents for real work. Both are deceased; the paper belongs to Bea,
+so this practice run needs no living-person document permission. Memory names
 and events cite item ids; a paper keeps its literal reading and original.
-In this example the paper's `existing="telling-bea"` identifies the person
+In this example the paper's `existing="bea-telling-bea-person"` identifies the person
 from memory. Never identify people by a matching name alone.
+
+The host supplies `home-paper.txt` (or a scan). For this entirely fictional
+practice run, the agent first writes that file beside `memory.toml` with the
+exact line `Name: Bea Example`:
+
+```sh
+printf 'Name: Bea Example\n' > home-paper.txt
+```
+
+```powershell
+'Name: Bea Example' | Set-Content -Encoding utf8 home-paper.txt
+```
+
+The line is the complete invented original; the form preserves its literal
+reading. For real work, never create an original to fit a form.
 
 ```sh
 familiar --root ./new-family intake memory ./memory.toml
@@ -98,44 +118,68 @@ familiar --root ./new-family instance check
 familiar --root ./new-family tree build
 ```
 
-The host supplies `home-paper.txt` (or a scan); for a practice run create an
-explicitly fictional original matching the form. Originals are copied byte for
-byte. An optional GEDCOM starts with `intake gedcom ./export.ged --id relatives
+Originals are copied byte for byte. An optional GEDCOM starts with
+`intake gedcom ./export.ged --id relatives
 --living-years 110`; unsupported tags and subfields are counted as losses.
 Unknown life status is protected, not silently treated as dead.
 
 ### 3. Write and actually read the first story
 
 The agent reads role `feed-author`, the relevant story skill, and resolved
-rules. It prepares `feed.json`, `chapters.json` (an array of chapter forms)
-and `documents.json` (an object keyed by document id) from `research form
-feed.json`, `chapters.json` and `documents.json` (the last two are complete file
-containers; singular forms emit one entry). These are inputs the agent
-must author, not automatically generated history. Match person aliases to the
-intake ids, records to saved papers, and every claim to evidence. Use
-`feed new <id>` for the skeleton; the host or family agent may edit family
-inputs. The portable skill itself uses engine commands for writes and reports
-any missing write command to the host. See [forms](PRD.md#forms).
+rules. `feed new bea-city` creates the skeleton. The agent then **writes files**:
+`feed.json`, `chapters.json` (an array) and `documents.json` (an object keyed by
+document id) under `./new-family/feeds/bea-city/`. There is no command for
+authoring their contents. The commands below save the bundled forms to those
+exact input paths; they are complete and mutually consistent for this invented
+practice family. For real work the agent authors their contents from evidence,
+matching person aliases to intake ids and record references to saved papers.
+Singular `chapter.json` and `document.json` forms emit one entry, not the complete
+file containers. See [forms](PRD.md#forms).
 
 ```sh
 familiar method show role feed-author
 familiar method show skill story-text
-familiar --root ./new-family rules for feed-author --feed city
-familiar --root ./new-family feed new city
-# Author the feed inputs, then:
-familiar --root ./new-family feed build city
-familiar --root ./new-family feed review city --kind reader --out ./private-review
+familiar --root ./new-family rules for feed-author --feed bea-city
+familiar --root ./new-family feed new bea-city
+familiar research form feed.json > ./new-family/feeds/bea-city/feed.json
+familiar research form chapters.json > ./new-family/feeds/bea-city/chapters.json
+familiar research form documents.json > ./new-family/feeds/bea-city/documents.json
+familiar --root ./new-family instance check
+familiar --root ./new-family feed build bea-city
+familiar --root ./new-family feed review bea-city --kind reader --out ./private-review
+familiar --root ./new-family family summary
+familiar --root ./new-family family next
 ```
 
 ```powershell
 familiar method show role feed-author
 familiar method show skill story-text
-familiar --root ./new-family rules for feed-author --feed city
-familiar --root ./new-family feed new city
-# Author the feed inputs, then:
-familiar --root ./new-family feed build city
-familiar --root ./new-family feed review city --kind reader --out ./private-review
+familiar --root ./new-family rules for feed-author --feed bea-city
+familiar --root ./new-family feed new bea-city
+[IO.File]::WriteAllLines("$PWD/new-family/feeds/bea-city/feed.json", (familiar research form feed.json), [Text.UTF8Encoding]::new($false))
+[IO.File]::WriteAllLines("$PWD/new-family/feeds/bea-city/chapters.json", (familiar research form chapters.json), [Text.UTF8Encoding]::new($false))
+[IO.File]::WriteAllLines("$PWD/new-family/feeds/bea-city/documents.json", (familiar research form documents.json), [Text.UTF8Encoding]::new($false))
+familiar --root ./new-family instance check
+familiar --root ./new-family feed build bea-city
+familiar --root ./new-family feed review bea-city --kind reader --out ./private-review
+familiar --root ./new-family family summary
+familiar --root ./new-family family next
 ```
+
+`instance check` checks the authored inputs; `feed build` checks mechanical trust
+before writing output. The review command writes the material for reading and
+`./private-review/review-ticket.json`. Stop here until someone has actually read
+it; the summary and next step may still name pending reading.
+The PowerShell file writes use UTF-8 without BOM on both Windows PowerShell 5
+and PowerShell 7; `Set-Content -Encoding utf8` adds a BOM on version 5 and must
+not be used for these JSON inputs.
+
+Identifiers such as `bea-city`, `bea-first` and `bea-paper` deliberately include
+the example's name and a hyphen: ordinary words such as `city`, `first` and
+`paper` can collide with the filter that keeps internal identifiers out of host
+prose. A collision refusal names the identifier and its declaration file; choose
+a non-word id and update its references. The filter does not infer whether a
+word was intended as prose or as a reference.
 
 **One subscription is enough:** the agent writes; the host or another person
 reads the exact review material, including tree, documents and every language,
@@ -143,14 +187,14 @@ and records the verdict. Two invented agent ids are not independent reading.
 Only after that reading, substitute actual author and reader ids:
 
 ```sh
-familiar --root ./new-family feed accept city --stage reading --kind reader --reviewer actual-reader --author actual-author --ticket ./private-review/review-ticket.json
+familiar --root ./new-family feed accept bea-city --stage reading --kind reader --reviewer actual-reader --author actual-author --ticket ./private-review/review-ticket.json
 familiar --root ./new-family reader export --output ./first-reader
 familiar --root ./new-family reader verify --output ./first-reader
 familiar --root ./new-family reader serve --output ./first-reader --port 0
 ```
 
 ```powershell
-familiar --root ./new-family feed accept city --stage reading --kind reader --reviewer actual-reader --author actual-author --ticket ./private-review/review-ticket.json
+familiar --root ./new-family feed accept bea-city --stage reading --kind reader --reviewer actual-reader --author actual-author --ticket ./private-review/review-ticket.json
 familiar --root ./new-family reader export --output ./first-reader
 familiar --root ./new-family reader verify --output ./first-reader
 familiar --root ./new-family reader serve --output ./first-reader --port 0
@@ -180,18 +224,24 @@ release; see [reader delivery](reader-export.md) and [the gate](gate.md).
 
 ### 4. Open the local narrator desk
 
-Record the host's dataset decision in `family/desk-access.json` using the
-[local desk instructions](family-desk.md#только-на-этом-компьютере).
+After the host makes the dataset decision, the agent **writes**
+`./new-family/family/desk-access.json` using the JSON form in the
+[local desk instructions](family-desk.md#только-на-этом-компьютере), with
+`family.id` from `./new-family/familiar.toml` and the host's actual decision.
+There is no authoring command for this file. Run `instance check` below, then
+`desk build` to check the decision and build the permitted personal view.
 Build/serve need this decision and valid family inputs, with no publication
 configuration, credentials or AWS CLI:
 
 ```sh
+familiar --root ./new-family instance check
 familiar --root ./new-family desk build
 familiar --root ./new-family desk serve --port 0
 # Or: familiar --root ./new-family desk serve --build --port 0
 ```
 
 ```powershell
+familiar --root ./new-family instance check
 familiar --root ./new-family desk build
 familiar --root ./new-family desk serve --port 0
 # Or: familiar --root ./new-family desk serve --build --port 0
@@ -214,11 +264,13 @@ familiar --root ./new-family research replay --request request.json --capture ca
 
 These are complete fictional examples for Geneteka; declare
 `region_packs = ["belarus-podlasie"]` at the top level of `familiar.toml`.
-A language pack supplies wording, not search recipes. In PowerShell, use
-`| Set-Content -Encoding utf8 request.json` (and `capture.json`) to save UTF-8.
+A language pack supplies wording, not search recipes. In PowerShell, save JSON
+without BOM as above, for example
+`[IO.File]::WriteAllLines("$PWD/request.json", (familiar research form search-request), [Text.UTF8Encoding]::new($false))`
+(and the same for `capture.json` using form `capture`).
 Before replay, set `request.question` to a saved versions-file id, not prose
-or a letter id. `research form version` gives the matching `birthplace` example;
-save it as `versions/birthplace.json` after matching its people and sources.
+or a letter id. `research form version` gives the matching `bea-birthplace` example;
+save it as `versions/bea-birthplace.json` after matching its people and sources.
 The engine does not supply a live archive transport. The host environment supplies live
 access, sessions, permissions and source limits. A challenge or refusal stops
 that source; an unread response is never negative evidence. See
@@ -241,7 +293,7 @@ Install `familiar[images]` for document cropping (the `images` extra installs
 Pillow). The base engine works without image processing.
 Run `familiar research form memory.toml` or `paper.toml` for intake templates;
 `familiar research form NAME.json` prints memory, request, search, version, case,
-feed, chapter or document forms. The forms describe an invented city family
+feed, chapter or document forms. The forms describe the invented Bea and Ben Example family
 and are exercised together from a wheel outside the checkout.
 The `.json` suffix may be omitted; TOML forms keep their explicit suffix.
 

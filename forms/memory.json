@@ -1,13 +1,93 @@
 {
-  "id": "telling",
+  "id": "bea-telling",
   "told_by": "host",
   "date": "2026-11-12",
   "items": [
     {
-      "id": "memory-name",
-      "text": "Bea lived in a city",
+      "id": "bea-memory-name",
+      "text": "Bea Example lived in a city. Her family remembers her life as 1880 to 1955.",
       "strength": "hearsay",
-      "witness": "her child"
+      "witness": "heard from her child"
+    },
+    {
+      "id": "bea-memory-marriage",
+      "text": "The family remembers Bea and Ben Example as spouses. Ben lived from 1878 to 1952.",
+      "strength": "hearsay",
+      "witness": "heard from their child"
+    }
+  ],
+  "people": [
+    {
+      "id": "bea-person",
+      "living": false,
+      "names": [
+        {
+          "given": "Bea",
+          "patronymic": "",
+          "surname": "Example",
+          "type": "birth",
+          "provenance": [
+            "bea-memory-name"
+          ]
+        }
+      ],
+      "events": [
+        {
+          "type": "birth",
+          "date": "1880",
+          "provenance": [
+            "bea-memory-name"
+          ]
+        },
+        {
+          "type": "death",
+          "date": "1955",
+          "provenance": [
+            "bea-memory-name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ben-person",
+      "living": false,
+      "names": [
+        {
+          "given": "Ben",
+          "surname": "Example",
+          "type": "birth",
+          "provenance": [
+            "bea-memory-marriage"
+          ]
+        }
+      ],
+      "events": [
+        {
+          "type": "birth",
+          "date": "1878",
+          "provenance": [
+            "bea-memory-marriage"
+          ]
+        },
+        {
+          "type": "death",
+          "date": "1952",
+          "provenance": [
+            "bea-memory-marriage"
+          ]
+        }
+      ]
+    }
+  ],
+  "families": [
+    {
+      "id": "bea-ben-union",
+      "husband": "ben-person",
+      "wife": "bea-person",
+      "status": "hypothesis",
+      "provenance": [
+        "bea-memory-marriage"
+      ]
     }
   ]
 }

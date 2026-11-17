@@ -1,18 +1,27 @@
 {
   "_about": "research contribute FILE.json saves a new tree/contributions/<author>/<id>.json; never edits the snapshot. Replace the invented IDs with existing canonical IDs. Relationship decisions target one family union OR one parent/child pair, never both; settling a union does not settle its parent links. prior.text and prior.sources must exactly select one active fact. A new package ID is required for a later decision.",
-  "id": "certificate-decision",
+  "id": "bea-marriage-decision",
   "schema": 1,
-  "author": "researcher",
+  "author": "bea-researcher",
   "sources": {
-    "certificate": {"kind": "archive-record", "record": "certificate", "title": "Invented marriage certificate"}
+    "bea-marriage": {
+      "kind": "archive-record",
+      "record": "bea-marriage",
+      "title": "Invented marriage certificate"
+    }
   },
   "relationship_decisions": [
-    {"family": "memory-union", "previous_status": "hypothesis", "status": "verified", "text": "The certificate names them as spouses.", "sources": ["certificate"], "basis": "The marriage entry names both people and their parents."}
+    {
+      "family": "bea-telling-bea-ben-union",
+      "previous_status": "hypothesis",
+      "status": "verified",
+      "text": "The certificate names them as spouses.",
+      "sources": [
+        "bea-marriage"
+      ],
+      "basis": "The marriage entry names both people and the year."
+    }
   ],
-  "fact_replacements": [
-    {"person": "person-one", "prior": {"text": "Possibly spouses.", "sources": ["memory-item"]}, "reason": "Resolved by the marriage entry.", "fact": {"label": "document", "text": "They married in 1901.", "status": "verified", "sources": ["certificate"]}}
-  ],
-  "events": {
-    "person-one": [{"type": "birth", "date": "1880", "provenance": ["certificate"]}]
-  }
+  "fact_replacements": [],
+  "events": {}
 }

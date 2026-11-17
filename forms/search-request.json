@@ -1,5 +1,5 @@
 {
-  "_about": "Выдуманный пример. В familiar.toml нужен region_packs = [\"belarus-podlasie\"]. question — ID сохранённого вопроса с версиями, не текст и не ID письма: создайте versions/birthplace.json по research form version, подставьте свои ссылки. Для нуля/пустой оболочки задайте read_count=0; responses в capture содержит тройки URL, POST, строка JSON-ответа.",
+  "_about": "Выдуманный пример. В familiar.toml нужен region_packs = [\"belarus-podlasie\"]. question — ID сохранённого вопроса с версиями, не текст и не ID письма: создайте versions/bea-birthplace.json по research form version, подставьте свои ссылки. Для нуля/пустой оболочки задайте read_count=0; responses в capture содержит тройки URL, POST, строка JSON-ответа.",
   "source": "geneteka",
   "params": {
     "bdm": "B",
@@ -11,11 +11,19 @@
     "to": "1880",
     "exact": "1"
   },
-  "question": "birthplace",
-  "by": {"agent": "fictional-researcher", "model": "gpt-6.1-sol", "effort": "high"},
-  "people": ["p1"],
+  "question": "bea-birthplace",
+  "by": {
+    "agent": "bea-researcher",
+    "model": "gpt-6.1-sol",
+    "effort": "high"
+  },
+  "people": [
+    "bea-telling-bea-person"
+  ],
   "years": "1880",
-  "forms": ["Bea Example"],
+  "forms": [
+    "Bea Example"
+  ],
   "read_count": 1,
   "saved": [],
   "note": "Выдуманный локальный захват; прочитана одна строка индекса, акт не прочитан."

@@ -2,10 +2,12 @@
   "sources": [],
   "edges": [
     {
-      "type": "parent",
-      "from": "parent-example",
-      "to": "child-example",
-      "sources": ["paper"],
+      "type": "spouse",
+      "from": "bea-telling-bea-person",
+      "to": "bea-telling-ben-person",
+      "sources": [
+        "bea-memory-marriage"
+      ],
       "confidence": "possible"
     }
   ]

@@ -1,11 +1,26 @@
 [
   {
-    "id": "first",
+    "id": "bea-first",
     "title": "A city memory",
-    "text": "The family remembers Bea in the city. The invented paper names her.",
-    "people": ["BEA"],
-    "published_fields": {"BEA": ["name"]},
-    "records": [{"doc": "paper", "title": "Invented certificate", "index_base": 0, "pick": [0]}],
+    "text": "The family remembers Bea, who lived from 1880 to 1955, in the city. The invented paper names her.",
+    "people": [
+      "bea-subject"
+    ],
+    "published_fields": {
+      "bea-subject": [
+        "name"
+      ]
+    },
+    "records": [
+      {
+        "doc": "bea-paper",
+        "title": "Invented certificate",
+        "index_base": 0,
+        "pick": [
+          0
+        ]
+      }
+    ],
     "more": "Family testimony and the locally saved invented certificate; no birthplace is established."
   }
 ]

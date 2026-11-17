@@ -34,7 +34,8 @@ def test_installed_engine(tmp_path):
 
 
 INSTALLED_PATH = r"""
-import contextlib, io, json, os, subprocess, sys
+import base64, contextlib, hashlib, importlib, io, json, os, shutil, subprocess, sys
+import threading, tomllib, urllib.request, uuid
 from pathlib import Path
 from familiar.cli import main
 from unittest.mock import patch
@@ -49,42 +50,45 @@ def cli(*args, check=True):
     assert not check or code == 0, result.stdout + result.stderr
     return result
 
-assert main(['instance', 'init', str(family)]) == 0
-import hashlib
+assert main(['instance', 'init', str(family), '--title', 'Invented example', '--language', 'en']) == 0
 config = family / 'familiar.toml'
+config.write_text('language_packs = { en = "demo-english" }\n' + config.read_text(), encoding='utf-8')
+form = lambda name: cli('research', 'form', name).stdout
+for name in ('memory.toml', 'paper.toml'):
+    (tmp_path / name).write_text(form(name), encoding='utf-8')
+original = tmp_path / 'home-paper.txt'; original.write_text('Name: Bea Example\n', encoding='utf-8')
+cli('intake', 'memory', str(tmp_path / 'memory.toml'))
+cli('intake', 'paper', str(tmp_path / 'paper.toml'), '--original', str(original))
+cli('instance', 'check'); cli('tree', 'build')
+cli('feed', 'new', 'bea-city')
+for name in ('feed', 'chapters', 'documents'):
+    (family / 'feeds/bea-city' / (name + '.json')).write_text(form(name + '.json'), encoding='utf-8')
+cli('instance', 'check'); cli('feed', 'build', 'bea-city')
+cli('feed', 'review', 'bea-city', '--kind', 'reader', '--out', str(tmp_path / 'tutorial-review'))
+cli('family', 'summary'); cli('family', 'next')
 wheel = Path(sys.argv[2]); cli('instance', 'record-release', '--wheel', str(wheel), '--commit', 'a' * 40)
 cli('intake', 'table', str(tmp_path / 'relatives.xlsx'), '--id', 'table', '--told-by', 'Invented narrator', '--date', '2026-11-13')
 draft = family / '.state/intake/table-table'
 from familiar.intake.table import toml
-import tomllib
 memory = tomllib.loads((draft / 'memory.toml').read_text(encoding='utf-8'))
 memory['people'][0]['names'][0]['inferred_parts'] = {'patronymic': {'basis': 'An invented inference from the father row'}}
 (draft / 'memory.toml').write_bytes(toml(memory))
 cli('intake', 'memory', str(draft / 'memory.toml'), '--original', str(draft / 'original.xlsx'))
 assert (family / 'originals/table/original.xlsx').read_bytes() == (tmp_path / 'relatives.xlsx').read_bytes()
-form = lambda name: cli('research', 'form', name).stdout
-
 unions = family / 'tree/snapshot/families.json'; rows = json.loads(unions.read_text(encoding='utf-8'))
 rows['families'].append({'id': 'invented-union', 'husband': 'table-p4', 'wife': 'table-p3', 'children': ['table-p2'], 'events': [], 'provenance': ['table-c7'], 'status': 'hypothesis', 'derived': True, 'basis': 'Shared child in the family account.'})
 unions.write_text(json.dumps(rows), encoding='utf-8')
 doc = json.loads(form('card-document.json')); doc.update(subjects=['table-p3', 'table-p4'], snippets=[])
-doc['record'].update(id='paper', fields={'Name': 'Bea Example', 'Birth': '1880'}, reading='Name: Bea Example')
+doc['record'].update(id='bea-marriage', fields={'Name': 'Bea Example', 'Birth': '1880'}, reading='Name: Bea Example')
 (tmp_path / 'doc.json').write_text(json.dumps(doc), encoding='utf-8'); cli('research', 'document', str(tmp_path / 'doc.json'), '--author', 'reader')
-cli('feed', 'new', 'city')
-folder = family / 'feeds/city'
-for name, data in [('feed', json.loads(form('feed.json'))),
-                   ('chapters', json.loads(form('chapters'))),
-                   ('documents', json.loads(form('documents')))]:
-    if name == 'feed': data['persons']['BEA'] = 'table-p3'
-    (folder / (name + '.json')).write_text(json.dumps(data), encoding='utf-8')
 archive = tmp_path / 'host-originals'; archive.mkdir()
 scan = archive / 'certificate.txt'; scan.write_text('Invented original', encoding='utf-8')
 evidence = family / 'tree/evidence.json'
 saved = json.loads(evidence.read_text(encoding='utf-8')) if evidence.exists() else {}
-saved.setdefault('sources', []).append({'id': 'external-original', 'kind': 'archive-record', 'record': 'paper', 'local': str(scan), 'subjects': ['table-p3']})
-saved['sources'].append({'id': 'placeholder-original', 'kind': 'archive-record', 'record': 'paper', 'local': '<snapshot>/media/absent.jpg', 'subjects': ['table-p3']})
+saved.setdefault('sources', []).append({'id': 'external-original', 'kind': 'archive-record', 'record': 'bea-marriage', 'local': str(scan), 'subjects': ['table-p3']})
+saved['sources'].append({'id': 'placeholder-original', 'kind': 'archive-record', 'record': 'bea-marriage', 'local': '<snapshot>/media/absent.jpg', 'subjects': ['table-p3']})
 evidence.write_text(json.dumps(saved), encoding='utf-8')
-record = family / 'records/paper.json'; literal = json.loads(record.read_text(encoding='utf-8'))
+record = family / 'records/bea-marriage.json'; literal = json.loads(record.read_text(encoding='utf-8'))
 literal['source']['image'] = str(tmp_path / 'undeclared-legacy-image.jpg'); record.write_text(json.dumps(literal), encoding='utf-8')
 assert cli('reader', 'export', '--host-private', '--output', str(tmp_path / 'private'), check=False).returncode != 0
 os.environ['FAMILIAR_HOST_PATHS'] = json.dumps({str(family): {'originals': str(archive)}})
@@ -94,22 +98,20 @@ before = build(Instance(family), view='working'); union = next(f for f in before
 old = before['people']['table-p3']['facts'][0]
 from familiar.tree.revisions import apply
 edge = {'parent': 'table-p4', 'child': 'table-p2', 'status': 'hypothesis', 'confidence': 'possible', 'weight': .5}
-apply({'relationship_decisions': [{'parent': 'table-p4', 'child': 'table-p2', 'previous_status': 'hypothesis', 'status': 'verified', 'text': 'Established', 'basis': 'Record', 'sources': ['paper'], 'confidence': 'same', 'weight': 1.0}]}, before['people'], [edge], [], {'paper': {'record': 'record', 'kind': 'record'}}, lambda row: None, 'reader', {'record'})
+apply({'relationship_decisions': [{'parent': 'table-p4', 'child': 'table-p2', 'previous_status': 'hypothesis', 'status': 'verified', 'text': 'Established', 'basis': 'Record', 'sources': ['bea-marriage'], 'confidence': 'same', 'weight': 1.0}]}, before['people'], [edge], [], {'bea-marriage': {'record': 'record', 'kind': 'record'}}, lambda row: None, 'reader', {'record'})
 assert (edge['confidence'], edge['weight']) == ('same', 1.0)
-decision = {'id': 'settled', 'author': 'reader', 'schema': 1, 'relationship_decisions': [{'family': union['id'], 'previous_status': union['status'], 'status': 'verified', 'text': 'The entry establishes the union.', 'basis': 'Both people are named.', 'sources': ['paper']}], 'fact_replacements': [{'person': 'table-p3', 'prior': {'text': old['text'], 'sources': old['sources']}, 'reason': 'Read the certificate.', 'fact': {'label': 'document', 'text': 'Born in 1880.', 'status': 'verified', 'sources': ['paper']}}], 'events': {'table-p3': [{'type': 'birth', 'date': '1880', 'provenance': ['paper']}], 'table-p4': [{'type': 'birth', 'date': '1878', 'provenance': ['paper']}]}}
+decision = {'id': 'settled', 'author': 'reader', 'schema': 1, 'relationship_decisions': [{'family': union['id'], 'previous_status': union['status'], 'status': 'verified', 'text': 'The entry establishes the union.', 'basis': 'Both people are named.', 'sources': ['bea-marriage']}], 'fact_replacements': [{'person': 'table-p3', 'prior': {'text': old['text'], 'sources': old['sources']}, 'reason': 'Read the certificate.', 'fact': {'label': 'document', 'text': 'Born in 1880.', 'status': 'verified', 'sources': ['bea-marriage']}}], 'events': {'table-p3': [{'type': 'birth', 'date': '1880', 'provenance': ['bea-marriage']}], 'table-p4': [{'type': 'birth', 'date': '1878', 'provenance': ['bea-marriage']}]}}
 (tmp_path / 'decision.json').write_text(json.dumps(decision), encoding='utf-8'); cli('research', 'contribute', str(tmp_path / 'decision.json'))
 review = tmp_path / 'review'
-
 assert json.loads(cli('reader', 'preview', '--output', str(review)).stdout)['state'] == 'preview'
 assert not (review / 'CURRENT.json').exists()
-cli('feed', 'accept', 'city', '--stage', 'reading', '--kind', 'reader',
+cli('feed', 'accept', 'bea-city', '--stage', 'reading', '--kind', 'reader',
     '--reviewer', 'reader', '--author', 'writer', '--ticket', str(review / 'review-ticket.json'))
-import base64, importlib, shutil
 from familiar.instance.packs import bundled_root
 desk = importlib.import_module('familiar.desk.build')
 pack = family / '.secrets/test-pack'; shutil.copytree(bundled_root() / 'demo-english', pack)
 os.environ['FAMILIAR_HOST_PACKS'] = json.dumps({'demo-english': str(pack)})
-config.write_text('language_packs = { en = "demo-english" }\n' + config.read_text() + '\n[desk]\nsource="."\n', encoding='utf-8')
+config.write_text(config.read_text() + '\n[desk]\nsource="."\n', encoding='utf-8')
 assert 'desk serve --build' in cli('desk', 'serve', check=False).stderr
 fingerprint = lambda: {p.relative_to(family): p.read_bytes() for p in family.rglob('*') if p.is_file()}
 before_cloud = fingerprint()
@@ -126,7 +128,6 @@ edition = family / 'edition/cards.json'; edition.parent.mkdir(exist_ok=True)
 edition.write_text(json.dumps({'people': {'table-p3': {'media': [{'asset': '/dot.png', 'photo': True, 'kind': 'family-photograph'}]}}}))
 desk.build(Instance(family))
 from familiar.desk.server import server
-import threading, urllib.request, uuid
 with server(Instance(family), 0) as http:
     http.timeout = 5
     worker = threading.Thread(target=lambda: http.serve_forever(poll_interval=.01)); worker.start()
