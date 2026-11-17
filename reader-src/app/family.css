@@ -559,13 +559,23 @@ html:has(.feed-viewer),html:has(.feed-viewer) body{overflow:hidden}
 .feed-ask p{margin:4px 0;color:#1d2a38}
 .feed-figure-frame{position:relative}
 .feed-figure.photo-restoration{width:min(100%,640px);margin:16px auto}
-.photo-restoration .feed-figure-frame>img{max-height:60vh;object-fit:contain}
-.restoration-variants{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
-.restoration-variants button{border:1px solid var(--ink-mute);border-radius:8px;background:transparent;color:inherit;padding:8px 12px;cursor:pointer;overflow-wrap:anywhere}
-.restoration-variants button[aria-pressed=true]{border-color:var(--act);font-weight:700}
-.restoration-recipe{font-size:12px;margin:10px 0;max-width:100%}
-.restoration-recipe summary{cursor:pointer}
-.restoration-recipe pre{white-space:pre-wrap;overflow-wrap:anywhere;max-width:100%}
+.photo-restoration .feed-figure-frame{width:fit-content;max-width:100%;margin:0 auto}
+.photo-restoration .feed-figure-frame>img{width:auto;max-width:100%;max-height:60vh;object-fit:contain}
+/* A real photograph and its restoration or treatment: the face, one caption, a quiet variant switch, one small line that opens how it was made. */
+.photo-pair figcaption{font-size:13px;line-height:1.45}
+.pair-variants{display:flex;flex-wrap:wrap;gap:0;margin:8px 0 0;border:1px solid var(--rule);border-radius:10px;overflow:hidden;width:fit-content;max-width:100%}
+.pair-variants button{flex:1 1 auto;min-height:40px;min-width:0;border:0;border-left:1px solid var(--rule);background:transparent;color:var(--ink-mute);font:inherit;font-size:13px;padding:6px 14px;cursor:pointer;overflow-wrap:anywhere}
+.pair-variants button:first-child{border-left:0}
+.pair-variants button[aria-pressed=true]{background:var(--act-soft);color:var(--ink)}
+.pair-how{font-size:12px;line-height:1.45;color:var(--ink-mute);max-width:100%}
+.pair-how>summary{list-style:none;cursor:pointer;padding:10px 0 6px;min-height:24px}
+.pair-how>summary::-webkit-details-marker{display:none}
+.pair-how>summary u{text-decoration:underline dotted;text-underline-offset:3px;color:var(--act)}
+.pair-how[open]>summary u{text-decoration-style:solid}
+.pair-how>p{margin:0 0 6px;overflow-wrap:anywhere}
+.pair-recipe{margin:8px 0 4px}
+.pair-recipe>summary{display:inline-block;cursor:pointer;border:1px solid var(--rule);border-radius:8px;padding:8px 12px;color:var(--ink-mute)}
+.pair-recipe pre{font-size:11px;white-space:pre-wrap;overflow-wrap:anywhere;max-width:100%;max-height:50vh;overflow:auto}
 .panel .feed-figure figcaption{color:var(--muted)}
 .feed-figure-orig{position:absolute;right:8px;bottom:8px;width:72px;padding:0;border:1.5px solid rgba(241,217,138,.9);border-radius:8px;overflow:hidden;background:#1b211d;cursor:zoom-in;box-shadow:0 2px 8px rgba(0,0,0,.45)}
 .photo-restoration .feed-figure-orig{top:8px;bottom:auto}

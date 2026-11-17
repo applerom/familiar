@@ -11,6 +11,7 @@
     "versions": [
       {
         "id": "v1-front",
+        "label": {"en": "Looking at the camera", "ru": "Смотрит в кадр", "pl": "Patrzy w obiektyw"},
         "asset": "/portraits/invented-v1-front.png",
         "caption": "Generated restoration, looking towards the camera",
         "disclosure": "Face details are inferred from a poor print; compare with the original",
@@ -29,6 +30,7 @@
       },
       {
         "id": "v1-side",
+        "label": {"en": "Looking aside", "ru": "Смотрит в сторону", "pl": "Patrzy w bok"},
         "asset": "/portraits/invented-v1-side.png",
         "caption": "Alternative generated restoration, looking aside",
         "disclosure": "The original does not resolve the gaze; this is an alternative",

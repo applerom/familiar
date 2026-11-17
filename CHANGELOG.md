@@ -6,6 +6,11 @@
   one-tap real original, disclosed inventions, reader-selectable variants and
   append-only version recipes bound to both files. `feed restorations` lists
   recipes and their age for future regeneration; photo-treatment rules stay strict.
+- We show a restored or treated photograph as a face with one caption, a quiet switch between
+  variants named by the new optional version `label`, and one small line that opens how it was
+  made: disclosure, invented details, model and date, comparison numbers and the recipe.
+- A life line keeps a date span as a span ("≈1925 – 1941/45") in cards, tree, overview and feed
+  reader chips; event lists show "1941–1945" instead of the first year alone.
 - We keep an explicitly attributed cut-out with its corpus subjects instead of
   adding chapter participants; conflicting subjects refuse delivery and shared
   protected scans stay private. Withheld chapter media and game evidence now

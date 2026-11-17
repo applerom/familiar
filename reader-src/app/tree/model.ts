@@ -34,10 +34,24 @@ function splitName(name:string){const i=name.indexOf(' · ');return i<0?{main:na
 const COUNTRIES=new Set(['беларусь','белоруссия','belarus','białoruś','польша','polska','poland','россия','russia','российская империя','russian empire','литва','lithuania','lietuva','ссср','ussr','usa','сша','united states','united states of america','germany','германия','deutschland']);
 export function shortPlace(place:string){const parts=(place||'').split(/[,;]/).map(p=>p.trim()).filter(p=>p&&!COUNTRIES.has(p.toLocaleLowerCase().replace(/\.$/,''))).map(p=>p.replace(/\s+(Польша|Polska|Poland|Беларусь|Belarus)$/i,''));return (parts.find(p=>!/(область|обл\.|район|р-н|губерния|powiat|województwo)/i.test(p))||parts[0]||'').replace(/\s*\(.*$/,'').trim()}
 const APPROX_DATE=/^(ABT\b|EST\b|CAL\b|≈|~|about\b|circa\b|ca\.|около|примерно|прибл\.?|ok\.|około|cirka)/i;
-function compactDate(date:string){const y=year(date);if(y===undefined)return '';const q=(date||'').trim();return APPROX_DATE.test(q)?'≈'+y:/^(BEF|до)/i.test(q)?'BEF '+y:/^(AFT|после)/i.test(q)?'AFT '+y:String(y)}
+/** A date written as a span of years: "1941–1945", "1941-1945", "1941/45", "BET 1941 AND 1945", "FROM 1941 TO 1945", "между 1941 и 1945".
+ *  Its first year is never shown alone as the date: a death "in the war years" is not a death in 1941. */
+const SPAN_WORDS=/\b(?:BET|FROM|between|from|mellan|från)\s+(\d{4})\s+(?:AND|TO|and|to|och|till)\s+(\d{4})\b|(?:^|\s)(?:между|с|от|między|od)\s+(\d{4})\s+(?:и|по|до|a|do)\s+(\d{4})(?=$|[\s,.;·)])/iu;
+const SPAN_MARKS=/\b(\d{4})(?:\s*[–—/]\s*(\d{4}|\d{2})|(?:-|\s+-\s+)(\d{4}))\b(?![-./]\d)/;
+export function yearSpan(date:string):[number,number]|undefined{
+ const q=date||'';const w=SPAN_WORDS.exec(q);const m=w?null:SPAN_MARKS.exec(q);
+ const from=w?+(w[1]||w[3]):m?+m[1]:NaN;const to=w?(w[2]||w[4]):m?(m[2]||m[3]||''):'';
+ if(!from||!to)return undefined;const end=to.length===2?Math.floor(from/100)*100+Number(to):Number(to);
+ return end>from&&end-from<100?[from,end]:undefined;
+}
+/** "1941/45" in a life line, where the dash already joins birth and death. */
+const spanText=([a,b]:[number,number])=>`${a}/${Math.floor(a/100)===Math.floor(b/100)?String(b).slice(2):b}`;
+/** Birth and death joined by a dash; spaced when a side is itself a span ("≈1925 – 1941/45"). */
+const lifeSpan=(b:string,d:string)=>/\//.test(b+d)?`${b||'…'} – ${d||'…'}`:`${b||'…'}–${d||'…'}`;
+function compactDate(date:string){const y=year(date);if(y===undefined)return '';const q=(date||'').trim();const span=yearSpan(q);if(span)return spanText(span);return APPROX_DATE.test(q)?'≈'+y:/^(BEF|до)/i.test(q)?'BEF '+y:/^(AFT|после)/i.test(q)?'AFT '+y:String(y)}
 export const translated=(value:any,lang:string)=>typeof value==='string'?value:value?.[lang]||value?.en||value?.ru||'';
 /** "1974–…" for the dead or the long-ago born; "род. 1974" for someone born in living memory with no death recorded. */
-export function lifeLabel(p:Info,labels:Row,lang:string){const b=p.birthText?humanText(p.birthText,lang):'',d=p.deathText?humanText(p.deathText,lang):'';if(b&&!d&&(p.birth??p.guess?.year??0)>=1920&&labels.born)return `${labels.born} ${b}`;return b||d?`${b||'…'}–${d||'…'}`:translated(p.dateReference,lang)}
+export function lifeLabel(p:Info,labels:Row,lang:string){const b=p.birthText?humanText(p.birthText,lang):'',d=p.deathText?humanText(p.deathText,lang):'';if(b&&!d&&(p.birth??p.guess?.year??0)>=1920&&labels.born)return `${labels.born} ${b}`;return b||d?lifeSpan(b,d):translated(p.dateReference,lang)}
 type GuessWords={rel:Record<BirthGuess['relation'],[string,string,string]>;age:(g:string,n:number)=>string;spouse:(g:string,n:number)=>string;sibling:string;guessed:string;later:string};
 const ruYears=(n:number)=>n%10===1&&n%100!==11?'год':n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?'года':'лет';
 const plYears=(n:number)=>n===1?'rok':n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?'lata':'lat';
@@ -172,7 +186,8 @@ export function humanText(text:string,lang:string){
  return (text||'')
   .replace(/\s*[·,]?\s*@[A-Z]\d+@/g,'')
   .replace(/^Дата не указана\s*·\s*/,'')
-  .replace(/\bFROM (\d{4}) TO (\d{4})\b/g,'$1–$2')
+  .replace(/\b(?:FROM|BET) (\d{4}) (?:TO|AND) (\d{4})\b/g,'$1–$2')
+  .replace(/\b(\d{4})(?:\s*[–—]\s*|\s+-\s+)(\d{4})\b|\b(\d{4})-(\d{4})\b(?![-./]\d)/g,(_,a,b,c,d)=>`${a||c}–${b||d}`)
   .replace(/\b(?:about|circa|EST|CAL)\s+(?=\d)/gi,w.abt)
   .replace(/\b(ABT|BEF|AFT) /g,(_,k)=>(k==='ABT'?w.abt:k==='BEF'?w.bef+' ':w.aft+' ').replace('≈','≈'))
   .replace(/\b(\d{1,2}) ([A-Z]{3}) (\d{4})\b/g,(s,d,mo,y)=>MONTHS.includes(mo)?fmt({day:'numeric',month:'long',year:'numeric'},new Date(Date.UTC(+y,MONTHS.indexOf(mo),+d))):s)
@@ -192,7 +207,7 @@ export function buildModel(data:Row,labels:Row={}){
   const cp=p.cardPresentation||{};const bd=cp.birth??b?.date,dd=cp.death??d?.date;
   const birth=year(bd),death=year(dd),approx=APPROX_DATE.test((bd||'').trim())||/^(BEF|AFT|до|после)/i.test((bd||'').trim());
   const guess:BirthGuess|undefined=birth===undefined&&p.birthGuess?.year?p.birthGuess:undefined;
-  const birthText=compactDate(bd)||(guess?'≈'+guess.year:''),deathText=compactDate(dd);const life=birthText||deathText?`${birthText||'…'}–${deathText||'…'}`:'';
+  const birthText=compactDate(bd)||(guess?'≈'+guess.year:''),deathText=compactDate(dd);const life=birthText||deathText?lifeSpan(birthText,deathText):'';
   const alt=ownerLabel?'':[...main.matchAll(/\(([^)]*)\)/g)].map(m=>m[1].trim()).filter(Boolean).join(', ');
   const short=ownerLabel||display.replace(/\s*\([^)]*\)/g,'').replace(/\s+/g,' ').trim()||display;
   // a GEDCOM placeholder ("- удалить") is kept in the data but never shown as a person

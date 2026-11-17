@@ -15,7 +15,7 @@ export type ChapterKind='version'|'truth'|'visit'|'famous'|'fork'|'surname';
  *  a document or a portrait. `ours` pairs a real period picture with such a drawing: the page opens on the drawing and the reader switches
  *  «Наша версия» / «Как было». No badge on the picture (the author, 31.10.2026: it distracts from the story); the credit says it under «Подробнее». */
 type RestorationRecipe={version:number;model:string;date:string;prompt:string;invented:string[];comparison:Record<string,number>;original_asset:string;crop?:number[];original_sha256:string;sha256:string};
-type RestorationVersion={id:string;asset:string;caption:Row;disclosure:Row;recipe:RestorationRecipe};
+type RestorationVersion={id:string;label?:Row;asset:string;caption:Row;disclosure:Row;recipe:RestorationRecipe};
 export type Picture={asset:string;caption?:Row;disclosure?:Row;credit?:string;url?:string;license?:string;kind?:'ours'|'photo-treatment'|'photo-restoration';primary?:string;versions?:RestorationVersion[];ours?:Picture;orig?:string|Picture;spots?:Spot[];pano?:Pano;small?:boolean};
 /** A thing on a picture (play layer, 2.11.2026, `scripts/feed-play.py`): a box in percent of the picture from the top left, its name and two lines
  *  on why it is here; `kids` replaces `text` in the children's mode; `find` is the task of the «Найди» game. */
@@ -192,25 +192,54 @@ const ROMAN=['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
 /** The line of generations, oldest on the left; the chapter's generation is lit, the ones before it are passed. */
 /** A picture inside the text. A real picture with a paired drawing shows the drawing, and the real one sits in its corner as a small
  *  «Оригинал» inset: a tap opens it over the feed, so the page never jumps and the scene keeps its rhythm (author, 31.10.2026). */
+/** Reader words for a real photograph paired with its restoration or treatment. Only the caption and one quiet line are on the
+ *  screen; how it was made (disclosure, invented details, model and date, comparison numbers, recipe) opens under «как сделано». */
+const PAIR_WORDS:Record<string,{restored:string;treated:string;how:string;variant:string;invented:string;version:string;recipe:string;original:string;check:(n:Record<string,string>)=>string}>={
+ ru:{restored:'Восстановлено по старому снимку',treated:'Обработка настоящего снимка',how:'как сделано',variant:'Вариант',invented:'Додумано',version:'версия',recipe:'Рецепт',original:'оригинал доступен',
+  check:n=>`Сверка с оригиналом: попытка ${n.chosen_attempt} из ${n.attempts}; уменьшено до ${n.reduced_width_px} пикс., размытие ${n.blur_radius_px} пикс., средняя разница ${n.mean_absolute_error} из 255`},
+ pl:{restored:'Odtworzone ze starego zdjęcia',treated:'Obróbka prawdziwego zdjęcia',how:'jak to zrobiono',variant:'Wariant',invented:'Dopowiedziane',version:'wersja',recipe:'Przepis',original:'oryginał dostępny',
+  check:n=>`Porównanie z oryginałem: próba ${n.chosen_attempt} z ${n.attempts}; zmniejszone do ${n.reduced_width_px} pks, rozmycie ${n.blur_radius_px} pks, średnia różnica ${n.mean_absolute_error} z 255`},
+ en:{restored:'Restored from an old photograph',treated:'Treated real photograph',how:'how it was made',variant:'Variant',invented:'Invented',version:'version',recipe:'Recipe',original:'the original is available',
+  check:n=>`Compared with the original: attempt ${n.chosen_attempt} of ${n.attempts}; reduced to ${n.reduced_width_px} px, blur ${n.blur_radius_px} px, mean difference ${n.mean_absolute_error} of 255`}};
+/** The variant a reader chose stays chosen while the page is open: in the feed, on the person card and after leaving the chapter. */
+const chosenVariant=new Map<string,string>();
+/** "Model X; model and revision not recorded" → "Model X": an empty statement is skipped, not printed. */
+const recorded=(s:string)=>(s||'').split(/\s*;\s*/).filter(x=>x&&!/(не\s+записан|not\s+recorded|nie\s+zapisan|unrecorded)/i.test(x)).join('; ');
 export function FeedFigure({f,labels,language,kids=false,offer='look'}:{f:Picture;labels:Row;language:Language;kids?:boolean;offer?:Offer}){
  const [real,setReal]=useState(false);
  const base=f.ours||f, original=f.ours?f:(typeof f.orig==='object'?f.orig:null);
- const [choice,setChoice]=useState(base.primary);
- const version=base.versions?.find(v=>v.id===(choice||base.primary));
+ const pair=base.kind==='photo-restoration'||base.kind==='photo-treatment'?base.kind:null;
+ const key=base.id||base.versions?.[0]?.asset||base.asset;
+ const [choice,setChoiceState]=useState(chosenVariant.get(key)||base.primary);
+ const setChoice=(v:string)=>{chosenVariant.set(key,v);setChoiceState(v)};
+ const version=base.versions?.find(v=>v.id===choice)||base.versions?.find(v=>v.id===base.primary);
  const p=version?{...base,...version}:base;
- const words=language==='ru'?['Восстановление снимка · сгенерировано','Вариант','Рецепт восстановления','Додумано']:language==='pl'?['Odtworzenie zdjęcia · wygenerowane','Wariant','Przepis odtworzenia','Dopowiedziane']:['Photo restoration · generated','Variant','Restoration recipe','Invented'];
+ const w=PAIR_WORDS[language]||PAIR_WORDS.en;
+ const number=(x:number)=>new Intl.NumberFormat(language).format(x);
+ const when=(d:string)=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(d||'');return m?new Intl.DateTimeFormat(language,{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(Date.UTC(+m[1],+m[2]-1,+m[3]))):d||''};
+ const recipe=version?.recipe;
+ const how=pair==='photo-restoration'?w.restored:w.treated;
+ const caption=tr(p.caption,language);
  useEffect(()=>{if(!real)return;const key=(e:KeyboardEvent)=>{if(e.key==='Escape'){e.stopImmediatePropagation();setReal(false)}};
   addEventListener('keydown',key,true);return()=>removeEventListener('keydown',key,true)},[real]);
- return <figure className={'feed-figure'+(p.small?' small':'')+(base.kind==='photo-restoration'?' photo-restoration':'')}>
-  <SpotFrame className="feed-figure-frame" spots={base.kind==='photo-restoration'?undefined:p.spots} asset={p.asset} pano={base.kind==='photo-restoration'?undefined:p.pano} kids={kids} offer={base.kind==='photo-restoration'?'look':offer} labels={labels} language={language}>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={p.asset} alt={tr(p.caption,language)} loading="lazy"/>
+ return <figure className={'feed-figure'+(p.small?' small':'')+(pair?' photo-pair':'')+(pair==='photo-restoration'?' photo-restoration':'')}>
+  <SpotFrame className="feed-figure-frame" spots={pair==='photo-restoration'?undefined:p.spots} asset={p.asset} pano={pair==='photo-restoration'?undefined:p.pano} kids={kids} offer={pair==='photo-restoration'?'look':offer} labels={labels} language={language}>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={p.asset} alt={pair?[caption,how+(original?', '+w.original:'')].filter(Boolean).join('. '):caption} loading="lazy"/>
    {original&&<button className="feed-figure-orig" onClick={e=>{e.stopPropagation();setReal(true)}} aria-label={labels.feedRealTab}>
     {/* eslint-disable-next-line @next/next/no-img-element */}<img src={original.asset} alt="" loading="lazy"/><span>{labels.feedRealTab}</span></button>}
   </SpotFrame>
-  <figcaption>{[base.kind==='photo-restoration'?words[0]:'',tr(p.caption,language),tr(p.disclosure,language)].filter(Boolean).join(' · ')}
-   {version&&<><p>{words[1]}: {version.id} · v{version.recipe.version} · {version.recipe.model} · {version.recipe.date}</p><p>{words[3]}: {version.recipe.invented.join('; ')}</p></>}
-  </figcaption>
-  {(base.versions?.length||0)>1&&<div className="restoration-variants">{base.versions!.map(v=><button key={v.id} aria-pressed={v.id===version?.id} onClick={()=>{setChoice(v.id);setReal(false)}}>{words[1]}: {v.id}</button>)}</div>}
-  {version&&<details className="restoration-recipe"><summary>{words[2]}</summary><pre>{JSON.stringify(version.recipe,null,2)}</pre></details>}
+  {pair?<>
+   {caption&&<figcaption>{caption}</figcaption>}
+   {(base.versions?.length||0)>1&&<div className="pair-variants" role="group" aria-label={w.variant}>{base.versions!.map((v,n)=><button key={v.id} aria-pressed={v.id===version?.id} onClick={()=>{setChoice(v.id);setReal(false)}}>{tr(v.label,language)||`${w.variant} ${n+1}`}</button>)}</div>}
+   <details className="pair-how"><summary><span>{how}</span> · <u>{w.how}</u></summary>
+    {tr(p.disclosure,language)&&<p>{tr(p.disclosure,language)}</p>}
+    {recipe&&<>
+     {recipe.invented?.length>0&&<p>{w.invented}: {recipe.invented.map(x=>tr(x,language)).filter(Boolean).join(', ')}</p>}
+     <p>{[recorded(recipe.model),when(recipe.date),recipe.version?`${w.version} ${recipe.version}`:''].filter(Boolean).join(' · ')}</p>
+     {recipe.comparison&&<p>{w.check(Object.fromEntries(Object.entries(recipe.comparison).map(([k,v])=>[k,number(v)])))}</p>}
+     <details className="pair-recipe"><summary>{w.recipe}</summary><pre>{JSON.stringify(recipe,null,2)}</pre></details>
+    </>}
+   </details>
+  </>:<figcaption>{[tr(p.caption,language),tr(p.disclosure,language)].filter(Boolean).join(' · ')}</figcaption>}
   {real&&original&&<div className="feed-figure-over" role="dialog" aria-label={labels.feedRealTab} onClick={e=>{e.stopPropagation();setReal(false)}}>
    {/* eslint-disable-next-line @next/next/no-img-element */}<img src={original.asset} alt={tr(original.caption,language)}/>
    <p>{tr(original.caption,language)}</p></div>}
