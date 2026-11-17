@@ -32,6 +32,7 @@
     <!-- Life assessment consumes only records adopted by authored family references, never unrelated collector drafts. -->
   </MODULE_TREE_LIFE>
   <MODULE_TREE_CONTRIBUTIONS ID="MOD-TREE-CONTRIBUTIONS" FILE="src/familiar/tree/contributions.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Reader update order uses recorded dates and source ids so a clean archive preserves inspected bytes across filesystems.</INVARIANT>
     <!-- A replay cannot reactivate the same literal fact/evidence claim kept in retiredFacts. -->
     <REL TYPE="DEPENDS_ON" TARGET="MOD-TREE-REVISIONS"/>
   </MODULE_TREE_CONTRIBUTIONS>

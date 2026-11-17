@@ -14,7 +14,7 @@
     ],
     "inspection_digest": "8599ce53a8bd38c7b3b596d22e0f2c75536390d4cd242b7c4063c84bac885654",
     "verdict": "pass",
-    "at": "2026-11-17T08:15:38.385274+00:00",
+    "at": "2026-11-17T08:24:49.393774+00:00",
     "stage": "reading"
   },
   "feed:volga-1941/gnadenflur-1941@ru": {
@@ -32,7 +32,7 @@
     ],
     "inspection_digest": "721d7661e3099e4cc0bfb59318801b6b41ad39285705535192e3cea2a785e111",
     "verdict": "pass",
-    "at": "2026-11-17T08:15:38.385274+00:00",
+    "at": "2026-11-17T08:24:49.393774+00:00",
     "stage": "reading"
   },
   "reader:tree@ru": {
@@ -40,7 +40,7 @@
     "language": "ru",
     "reviewer": "u13-codex-gpt-6.1-sol",
     "author": "russian-demo-original-author",
-    "digest": "58854abfb51615e1b45a338e148b396d799486f2955d973537751fd217cbc9a3",
+    "digest": "e61a1120b61e36f637f2d80105a2391d4dce287e7b48f771ed941e583c077780",
     "safety_digest": "d13ca85c522bc7e490159f40550d429de8a5e2d136ab2216d9c4adffe898c29f",
     "rules": [
       "R1",
@@ -48,9 +48,9 @@
       "R3",
       "R4"
     ],
-    "inspection_digest": "325cd36236f6211321e77a15563304ac839e7df00638291d4d077e3d7129b77d",
+    "inspection_digest": "b1069a8c9985ae52de554a48788f31c35024c13756a933e548185e22ecb601e5",
     "verdict": "pass",
-    "at": "2026-11-17T08:15:38.385274+00:00",
+    "at": "2026-11-17T08:24:49.393774+00:00",
     "stage": "reading"
   },
   "reader:file:reader-profile.json@ru": {
@@ -68,7 +68,7 @@
     ],
     "inspection_digest": "78790fb0ef1744acb8d84cad38a9caf5a392eb8c40563121ac4f70346904a5f7",
     "verdict": "pass",
-    "at": "2026-11-17T08:15:38.386313+00:00",
+    "at": "2026-11-17T08:24:49.393774+00:00",
     "stage": "reading"
   }
 }

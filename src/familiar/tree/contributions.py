@@ -6,6 +6,7 @@
 # - sources-only packages publish no reader update [review: engine lead]
 # - duplicate source declarations name both owners and keep intake ownership explicit [review: engine lead]
 # - replayed claims cannot reactivate a fact retained in retiredFacts [review: engine lead]
+# - displayed update order follows recorded dates and sources, never checkout file times [review: engine lead]
 # CHANGES_WITH:
 # - MOD-FAMILY-GATE (the shared family boundary contract)
 # - docs/PRD.md#INSTANCE
@@ -218,11 +219,13 @@ def _merge_contributions(
         if len(applied) == before:
             break
         pending = retry
-    updates = sorted((x["update"] for x in applied if x["update"] is not None), key=lambda x: x["published_at"], reverse=True)
+    updates = sorted((x["update"] for x in applied if x["update"] is not None),
+                     key=lambda x: ('' if x['date'] == 'unknown' else x['date'],
+                                    tuple(x.get('sources', []))), reverse=True)
     research["updates"] = updates + research.get("updates", [])
     research["highlights"] = updates[:6] if updates else research.get("highlights", [])
     if updates:
-        latest = datetime.fromisoformat(updates[0]["published_at"])
+        latest = max(datetime.fromisoformat(update["published_at"]) for update in updates)
         try:
             previous = datetime.fromisoformat(research.get("published_at", ""))
             if previous.tzinfo is None:

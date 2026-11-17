@@ -19,3 +19,7 @@ Friedrich's childhood passage and the living daughter's birthplace are absent;
 the story remains complete without omission markers. Only literal text excerpts
 are shown. Placeholder images are not scans and were not accepted or published.
 Other state files and caches are disposable; this reading registry is not.
+
+The tree was read again after making update order independent of checkout
+modification times. Its recorded dates and source ids now determine the order;
+the same reviewed tree is built from a clean archive on Linux.

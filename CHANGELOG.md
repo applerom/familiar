@@ -9,6 +9,8 @@
 - Static demo export accepts `--public-reader` to wrap the accepted public projection. The English
   reader shell and accepted family inputs stay unchanged; language links appear throughout the Russian
   desk and on the English investigation pages. Builds use disposable family copies and never attest.
+- We order contribution updates by recorded date and source ids rather than file modification times,
+  so a clean archive on Linux preserves the reader bytes inspected on Windows.
 
 ## 0.31.1 — 17 November 2026
 
