@@ -292,6 +292,11 @@ class BookHTML:
         return ''.join(out)
 
     def document(self, family, feeds, *, host_private, page_size):
+        feeds = [dict(feed) for feed in feeds]
+        for feed in feeds:
+            if not self.text(feed.get('title')).strip():
+                feed['title'] = {'ru': 'Семейные истории', 'pl': 'Historie rodzinne', 'sv': 'Familjehistorier'}.get(self.language.split('-')[0], 'Family stories')
+                self.warnings.append({'feed': feed['id'], 'message': 'Feed title withheld by reader privacy; using a generic title.'})
         title = self.inline(family['title'])
         cover = ['<header class="book-cover"><h1>' + title + '</h1>',
                  '<p class="book-edition">' + self.labels[5 if self.kids else 4] + '</p>']

@@ -134,6 +134,13 @@ logins from a phone, without the agent. There is no separate administration
 site, no e-mail invitations and no roles beyond `owner` and `reader`
 ([details](family-desk.md)).
 
+A relative with a personal `reader` login sees the same living-person information
+as the host in the desk: everything the family knows except living people's
+documents and addresses; the host makes this choice when issuing access to the
+accepted private dataset in `family/desk-access.json`. Service pages and
+correspondence remain owner-only. Public output without a login carries only
+living people's names and kinship.
+
 ## Data flow in one line
 
 memory and papers → `intake` → attributed tree → research (`records`,

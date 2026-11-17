@@ -188,9 +188,8 @@ def _apply_identities(data, decisions, labels=None):
             for value in copy.deepcopy(other.get(field, [])):
                 if value not in p.setdefault(field, []):
                     p[field].append(value)
-        # A conflicting imported death must never silently declassify a living subject.
-        if other.get('living', True):
-            p['living'] = True
+        # Life assessment uses the independent participants retained in history;
+        # a copied flag cannot counter a death in the combined event list.
         p["name"] = decision["name"]
         p["summary"] = decision["summary"]
         p["identityAliases"] = p.get("identityAliases", []) + [alias]

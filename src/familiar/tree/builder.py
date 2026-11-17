@@ -13,7 +13,7 @@
 # - MOD-PUBLICATION (declared reader surfaces and default-deny policy)
 # - MOD-FAMILY-WRITER (the sole filesystem and generation boundary)
 # - docs/PRD.md#INSTANCE
-# - MOD-TREE-LIFE (post-identity assessment)
+# - MOD-TREE-LIFE (independent participant and post-identity assessment)
 # - MOD-INSTANCE-RESEARCH-FORMS (evidence container)
 # - MOD-TREE-CONTRIBUTIONS (declaration owner paths)
 # - MOD-TREE-SURNAMES (reversible clan display after identity resolution)
@@ -111,7 +111,7 @@ def _build(instance, *, enrich=None):
     if metadata.get('root') in data['people']:
         data['root'] = metadata['root']
     from .life import _assess
-    result = _assess(instance, _apply_identities(data, read_json(instance.path("identity_decisions"), {}),
+    result = _assess(instance, _apply_identities(_assess(instance, data), read_json(instance.path("identity_decisions"), {}),
                             labels=metadata.get("labels", {})))
     if metadata.get('narrator'):
         narrator = result.get('identityAliases', {}).get(metadata['narrator'], metadata['narrator'])

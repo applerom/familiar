@@ -200,8 +200,8 @@ class HostData:
 
     def _locators(self, text):
         def replace(match):
-            # Numeric calendar/folio notation is prose, even when it contains slashes.
-            if re.fullmatch(r'\d+(?:[./\\–—-](?:\d+|[IVXLCDM]+))+(?:[rv]|об)?\.?', match.group(), re.IGNORECASE):
+            # Calendar/folio notation may start with a Roman month.
+            if re.fullmatch(r'(?:\d+|[IVXLCDM]+)(?:[./\\–—-](?:\d+|[IVXLCDM]+))+(?:[rv]|об)?\.?', match.group(), re.IGNORECASE):
                 return match.group()
             self.hidden = True
             return self.words('internal_hidden')

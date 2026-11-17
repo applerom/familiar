@@ -23,6 +23,7 @@
   </FEATURE_INSTANCE>
 
   <MODULE_INSTANCE_VALIDATION ID="MOD-INSTANCE-VALIDATION" FILE="src/familiar/instance/validation.py" STATE="IMPLEMENTED">
+      <INVARIANT REVIEW="engine lead">Life conflicts advise with merged participants, their independent death evidence and the canonical life decision or undo needed; protected output stays available.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Image kinds distinguish a real-photo treatment from a generated drawing.</INVARIANT>
     <INVARIANT REVIEW="engine lead">All person references resolve applied contributions and identity successors; invalid ids name the working-tree commands.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Rejected tree contributions are blocking data findings with file, claim and cause, including selected-file checks.</INVARIANT>

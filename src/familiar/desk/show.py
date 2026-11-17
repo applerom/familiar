@@ -2,6 +2,7 @@
 # PURPOSE: Derive a dateless investigation from recorded alternatives, search coverage and accepted tree changes.
 # PRD_REF: docs/PRD.md#FAMILY-DESK
 # INVARIANTS:
+# - historical research labels use the shared effective life status after merges [review: engine lead]
 # - commit messages, search queries, paths and unaccepted person details never enter the show [test: tests/gate/test_desk_guarantees.py::test_desk_requires_host_decision]
 # - output contains ordered event pages and numeric weight history, never research timestamps [review: engine lead]
 # - absent reasons, source types and readings are never invented [review: engine lead]
@@ -19,7 +20,6 @@ import math
 import re
 import subprocess
 from collections import Counter, defaultdict
-from datetime import UTC, datetime
 from pathlib import Path
 
 FIRM = {'firm', 'accepted', 'established'}
@@ -42,20 +42,6 @@ def weight(value):
     if isinstance(value, (float, int)) and not isinstance(value, bool) and math.isfinite(value):
         return max(0, min(1, value))
     return 0
-
-
-def historical_person(person):
-    if person.get('living') is True:
-        return False
-    if person.get('living') is False:
-        return True
-    for item in person.get('events', []):
-        if item.get('type') == 'death':
-            return True
-        year = re.match(r'^(\d{4})', str(item.get('date', '')))
-        if item.get('type') == 'birth' and year and int(year[1]) <= datetime.now(UTC).year - 110:
-            return True
-    return False
 
 
 def project(active, graph, w):
@@ -103,6 +89,8 @@ def project(active, graph, w):
     def relative(path):
         return path.relative_to(active.root).as_posix()
     people = graph.get('people', {})
+    from familiar.checks.engine import _known_people, life_status
+    known = _known_people(active)
     events, versions, lanes, asks, pending = [], [], [], [], []
     lanes.append({'id': 'tree', 'title': w['tree'], 'kind': 'tree'})
     lane_ids, version_paths = {}, {}
@@ -116,7 +104,7 @@ def project(active, graph, w):
         identity = row.get('id', path.stem)
         lane = opaque(identity)
         lane_ids[identity] = lane
-        historical = all(historical_person(people[p]) for p in subjects)
+        historical = all(life_status(known.get(p, {'id': p}), {}) == 'dead' for p in subjects)
         title = public_line(row.get('headline') or (row.get('title') if historical else ''),
                             w['branch'].format(n=index))
         # The real question ID is needed by the researcher's feedback inbox, but

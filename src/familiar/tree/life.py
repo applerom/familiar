@@ -2,6 +2,8 @@
 # PURPOSE: Assess life status consistently from dated generations and reversible family decisions.
 # PRD_REF: docs/PRD.md#TRUST
 # INVARIANTS:
+# - merges retain each participant's protection unless a canonical life decision resolves it [test: tests/gate/test_data_guarantees.py::test_f3_living_fields_require_permission_and_exclude_addresses]
+# - a death before the youngest plausible birth remains a protected conflict [review: engine lead]
 # - life declarations for merged people follow their active successors [review: engine lead]
 # - unknown status remains protected and revoking a death decision restores protection [review: engine lead]
 # - direct verified/export parent links bound either endpoint regardless of sex; hypotheses do not [review: engine lead]
@@ -40,7 +42,7 @@ def _record_bounds(instance, graph):
     """Use attributed roles only; prose, name matches and document metadata are not identity."""
     from familiar.checks.engine import load
 
-    bounds, deaths = {}, set()
+    bounds, deaths = {}, {}
     aliases = graph.get('identityAliases', {})
     adult = {'father', 'mother', 'parent', 'godfather', 'godmother', 'godparent',
              'spouse', 'husband', 'wife', 'bride', 'groom'}
@@ -54,7 +56,7 @@ def _record_bounds(instance, graph):
         if pid not in graph['people'] or not interval:
             return
         if role == 'deceased':
-            deaths.add(pid)
+            deaths.setdefault(pid, []).append(interval)
         elif role not in adult | child:
             return
         upper = interval[1] - (12 if role in adult else 0)
@@ -96,6 +98,15 @@ def _record_bounds(instance, graph):
             add(pid, role, event.get('date', ''), event.get('status'))
     # Disagreeing records retain the youngest plausible bound.
     return {pid: (0, max(values), 'record') for pid, values in bounds.items()}, deaths
+
+
+def _participants(person):
+    """Original participants, including aliases that already had their own merges."""
+    history = person.get('identityHistory', [])
+    if not history:
+        return [person]
+    return _participants(history[0]['priorCanonical']) + [
+        p for step in history for p in _participants(step['priorAlias'])]
 
 
 def _assess(instance, graph):
@@ -178,6 +189,38 @@ def _assess(instance, graph):
             status, basis = 'living', 'birth within living horizon; no established death'
         else:
             status, basis = 'unknown', 'birth unknown; generation does not establish age beyond horizon'
+        conflicts = []
+        death_dates = [_birth_bounds(e.get('date', '')) for e in person.get('events', [])
+                       if e.get('type') == 'death' and e.get('status') != 'hypothesis'] + deaths.get(pid, [])
+        early_death = any(d and pid in bounds and d[1] < bounds[pid][1] for d in death_dates)
+        participants = _participants(person)
+        merged_aliases = [alias for alias, target in aliases.items() if target == pid]
+        merged = bool(merged_aliases)
+        protected = [p['id'] for p in participants if p.get('life_assessment', {}).get('status') != 'dead'] if merged else []
+        if merged and not person.get('identityHistory'):
+            protected = [pid, *merged_aliases]  # Imported aliases have no independent life evidence.
+        # A death decision on an absorbed card is evidence for that participant,
+        # not a decision about everyone. The canonical id names a merged decision.
+        resolved = decision and decision['person'] == pid and decision['status'] == 'dead'
+        if early_death or protected:
+            if not resolved:
+                status, basis = 'unknown', 'conflicting life evidence; protection retained'
+                if pid in declared_living or any(p.get('life_assessment', {}).get('status') == 'living' for p in participants if merged):
+                    status = 'living'
+            owners = []
+            for participant in participants:
+                evidence = [str(e.get('date', 'undated')) + ' ' + str(e.get('provenance', []))
+                            for e in participant.get('events', []) if e.get('type') == 'death']
+                assessment = participant.get('life_assessment', {})
+                owners.append(participant['id'] + ': ' + assessment.get('basis', 'unassessed') +
+                              '; own death events: ' + (', '.join(evidence) or 'none'))
+            # Even an explicit resolution must not silently hide contradictory dates.
+            if not resolved or early_death:
+                conflicts.append(f"Life conflict for {pid} (merged with {', '.join(merged_aliases) or 'none'}): "
+                    f"{'; '.join(owners)}; protected participants: {', '.join(protected) or 'none'}; "
+                    f"death before birth upper bound: {early_death}. "
+                    f"Record privacy.life_decisions for canonical {pid} with a death basis, or undo the merge; correct conflicting dates.")
         person['life_assessment'] = {'status': status, 'basis': basis,
+                                     **({'conflicts': conflicts} if conflicts else {}),
                                      **({'birth_bounds': list(bounds[pid][:2])} if pid in bounds else {})}
     return graph

@@ -132,6 +132,11 @@ def test_f3_living_fields_require_permission_and_exclude_addresses(family):
     assert not any((r.get('record') == 'doc-helena-baptism' for r in graph['feeds'][0]['chapters'][0]['records']))
     with pytest.raises(ValueError, match='not for publication or clean release'):
         publish(family, family.root / 'rejected', private)
+    for target, alias, flag in [('p-modern', 'p-amaro', {}), ('p-amaro', 'p-modern', {}), ('p-modern', 'p-amaro', {'living': True}), ('p-amaro', 'p-modern', {'living': True})]:
+        edit(family, 'tree/snapshot/people.json', lambda p: p.update(people=[r for r in p['people'] if r['id'] != 'p-modern'] + [dict(id='p-modern', name='Invented', events=[{'type': 'birth', 'date': '1990'}], **flag)]))
+        family.path('identity_decisions').write_text(json.dumps({'merges': [dict(canonical=target, alias=alias, status='accepted_family_confirmation', sources=['doc-helena-baptism'], name='Invented', summary='Duplicate', birth='1990')]}), encoding='utf-8')
+        shown = restrict_graph(family, {'identityAliases': {alias: target}, 'people': {target: {'id': target, 'name': 'Invented', 'facts': [{'text': 'PRIVATE MERGED FACT'}]}, 'p-daniel': {'id': 'p-daniel'}}})
+        assert 'PRIVATE MERGED FACT' not in json.dumps(shown)
 
 
 def test_f4_acceptance_requires_auditable_strong_grounds(family):

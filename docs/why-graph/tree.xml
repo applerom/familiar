@@ -31,6 +31,7 @@
     <REL TYPE="DEPENDS_ON" TARGET="MOD-TREE-LIFE"/>
   </MODULE_TREE_BUILDER>
   <MODULE_TREE_LIFE ID="MOD-TREE-LIFE" FILE="src/familiar/tree/life.py" STATE="IMPLEMENTED">
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_f3_living_fields_require_permission_and_exclude_addresses">A merge preserves each participant's independent protection in either direction, including explicit living flags; only a canonical life decision can resolve it. Contradictory death dates remain visible conflicts.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Privacy life declarations on merged ids follow their active successors.</INVARIANT>
     <!-- Life assessment consumes only records adopted by authored family references, never unrelated collector drafts. -->
   </MODULE_TREE_LIFE>

@@ -2,6 +2,17 @@
 
 ## 0.33.0 — 17 November 2026
 
+- We preserve each participant's life protection across identity merges. Existing
+  disputed merges may now hide facts, crops and prose from public reader, demo and
+  book output and refuse photo restoration. `instance check` advises which cards
+  and death evidence conflict: record a reasoned `privacy.life_decisions` entry
+  for the canonical person or undo the merge; correct death dates before birth.
+  A death decision on an absorbed card alone cannot release the merged person.
+- Books use a generic family-story title and report an omission when reader
+  privacy removes the feed title. Host prose also retains Roman-month dates.
+- We clarify that personal reader access grants the desk's accepted private
+  family dataset, including living information except documents and addresses;
+  service pages and correspondence stay owner-only and public output stays limited.
 - We add deceased-only `photo-restoration` pairs: generated photographs with a
   one-tap real original, disclosed inventions, reader-selectable variants and
   append-only version recipes bound to both files. `feed restorations` lists

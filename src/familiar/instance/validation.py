@@ -2,6 +2,7 @@
 # PURPOSE: Check authored family forms and references before reporting content readiness.
 # PRD_REF: docs/PRD.md#FORMS
 # INVARIANTS:
+# - protected life conflicts advise with participants, death evidence and a resolution [review: engine lead]
 # - photo-treatment is a distinct image kind whose frame binding is checked at publication [review: engine lead]
 # - misplaced family/requests data reports the configured questions path instead of silently disappearing [review: engine lead]
 # - invalid settings and dangling adopted references cannot receive a valid report; collector-only form errors remain separate [review: engine lead]
@@ -299,7 +300,12 @@ def _check(instance, selected=None):
             fail(instance.root / error['file'], error['error'], 'instance.contribution-not-applied')
     from familiar.tree.identities import _apply_identities
     from familiar.tree.builder import read_json
-    people = people_index(_apply_identities(graph, read_json(instance.path('identity_decisions'), {})))
+    from familiar.tree.life import _assess
+    graph = _assess(instance, _apply_identities(_assess(instance, graph), read_json(instance.path('identity_decisions'), {})))
+    people = people_index(graph)
+    for person in graph['people'].values():
+        for message in person['life_assessment'].get('conflicts', []):
+            advice.append({'location': str(instance.path('identity_decisions')), 'message': message})
     from familiar.tree.surnames import decision_errors
     metadata_path = instance.path('tree_metadata')
     metadata = load(metadata_path, {})
