@@ -17,7 +17,8 @@ tap away.
 </p>
 
 The pictures show the invented family that ships in [`demo/`](demo/README.md);
-the same pages are [live here](https://applerom.github.io/familiar/).
+the same pages are [live here](https://applerom.github.io/familiar/). A second
+invented family, in Russian, is [live here](https://applerom.github.io/familiar/ru/).
 
 ## What a family gets
 
