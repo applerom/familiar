@@ -42,7 +42,8 @@ def project(instance, w):
         if group == 'ready':
             content += '<div class="desk-prose correspondence-letter" lang="' + e(row['language']) + '">' + e(row['text']) + '</div>'
             content += '<div class="correspondence-actions"><button type="button" data-copy>' + e(c['copy']) + '</button>'
-            content += link(row['destination'], c['destination'])
+            if row['destination']:
+                content += link(row['destination'], c['destination'])
             content += '<button type="button" data-sent>' + e(c['sent']) + '</button></div>'
         else:
             content += '<details><summary>' + e(c['letter']) + '</summary><div class="desk-prose correspondence-letter" lang="' + e(row['language']) + '">' + e(row['text']) + '</div></details>'

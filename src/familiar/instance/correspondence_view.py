@@ -3,6 +3,7 @@
 # PRD_REF: docs/PRD.md#FAMILY-DESK
 # INVARIANTS:
 # - original files, principals and research identifiers never enter visible prose [review: engine lead]
+# - a missing destination projects no send link or address line [review: engine lead]
 # - outgoing prose uses the same host-text scan as family letters; living details need human review [review: engine lead]
 # CHANGES_WITH:
 # - MOD-CORRESPONDENCE
@@ -50,7 +51,7 @@ def project(instance):
         sent = row.get('sent', {})
         item = {k: prose(row[k]) for k in ('title', 'recipient', 'text')}
         item.update(id=row['id'], state=row['state'], language=row['language'],
-            destination=address(row['destination'], email=True), follow_up=address(row['follow_up']) if row.get('follow_up') else '',
+            destination=address(row['destination'], email=True) if row.get('destination') else '', follow_up=address(row['follow_up']) if row.get('follow_up') else '',
             sender=prose(row['sender']['name']), context=' · '.join(context),
             sent_by=prose(sent.get('by', '')), sent_at=sent.get('at', ''),
             replies=[{k: prose(reply.get(k, '')) for k in ('text', 'by', 'at', 'meaning')} | {'feedback': reply.get('feedback', '')}
@@ -62,7 +63,7 @@ def project(instance):
         if row['state'] != 'closed':
             sections = [item['title'], w['to'] + ': ' + item['recipient'],
                 w['sender'] + ': ' + item['sender'], w['state_' + row['state']],
-                w['destination'] + ': ' + row['destination'],
+                row.get('destination') and w['destination'] + ': ' + row['destination'],
                 row.get('follow_up') and w['follow_up'] + ': ' + row['follow_up'],
                 item['context'] and w['about'] + ': ' + item['context'], item['text']]
             if sent:

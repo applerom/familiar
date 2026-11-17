@@ -36,6 +36,7 @@
     <!-- Life assessment consumes only records adopted by authored family references, never unrelated collector drafts. -->
   </MODULE_TREE_LIFE>
   <MODULE_TREE_CONTRIBUTIONS ID="MOD-TREE-CONTRIBUTIONS" FILE="src/familiar/tree/contributions.py" STATE="IMPLEMENTED">
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_dropped_contribution_blocks_delivery">Contributed spouse unions retain weight, basis and sources atomically with existing or newly added people.</INVARIANT>
     <INVARIANT REVIEW="engine lead">An existing unnamed person can receive sourced name parts through people, retaining the earlier name in working nameHistory.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Reader update order uses recorded dates and source ids so a clean archive preserves inspected bytes across filesystems.</INVARIANT>
     <!-- A replay cannot reactivate the same literal fact/evidence claim kept in retiredFacts. -->

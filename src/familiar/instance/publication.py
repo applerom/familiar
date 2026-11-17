@@ -10,6 +10,7 @@
 # - the person's `coverage` (where it was looked for) is declared for the host-private reader only and is dropped from every public projection [review: engine lead]
 # - undeclared nested fields have no publication path [test: tests/gate/test_data_guarantees.py::test_f5_undeclared_reader_fields_stay_private]
 # - declared strings remain literal NFC text; only restricted-list data shape is checked, not text style [review: engine lead]
+# - spouse union weights reach the reader unchanged [review: engine lead]
 # - card serialization runs in memory; its declared fields and complete privacy checks do not depend on cache entries [review: engine lead]
 # CHANGES_WITH:
 # - MOD-HOST-LANGUAGE (declared host text and private subject references)
@@ -114,7 +115,7 @@ SCHEMAS['name-presentation'] = fields('display full sourceName note patronymic m
 SCHEMAS['confirmation'] = fields('basis') | fields('level research identityAccepted', 'scalar') | fields('sources', ['reference'])
 SCHEMAS['retired-fact'] = SCHEMAS['fact'] | fields('retiredBecause')
 SCHEMAS['card'] = fields('birth death place placeRole birthKind deathKind connectionNote connectionShort dateBasis dateReference')
-SCHEMAS['family'] = fields('id husband wife', 'reference') | fields('children provenance', ['reference']) | fields('events', ['event']) | fields('status derived', 'scalar') | fields('basis')
+SCHEMAS['family'] = fields('id husband wife', 'reference') | fields('children provenance', ['reference']) | fields('events', ['event']) | fields('status derived weight', 'scalar') | fields('basis')
 SCHEMAS['edge'] = fields('from to parent child family', 'reference') | fields('type status role confidence weight', 'scalar') | fields('sources', ['reference']) | fields('text note basis') | fields('derived', 'scalar')
 SCHEMAS['source'] = fields('excerpt subjects', ['reference']) | fields('title description text') | fields('id record asset', 'reference') | fields('kind', 'scalar')
 SCHEMAS['contribution-status'] = fields('applied errors warnings', ['text'])

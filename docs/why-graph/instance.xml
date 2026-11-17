@@ -109,6 +109,7 @@
     <REL TYPE="DEPENDS_ON" TARGET="MOD-OUTPUT-REVIEW"/>
   </MODULE_FAMILY_WRITER>
   <MODULE_PUBLICATION ID="MOD-PUBLICATION" FILE="src/familiar/instance/publication.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Spouse union weights reach the reader unchanged.</INVARIANT>
     <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_photo_treatment_stays_local_for_living_subject">Restorations refuse living or unknown subjects everywhere and require original frames and version recipes; deceased pairs reach both views.</INVARIANT>
     <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_photo_treatment_stays_local_for_living_subject">Living photo treatments need picture permission and stay local; public generations track dead-only treatment uses.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Merged person references retain recorded privacy permissions.</INVARIANT>
@@ -175,10 +176,12 @@
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-CORRESPONDENCE-VIEW"/>
   </FEATURE_CORRESPONDENCE>
   <MODULE_CORRESPONDENCE ID="MOD-CORRESPONDENCE" FILE="src/familiar/instance/correspondence.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Letters without a destination retain text and literal reply history.</INVARIANT>
     <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_f5_undeclared_reader_fields_stay_private">Reply references select original bytes in private snapshots; inapplicable actions retain bytes and a processed reason without blocking later feedback; repeated sent is a no-op.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-FAMILY-WRITER"/>
   </MODULE_CORRESPONDENCE>
   <MODULE_CORRESPONDENCE_VIEW ID="MOD-CORRESPONDENCE-VIEW" FILE="src/familiar/instance/correspondence_view.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">A missing destination projects no send link or address line.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-PUBLICATION"/>
   </MODULE_CORRESPONDENCE_VIEW>
 </Why_Graph_Shard>

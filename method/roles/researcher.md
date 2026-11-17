@@ -34,6 +34,9 @@ without internal IDs, paths, staff assignments or query syntax.
 Use `research form card-document.json` then `research document FILE --author ID`
 for a corpus record and cut-outs; `research form contribution.json` then
 `research contribute FILE` for a documentary decision. No snapshot edit is needed.
+Add a found spouse union in `families[]` with `id`, `husband`, `wife`, `status`,
+`text`, `sources`, `basis` and `weight`; the spouse may be in this package's `people`.
+Add known children through ordinary `edges`, separately from the spouse union.
 
 ## Deliver
 

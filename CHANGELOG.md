@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.33.1 — 17 November 2026
+
+- We accept sourced spouse unions through contribution `families`, including a
+  spouse added in the same package. Weight and basis reach the reader's existing
+  lines: weights from 0.3 to below 0.5 are dashed, including probable links;
+  weights of 0.5 and above are solid. Parent links remain separate `edges`.
+- We let relatives' letters omit `destination` or use `null`. The correspondence
+  page keeps the text and Copy action without an invented address or send link.
+  Existing contributions, unions and letters keep their stored form.
+
 ## 0.33.0 — 17 November 2026
 
 - We preserve each participant's life protection across identity merges. Existing

@@ -1,6 +1,6 @@
 {
-  "_about": "research contribute FILE.json saves a new tree/contributions/<author>/<id>.json; never edits the snapshot. Replace the invented IDs with existing canonical IDs. Relationship decisions target one family union OR one parent/child pair, never both; settling a union does not settle its parent links. prior.text and prior.sources must exactly select one active fact. A new package ID is required for a later decision.",
-  "id": "bea-marriage-decision",
+  "_about": "research contribute FILE.json saves a new tree/contributions/<author>/<id>.json; never edits the snapshot. Replace the invented IDs with existing canonical IDs. families adds a spouse union with a unique id, husband/wife IDs (existing or in people in this package), status, text, sources, basis and weight (0–1; >=0.5 solid, 0.3–0.5 dashed). Add children through ordinary edges; a union alone adds no parent links. Relationship decisions target one family union OR one parent/child pair, never both; settling a union does not settle its parent links. prior.text and prior.sources must exactly select one active fact. A new package ID is required for a later decision.",
+  "id": "bea-spouse-finding",
   "schema": 1,
   "author": "bea-researcher",
   "sources": {
@@ -10,18 +10,23 @@
       "title": "Invented marriage certificate"
     }
   },
-  "relationship_decisions": [
+  "people": {
+    "bea-research-person": {"name": "Bea Example"}
+  },
+  "families": [
     {
-      "family": "bea-telling-bea-ben-union",
-      "previous_status": "hypothesis",
-      "status": "verified",
-      "text": "The certificate names them as spouses.",
-      "sources": [
-        "bea-marriage"
-      ],
-      "basis": "The marriage entry names both people and the year."
+      "id": "bea-ben-union",
+      "husband": "bea-telling-ben-person",
+      "wife": "bea-research-person",
+      "status": "hypothesis",
+      "text": "The document names Bea as Ben's wife.",
+      "sources": ["bea-marriage"],
+      "basis": "The named spouse matches the person in this tree.",
+      "weight": 0.7
     }
   ],
+  "edges": [],
+  "relationship_decisions": [],
   "fact_replacements": [],
   "events": {}
 }

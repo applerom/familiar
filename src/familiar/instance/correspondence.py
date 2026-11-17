@@ -5,6 +5,7 @@
 # - only the family writer changes records, original replies and feedback receipts [review: engine lead]
 # - feedback applies once with an owner; inapplicable actions are receipted with a reason and never block intake [review: engine lead]
 # - owner correspondence is a sealed working view, never a reader field [review: engine lead]
+# - letters without a destination retain their text and literal reply history [review: engine lead]
 # - hosted marks require an identified personal owner; loopback origin is explicit [review: engine lead]
 # CHANGES_WITH:
 # - MOD-FAMILY-GATE
@@ -54,7 +55,8 @@ def validate(row):
             raise ValueError('Correspondence requires text: ' + key)
     if row.get('state') not in STATES or row.get('channel') not in CHANNELS:
         raise ValueError('Unknown correspondence state or channel')
-    address(row.get('destination'), email=True)
+    if row.get('destination') is not None:
+        address(row['destination'], email=True)
     # Null: the answer returns to the sender's own mailbox, which is not ours to name.
     if row.get('follow_up') is not None:
         address(row['follow_up'])
@@ -165,7 +167,7 @@ def apply_feedback(instance, data, *, local=False):
                 sent(row, by, at, principal=principal, feedback=data['id'])
             else:
                 changes.update(reply_changes(instance, row, data['text'].encode('utf-8'),
-                    by=row['recipient'], at=at, source=row.get('follow_up') or row['destination'],
+                    by=row['recipient'], at=at, source=row.get('follow_up') or row.get('destination') or row['channel'],
                     received_by=principal, feedback=data['id']))
             validate(row)
             receipt['status'] = 'addressed'

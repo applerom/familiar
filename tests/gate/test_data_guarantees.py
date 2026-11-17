@@ -35,16 +35,18 @@ def test_dropped_contribution_blocks_delivery(family):
     from familiar.tree.builder import build
     path = family.path('contributions') / 'researcher/claim.json'
     path.parent.mkdir(parents=True)
-    path.write_text(json.dumps({'schema': 1, 'author': 'researcher', 'facts': {'p-amaro': [{'text': 'Kinship claim', 'status': 'verified', 'sources': ['paper']}]}}), encoding='utf-8')
+    union = {'id': 'new-union', 'husband': 'p-amaro', 'wife': 'p-new', 'status': 'hypothesis', 'text': 'Named as spouses.', 'basis': 'The document names the wife.', 'sources': ['paper'], 'weight': .4}
+    path.write_text(json.dumps({'schema': 1, 'author': 'researcher', 'people': {'p-new': {'name': 'Invented Spouse'}}, 'families': [union]}), encoding='utf-8')
     for paths in (None, [str(path.relative_to(family.root))]):
         report = check(family, paths=paths)
-        assert not report['valid'] and any(str(path) == e['location'] and all(s in e['message'] for s in ('facts[p-amaro][0]', 'paper', 'Kinship claim')) for e in report['errors'])
-    with pytest.raises(ValueError, match='paper'):
-        build(family, view='working')
-    with pytest.raises(ValueError, match='paper'):
-        publication(family, 'reader-private')
+        assert not report['valid'] and any(str(path) == e['location'] and all(s in e['message'] for s in ('families[0]', 'paper', 'Named as spouses')) for e in report['errors'])
+    for publish in (lambda: build(family, view='working'), lambda: publication(family, 'reader-private')):
+        with pytest.raises(ValueError, match='paper'):
+            publish()
     edit(family, str(path.relative_to(family.root)), lambda p: p.update(sources={'paper': {'kind': 'home-paper', 'record': 'doc-helena-baptism'}}))
-    assert check(family)['valid'] and any(f['text'] == 'Kinship claim' for f in build(family, view='working')['people']['p-amaro']['facts'])
+    graph = json.loads(publication(family, 'reader-private').files()['graph.json'])
+    added = next(f for f in graph['families'] if f['id'] == union['id'])
+    assert check(family)['valid'] and 'p-new' in graph['people'] and added['weight'] == .4 and added['basis'] == union['basis'] and added['provenance'] == ['paper'] and not any(e['parent'] == 'p-new' for e in graph['edges'])
 
 
 def test_f2_record_subject_cannot_be_omitted(family):

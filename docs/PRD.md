@@ -721,6 +721,10 @@ derived graph. Intake does not establish document identity or kinship truth.
 **Documentary decisions and card documents.** `research form contribution.json`
 supplies the form for `research contribute FILE.json`. The writer saves a new
 attributed package, validates it atomically and leaves the snapshot untouched.
+`families[]` adds spouse unions: `id`, `husband`, `wife` (existing IDs or people
+from the same package), `status`, `text`, `sources`, `basis`, and `weight` (0–1;
+0.5 and above solid, 0.3–0.5 dashed). Add known children through ordinary `edges`;
+a spouse union alone does not establish parenthood.
 `relationship_decisions[]` selects exactly one existing union (`family`) or
 parent/child pair; `previous_status` protects against stale decisions. Sources,
 status, plain text and basis are required. Old link data stays in derived history;
@@ -1659,7 +1663,7 @@ attestations across different projections or permissions.
 
 The owner's Correspondence page keeps prepared letters beside family questions.
 `family/correspondence` (or `paths.correspondence`) stores recipient, channel
-(`forum`, `archive`, `message`, `relative`), destination email/HTTP(S) URL, reply
+(`forum`, `archive`, `message`, `relative`), optional destination email/HTTP(S) URL, reply
 URL, recipient language, literal text, person/question/request references and a
 host or named relative as sender. States are `draft`, `ready`, `sent`, `answered`,
 `closed`; sending records who and when. Replies preserve literal text, author,

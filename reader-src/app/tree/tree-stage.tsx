@@ -81,7 +81,7 @@ export default function TreeStage({model,id,go,jump,onUse,labels,onLayout,childr
  return <div ref={stage} className={'stage'+(moving?' moving':'')+(resizing?' resizing':'')} role="group" aria-label={labels.graph}>
   {layout&&<div className="world" style={{width:layout.width,height:layout.height,transform:`translate(${t.x}px,${t.y}px) scale(${t.k})`}}>
    <svg className="links" width={layout.width} height={layout.height} key={id+':'+layout.width+':'+level} aria-hidden="true">
-    {layout.links.map(l=><path key={l.key} d={l.d} className={`lk ${l.kind} g${Math.min(l.gen,4)} ${l.status==='hypothesis'?'hyp':''} ${l.color?'tone':''}`} style={l.color?{'--lb':l.color} as CSSProperties:undefined}/>)}
+    {layout.links.map(l=><path key={l.key} d={l.d} className={`lk ${l.kind} g${Math.min(l.gen,4)} ${['hypothesis','probable'].includes(l.status)?'hyp':''} ${l.color?'tone':''}`} style={l.color?{'--lb':l.color} as CSSProperties:undefined}/>)}
     {layout.fogs.map((f,i)=><path key={'f'+i} d={`M${f.x},${f.y} L${f.x},${f.y-26}`} className="lk fog"/>)}
    </svg>
    {layout.nodes.map(n=><Person me={me} key={n.key} n={n} model={model} go={go} labels={labels} lang={lang}/>)}

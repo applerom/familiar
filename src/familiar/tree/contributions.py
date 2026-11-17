@@ -3,6 +3,7 @@
 # PRD_REF: docs/PRD.md#TRUST
 # INVARIANTS:
 # - invalid packages leave the graph unchanged [review: engine lead]
+# - contributed spouse unions retain weight, basis and sources with existing or newly contributed people [review: engine lead]
 # - sources-only packages publish no reader update [review: engine lead]
 # - duplicate source declarations name both owners and keep intake ownership explicit [review: engine lead]
 # - replayed claims cannot reactivate a fact retained in retiredFacts [review: engine lead]
@@ -214,6 +215,29 @@ def _merge_contributions(
                         raise ValueError("Связь уже существует; исправление обсудить на доске")
                     ee.append(dict(edge, author=author))
                     pairs.add(pair)
+                union_ids = {f.get('id') for f in ff}
+                union_pairs = {frozenset((f.get('husband'), f.get('wife'))) for f in ff}
+                for n, union in enumerate(pack.get('families', [])):
+                    claim = f'families[{n}]'
+                    check_fact(union)
+                    pair = (union['husband'], union['wife'])
+                    if pair[0] not in pp or pair[1] not in pp or pair[0] == pair[1]:
+                        raise ValueError('Union needs two distinct known people')
+                    if not isinstance(union.get('id'), str) or not union['id'].strip():
+                        raise ValueError('Union needs an id')
+                    if union['id'] in union_ids or frozenset(pair) in union_pairs:
+                        raise ValueError('Union already exists; use relationship_decisions')
+                    if not isinstance(union.get('basis'), str) or not union['basis'].strip():
+                        raise ValueError('Union needs a basis')
+                    weight = union.get('weight')
+                    if type(weight) not in (int, float) or not 0 <= weight <= 1:
+                        raise ValueError('Union needs a weight between 0 and 1')
+                    added = dict(copy.deepcopy(union), author=author, provenance=union['sources'])
+                    added.setdefault('children', [])
+                    added.setdefault('events', [])
+                    ff.append(added)
+                    union_ids.add(union['id'])
+                    union_pairs.add(frozenset(pair))
                 from .revisions import apply
                 for section in ('relationship_decisions', 'fact_replacements', 'events', 'media'):
                     rows = pack.get(section, {}) if section in ('events', 'media') else pack.get(section, [])
@@ -306,6 +330,8 @@ def _merge_contributions(
         for fact in person.get("facts", [])
         for sid in fact.get("sources", [])
     }
+    used.update(sid for edge in edges for sid in edge.get('sources', []))
+    used.update(sid for union in families for sid in union.get('provenance', []))
     source_warnings = [
         {
             "file": filename,
