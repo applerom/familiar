@@ -1,0 +1,27 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive"><title>Доступ · Familiar</title>
+<link rel="stylesheet" href="/desk/access.css"><script defer src="/desk/access.js"></script>
+</head><body><main class="desk-page access-page"><h1>Доступ</h1>
+<p>Личные входы в семейный кабинет. Пароль передайте родному лично.</p>
+<p id="access-status" role="status">Проверяем хозяйский вход…</p>
+<section id="access-controls" hidden><h2>Выдать вход</h2>
+<form id="access-add"><label>Человек дерева
+<input id="access-search" type="search" placeholder="Найти по имени" autocomplete="off" required></label>
+<div id="access-matches" role="group" aria-label="Люди дерева"></div>
+<p id="access-person" aria-live="polite">Выберите человека из результатов поиска.</p>
+<label>Логин<input name="username" id="access-username" required maxlength="64" pattern="[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}" autocomplete="off"></label>
+<label>Роль<select name="role"><option value="reader">Родной</option><option value="owner">Хозяин</option></select></label>
+<label>Почта — необязательно<input name="email" type="email" maxlength="254" autocomplete="off"></label>
+<button type="submit">Выдать вход</button></form>
+<h2>Выданные входы</h2><div id="access-users"></div></section>
+</main><dialog id="access-password" aria-labelledby="access-password-title">
+<h2 id="access-password-title">Вход выдан</h2><p id="access-password-user"></p>
+<label>Начальный пароль<input id="access-password-value" readonly autocomplete="off"></label>
+<p>Передайте лично. При первом входе родной задаст свой пароль.</p>
+<p>После закрытия пароль больше не показывается. Если потеряете — сбросьте его.</p>
+<button id="access-copy" type="button">Скопировать</button> <button id="access-close" type="button">Закрыть</button>
+<p id="access-copy-status" role="status"></p></dialog>
+<dialog id="access-confirm" aria-labelledby="access-confirm-title"><h2 id="access-confirm-title">Подтвердите действие</h2>
+<p id="access-confirm-text"></p><form method="dialog"><button value="cancel">Отмена</button> <button id="access-confirm-ok" value="confirm">Подтвердить</button></form></dialog>
+</body></html>

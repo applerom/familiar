@@ -1,0 +1,1672 @@
+{
+  "title": "Kinship words",
+  "intro": "The words we use for family. Choose yourself in the tree to see examples from your family. A tree path shows recorded links; it does not prove them.",
+  "example": "For you, this is",
+  "noExample": "No example in the displayed tree yet.",
+  "chooseViewer": "Choose yourself in the tree to see examples.",
+  "archaic": "historical",
+  "maybe": "possibly ",
+  "path": "Path through the tree",
+  "groups": {
+    "direct": "Parents and descendants",
+    "collateral": "Siblings and collateral kin",
+    "marriage": "Relations by marriage",
+    "blended": "Half and step relations",
+    "spiritual": "Spiritual kinship"
+  },
+  "terms": [
+    {
+      "id": "sister-husband",
+      "word": "brother-in-law",
+      "explanation": "a sister’s husband",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "yes",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 1,
+          "g": "m",
+          "spouseG": "f"
+        }
+      ]
+    },
+    {
+      "id": "brother-wife",
+      "word": "sister-in-law",
+      "explanation": "a brother’s wife",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "yes",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 1,
+          "g": "f",
+          "spouseG": "m"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-1-m",
+      "word": "father",
+      "explanation": "your male parent",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 1,
+          "n2": 0,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-1-f",
+      "word": "mother",
+      "explanation": "your female parent",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 1,
+          "n2": 0,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "descendant-1-m",
+      "word": "son",
+      "explanation": "you are his parent",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 1,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "descendant-1-f",
+      "word": "daughter",
+      "explanation": "you are her parent",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 1,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "collateral-1-m",
+      "word": "brother",
+      "explanation": "you share parents",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 1,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "collateral-1-f",
+      "word": "sister",
+      "explanation": "you share parents",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 1,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-2-m",
+      "word": "grandfather",
+      "explanation": "2 generations up the parent line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 2,
+          "n2": 0,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "descendant-2-m",
+      "word": "grandson",
+      "explanation": "2 generations down the child line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 2,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-2-f",
+      "word": "grandmother",
+      "explanation": "2 generations up the parent line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 2,
+          "n2": 0,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "descendant-2-f",
+      "word": "granddaughter",
+      "explanation": "2 generations down the child line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 2,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-3-m",
+      "word": "great-grandfather",
+      "explanation": "3 generations up the parent line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 3,
+          "n2": 0,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "descendant-3-m",
+      "word": "great-grandson",
+      "explanation": "3 generations down the child line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 3,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-3-f",
+      "word": "great-grandmother",
+      "explanation": "3 generations up the parent line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 3,
+          "n2": 0,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "descendant-3-f",
+      "word": "great-granddaughter",
+      "explanation": "3 generations down the child line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 3,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-4-m",
+      "word": "great-great-grandfather",
+      "explanation": "4 generations up the parent line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 4,
+          "n2": 0,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "descendant-4-m",
+      "word": "great-great-grandson",
+      "explanation": "4 generations down the child line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 4,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-4-f",
+      "word": "great-great-grandmother",
+      "explanation": "4 generations up the parent line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 4,
+          "n2": 0,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "descendant-4-f",
+      "word": "great-great-granddaughter",
+      "explanation": "4 generations down the child line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 4,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-5-m",
+      "word": "great-great-great-grandfather",
+      "explanation": "5 generations up the parent line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 5,
+          "n2": 0,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "descendant-5-m",
+      "word": "great-great-great-grandson",
+      "explanation": "5 generations down the child line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 5,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-5-f",
+      "word": "great-great-great-grandmother",
+      "explanation": "5 generations up the parent line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 5,
+          "n2": 0,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "descendant-5-f",
+      "word": "great-great-great-granddaughter",
+      "explanation": "5 generations down the child line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 5,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-6-m",
+      "word": "great-great-great-great-grandfather",
+      "explanation": "6 generations up the parent line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 6,
+          "n2": 0,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "descendant-6-m",
+      "word": "great-great-great-great-grandson",
+      "explanation": "6 generations down the child line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 6,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-6-f",
+      "word": "great-great-great-great-grandmother",
+      "explanation": "6 generations up the parent line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 6,
+          "n2": 0,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "descendant-6-f",
+      "word": "great-great-great-great-granddaughter",
+      "explanation": "6 generations down the child line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 6,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-7-m",
+      "word": "great-great-great-great-great-grandfather",
+      "explanation": "7 generations up the parent line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 7,
+          "n2": 0,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "descendant-7-m",
+      "word": "great-great-great-great-great-grandson",
+      "explanation": "7 generations down the child line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 7,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-7-f",
+      "word": "great-great-great-great-great-grandmother",
+      "explanation": "7 generations up the parent line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 7,
+          "n2": 0,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "descendant-7-f",
+      "word": "great-great-great-great-great-granddaughter",
+      "explanation": "7 generations down the child line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 7,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-8-m",
+      "word": "great-great-great-great-great-great-grandfather",
+      "explanation": "8 generations up the parent line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 8,
+          "n2": 0,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "descendant-8-m",
+      "word": "great-great-great-great-great-great-grandson",
+      "explanation": "8 generations down the child line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 8,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-8-f",
+      "word": "great-great-great-great-great-great-grandmother",
+      "explanation": "8 generations up the parent line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 8,
+          "n2": 0,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "descendant-8-f",
+      "word": "great-great-great-great-great-great-granddaughter",
+      "explanation": "8 generations down the child line",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 8,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "uncle-m",
+      "word": "uncle",
+      "explanation": "a brother of a parent",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 2,
+          "n2": 1,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "nephew-m",
+      "word": "nephew",
+      "explanation": "a son of a sibling",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 2,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "cousin-2-m",
+      "word": "first cousin",
+      "explanation": "shared ancestors 2 generations above both of you",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 2,
+          "n2": 2,
+          "g": "m"
+        },
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 2,
+          "n2": 2,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "cousin-3-m",
+      "word": "second cousin",
+      "explanation": "shared ancestors 3 generations above both of you",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 3,
+          "n2": 3,
+          "g": "m"
+        },
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 3,
+          "n2": 3,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "cousin-4-m",
+      "word": "third cousin",
+      "explanation": "shared ancestors 4 generations above both of you",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 4,
+          "n2": 4,
+          "g": "m"
+        },
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 4,
+          "n2": 4,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "cousin-5-m",
+      "word": "fourth cousin",
+      "explanation": "shared ancestors 5 generations above both of you",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 5,
+          "n2": 5,
+          "g": "m"
+        },
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 5,
+          "n2": 5,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "cousin-6-m",
+      "word": "fifth cousin",
+      "explanation": "shared ancestors 6 generations above both of you",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 6,
+          "n2": 6,
+          "g": "m"
+        },
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 6,
+          "n2": 6,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "cousin-7-m",
+      "word": "sixth cousin",
+      "explanation": "shared ancestors 7 generations above both of you",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 7,
+          "n2": 7,
+          "g": "m"
+        },
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 7,
+          "n2": 7,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "collateral-3-1-m",
+      "word": "great-uncle",
+      "explanation": "a sibling of a grandparent",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 3,
+          "n2": 1,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "collateral-1-3-m",
+      "word": "great-nephew",
+      "explanation": "a grandchild of a sibling",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 3,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "collateral-3-2-m",
+      "word": "first cousin once removed",
+      "explanation": "a cousin 1 generation above you",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 3,
+          "n2": 2,
+          "g": "m"
+        },
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 3,
+          "n2": 2,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "collateral-2-3-m",
+      "word": "first cousin once removed",
+      "explanation": "a cousin 1 generation below you",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 2,
+          "n2": 3,
+          "g": "m"
+        },
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 2,
+          "n2": 3,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "collateral-4-1-m",
+      "word": "great-great-uncle",
+      "explanation": "a sibling of a great-grandparent",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 4,
+          "n2": 1,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "collateral-1-4-m",
+      "word": "great-great-nephew",
+      "explanation": "a great-grandchild of a sibling",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 4,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "collateral-4-2-m",
+      "word": "first cousin twice removed",
+      "explanation": "a cousin 2 generations above you",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 4,
+          "n2": 2,
+          "g": "m"
+        },
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 4,
+          "n2": 2,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "collateral-2-4-m",
+      "word": "first cousin twice removed",
+      "explanation": "a cousin 2 generations below you",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 2,
+          "n2": 4,
+          "g": "m"
+        },
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 2,
+          "n2": 4,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "collateral-4-3-m",
+      "word": "second cousin once removed",
+      "explanation": "a cousin 1 generation above you",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 4,
+          "n2": 3,
+          "g": "m"
+        },
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 4,
+          "n2": 3,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "collateral-3-4-m",
+      "word": "second cousin once removed",
+      "explanation": "a cousin 1 generation below you",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 3,
+          "n2": 4,
+          "g": "m"
+        },
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 3,
+          "n2": 4,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "uncle-f",
+      "word": "aunt",
+      "explanation": "a sister of a parent",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 2,
+          "n2": 1,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "nephew-f",
+      "word": "niece",
+      "explanation": "a daughter of a sibling",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 2,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "collateral-3-1-f",
+      "word": "great-aunt",
+      "explanation": "a sibling of a grandparent",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 3,
+          "n2": 1,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "collateral-1-3-f",
+      "word": "great-niece",
+      "explanation": "a grandchild of a sibling",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 3,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "collateral-4-1-f",
+      "word": "great-great-aunt",
+      "explanation": "a sibling of a great-grandparent",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 4,
+          "n2": 1,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "collateral-1-4-f",
+      "word": "great-great-niece",
+      "explanation": "a great-grandchild of a sibling",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 4,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "son-in-law",
+      "word": "son-in-law",
+      "explanation": "a daughter’s husband",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "yes",
+          "special": "",
+          "kind": "descendant",
+          "n2": 1,
+          "g": "m",
+          "spouseG": "f"
+        }
+      ]
+    },
+    {
+      "id": "daughter-in-law",
+      "word": "daughter-in-law",
+      "explanation": "a son’s wife",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "yes",
+          "special": "",
+          "kind": "descendant",
+          "n2": 1,
+          "g": "f",
+          "spouseG": "m"
+        }
+      ]
+    },
+    {
+      "id": "wife-brother",
+      "word": "brother-in-law",
+      "explanation": "a wife’s brother",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "f",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 1,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "husband-brother",
+      "word": "brother-in-law",
+      "explanation": "a husband’s brother",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "m",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 1,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "husband-sister",
+      "word": "sister-in-law",
+      "explanation": "a husband’s sister",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "m",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 1,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "wife-sister",
+      "word": "sister-in-law",
+      "explanation": "a wife’s sister",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "f",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 1,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "wife-father",
+      "word": "father-in-law",
+      "explanation": "a wife’s father",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "f",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 1,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "wife-mother",
+      "word": "mother-in-law",
+      "explanation": "a wife’s mother",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "f",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 1,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "husband-father",
+      "word": "father-in-law",
+      "explanation": "a husband’s father",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "m",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 1,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "husband-mother",
+      "word": "mother-in-law",
+      "explanation": "a husband’s mother",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "m",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 1,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "spouse-m",
+      "word": "husband",
+      "explanation": "the person one is married to",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "spouse",
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "spouse-f",
+      "word": "wife",
+      "explanation": "the person one is married to",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "spouse",
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "co-brother-in-law",
+      "word": "co-brother-in-law",
+      "explanation": "the husband of one’s wife’s sister",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "coBrotherInLaw",
+          "g": "m",
+          "viewerG": "m"
+        }
+      ]
+    },
+    {
+      "id": "co-parent-in-law-m",
+      "word": "co-father-in-law",
+      "explanation": "the father of your child’s spouse",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "coParentInLaw",
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "co-parent-in-law-f",
+      "word": "co-mother-in-law",
+      "explanation": "the mother of your child’s spouse",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "coParentInLaw",
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "halfFather-m",
+      "word": "paternal half-brother",
+      "explanation": "the same father and different mothers",
+      "group": "blended",
+      "match": [
+        {
+          "special": "halfFather",
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "halfFather-f",
+      "word": "paternal half-sister",
+      "explanation": "the same father and different mothers",
+      "group": "blended",
+      "match": [
+        {
+          "special": "halfFather",
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "halfMother-m",
+      "word": "maternal half-brother",
+      "explanation": "the same mother and different fathers",
+      "group": "blended",
+      "match": [
+        {
+          "special": "halfMother",
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "halfMother-f",
+      "word": "maternal half-sister",
+      "explanation": "the same mother and different fathers",
+      "group": "blended",
+      "match": [
+        {
+          "special": "halfMother",
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "stepSibling-m",
+      "word": "stepbrother",
+      "explanation": "children of spouses with no shared parent",
+      "group": "blended",
+      "match": [
+        {
+          "special": "stepSibling",
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "stepSibling-f",
+      "word": "stepsister",
+      "explanation": "children of spouses with no shared parent",
+      "group": "blended",
+      "match": [
+        {
+          "special": "stepSibling",
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "stepParent-m",
+      "word": "stepfather",
+      "explanation": "a parent’s spouse who is not this child’s parent",
+      "group": "blended",
+      "match": [
+        {
+          "special": "stepParent",
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "stepParent-f",
+      "word": "stepmother",
+      "explanation": "a parent’s spouse who is not this child’s parent",
+      "group": "blended",
+      "match": [
+        {
+          "special": "stepParent",
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "stepChild-m",
+      "word": "stepson",
+      "explanation": "a spouse’s child who is not one’s own child",
+      "group": "blended",
+      "match": [
+        {
+          "special": "stepChild",
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "stepChild-f",
+      "word": "stepdaughter",
+      "explanation": "a spouse’s child who is not one’s own child",
+      "group": "blended",
+      "match": [
+        {
+          "special": "stepChild",
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "godparent-m",
+      "word": "godfather",
+      "explanation": "a person undertaking a spiritual role at baptism",
+      "group": "spiritual",
+      "match": [
+        {
+          "special": "godparent",
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "godparent-f",
+      "word": "godmother",
+      "explanation": "a person undertaking a spiritual role at baptism",
+      "group": "spiritual",
+      "match": [
+        {
+          "special": "godparent",
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "godchild-m",
+      "word": "godson",
+      "explanation": "a child in relation to a baptismal sponsor",
+      "group": "spiritual",
+      "match": [
+        {
+          "special": "godchild",
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "godchild-f",
+      "word": "goddaughter",
+      "explanation": "a child in relation to a baptismal sponsor",
+      "group": "spiritual",
+      "match": [
+        {
+          "special": "godchild",
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "coparent-m",
+      "word": "spiritual kin",
+      "explanation": "a baptismal sponsor in relation to a child’s parents, or fellow sponsors; English has no single everyday equivalent of kum or kuma",
+      "group": "spiritual",
+      "match": [
+        {
+          "special": "coparent",
+          "g": "m"
+        },
+        {
+          "special": "coparent",
+          "g": "f"
+        }
+      ]
+    }
+  ],
+  "labels": {
+    "rel": {
+      "self": "this is you",
+      "your": [
+        "your",
+        "your"
+      ],
+      "yourGen": [
+        "your",
+        "your"
+      ],
+      "spouse": [
+        "husband",
+        "wife"
+      ],
+      "spouseGen": [
+        "husband",
+        "wife"
+      ],
+      "child": [
+        "son",
+        "daughter"
+      ],
+      "grandchild": [
+        "grandson",
+        "granddaughter"
+      ],
+      "great": "great-",
+      "sibling": [
+        "brother",
+        "sister"
+      ],
+      "uncle": [
+        "uncle",
+        "aunt"
+      ],
+      "nephew": [
+        "nephew",
+        "niece"
+      ],
+      "cousin": [
+        "cousin",
+        "cousin"
+      ],
+      "greatUncle": [
+        "great-uncle",
+        "great-aunt"
+      ],
+      "grandNephew": [
+        "grandnephew",
+        "grandniece"
+      ],
+      "cousinUncle": [
+        "first cousin once removed",
+        "first cousin once removed"
+      ],
+      "cousinNephew": [
+        "first cousin once removed",
+        "first cousin once removed"
+      ],
+      "secondCousin": [
+        "second cousin",
+        "second cousin"
+      ],
+      "distant": [
+        "distant relative",
+        "distant relative"
+      ]
+    },
+    "relExplain": {
+      "greatUncle": "a grandparent’s brother or sister",
+      "grandNephew": "a sibling’s grandchild",
+      "cousinUncle": "a parent’s first cousin",
+      "cousinNephew": "a first cousin’s child",
+      "cousinN": "common ancestor: {a}"
+    },
+    "father": "father",
+    "mother": "mother",
+    "wifeOf": "wife",
+    "husbandOf": "husband",
+    "sonOf": "son",
+    "daughterOf": "daughter",
+    "childOf": "child"
+  },
+  "fallback": {
+    "ancestor": "ancestor, {n} generations up",
+    "descendant": "descendant, {n} generations down",
+    "collateral": "collateral kin: {n1} generations to the shared ancestor from you, {n2} from this person",
+    "spouse": "spouse",
+    "self": "this is you",
+    "cousin": "shared ancestor {n} generations up",
+    "viaSpouse": "a spouse’s relative: {relative}",
+    "spouseOf": "a relative’s spouse: {relative}",
+    "spiritual": "spiritual kinship through a recorded link",
+    "step": "step relation through a recorded link",
+    "halfFather": "a shared father and different mothers",
+    "halfMother": "a shared mother and different fathers",
+    "coParentInLaw": "a parent of your child’s spouse"
+  },
+  "genitive": {}
+}

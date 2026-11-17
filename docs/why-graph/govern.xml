@@ -1,0 +1,24 @@
+<Why_Graph_Shard project="Familiar" CAPABILITY="CAP-GOVERN">
+  <!-- One capability. Edges to other capabilities live in docs/why-graph.xml. -->
+
+  <FEATURE_BOUNDARY ID="FEAT-BOUNDARY" STATE="STARTED">
+    <INTENT>The WHY layer stays true and no layer holds content of another: core contracts and declared references, one weighted installed journey and core data checks, advisory timing; boundary check for family content in the engine.</INTENT>
+    <PRD_REF>docs/PRD.md#DOD</PRD_REF>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-GOVERN-VALIDATE-WHY"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-GOVERN-BOUNDARY"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-GOVERN-IMPACT"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-ENGINE-RELEASE-CHECK"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-CHECK-POLICY"/>
+  </FEATURE_BOUNDARY>
+
+  <MODULE_GOVERN_VALIDATE_WHY ID="MOD-GOVERN-VALIDATE-WHY" FILE="scripts/validate_why.py" STATE="IMPLEMENTED">
+  </MODULE_GOVERN_VALIDATE_WHY>
+
+
+  <MODULE_GOVERN_BOUNDARY ID="MOD-GOVERN-BOUNDARY" STATE="PLANNED">
+    <INTENT>Fail when names, ids, places or paths of a real family appear in the engine; the list comes from the instance, never from this repository.</INTENT>
+  </MODULE_GOVERN_BOUNDARY>
+  <MODULE_GOVERN_IMPACT ID="MOD-GOVERN-IMPACT" FILE="scripts/why_impact.py" STATE="IMPLEMENTED"/>
+  <MODULE_ENGINE_RELEASE_CHECK ID="MOD-ENGINE-RELEASE-CHECK" FILE="scripts/check_release.py" STATE="IMPLEMENTED"/>
+  <MODULE_CHECK_POLICY ID="MOD-CHECK-POLICY" FILE="src/familiar/check_policy.py" STATE="IMPLEMENTED"/>
+</Why_Graph_Shard>

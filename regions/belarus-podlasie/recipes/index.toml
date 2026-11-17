@@ -1,0 +1,27 @@
+# START_MODULE_CONTRACT: MOD-REGION-BP-RECIPES
+# PURPOSE: List the region search recipes that have matching source records.
+# PRD_REF: docs/PRD.md#REGION-PACK
+# INVARIANTS:
+# - each listed recipe resolves to a source and a confined recipe file [review: pack keeper]
+# CHANGES_WITH:
+# - regions/belarus-podlasie/data-contract.md
+# :END_MODULE_CONTRACT
+
+schema_version = 1
+
+[[recipe]]
+id = "geneteka"
+file = "geneteka.toml"
+
+[[recipe]]
+id = "szukajwarchiwach"
+file = "szukajwarchiwach.toml"
+
+[[recipe]]
+id = "pamyat-naroda"
+file = "pamyat-naroda.toml"
+
+[[recipe]]
+id = "obd-memorial"
+file = "obd-memorial.toml"
+

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1200" role="img" aria-label="Рисунок-заглушка макета: дорога в степи">
+<rect width="900" height="1200" fill="#e7dccb"/>
+<rect width="900" height="620" fill="#ece5d8"/>
+<path d="M0 620 H900 V1200 H0Z" fill="#c9b48e"/>
+<path d="M380 620 L60 1200 M520 620 L840 1200" stroke="#6d5a3f" stroke-width="10"/>
+<g stroke="#6d5a3f" stroke-width="8">
+<path d="M360 660 H540"/><path d="M330 720 H570"/><path d="M290 800 H610"/><path d="M240 900 H660"/><path d="M180 1020 H720"/><path d="M110 1150 H790"/></g>
+<text x="870" y="1172" text-anchor="end" font-family="Manrope,sans-serif" font-size="26" fill="#6d5a3f">рисунок-заглушка</text>
+</svg>

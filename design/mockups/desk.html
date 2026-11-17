@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ход расследования · Шмидты и Корнеевы — макет Familiar</title>
+<link rel="stylesheet" href="familiar.css">
+</head>
+<body class="has-tabbar">
+<header class="bar">
+  <a class="home" href="home.html"><span class="mark"><svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="11.2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="14" cy="14" r="4.4" fill="var(--ember)"/></svg></span><strong>Шмидты и Корнеевы</strong></a>
+  <nav aria-label="Разделы"><a href="home.html">Начало</a><a href="chapter.html">Рассказы</a><a href="tree.html">Дерево</a><a href="desk.html" aria-current="page">Расследование</a></nav>
+  <div class="tools"><span class="private">Кабинет хозяина</span><button class="ibtn aa" aria-label="Язык, размер текста, вечерний вид">Аа</button></div>
+</header>
+
+<main class="wrap">
+  <section class="cover" style="grid-template-columns:1fr">
+    <div>
+      <div class="kicker">Кабинет семьи · для Ирины</div>
+      <h1 style="font-size:clamp(32px,5vw,44px)">Ход расследования</h1>
+      <p class="lead">Что Фамильяр сделал, что ищет сейчас и где без тебя не обойтись. Ответы сразу идут в работу; ничего не переписывается молча.</p>
+    </div>
+  </section>
+
+  <div class="desk-grid">
+    <section>
+      <h2 class="serif" style="font-weight:500;margin:0 0 var(--s4)">Дневник</h2>
+      <ol class="journal">
+        <li class="now"><time>Сейчас · с 10 ноября</time><p>Ищу Готлиба Шмидта в списках трудармии 1942 года. Проверено два лагеря из пяти, где были мужчины из Лебяжьего.</p><small>Когда найду — допишу главу 3 и покажу тебе бумагу</small></li>
+        <li class="done"><time>12 ноября</time><p>Сверил память семьи, свидетельство 1957 года и выгрузку двоюродного брата: Эмма — одно лицо во всех трёх.</p><small>Решение можно отменить в один шаг</small></li>
+        <li class="done"><time>12 ноября</time><p>Прочитал справку 1994 года. Отчество в ней — Готлибовна, в паспорте — Богдановна. Из этого выросла глава «Готлиб, он же Богдан».</p><small><a href="chapter.html">Открыть главу →</a></small></li>
+        <li class="done"><time>11 ноября</time><p>Получил твой рассказ о бабушке Эмме: девять сведений, три человека, два места.</p></li>
+      </ol>
+    </section>
+    <section>
+      <h2 class="serif" style="font-weight:500;margin:0 0 var(--s4)">Нужна твоя помощь</h2>
+      <div class="qcard">
+        <p>Свадьба Эммы и Андрея — 1956 или 1957? В свидетельстве Людмилы родители уже женаты.</p>
+        <div class="why">От ответа зависит глава 4</div>
+        <div class="acts"><a class="btn primary" href="#">Ответить</a><a class="btn quiet" href="#">Спрошу у мамы</a><a class="btn quiet" href="#">Не знаю</a></div>
+      </div>
+      <div class="qcard">
+        <p>Есть ли у семьи фотографии Готлиба или письма из трудармии?</p>
+        <div class="why">Даже обрывок даёт место и год</div>
+        <div class="acts"><a class="btn primary" href="#">Прислать снимок</a><a class="btn quiet" href="#">Нет</a></div>
+      </div>
+      <p class="margin" style="margin-top:var(--s5)"><span class="who-says">Чем Фамильяр не пользуется</span>Платные архивы — только с твоего согласия; адреса и бумаги живых родных в книгу не попадают.</p>
+    </section>
+  </div>
+</main>
+
+<nav class="tabbar" aria-label="Разделы">
+  <a href="home.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-6 8 6v8H4z"/></svg>Начало</a>
+  <a href="chapter.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h6a2 2 0 012 2v12a2 2 0 00-2-2H4zM20 5h-6a2 2 0 00-2 2v12a2 2 0 012-2h6z"/></svg>Рассказы</a>
+  <a href="tree.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="19" r="2"/><path d="M12 7v5M12 12c-4 0-6 2-6 5M12 12c4 0 6 2 6 5"/></svg>Дерево</a>
+  <a href="desk.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/><path d="M11 8v3l2 2"/></svg>Поиски</a>
+</nav>
+<span class="mock">Макет · семья придумана</span>
+</body>
+</html>

@@ -1,0 +1,47 @@
+{
+  "_about": "Invented for the Familiar demo. Documents the feed shows. A demo document has no image: it is shown only as its reading, under a caption that says it was invented.",
+  "doc-helena-baptism": {
+    "fictional": true,
+    "record": "doc-helena-baptism",
+    "caption": "Invented paper: Helena's baptism certificate, 1925",
+    "full": null,
+    "source": "Invented for the Familiar demo; no parish issued this paper. In a real family: the home paper, kept by the family.",
+    "where": "Home paper of the host (invented)",
+    "snippets": [
+      {
+        "asset": null,
+        "field": "Mother",
+        "read": "Mother: Rosa Calhau, nat. de Ponta d[...]"
+      },
+      {
+        "asset": null,
+        "field": "Sponsors",
+        "read": "Sponsors: Manuel Tavares e Concei[?]ão Tavares"
+      }
+    ],
+    "kind": "document-scan",
+    "subjects": []
+  },
+  "rec-santa-ludovina-1921-14": {
+    "fictional": true,
+    "record": "rec-santa-ludovina-1921-14",
+    "caption": "Invented record: line 14 of a ship's passenger list, 1921",
+    "full": null,
+    "source": "Invented for the Familiar demo; no such ship or archive exists. In a real family: the arrivals list of the port.",
+    "where": "Arrivals at the port of Quarry Bend, vol. 61, sheet 9 (invented)",
+    "snippets": [
+      {
+        "asset": null,
+        "field": "Going to join",
+        "read": "Going to join: Cousin Manuel Tavares, 14 Rope Walk St."
+      },
+      {
+        "asset": null,
+        "field": "By whom was passage paid",
+        "read": "By whom was passage paid: Self"
+      }
+    ],
+    "kind": "document-scan",
+    "subjects": []
+  }
+}

@@ -1,0 +1,62 @@
+<Why_Graph_Shard project="Familiar" CAPABILITY="CAP-RULES">
+  <!-- One capability. Edges to other capabilities live in docs/why-graph.xml. -->
+
+  <FEATURE_TRUST ID="FEAT-TRUST" STATE="STARTED">
+    <INTENT>Twelve invariants that are never a setting; each names its check or its reviewer.</INTENT>
+    <PRD_REF>docs/PRD.md#TRUST</PRD_REF>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RULES-TRUST-DATA"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RULES-CASCADE"/>
+  </FEATURE_TRUST>
+
+  <FEATURE_SETTINGS ID="FEAT-SETTINGS" STATE="STARTED">
+    <INTENT>Declared settings, language-scoped layers and reasoned exceptions; existing text-review dismissals remain readable, while form lint is removed and weighted core data modes remain mandatory.</INTENT>
+    <PRD_REF>docs/PRD.md#SETTINGS</PRD_REF>
+    <PRD_REF>docs/PRD.md#RULES-MODEL</PRD_REF>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RULES-MODEL"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RULES-CASCADE"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RULES-EXCEPTIONS"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RULES-CLI"/>
+  </FEATURE_SETTINGS>
+
+  <MODULE_RULES_ROLES ID="MOD-RULES-ROLES" FILE="src/familiar/rules/roles.py" STATE="IMPLEMENTED">
+  </MODULE_RULES_ROLES>
+
+  <FEATURE_METHOD ID="FEAT-METHOD" STATE="IMPLEMENTED">
+    <INTENT>An outside agent reads role sheets and skills from the installed engine by closed identifier without finding or maintaining a family.</INTENT>
+    <PRD_REF>docs/PRD.md#ROLES</PRD_REF>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-METHOD-CLI"/>
+  </FEATURE_METHOD>
+  <MODULE_METHOD_CLI ID="MOD-METHOD-CLI" FILE="src/familiar/method_cli.py" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-RULES-ROLES"/>
+  </MODULE_METHOD_CLI>
+
+  <MODULE_RULES_MODEL ID="MOD-RULES-MODEL" FILE="src/familiar/rules/model.py" STATE="IMPLEMENTED">
+    <!-- Runtime registry types and immutable trust modes remain core; sheet parity and role-name lint are removed. -->
+    <REL TYPE="READS" TARGET="MOD-RULES-TRUST-DATA"/>
+    <REL TYPE="READS" TARGET="MOD-RULES-CATALOG-DATA"/>
+    <REL TYPE="READS" TARGET="MOD-RULES-SETTINGS-DATA"/>
+  </MODULE_RULES_MODEL>
+
+  <MODULE_RULES_CASCADE ID="MOD-RULES-CASCADE" FILE="src/familiar/rules/cascade.py" STATE="IMPLEMENTED">
+    <!-- Privacy configuration and trust modes remain strict. Invalid presentation values use safe defaults; unknown nonprivacy preferences are ignored. -->
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-RULES-MODEL"/>
+  </MODULE_RULES_CASCADE>
+
+  <MODULE_RULES_EXCEPTIONS ID="MOD-RULES-EXCEPTIONS" FILE="src/familiar/rules/exceptions.py" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-RULES-MODEL"/>
+  </MODULE_RULES_EXCEPTIONS>
+
+  <MODULE_RULES_CLI ID="MOD-RULES-CLI" FILE="src/familiar/rules/cli.py" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-RULES-CASCADE"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-RULES-EXCEPTIONS"/>
+  </MODULE_RULES_CLI>
+
+  <MODULE_RULES_TRUST_DATA ID="MOD-RULES-TRUST-DATA" FILE="method/rules/trust.toml" STATE="IMPLEMENTED">
+  </MODULE_RULES_TRUST_DATA>
+
+  <MODULE_RULES_CATALOG_DATA ID="MOD-RULES-CATALOG-DATA" FILE="method/rules/catalog.toml" STATE="IMPLEMENTED">
+  </MODULE_RULES_CATALOG_DATA>
+
+  <MODULE_RULES_SETTINGS_DATA ID="MOD-RULES-SETTINGS-DATA" FILE="method/rules/settings.toml" STATE="IMPLEMENTED">
+  </MODULE_RULES_SETTINGS_DATA>
+</Why_Graph_Shard>

@@ -1,0 +1,1882 @@
+{
+  "title": "Słowa pokrewieństwa",
+  "intro": "Jak nazywamy bliskich. Wybierz siebie w drzewie, aby zobaczyć przykłady ze swojej rodziny. Droga w drzewie pokazuje zapisane powiązania, nie zastępuje ich weryfikacji. Stopień kuzynostwa w tym słowniku nie jest kodeksowym stopniem pokrewieństwa.",
+  "example": "Dla Ciebie to",
+  "noExample": "W pokazanym drzewie nie ma jeszcze przykładu.",
+  "chooseViewer": "Wybierz siebie w drzewie, aby zobaczyć przykłady.",
+  "archaic": "dawne",
+  "maybe": "możliwe: ",
+  "path": "Droga w drzewie",
+  "groups": {
+    "direct": "Rodzice i potomkowie",
+    "collateral": "Rodzeństwo i linie boczne",
+    "marriage": "Powinowactwo",
+    "blended": "Rodzina przyrodnia i przybrana",
+    "spiritual": "Pokrewieństwo duchowe"
+  },
+  "terms": [
+    {
+      "id": "uncle-m-m",
+      "word": "stryj",
+      "explanation": "brat ojca",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 2,
+          "n2": 1,
+          "g": "m",
+          "branchG": "m"
+        }
+      ]
+    },
+    {
+      "id": "nephew-m-m",
+      "word": "bratanek",
+      "explanation": "syn brata",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 2,
+          "g": "m",
+          "collateralG": "m"
+        }
+      ]
+    },
+    {
+      "id": "uncle-f-m",
+      "word": "wuj",
+      "explanation": "brat matki",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 2,
+          "n2": 1,
+          "g": "m",
+          "branchG": "f"
+        }
+      ]
+    },
+    {
+      "id": "nephew-f-m",
+      "word": "siostrzeniec",
+      "explanation": "syn siostry",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 2,
+          "g": "m",
+          "collateralG": "f"
+        }
+      ]
+    },
+    {
+      "id": "uncle-m-f",
+      "word": "ciotka",
+      "explanation": "siostra ojca",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 2,
+          "n2": 1,
+          "g": "f",
+          "branchG": "m"
+        }
+      ]
+    },
+    {
+      "id": "nephew-m-f",
+      "word": "bratanica",
+      "explanation": "córka brata",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 2,
+          "g": "f",
+          "collateralG": "m"
+        }
+      ]
+    },
+    {
+      "id": "uncle-f-f",
+      "word": "ciotka",
+      "explanation": "siostra matki",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 2,
+          "n2": 1,
+          "g": "f",
+          "branchG": "f"
+        }
+      ]
+    },
+    {
+      "id": "nephew-f-f",
+      "word": "siostrzenica",
+      "explanation": "córka siostry",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 2,
+          "g": "f",
+          "collateralG": "f"
+        }
+      ]
+    },
+    {
+      "id": "sister-husband",
+      "word": "szwagier",
+      "explanation": "mąż siostry",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "yes",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 1,
+          "g": "m",
+          "spouseG": "f"
+        }
+      ]
+    },
+    {
+      "id": "brother-wife",
+      "word": "szwagierka",
+      "explanation": "żona brata",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "yes",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 1,
+          "g": "f",
+          "spouseG": "m"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-1-m",
+      "word": "ojciec",
+      "explanation": "mężczyzna, którego jesteś dzieckiem",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 1,
+          "n2": 0,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-1-f",
+      "word": "matka",
+      "explanation": "kobieta, której jesteś dzieckiem",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 1,
+          "n2": 0,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "descendant-1-m",
+      "word": "syn",
+      "explanation": "jesteś jego ojcem lub matką",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 1,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "descendant-1-f",
+      "word": "córka",
+      "explanation": "jesteś jej ojcem lub matką",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 1,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "collateral-1-m",
+      "word": "brat",
+      "explanation": "macie wspólnych rodziców",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 1,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "collateral-1-f",
+      "word": "siostra",
+      "explanation": "macie wspólnych rodziców",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 1,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-2-m",
+      "word": "dziadek",
+      "explanation": "2 pokolenia wstecz w linii rodziców",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 2,
+          "n2": 0,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "descendant-2-m",
+      "word": "wnuk",
+      "explanation": "2 pokolenia naprzód w linii dzieci",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 2,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-2-f",
+      "word": "babcia",
+      "explanation": "2 pokolenia wstecz w linii rodziców",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 2,
+          "n2": 0,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "descendant-2-f",
+      "word": "wnuczka",
+      "explanation": "2 pokolenia naprzód w linii dzieci",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 2,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-3-m",
+      "word": "pradziadek",
+      "explanation": "3 pokolenia wstecz w linii rodziców",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 3,
+          "n2": 0,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "descendant-3-m",
+      "word": "prawnuk",
+      "explanation": "3 pokolenia naprzód w linii dzieci",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 3,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-3-f",
+      "word": "prababcia",
+      "explanation": "3 pokolenia wstecz w linii rodziców",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 3,
+          "n2": 0,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "descendant-3-f",
+      "word": "prawnuczka",
+      "explanation": "3 pokolenia naprzód w linii dzieci",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 3,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-4-m",
+      "word": "prapradziadek",
+      "explanation": "4 pokolenia wstecz w linii rodziców",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 4,
+          "n2": 0,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "descendant-4-m",
+      "word": "praprawnuk",
+      "explanation": "4 pokolenia naprzód w linii dzieci",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 4,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-4-f",
+      "word": "praprababcia",
+      "explanation": "4 pokolenia wstecz w linii rodziców",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 4,
+          "n2": 0,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "descendant-4-f",
+      "word": "praprawnuczka",
+      "explanation": "4 pokolenia naprzód w linii dzieci",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 4,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-5-m",
+      "word": "praprapradziadek",
+      "explanation": "5 pokolenia wstecz w linii rodziców",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 5,
+          "n2": 0,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "descendant-5-m",
+      "word": "prapraprawnuk",
+      "explanation": "5 pokolenia naprzód w linii dzieci",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 5,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-5-f",
+      "word": "prapraprababcia",
+      "explanation": "5 pokolenia wstecz w linii rodziców",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 5,
+          "n2": 0,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "descendant-5-f",
+      "word": "prapraprawnuczka",
+      "explanation": "5 pokolenia naprzód w linii dzieci",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 5,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-6-m",
+      "word": "prapraprapradziadek",
+      "explanation": "6 pokolenia wstecz w linii rodziców",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 6,
+          "n2": 0,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "descendant-6-m",
+      "word": "praprapraprawnuk",
+      "explanation": "6 pokolenia naprzód w linii dzieci",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 6,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-6-f",
+      "word": "praprapraprababcia",
+      "explanation": "6 pokolenia wstecz w linii rodziców",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 6,
+          "n2": 0,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "descendant-6-f",
+      "word": "praprapraprawnuczka",
+      "explanation": "6 pokolenia naprzód w linii dzieci",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 6,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-7-m",
+      "word": "praprapraprapradziadek",
+      "explanation": "7 pokolenia wstecz w linii rodziców",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 7,
+          "n2": 0,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "descendant-7-m",
+      "word": "prapraprapraprawnuk",
+      "explanation": "7 pokolenia naprzód w linii dzieci",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 7,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-7-f",
+      "word": "prapraprapraprababcia",
+      "explanation": "7 pokolenia wstecz w linii rodziców",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 7,
+          "n2": 0,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "descendant-7-f",
+      "word": "prapraprapraprawnuczka",
+      "explanation": "7 pokolenia naprzód w linii dzieci",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 7,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-8-m",
+      "word": "prapraprapraprapradziadek",
+      "explanation": "8 pokolenia wstecz w linii rodziców",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 8,
+          "n2": 0,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "descendant-8-m",
+      "word": "praprapraprapraprawnuk",
+      "explanation": "8 pokolenia naprzód w linii dzieci",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 8,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "ancestor-8-f",
+      "word": "praprapraprapraprababcia",
+      "explanation": "8 pokolenia wstecz w linii rodziców",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 8,
+          "n2": 0,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "descendant-8-f",
+      "word": "praprapraprapraprawnuczka",
+      "explanation": "8 pokolenia naprzód w linii dzieci",
+      "group": "direct",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "descendant",
+          "n1": 0,
+          "n2": 8,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "cousin-2-m",
+      "word": "kuzyn",
+      "explanation": "wspólni przodkowie 2 pokolenia wstecz dla obojga",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 2,
+          "n2": 2,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "cousin-3-m",
+      "word": "kuzyn 2. stopnia",
+      "explanation": "wspólni przodkowie 3 pokolenia wstecz dla obojga",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 3,
+          "n2": 3,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "cousin-4-m",
+      "word": "kuzyn 3. stopnia",
+      "explanation": "wspólni przodkowie 4 pokolenia wstecz dla obojga",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 4,
+          "n2": 4,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "cousin-5-m",
+      "word": "kuzyn 4. stopnia",
+      "explanation": "wspólni przodkowie 5 pokolenia wstecz dla obojga",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 5,
+          "n2": 5,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "cousin-6-m",
+      "word": "kuzyn 5. stopnia",
+      "explanation": "wspólni przodkowie 6 pokolenia wstecz dla obojga",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 6,
+          "n2": 6,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "cousin-7-m",
+      "word": "kuzyn 6. stopnia",
+      "explanation": "wspólni przodkowie 7 pokolenia wstecz dla obojga",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 7,
+          "n2": 7,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "collateral-3-1-m",
+      "word": "cioteczny dziadek",
+      "explanation": "rodzeństwo babci lub dziadka",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 3,
+          "n2": 1,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "collateral-1-3-m",
+      "word": "wnuk rodzeństwa",
+      "explanation": "wnuk lub wnuczka brata albo siostry",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 3,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "collateral-3-2-m",
+      "word": "wuj drugiego stopnia",
+      "explanation": "kuzyn lub kuzynka rodzica",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 3,
+          "n2": 2,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "collateral-2-3-m",
+      "word": "syn kuzynostwa",
+      "explanation": "dziecko kuzyna lub kuzynki",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 2,
+          "n2": 3,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "collateral-4-1-m",
+      "word": "krewny z bocznej linii",
+      "explanation": "wspólny przodek: 4 pokolenia od Ciebie, 1 od tej osoby",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 4,
+          "n2": 1,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "collateral-1-4-m",
+      "word": "krewny z bocznej linii",
+      "explanation": "wspólny przodek: 1 pokolenia od Ciebie, 4 od tej osoby",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 4,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "collateral-4-2-m",
+      "word": "krewny z bocznej linii",
+      "explanation": "wspólny przodek: 4 pokolenia od Ciebie, 2 od tej osoby",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 4,
+          "n2": 2,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "collateral-2-4-m",
+      "word": "krewny z bocznej linii",
+      "explanation": "wspólny przodek: 2 pokolenia od Ciebie, 4 od tej osoby",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 2,
+          "n2": 4,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "collateral-4-3-m",
+      "word": "krewny z bocznej linii",
+      "explanation": "wspólny przodek: 4 pokolenia od Ciebie, 3 od tej osoby",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 4,
+          "n2": 3,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "collateral-3-4-m",
+      "word": "krewny z bocznej linii",
+      "explanation": "wspólny przodek: 3 pokolenia od Ciebie, 4 od tej osoby",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 3,
+          "n2": 4,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "cousin-2-f",
+      "word": "kuzynka",
+      "explanation": "wspólni przodkowie 2 pokolenia wstecz dla obojga",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 2,
+          "n2": 2,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "cousin-3-f",
+      "word": "kuzynka 2. stopnia",
+      "explanation": "wspólni przodkowie 3 pokolenia wstecz dla obojga",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 3,
+          "n2": 3,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "cousin-4-f",
+      "word": "kuzynka 3. stopnia",
+      "explanation": "wspólni przodkowie 4 pokolenia wstecz dla obojga",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 4,
+          "n2": 4,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "cousin-5-f",
+      "word": "kuzynka 4. stopnia",
+      "explanation": "wspólni przodkowie 5 pokolenia wstecz dla obojga",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 5,
+          "n2": 5,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "cousin-6-f",
+      "word": "kuzynka 5. stopnia",
+      "explanation": "wspólni przodkowie 6 pokolenia wstecz dla obojga",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 6,
+          "n2": 6,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "cousin-7-f",
+      "word": "kuzynka 6. stopnia",
+      "explanation": "wspólni przodkowie 7 pokolenia wstecz dla obojga",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 7,
+          "n2": 7,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "collateral-3-1-f",
+      "word": "cioteczna babka",
+      "explanation": "rodzeństwo babci lub dziadka",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 3,
+          "n2": 1,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "collateral-1-3-f",
+      "word": "wnuczka rodzeństwa",
+      "explanation": "wnuk lub wnuczka brata albo siostry",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 3,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "collateral-3-2-f",
+      "word": "ciotka drugiego stopnia",
+      "explanation": "kuzyn lub kuzynka rodzica",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 3,
+          "n2": 2,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "collateral-2-3-f",
+      "word": "córka kuzynostwa",
+      "explanation": "dziecko kuzyna lub kuzynki",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 2,
+          "n2": 3,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "collateral-4-1-f",
+      "word": "krewna z bocznej linii",
+      "explanation": "wspólny przodek: 4 pokolenia od Ciebie, 1 od tej osoby",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 4,
+          "n2": 1,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "collateral-1-4-f",
+      "word": "krewna z bocznej linii",
+      "explanation": "wspólny przodek: 1 pokolenia od Ciebie, 4 od tej osoby",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 4,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "collateral-4-2-f",
+      "word": "krewna z bocznej linii",
+      "explanation": "wspólny przodek: 4 pokolenia od Ciebie, 2 od tej osoby",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 4,
+          "n2": 2,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "collateral-2-4-f",
+      "word": "krewna z bocznej linii",
+      "explanation": "wspólny przodek: 2 pokolenia od Ciebie, 4 od tej osoby",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 2,
+          "n2": 4,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "collateral-4-3-f",
+      "word": "krewna z bocznej linii",
+      "explanation": "wspólny przodek: 4 pokolenia od Ciebie, 3 od tej osoby",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 4,
+          "n2": 3,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "collateral-3-4-f",
+      "word": "krewna z bocznej linii",
+      "explanation": "wspólny przodek: 3 pokolenia od Ciebie, 4 od tej osoby",
+      "group": "collateral",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 3,
+          "n2": 4,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "son-in-law",
+      "word": "zięć",
+      "explanation": "mąż córki",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "yes",
+          "special": "",
+          "kind": "descendant",
+          "n2": 1,
+          "g": "m",
+          "spouseG": "f"
+        }
+      ]
+    },
+    {
+      "id": "daughter-in-law",
+      "word": "synowa",
+      "explanation": "żona syna",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "yes",
+          "special": "",
+          "kind": "descendant",
+          "n2": 1,
+          "g": "f",
+          "spouseG": "m"
+        }
+      ]
+    },
+    {
+      "id": "wife-brother",
+      "word": "szwagier",
+      "explanation": "brat żony",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "f",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 1,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "husband-brother",
+      "word": "szwagier",
+      "explanation": "brat męża",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "m",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 1,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "husband-sister",
+      "word": "szwagierka",
+      "explanation": "siostra męża",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "m",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 1,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "wife-sister",
+      "word": "szwagierka",
+      "explanation": "siostra żony",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "f",
+          "spouseOf": "",
+          "special": "",
+          "kind": "collateral",
+          "n1": 1,
+          "n2": 1,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "wife-father",
+      "word": "teść",
+      "explanation": "ojciec żony",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "f",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 1,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "wife-mother",
+      "word": "teściowa",
+      "explanation": "matka żony",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "f",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 1,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "husband-father",
+      "word": "świekr",
+      "explanation": "ojciec męża; dziś zwykle teść",
+      "group": "marriage",
+      "archaic": true,
+      "match": [
+        {
+          "viaSpouse": "m",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 1,
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "husband-mother",
+      "word": "świekra",
+      "explanation": "matka męża; dziś zwykle teściowa",
+      "group": "marriage",
+      "archaic": true,
+      "match": [
+        {
+          "viaSpouse": "m",
+          "spouseOf": "",
+          "special": "",
+          "kind": "ancestor",
+          "n1": 1,
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "spouse-m",
+      "word": "mąż",
+      "explanation": "osoba, z którą zawarto małżeństwo",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "spouse",
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "spouse-f",
+      "word": "żona",
+      "explanation": "osoba, z którą zawarto małżeństwo",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "",
+          "kind": "spouse",
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "co-brother-in-law",
+      "word": "szwagier",
+      "explanation": "mąż siostry żony",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "coBrotherInLaw",
+          "g": "m",
+          "viewerG": "m"
+        }
+      ]
+    },
+    {
+      "id": "co-parent-in-law-m",
+      "word": "swat",
+      "explanation": "ojciec małżonka lub małżonki Twojego dziecka",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "coParentInLaw",
+          "g": "m"
+        }
+      ],
+      "archaic": true
+    },
+    {
+      "id": "co-parent-in-law-f",
+      "word": "swatowa",
+      "explanation": "matka małżonka lub małżonki Twojego dziecka",
+      "group": "marriage",
+      "match": [
+        {
+          "viaSpouse": "",
+          "spouseOf": "",
+          "special": "coParentInLaw",
+          "g": "f"
+        }
+      ],
+      "archaic": true
+    },
+    {
+      "id": "halfFather-m",
+      "word": "brat przyrodni po ojcu",
+      "explanation": "wspólny ojciec, różne matki",
+      "group": "blended",
+      "match": [
+        {
+          "special": "halfFather",
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "halfFather-f",
+      "word": "siostra przyrodnia po ojcu",
+      "explanation": "wspólny ojciec, różne matki",
+      "group": "blended",
+      "match": [
+        {
+          "special": "halfFather",
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "halfMother-m",
+      "word": "brat przyrodni po matce",
+      "explanation": "wspólna matka, różni ojcowie",
+      "group": "blended",
+      "match": [
+        {
+          "special": "halfMother",
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "halfMother-f",
+      "word": "siostra przyrodnia po matce",
+      "explanation": "wspólna matka, różni ojcowie",
+      "group": "blended",
+      "match": [
+        {
+          "special": "halfMother",
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "stepSibling-m",
+      "word": "brat przybrany",
+      "explanation": "dzieci małżonków bez wspólnych rodziców",
+      "group": "blended",
+      "match": [
+        {
+          "special": "stepSibling",
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "stepSibling-f",
+      "word": "siostra przybrana",
+      "explanation": "dzieci małżonków bez wspólnych rodziców",
+      "group": "blended",
+      "match": [
+        {
+          "special": "stepSibling",
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "stepParent-m",
+      "word": "ojczym",
+      "explanation": "małżonek rodzica, który nie jest rodzicem dziecka",
+      "group": "blended",
+      "match": [
+        {
+          "special": "stepParent",
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "stepParent-f",
+      "word": "macocha",
+      "explanation": "małżonek rodzica, który nie jest rodzicem dziecka",
+      "group": "blended",
+      "match": [
+        {
+          "special": "stepParent",
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "stepChild-m",
+      "word": "pasierb",
+      "explanation": "dziecko małżonka, które nie jest własnym dzieckiem",
+      "group": "blended",
+      "match": [
+        {
+          "special": "stepChild",
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "stepChild-f",
+      "word": "pasierbica",
+      "explanation": "dziecko małżonka, które nie jest własnym dzieckiem",
+      "group": "blended",
+      "match": [
+        {
+          "special": "stepChild",
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "godparent-m",
+      "word": "ojciec chrzestny",
+      "explanation": "osoba podejmująca rolę rodzica chrzestnego przy chrzcie",
+      "group": "spiritual",
+      "match": [
+        {
+          "special": "godparent",
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "godparent-f",
+      "word": "matka chrzestna",
+      "explanation": "osoba podejmująca rolę rodzica chrzestnego przy chrzcie",
+      "group": "spiritual",
+      "match": [
+        {
+          "special": "godparent",
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "godchild-m",
+      "word": "chrześniak",
+      "explanation": "dziecko w relacji do rodzica chrzestnego",
+      "group": "spiritual",
+      "match": [
+        {
+          "special": "godchild",
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "godchild-f",
+      "word": "chrześnica",
+      "explanation": "dziecko w relacji do rodzica chrzestnego",
+      "group": "spiritual",
+      "match": [
+        {
+          "special": "godchild",
+          "g": "f"
+        }
+      ]
+    },
+    {
+      "id": "coparent-m",
+      "word": "kum",
+      "explanation": "rodzic chrzestny wobec rodziców dziecka lub drugiego rodzica chrzestnego",
+      "group": "spiritual",
+      "archaic": true,
+      "match": [
+        {
+          "special": "coparent",
+          "g": "m"
+        }
+      ]
+    },
+    {
+      "id": "coparent-f",
+      "word": "kuma",
+      "explanation": "rodzic chrzestny wobec rodziców dziecka lub drugiego rodzica chrzestnego",
+      "group": "spiritual",
+      "archaic": true,
+      "match": [
+        {
+          "special": "coparent",
+          "g": "f"
+        }
+      ]
+    }
+  ],
+  "labels": {
+    "rel": {
+      "self": "to Ty",
+      "your": [
+        "Twój",
+        "Twoja"
+      ],
+      "yourGen": [
+        "Twojego",
+        "Twojej"
+      ],
+      "spouse": [
+        "mąż",
+        "żona"
+      ],
+      "spouseGen": [
+        "męża",
+        "żony"
+      ],
+      "child": [
+        "syn",
+        "córka"
+      ],
+      "grandchild": [
+        "wnuk",
+        "wnuczka"
+      ],
+      "great": "pra",
+      "sibling": [
+        "brat",
+        "siostra"
+      ],
+      "uncle": [
+        "wuj",
+        "ciocia"
+      ],
+      "nephew": [
+        "bratanek",
+        "bratanica"
+      ],
+      "cousin": [
+        "kuzyn",
+        "kuzynka"
+      ],
+      "greatUncle": [
+        "brat dziadka",
+        "siostra dziadka"
+      ],
+      "grandNephew": [
+        "wnuk brata",
+        "wnuczka brata"
+      ],
+      "cousinUncle": [
+        "kuzyn rodzica",
+        "kuzynka rodzica"
+      ],
+      "cousinNephew": [
+        "syn kuzyna",
+        "córka kuzyna"
+      ],
+      "secondCousin": [
+        "kuzyn",
+        "kuzynka"
+      ],
+      "distant": [
+        "daleki krewny",
+        "daleka krewna"
+      ]
+    },
+    "relExplain": {
+      "greatUncle": "brat lub siostra dziadka albo babci",
+      "grandNephew": "wnuk lub wnuczka brata albo siostry",
+      "cousinUncle": "kuzyn lub kuzynka rodzica",
+      "cousinNephew": "dziecko kuzyna lub kuzynki",
+      "cousinN": "wspólny przodek — {a}"
+    },
+    "father": "ojciec",
+    "mother": "matka",
+    "wifeOf": "żona",
+    "husbandOf": "mąż",
+    "sonOf": "syn",
+    "daughterOf": "córka",
+    "childOf": "dziecko"
+  },
+  "fallback": {
+    "ancestor": "przodek, {n} pokolenia wstecz",
+    "descendant": "potomek, {n} pokolenia naprzód",
+    "collateral": "linia boczna: {n1} pokolenia do wspólnego przodka od Ciebie, {n2} od tej osoby",
+    "spouse": "małżonek lub małżonka",
+    "self": "to Ty",
+    "cousin": "wspólny przodek {n} pokolenia wyżej",
+    "viaSpouse": "pokrewieństwo przez małżonka: {relative}",
+    "spouseOf": "małżonek krewnego: {relative}",
+    "spiritual": "pokrewieństwo duchowe według zapisanego powiązania",
+    "step": "rodzina przybrana według zapisanego powiązania",
+    "halfFather": "wspólny ojciec, różne matki",
+    "halfMother": "wspólna matka, różni ojcowie",
+    "coParentInLaw": "rodzic małżonka lub małżonki Twojego dziecka"
+  },
+  "genitive": {
+    "ojciec": "ojca",
+    "matka": "matki",
+    "rodzic": "rodzica",
+    "dziadek": "dziadka",
+    "babcia": "babci",
+    "brat": "brata",
+    "siostra": "siostry",
+    "wuj": "wuja",
+    "ciocia": "cioci",
+    "kuzyn": "kuzyna",
+    "kuzynka": "kuzynki",
+    "syn": "syna",
+    "córka": "córki",
+    "wnuk": "wnuka",
+    "wnuczka": "wnuczki",
+    "mąż": "męża",
+    "żona": "żony",
+    "bratanek": "bratanka",
+    "bratanica": "bratanicy",
+    "przodek": "przodka",
+    "krewny": "krewnego",
+    "krewna": "krewnej",
+    "dziecko": "dziecka"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "id": "friedrich-case",
+  "question": "friedrich-fate",
+  "state": "waiting-for-family",
+  "waiting_on": "host-letter-1985",
+  "story_level": "card",
+  "basis": [
+    "ir-friedrich"
+  ],
+  "budget": {
+    "unit": "source moves",
+    "limit": 2,
+    "spent": 0,
+    "checkpoint": "Без новой фамилии или города не искать"
+  }
+}

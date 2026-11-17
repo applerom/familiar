@@ -1,0 +1,37 @@
+# START_MODULE_CONTRACT: MOD-REGION-BP-RECIPE-SZUKAJWARCHIWACH
+# PURPOSE: Describe the Szukaj w Archiwach search route, result and absence signals without any family query.
+# PRD_REF: docs/PRD.md#REGION-PACK
+# INVARIANTS:
+# CHANGES_WITH:
+# - regions/belarus-podlasie/data-contract.md
+# :END_MODULE_CONTRACT
+
+schema_version = 1
+
+[recipe]
+id = "szukajwarchiwach"
+source = "szukajwarchiwach"
+title = "Szukaj w Archiwach"
+seeks = "названия и описания архивных единиц; не полнотекстовый указатель всех лиц в документах"
+url = "https://www.szukajwarchiwach.gov.pl/"
+parameters = { "query" = "{query}", "checks" = "{checks}" }
+list_reader = "szukajwarchiwach"
+list_ready = "после отправки формы переход /wyszukiwarka; число в p.ilosc активного типа, строки div.row.search-result"
+list_fields = ["название", "годы", "сигнатура", "архив", "наличие сканов", "описание", "теги", "ссылка единицы"]
+list_limits = "открыть главную, ввести запрос в input.search-input, выбрать типы и отправить; выдача зависит от сессии, прямой адрес не восстанавливает запрос; формы со стеммингом, кавычки не делают поиск точным; страницы по 100, фактический reader может повторить строки"
+card_reader = "ссылка /jednostka/-/jednostka/{id} из строки; читать описание и вкладку сканов; полный скан может требовать входа пользователя; получение миниатюры не равно чтению акта"
+zero_signal = "явный div.brak-wynikow; отсутствие строк без этого блока не ноль"
+zero_status = "reported"
+access = "host-login"
+site_limits = "по прежней карточке robots.txt без ограничения частоты; сегодня не перепроверено; числовой темп сайта неизвестен"
+control = { "query" = "Białystok", "checks" = "acts" }
+control_contains = "Białystok"
+status = "verified"
+basis = "живая отправка формы через общий шлюз: HTTP 200, счёт 14245, reader вернул 105 строк первой страницы, 2,9 с; ноль, карточка и полноразмерный скан сегодня не проверялись"
+ready_pattern = "(?!)"
+empty_pattern = "(?!)"
+api_match = ""
+checked = 2026-11-12
+stop = "капча, вход, платная стена, HTTP 403 или 429: остановиться; секреты и проверки только у пользователя; отказ потолка шлюза не отказ сайта"
+not_ready = "нет явного признака готовой выдачи или нуля; отсутствие ответа и ошибка приложения не доказывают отсутствие записи"
+site_limits_status = "reported"

@@ -1,0 +1,17 @@
+.desk-page.access-page { max-width: 900px; }
+.access-page input,.access-page select,#access-password input { display:block; box-sizing:border-box; width:100%; padding:10px; margin:5px 0 15px; font:inherit; border:1px solid var(--rule,#b8aa98); border-radius:8px; background:var(--paper,#fffaf1); color:var(--ink,#302b25); }
+#access-add { max-width:520px; }
+#access-matches { display:flex; flex-direction:column; gap:6px; max-height:240px; overflow:auto; }
+#access-matches button { text-align:left; }
+#access-person { overflow-wrap:anywhere; }
+.access-user { padding:18px 0; border-top:1px solid var(--rule,#ded5c7); overflow-wrap:anywhere; }
+.access-user h3,.access-user p { margin:0 0 8px; }
+.access-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.access-page button { min-height:44px; }
+.access-page button:disabled { opacity:.55; cursor:wait; }
+#access-password,#access-confirm { box-sizing:border-box; width:min(520px,calc(100vw - 28px)); max-height:calc(100dvh - 32px); overflow:auto; border:1px solid var(--rule,#b8aa98); border-radius:14px; padding:24px; background:var(--sheet,#fffaf1); color:var(--ink,#302b25); font:16px/1.5 system-ui; }
+dialog::backdrop { background:#0007; }
+#access-password button,#access-confirm button { min-height:44px; padding:8px 12px; font:inherit; }
+#access-password-value { font-family:monospace; }
+#access-status[data-error=true] { color:#963820; }
+@media(max-width:500px) { .access-page { margin-top:20px; } #access-password,#access-confirm { padding:18px; } }

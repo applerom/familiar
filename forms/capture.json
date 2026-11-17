@@ -1,0 +1,12 @@
+{
+  "status": 200,
+  "html": "<html><body>Fictional captured index</body></html>",
+  "text": "Fictional example only; no live request was made.",
+  "responses": [
+    [
+      "https://geneteka.genealodzy.pl/api/getAct.php?search_lastname=Example&bdm=B",
+      "",
+      "{\"recordsFiltered\":1,\"data\":[[\"1880\",\"1\",\"Bea\",\"Example\",\"Adam\",\"Eva\",\"Invented\",\"Fictional parish\",\"Fictional village\",\"\"]]}"
+    ]
+  ]
+}

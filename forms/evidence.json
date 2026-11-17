@@ -1,0 +1,12 @@
+{
+  "sources": [],
+  "edges": [
+    {
+      "type": "parent",
+      "from": "parent-example",
+      "to": "child-example",
+      "sources": ["paper"],
+      "confidence": "possible"
+    }
+  ]
+}

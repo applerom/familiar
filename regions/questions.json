@@ -1,0 +1,173 @@
+[
+  {
+    "id": "RP-1",
+    "question": "Which fields did a birth, marriage and death certificate of this country carry in each decade?",
+    "skills": [
+      "memory-first"
+    ]
+  },
+  {
+    "id": "RP-2",
+    "question": "Which cemetery indexes exist here, and how many entries does each hold against its catalogue?",
+    "skills": [
+      "memory-first"
+    ]
+  },
+  {
+    "id": "RP-3",
+    "question": "Which indexes hold service, award, repression, memorial-book and address-book records for this place and these years, and how do they read a zero?",
+    "skills": [
+      "memory-first"
+    ]
+  },
+  {
+    "id": "RP-4",
+    "question": "Where is a civil record of this year kept now, who may request it, and for how long is it closed?",
+    "skills": [
+      "memory-first"
+    ]
+  },
+  {
+    "id": "RP-5",
+    "question": "Where do rural parish and village-council records of this period sit, and which are open?",
+    "skills": [
+      "memory-first"
+    ]
+  },
+  {
+    "id": "RP-21",
+    "question": "Which calendar did records of this country use in this year, how far did it stand from today's, and which church seasons and fasts kept people from marrying?",
+    "skills": [
+      "story-scenario"
+    ]
+  },
+  {
+    "id": "RP-22",
+    "question": "What did daily life look like in this place and decade for the question named: house, work, money and prices, road, school, faith?",
+    "skills": [
+      "story-scenario",
+      "story-text"
+    ]
+  },
+  {
+    "id": "RP-23",
+    "question": "Which events and changes of rule reached an ordinary household here in this decade, and in what form: a levy, a tax, a requisition, a new language of papers, a new border?",
+    "skills": [
+      "story-scenario"
+    ]
+  },
+  {
+    "id": "RP-31",
+    "question": "How was a dwelling of this place, decade and estate laid out, inside and out: entrance and passage, the stove and its place, the place of honour, benches, floor, height of the ceiling, windows, roof?",
+    "skills": [
+      "shot-card"
+    ]
+  },
+  {
+    "id": "RP-32",
+    "question": "What did people of each estate, age and marital state wear here in this decade and season: head cover, hair and beard, outer garment, footwear, and what marked a feast, a wedding or mourning?",
+    "skills": [
+      "shot-card"
+    ]
+  },
+  {
+    "id": "RP-33",
+    "question": "Which vehicles, harness and animals did a household here use in this decade and season, and how was each hitched and driven?",
+    "skills": [
+      "shot-card"
+    ]
+  },
+  {
+    "id": "RP-34",
+    "question": "Which objects stood in a room of this estate here in this decade, and which light was used at which hour of which season?",
+    "skills": [
+      "shot-card"
+    ]
+  },
+  {
+    "id": "RP-35",
+    "question": "How did the settlement, its roads, its market and its house of worship look in this year, and what was built or changed when?",
+    "skills": [
+      "shot-card"
+    ]
+  },
+  {
+    "id": "RP-36",
+    "question": "How did an official, a soldier, a policeman or a priest look here in this year, whose portrait hung in an office, and how did a public procedure run?",
+    "skills": [
+      "shot-card"
+    ]
+  },
+  {
+    "id": "RP-37",
+    "question": "How were everyday and ritual acts done here in this decade, who did them and who by custom stayed away: rocking a cradle, spinning, a baptism, a wedding, a burial?",
+    "skills": [
+      "shot-card"
+    ]
+  },
+  {
+    "id": "RP-38",
+    "question": "What do drawings of this place and decade commonly get wrong, which look-alikes from neighbouring lands creep in, and what stands in their place?",
+    "skills": [
+      "shot-card"
+    ]
+  },
+  {
+    "id": "RP-60",
+    "question": "Which target-language name forms, transliteration choices and period or faith terms apply to a translated unit, and which meanings need a first-use explanation?",
+    "skills": [
+      "translation"
+    ]
+  },
+  {
+    "id": "RP-61",
+    "question": "Which departure, arrival, naturalization and return records cover these countries and years, where are they kept, and which route is free and accessible?",
+    "skills": [
+      "branch-abroad"
+    ]
+  },
+  {
+    "id": "RP-62",
+    "question": "Which fields in destination censuses, vital records, applications, obituaries and burial records distinguish birth families, previous marriages and overseas relatives in this period?",
+    "skills": [
+      "branch-abroad"
+    ]
+  },
+  {
+    "id": "RP-63",
+    "question": "Which name and place variants, script conversions and jurisdiction changes must be tested between departure and arrival records, without treating a spelling as identity evidence?",
+    "skills": [
+      "branch-abroad"
+    ]
+  },
+  {
+    "id": "RP-64",
+    "question": "Which calendars, event-date conventions, age reporting and household or marital terms affect comparisons in this place and period, and which original records can distinguish the alternatives?",
+    "skills": [
+      "generation-review"
+    ]
+  },
+  {
+    "id": "RP-65",
+    "question": "Which events of this place and period (church closures and transfers, faith laws, wars, border changes, resettlements, lost or relocated books) moved where people took their acts and papers, and where are those papers kept today?",
+    "skills": [
+      "wide-hypotheses"
+    ]
+  },
+  {
+    "id": "RP-66",
+    "question": "Which historical record-language formulas distinguish maiden names, marital state, participants and parentage, and what context limits the reading?",
+    "skills": [
+      "translation",
+      "second-look"
+    ]
+  },
+  {
+    "id": "RP-67",
+    "question": "Which fields and participant roles in regional indexes require checking against the record image before interpreting an event?",
+    "skills": [
+      "memory-first",
+      "research-versions"
+    ]
+  }
+]

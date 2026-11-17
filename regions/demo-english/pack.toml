@@ -1,0 +1,535 @@
+# START_MODULE_CONTRACT: MOD-REGION-DEMO-ENGLISH
+# PURPOSE: Supply detachable English host wording and the invented demo vocabulary.
+# PRD_REF: docs/PRD.md#REGION-PACK
+# INVARIANTS:
+# - language data is isolated by explicit scope [review: engine lead]
+# CHANGES_WITH:
+# - regions/demo-english/kinship.json (English reader kinship vocabulary)
+# - MOD-READER-GRAPH (reader_intake notice keys)
+# - docs/PRD.md#RULES-MODEL
+# :END_MODULE_CONTRACT
+[pack]
+id = "demo-english"
+kind = "language"
+[language.lexicon]
+plain = ["home"]
+[settings]
+"lang.preferred_terms" = { residence = "home" }
+
+# Host wording is separate from linguistic checks; it makes no claim of check coverage.
+[host]
+consent_forward = "This same letter includes permission questions. If a question names someone else, please pass it to them; only that person can give their permission."
+hidden_count = "Not yet shown to readers about {name}: {chapters}; {paragraphs}."
+hidden_other = "Also omitted: {details}."
+clarify_life = "Question for the researcher: is this person alive — {person}? Check what is known about their life and record a conclusion with its basis. These passages stay private until then."
+ask_consent = "Ask the family host to forward the shared permission request to {name}. The wording is ready in the letters to relatives."
+consent_question = "One more question about our family history. {name}, may we show relatives exactly these words about you?\n\n{passages}\n\nYou may agree to only part or decline. Please name the words that may be shown, to whom, and date your answer. Living people’s documents and addresses remain excluded even with consent."
+consent_no_passage = "The author must first prepare the exact words for you to read and approve or decline."
+disclosure_unavailable = "The complete list of omitted passages could not be prepared. Ask the author to check the drafts; this does not mean everything may be shown."
+hidden_title = "chapter title"
+hidden_period = "story period"
+hidden_line = "family-line caption"
+hidden_facts = "event explanations"
+hidden_variants = "story versions"
+hidden_places = "places and explanations"
+hidden_extras = "additional passages"
+hidden_links = "annotated links"
+hidden_kids = "children’s story"
+hidden_years = "years in the family diagram"
+hidden_chapters_one = "{count} chapter"
+hidden_chapters_few = "{count} chapters"
+hidden_chapters_many = "{count} chapters"
+hidden_chapters_other = "{count} chapters"
+hidden_paragraphs_one = "{count} paragraph"
+hidden_paragraphs_few = "{count} paragraphs"
+hidden_paragraphs_many = "{count} paragraphs"
+hidden_paragraphs_other = "{count} paragraphs"
+unknown_name = '{name} (life status unknown)'
+working_view = 'Private family working view. Your words and papers are shown here; this is not reader publication.'
+reader_limits = 'Readers see only names and kinship without recorded permission for: {names}. Their addresses and documents never go to readers, even with permission. Separate their information or record permission for specific fields; clarify unknown life status.'
+host = "the keeper of the family papers"
+relative = "a relative"
+question = "the family question"
+witness = "First, what do you remember yourself: {question}"
+our_version = "Our current guess: {version} Please say if you remember it differently."
+request = "Could you look for one paper: {paper}? {why}"
+no_paper = "If you do not have this paper, saying so is also an answer. We can look another way."
+not_recorded = "No safe wording of the current guess is recorded."
+purpose_unknown = "It may help answer this question."
+withheld = "This text has been withheld because it may include private information or working references. Ask the researcher for a version containing only permitted names and kinship."
+no_requests = "There are no requests to relatives yet."
+draft = "Draft — not yet confirmed by an independent reader."
+reviewed = "Read and confirmed by an independent reader."
+reader_confirmed_feed_pending = "The reader page is confirmed; the feed as a separate view is not confirmed. These views can show different material and need their own reading."
+children = "For children"
+support = "What this rests on"
+support_missing = "The support has not been written yet; ask the author to add it before sharing this page."
+no_pages = "There are no story pages yet."
+story_ready = "Ready to read: {title}"
+story_draft = "Ask an independent reader to read the draft: {title}"
+draft_request = "Show the request for {paper} to {who}; the request is still a draft and has not been marked as asked."
+waiting = "Waiting for {paper} from {who} ({elapsed}). No new answer is recorded; wait for that paper rather than repeat the request."
+date_unknown = "the request date has not been recorded"
+answer = "An answer about {paper} is here: {answer} {decision}"
+answer_private = "The reply needs a version without private details."
+answer_open = "The question remains open. Ask your helper to explain what this answer changes."
+decision_unknown = "The question is closed, but its conclusion has not been written for the family."
+not_presented = "{paper} was not presented; this does not show it never existed. Next: {next}"
+choose_test = "Ask your helper to suggest another paper or find out about a replacement copy."
+no_test = "No paper has been chosen for this question yet. Ask your helper to suggest one. Question: {question}"
+bridge = "A paper recording kinship has been found. Ask your helper to explain what is now known. Paper: {paper}"
+case_review = "Ask the research lead to review the unchanged question before another search: {question}"
+run_test = "A next check is planned. Ask your helper what help they need from you. Question: {question}"
+choose_story = "Decisions are recorded for the questions. Choose a story from the available evidence with your helper and prepare a page for reading."
+intake_ready = "Your materials are saved. Choose a first question from the memories and papers with your helper, open a case and name a paper to test the version."
+tree_ready = "Your tree is saved. Add a family memory or home paper for the chosen branch to select a first question to test."
+start = "Bring one family memory or home paper; choose the first question it can help answer."
+papers = "What the papers record — an entry alone does not establish identity or kinship"
+documented = "{person}: {event}, {detail}. Paper: {source}."
+firm_memory = "Firm family recollections — testimony, not documentary proof"
+hearsay = "What was passed down or remains uncertain"
+questions = "Open questions and the paper to test them"
+open_question = "{question} Paper or test: {paper}"
+test_missing = "No paper or test has been named yet."
+stories = "What can already be told"
+none = "Nothing recorded in this section yet."
+event_birth = "birth"
+event_death = "death"
+event_baptism = "baptism"
+event_marriage = "marriage"
+event_emigration = "departure"
+event_immigration = "arrival"
+event_occupation = "work"
+confirmation = """What you are confirming
+
+The machine checks the form of the material: named people and papers resolve to local items, weak versions are not presented as accepted facts, and text has no hidden markup. It computes who is shown, including people in pictures and papers. Living people have only their name and kinship unless they have recorded permission for more. Addresses and documents involving living people cannot be released through these checks. Generated pictures of living people or children are excluded. These are checks of data, not proof of historical truth.
+
+You or a reader other than the author must read the whole page, its children's block and what it rests on, and inspect its pictures and captions in every shown language. Check that the prose says only what living people allowed, keeps closed family topics private, tells scenes the evidence can support, and does not blame a whole people or faith. Check who is in each picture, whether reconstruction is labelled, and where the papers or versions disagree. A green automatic check can miss paraphrases, namesakes and meaning; missing language resources mean those checks were not performed.
+
+Confirm only the material you actually read. The engine checks that the reader is named and different from the author; it cannot prove that someone read honestly or independently. If nobody reads it, the page remains a draft, and ordinary reader export is refused. A deliberate release by the host is a separate recorded decision and cannot override a failed data check.
+
+A change to the shown page or relevant safety information invalidates the confirmation. Read the changed material again. You decide what to publish; an outside copy already shared cannot be recalled by the local engine."""
+
+greeting = "Hello!"
+
+greeting_named = "Hello, {name}!"
+
+purpose = "I am gathering our family history to pass on to the children."
+
+closing = "Thank you for your help!"
+
+closing_named = "Thank you for your help!\n{name}"
+
+self_heading = "A question and a paper to look for at home"
+
+request_self = "Please look among your family papers for: {paper}. {why}"
+
+no_paper_self = "If the paper is missing, tell your helper — that is also an answer. We can try another route."
+
+draft_request_self = "Start with the family papers at home. Look for: {paper}. Tell your helper what you find, or that the paper is missing."
+
+waiting_self = "Your search at home is still open. Paper: {paper} ({elapsed}). Tell your helper the result when you have had time to look."
+
+days_one = "{days} day"
+
+days_few = "{days} days"
+
+days_many = "{days} days"
+
+days_other = "{days} days"
+
+date = "{day} {month} {year}"
+
+living_name = "On this page: {name}."
+kinship_unknown = "Kinship has not been recorded yet."
+
+kinship_parent = "Parent: {parent}. Child: {child}."
+
+kinship_spouse = "Spouses: {first}; {second}."
+
+[host_informal]
+
+[host_format]
+address_forms = ["formal", "informal"]
+months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+plural_default = "other"
+
+[[host_format.plurals]]
+category = "one"
+values = [1]
+
+[[gap]]
+what = "English has no grammatical informal/formal you distinction; both host.address values use the same wording."
+next = "Supply a family call_as for a personal greeting; do not invent a pronoun distinction."
+
+[reader_intake]
+graphKinship = "From the tree connections"
+inferredNameParts = "Inferred name parts"
+placeEventUnknown = "Place reported; birth or death is not specified"
+memorySource = "Account: {witness} · recorded {date}"
+narratorLabel = "the family"
+name_label = "Name"
+notes_label = "Family memory"
+event_label = "Event"
+paper_label = "Document: {title}"
+unknownName = "Name not recorded"
+familyFirm = "family memory"
+familyUncertain = "family memory"
+derivedVersion = ""
+basisLabel = ""
+spouseVersion = "Possibly spouses"
+storiesEmpty = "Stories will appear here when they are written."
+deathEvent = "Death"
+deathCause = "Cause of death: {cause}"
+birth = "Birth"
+death = "Death"
+marriage = "Marriage"
+baptism = "Baptism"
+burial = "Burial"
+occupation = "Occupation"
+residence = "Residence"
+emigration = "Move"
+immigration = "Move"
+private_notice = "private version"
+memory = "Family memories have been added to the archive. They can now be compared with papers."
+paper = "A home paper has been added to the family archive. It can help check family memories."
+gedcom = "Another family tree has been added. Its claims still need checking."
+
+[table_intake]
+alive=["yes"]
+dead=["no"]
+[table_intake.headers]
+person=["person"]
+kin=["relationship"]
+birth=["birth date"]
+death=["death date"]
+birth_place=["birth place"]
+death_place=["death place"]
+notes=["notes"]
+witness=["how i know"]
+living=["living"]
+[table_intake.kin_paths]
+"father"="f"
+"mother"="m"
+
+[table_intake.words]
+ask_place_event="Is “{value}” the place of birth or death? The place is retained; the event kind needs clarification."
+father_unknown="Patronymic {patronymic} points to a father; his name and connection to a table person need clarification"
+ask_father="What was the father’s name for patronymic {patronymic}?"
+hypothesis_context="Kinship hypothesis: {parent} is father of {child}. Basis: patronymic {patronymic}, adjacent generations, surname {surname} of a neighbouring woman in his generation; daughter’s birth surname is unknown"
+mother_hypothesis="Kinship hypothesis: {parent} is mother of {child}. Basis: matching daughter’s birth surname and adjacent generations"
+birth="Birth"
+death="Death"
+birth_place="Birthplace"
+death_place="Place of death"
+place="Birth/death place"
+notes="Story"
+kin="Relationship to narrator"
+witness="How known"
+living="Life status"
+reported="reported by narrator"
+uncertain="uncertain"
+no_kin="Relationship to narrator is absent from the table"
+link="Narrator supplied a link (kept in original table, cell {cell})"
+misplaced="Place column contains {value} — possibly a birth year"
+ask_place="What does “{value}” in the place column mean: birth year or place?"
+ask_date="Can you clarify {label}: “{value}”?"
+ask_years="Which year is correct — {years}?"
+ask_kin="Please clarify the relationship to the narrator: “{value}”. Whose parent is this?"
+ask_person="Who is described by “{value}”?"
+ask_name="Please separate given name and surname: “{value}”."
+father="Patronymic names the father: {father}; he is absent from the table"
+hypothesis="Kinship hypothesis: {parent} is father of {child}. Basis: patronymic {patronymic}, matching surname {surname}, adjacent generations"
+variant="Observation: surname spellings differ — {first} / {second}; people remain separate"
+ask_variant="Do surnames {first} and {second} belong to the same family?"
+consent="Research permission"
+[table_intake.vocabulary]
+self=["self", "narrator", "me"]
+male=["father", "grandfather", "brother", "son", "husband"]
+female=["mother", "grandmother", "sister", "daughter", "wife"]
+male_suffix=[]
+female_suffix=[]
+death_words=["died", "killed", "missing"]
+[table_intake.vocabulary.generations]
+"father"=1
+"mother"=1
+"grandfather"=2
+"grandmother"=2
+[table_intake.vocabulary.fathers]
+
+[table_intake.bridge_words]
+narrator="narrator"
+narrator_genitive="the narrator"
+father="father of"
+mother="mother of"
+father_genitive="the father of"
+mother_genitive="the mother of"
+patronymic_basis="Father’s name read from patronymic “{patronymic}” using the language-pack dictionary"
+place_basis="The number in the place column resembles a year; narrator confirmation is needed"
+basis_separator=". Basis: "
+
+[table_intake.placeholders]
+""="narrator"
+"f"="father of the narrator"
+"m"="mother of the narrator"
+
+[desk]
+nav_stories="Stories"
+nav_families="Families"
+nav_kinship="Kinship words"
+nav_photos="Photos"
+nav_world="Map"
+nav_progress="Investigation"
+unsent_draft="unsent text"
+remark="Remark"
+received="Received"
+my_remarks="My remarks"
+no_remarks="Your remarks will appear here."
+status_sent="Sent"
+status_read="Read"
+status_addressed="Addressed"
+researcher_reply="Researcher reply"
+attached_to="On this page"
+name_person="Give a name"
+screen_tree="Tree"
+screen_families="Families"
+screen_stories="Stories"
+screen_photos="Photos"
+screen_world="Map"
+screen_search="Search"
+screen_progress="Research progress"
+where_person="Person: {person}"
+where_feed="Feed “{feed}”, step {step}, {mode}"
+kids_text="children’s text"
+full_text="full text"
+tree_short="Tree"
+private_notice="private version"
+tree="Family tree"
+progress="Research progress"
+questions="Questions for you"
+journal="What we know"
+cases="What we are doing now"
+plan="Next searches"
+journal_pending="The journal will appear this evening. It will tell what we have learned."
+plan_pending="The search plan has not been published yet."
+question="What do you remember about this?"
+our_version="Our current interpretation — please correct it:"
+answer="Answer"
+no_questions="There are no open questions now."
+correct="Add or correct"
+add_elsewhere="A new person has its own form:"
+add_relative="Add a relative"
+feedback_label="Your words are kept exactly. What would you like to add or correct?"
+send="Send"
+close="Close"
+sending="Saving…"
+saved="Thank you! Your words were saved for the researcher to read before changing the tree."
+failed="Could not save. Your text remains here; please try again."
+rate_limited="Please wait ten seconds and try again. Your text remains in this window."
+unread="Unread narrator feedback: {count}. Read the inbox before the next step."
+stories="Family stories"
+story="A family story"
+answer_label="What do you remember? Your answer will be kept exactly."
+
+
+[desk.show]
+branch="Branch {n}"
+version_n="Version {n}"
+version_started="New version"
+checks="Checks: {n}"
+document_in_tree="Document added to the tree"
+tree_extended="Tree extended"
+first_day="First day"
+first_title="The first branches are growing"
+since_title="Work continues: {warm} versions strengthened, {finds} finds in the tree"
+since="Since your last visit"
+log="Work log"
+log_hint="Each branch is a question and its versions. Colour shows support; green is already in the tree."
+versions="What we currently think"
+versions_hint="Questions we are working through. Warmer means more likely. If you know something, tell us."
+chapters="Chapters to come"
+queries="archive and database queries"
+sources="sources opened"
+sheets="sheets read"
+grains="grains collected"
+finds="finds in the tree"
+unknown="not counted yet"
+possible="possible"
+probable="most likely"
+firm="✓ confirmed"
+more="{n} more checks"
+last_visit="where you stopped last time"
+ask_family="I will ask the family"
+dont_know="I do not know"
+ask_label="You can add to this"
+answer_saved="Answer saved"
+child="Child"
+spouse="Spouse"
+parent="Parent"
+sibling="Sibling"
+beside="Who is next to {name}?"
+pending="awaiting the researcher"
+next_publication="Will appear in the next publication"
+add="Add"
+name_hint="Their name and what you remember about them"
+builder="Start with those closest"
+progress="Investigation"
+stories="Stories"
+tree="Tree"
+
+self="You"
+mother="Mother"
+father="Father"
+mothers_mother="Mother’s mother"
+mothers_father="Mother’s father"
+fathers_mother="Father’s mother"
+fathers_father="Father’s father"
+
+ghost_child="Son or daughter"
+ghost_spouse="Husband or wife"
+ghost_wife="Wife"
+ghost_husband="Husband"
+ghost_parent="Father or mother"
+
+ongoing="The investigation continues"
+
+ongoing_title="The family story is coming into view"
+
+active_title="Versions being explored: {n}"
+
+firm_title="Versions being explored: {n} · already in the tree: {k}"
+
+know="I know about this"
+
+
+cousin="Cousin"
+
+volume_queries="Checks made: {n}"
+
+volume_sources="sources: {n}"
+
+volume_sheets="sheets read: {n}"
+
+volume_grains="records collected: {n}"
+
+volume_finds="documents in the tree: {n}"
+
+add_heading="Add a relative"
+
+beside_caption="next to: {name}"
+add_person="Add a relative"
+add_kin="Add family"
+add_relation="Relationship"
+add_rel_father="Father"
+add_rel_mother="Mother"
+add_rel_sibling="Brother or sister"
+add_rel_child="Son or daughter"
+add_rel_spouse="Husband or wife"
+add_rel_relative="Other relative"
+add_rel_parent="Father or mother"
+add_rel_self="You"
+add_surname="Surname"
+add_surname_ex="Smith"
+add_given="First name"
+add_given_ex="Mary"
+add_patronymic="Middle name"
+add_patronymic_ex="Ann"
+add_maiden_surname="Maiden name"
+add_maiden_surname_ex="for women: Brown"
+add_maiden_short="née"
+add_born="Birth"
+add_birth="Year or date"
+add_birth_ex="about 1930, or 1930s"
+add_birth_place="Place"
+add_birth_place_ex="Ashford, Kent"
+add_living="Living or died?"
+add_living_alive="Living"
+add_living_dead="Died"
+add_living_unknown="Don't know"
+add_died="Death"
+add_death="When died"
+add_death_ex="1995, or about 1990"
+add_death_place="Where died or buried"
+add_death_place_ex="Leeds"
+add_known_from="How do you know"
+add_known_from_memory="I remember"
+add_known_from_told="Family told me"
+add_known_from_document="Have a document or photo"
+add_told_by="Told by whom?"
+add_told_by_ex="Grandma Nina"
+add_note="What else do you remember"
+add_note_ex="work, the war, moves, children…"
+add_need="Write a name or choose the relationship."
+add_done="We will look and add it to the tree."
+add_more="Add another"
+add_finish="Done"
+add_many="Many people at once? A table works too (Excel or Google Sheets), one row per person: surname, name, years, places, relationship. Send the file or a link to whoever opened this desk for you."
+added_title="You added — we will look soon"
+versions_started="New versions: {n}"
+version_weakened="Version weakened"
+version_dropped="Version ruled out"
+version_strengthened="Version strengthened"
+version_confirmed="Version confirmed"
+dropped="ruled out"
+weakened="weakened"
+unlikely="unlikely"
+strengthened="strengthened"
+near_certain="almost certain"
+build_tree="Extend the tree"
+build_done="Done"
+build_hint="The plus beside a person adds relatives"
+
+
+latest_shifts="What has moved in the investigation"
+no_shifts="Questions and alternatives are recorded. No weight changes in the saved history yet."
+no_events="No work log recorded yet."
+work_volume="Work volume"
+searched_title="Where we searched"
+searched_sources="Sources: {known} known · {checked} checked"
+searched_growth="+{n} first seen in the log over the last {days} working days"
+searched_repeat="Repeat passes: {n} sources checked on different days"
+searched_requests="Requests: {n} over {days} working days"
+searched_requests_undated="Requests: {n} · days not recorded"
+searched_day="Day {n}"
+searched_days="Requests by working day: day 1, day 2 and onwards"
+searched_undated="Undated: {n} requests, excluded from bars"
+searched_categories="By source type · number of requests"
+searched_military="Military databases"
+searched_registers="Registers and revisions"
+searched_census="Censuses and household books"
+searched_trees="Family trees"
+searched_repression="Repression and special settlements"
+searched_press="Memorial books and press"
+searched_other="Other"
+searched_note="Approximate, from the search log. New means first seen in the log. Only recorded working days count; requests include access gaps."
+total_questions="questions"
+total_versions="alternatives explored"
+total_dropped="ruled out"
+total_firm="confirmed in the tree"
+total_open="in progress"
+total_confirmed="confirmed, awaiting the tree"
+confirmed_pending="confirmed, tree link not recorded"
+know_question="Know something about this?"
+volume_documents_read="documents read: {n}"
+record_found="Record saved"
+source_archive="Archive documents"
+source_index="Indexes"
+source_database="Databases"
+source_home_paper="Home papers"
+source_website="Websites"
+source_memory="Family memory"
+source_unknown="Source type not recorded"
+coverage_volume="Checked, no match: {zero} · access gaps: {gap}"
+volume_zero="Checked, no match: {n}"
+volume_gap="access gaps: {n}"
+newer="← Newer"
+older="Earlier →"
+page_n="{n} of {total}"
+add_one_form="One person per form."
+add_whose="Whose relative"
+add_kin_words="Relationship in your own words"
+add_kin_words_ex="grandfather's brother, mother's cousin"
+ghost_sibling="Brother or sister"
+
+[reader_kinship]
+file = "kinship.json"

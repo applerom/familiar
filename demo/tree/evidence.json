@@ -1,0 +1,76 @@
+{
+  "_about": "Invented for the Familiar demo. The research graph over the snapshot: which source carries which link, and how strongly.",
+  "fictional": true,
+  "sources": [
+    {
+      "id": "doc-helena-baptism",
+      "kind": "home-paper",
+      "record": "doc-helena-baptism"
+    },
+    {
+      "id": "rec-santa-ludovina-1921-14",
+      "kind": "archive-record",
+      "record": "rec-santa-ludovina-1921-14"
+    },
+    {
+      "id": "memory-2026-11-12",
+      "kind": "memory",
+      "record": "m-rosa-came-to-marry"
+    }
+  ],
+  "edges": [
+    {
+      "type": "parent",
+      "from": "p-amaro",
+      "to": "p-helena",
+      "sources": [
+        "doc-helena-baptism"
+      ],
+      "confidence": "same"
+    },
+    {
+      "type": "parent",
+      "from": "p-rosa",
+      "to": "p-helena",
+      "sources": [
+        "doc-helena-baptism"
+      ],
+      "confidence": "same"
+    },
+    {
+      "type": "parent",
+      "from": "p-joaquina",
+      "to": "p-amaro",
+      "sources": [
+        "rec-santa-ludovina-1921-14"
+      ],
+      "confidence": "probable"
+    },
+    {
+      "type": "cousin",
+      "from": "p-manuel",
+      "to": "p-amaro",
+      "sources": [
+        "rec-santa-ludovina-1921-14"
+      ],
+      "confidence": "possible",
+      "note": "'cousin' on a passenger list may mean any kinsman or a fellow villager; not tested here"
+    },
+    {
+      "type": "godparent",
+      "from": "p-manuel",
+      "to": "p-helena",
+      "sources": [
+        "doc-helena-baptism"
+      ],
+      "confidence": "same"
+    }
+  ],
+  "remove_edges": [],
+  "research": [
+    {
+      "case": "cases/rosa-calhau.md",
+      "question": "rosa-birthplace"
+    }
+  ]
+}

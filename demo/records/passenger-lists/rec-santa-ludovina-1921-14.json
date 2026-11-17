@@ -1,0 +1,77 @@
+{
+  "_about": "Invented for the Familiar demo: no such ship, list or archive exists. It shows the shape of a database record kept with every field literal.",
+  "id": "rec-santa-ludovina-1921-14",
+  "fictional": true,
+  "kind": "archive-record",
+  "title": "Passenger list of the SS Santa Ludovina, 1921, line 14",
+  "source": {
+    "kind": "passenger-list",
+    "collection": "Arrivals at the port of Quarry Bend, 1900-1930 (invented index)",
+    "archive_ref": "invented: QB arrivals, vol. 61, sheet 9",
+    "image": null,
+    "raw": null,
+    "fetched_at": "2026-11-12",
+    "by": "demo",
+    "invented": "Invented for the demo. There is no scan: a demo record is shown only as its reading."
+  },
+  "language": [
+    "en"
+  ],
+  "person": {
+    "surname": "Ferrolho",
+    "name": "Amaro",
+    "sex": "m",
+    "age_text": "23"
+  },
+  "events": [
+    {
+      "type": "emigration",
+      "date": "1921-03-14",
+      "place_text": "Port of Quarry Bend",
+      "text": "arrived SS Santa Ludovina, sailed from Vila Franca da Vaqueira March 2 1921"
+    }
+  ],
+  "relatives": [
+    {
+      "relation": "mother",
+      "name": "Joaquina Ferrolho",
+      "place_text": "Lajedo"
+    },
+    {
+      "relation": "cousin",
+      "name": "Manuel Tavares",
+      "place_text": "14 Rope Walk St., Quarry Bend"
+    }
+  ],
+  "fields": {
+    "Line": "14",
+    "Family name": "Ferrolho",
+    "Given name": "Amaro",
+    "Age": "23",
+    "Sex": "M",
+    "Married or single": "S",
+    "Calling or occupation": "Laborer",
+    "Able to read": "Yes",
+    "Nationality": "Portugal",
+    "Last permanent residence": "Lajedo do Vento, I. Vaqueira",
+    "Name and address of nearest relative in country whence alien came": "Mother Joaquina Ferrolho, Lajedo",
+    "Final destination": "Quarry Bend",
+    "Going to join": "Cousin Manuel Tavares, 14 Rope Walk St.",
+    "By whom was passage paid": "Self"
+  },
+  "reading": "14 | Ferrolho | Amaro | 23 | M | S | Laborer | Yes | Portugal | Lajedo do Vento, I. Vaqueira | Mother Joaquina Ferrolho, Lajedo | Quarry Bend | Cousin Manuel Tavares, 14 Rope Walk St. | Self",
+  "doubt": [],
+  "match": {
+    "family": "Ferrolho",
+    "tree_id": "p-amaro",
+    "confidence": "probable",
+    "note": "Name, village of the home paper and the cousin who is godfather in 1925: three independent fields. Age 23 gives about 1898; the family remembers 1899."
+  },
+  "privacy": "dead",
+  "subjects": [],
+  "people": {
+    "Amaro Ferrolho": "p-amaro",
+    "Joaquina Ferrolho": "p-joaquina",
+    "Manuel Tavares": "p-manuel"
+  }
+}

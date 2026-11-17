@@ -1,0 +1,402 @@
+# Changelog
+
+## 0.30.0 — 17 November 2026
+
+First public release. Install tags, not `main`; see `docs/upgrading.md` for what a release promises.
+
+- The place where a dead person lived stays in the family's pages. A residence was treated as an address:
+  the event was dropped and its place name was removed from every text of the delivery, birth places and
+  story sentences included. Explicit address events and every residence of a living or unknown person
+  remain excluded as before. No stored data changes; rebuild the reader or desk.
+- `desk export-demo` writes a fictional family's desk as a portable static site: relative links, the
+  fiction mark on every page, feedback and adding people switched off. It refuses a family that is not
+  declared fictional or whose reader pages are not confirmed. `scripts/build_demo_site.py` builds the
+  Ferrolho demo this way; the build is checked on Windows and on Linux.
+- The Ferrolho demo carries a recorded reading of its reader pages, so `reader export` works on a clean
+  checkout.
+- Documentation for outsiders: agent-first README, `docs/first-family.md` (installation from a tagged
+  release), `docs/architecture.md` (engine, family instance, host environment; where each setting and
+  secret lives), `docs/upgrading.md`, `CONTRIBUTING.md`, `SECURITY.md`. A changed stored form now ships
+  its carry-over command and a changelog line starting `Data:`.
+
+## 0.29.7 — 16 November 2026
+
+- Coverage excludes analytical comparison tables and explicitly labelled source maps from personal record visits. Accepted tree facts and identity decisions resolve record links through exact document references; contextual participants remain separate from principal candidates.
+- Local reviews (`query.mode = "review"`, including legacy `query.review`) assess individual record links without adding source passes, strength, forms, findings or availability. A completed assessment leaves incomplete search coverage open; contradictory accepted links remain conflicts. Search and record forms document the distinction.
+
+## 0.29.6 — 16 November 2026
+
+- A display snapshot no longer fails on a search journal row whose `question` names a version. A version citing `search:<id>` adopts the journal into the snapshot, but versions themselves stay out of it, so the reference is checked on the whole instance only.
+
+## 0.29.5 — 16 November 2026
+
+- Coverage puts unresolved record identity and participant roles before repeat searches. Explicit people survive dictionary mismatches; contrary birth/parent data and previous other-person assessments remain visible.
+- Search forms carry editorial annotations, sex, person and episode applicability separately from spelling. Catalogue writing and prefix semantics constrain missing forms; unknown writing is marked explicitly. Estimated age and dated family episodes improve source priorities.
+- Latest source refusal is independent of the strongest earlier outcome; a stopped search waits for access even when a document page opens. Dubious composite or substring queries cannot become negative coverage.
+- Version arguments against a hypothesis may cite a saved zero with positive control and actual read scope; uncontrolled zeros and access gaps remain unusable.
+
+## 0.29.4 — 16 November 2026
+
+- The private desk rebuilds the "Where we looked" block when search journals, records, versions or the family variant dictionary change. The reader cache key covered only the display snapshot, which holds no journals, so a fresh recheck kept the old strength on the desk.
+
+## 0.29.3 — 16 November 2026
+
+- Memory intake drops a bridge label (`placeholder`) from an existing person once a told name arrives. The reader showed the label instead of the name and treated the person as unnamed: no search hit, no chip, no kinship path.
+
+## 0.29.2 — 16 November 2026
+
+- Coverage distinguishes surname searches in a place and period, individual searches, result rows, read records and explicitly established identity. Existing records and corpus records count as source visits without promoting name matches to identity.
+- Planning reads dated family notes, catalogue parish/episode context and source language/script constraints. Textual positive controls survive; missing forms and incomplete plans remain visible independently of executor strength.
+- FamilySearch Tree, Records and Full Text have separate coverage cells; ambiguous old labels remain unclassified. Private person cards show result rows and identity separately, with a short list of missing forms and the full list in JSON.
+
+## 0.29.1 — 16 November 2026
+
+- Legacy search imports assign stable provenance ids, normalize explicit counts and preserve unrecorded outcomes and incomplete zeros without claiming negative evidence.
+- Coverage includes pack/family surname and given-name variants and query masks; living or possibly living people leave the recheck queue and are counted separately. Source URLs resolve by catalogue domain, transport labels without a source are counted aside.
+- Expanded the Belarus–Podlasie source catalogue with forums, memory, diaspora, cemetery and library resources, keeping unknown dates and access gaps explicit.
+
+## 0.29.0 — 16 November 2026
+
+- Host-private reader: the person panel has a "Where we looked" section (ru, pl, en, sv)
+  from the search coverage matrix. A folded line ("Looked in 12 sources · found in 3 · worth another look: 2"),
+  then each source with its outcome mark (found, zero with control, zero without control, no access),
+  the latest pass date, strength in dots and the name forms tried; "Not looked in yet" lists only sources
+  that fit the person's epoch and region. The block is declared host-private only and never reaches the
+  public projection; without a journal the section is simply absent.
+- `research coverage --family --json` carries each person's `distance` from the tree root, so a display can order
+  rows by closeness.
+
+## 0.28.1 — 16 November 2026
+
+- Search migration accepts an explicit executor map, enriches previously migrated
+  rows, and refines question-only people using names and variants.
+- Archived SEARCHES journals are copied with source line provenance, deduplicated
+  across archives and repeat runs; malformed rows are counted without changing originals.
+- Coverage suggestions account for catalogue epoch and geography, counting
+  unsuitable cells separately while retaining the searches actually recorded.
+
+## 0.28.0 — 16 November 2026
+
+- Search coverage ledger. A search journal row now names the people it was run
+  for (`people`, tree ids), a source of the region catalogue (`source`) and the
+  executor as `by` = `{agent, model, effort}`. `familiar research
+  migrate-searches` carries old rows over once (dry run, `--apply` to write):
+  people inferred from the question and the names searched, the catalogue
+  source by alias, domain or the address asked, `by` parsed; the written text
+  stays in `source_as_written` and `by.as_written`, uncertain matches stay empty
+  and are counted.
+- `familiar research coverage`: person-by-source matrix (found, zero with
+  control, zero without control, access gap, never looked; forms read and
+  missing; first and last pass; who and how hard), `--person ID` card,
+  `--recheck [N]` queue by usefulness, `--json`, `--save` (stores
+  `coverage.json` in the instance state directory for the desk and display).
+- Pass strength 1-4 from model and effort: setting `research.search_strength`
+  (region and family layers) and `research.recheck_strength`.
+- `instance check` advises on journal rows outside the ledger form; forms
+  `search` and `search-request` and the demo family show it.
+
+## 0.27.0 — 16 November 2026
+
+- Prepare editable memory intake drafts from desk feedback; accepted feedback gets a read receipt without replacing existing receipts.
+
+## 0.26.3 — 16 November 2026
+
+- Desk "Add a relative": the chosen "Relation" button now stays highlighted
+  (the sheet's general chip rule outranked it); a double click on a chip no
+  longer selects its text. Narrator feedback.
+
+## 0.26.2 — 16 November 2026
+
+- Desk logins: the first-sign-in password is now plain — the login's letters
+  and the person's birth year, or the current year when no birth year is known
+  (`helena1925`). The old 28-character random string with `!` and `_` broke on
+  double-click selection and on typing, and a relative never got in. The user
+  pool asks only for six characters with no required classes, so the new
+  password chosen at first sign-in is not refused either; a temporary password
+  now lasts 30 days. Hosted desks need `desk provision`, then `desk user reset`
+  for logins still waiting for their first sign-in.
+
+## 0.26.1 — 16 November 2026
+
+- Desk builder: the place for a parent sits above the person and names the
+  missing one ("Mother" when the father is known); the partner place says
+  "Wife" for a man and "Husband" for a woman (also in the card's actions); a new
+  child joins the end of the row of children already drawn, as a plain plus when
+  the row is full. Tree cards carry their person id (`data-person`), so the desk
+  no longer guesses people by the names shown.
+
+## 0.26.0 — 16 November 2026
+
+- Desk: a visible "Add a relative" button by the tree and "Add relatives" in a
+  person's card (father, mother, brother or sister, son or daughter, husband or
+  wife, other kin in own words, and "whose relative" to pick anyone in the tree)
+  open a one-person form with plain fields: names, birth, living or died, how it
+  is known, a note. "Add another" follows; many people at once still go as a
+  table. The addition keeps the fields as `new_person` beside a readable text and
+  stays pending for the researcher. Hosted desks need `desk provision` for the new
+  receiver before publishing.
+- A repeated research contribution no longer revives a fact the family retired;
+  a malformed index answer is no longer counted as a zero (false negative), a
+  counted partial answer keeps its coverage; GEDCOM PHRASE text is kept verbatim
+  with its context.
+- Region pack and reading method updated from the kinship research guide v1.46
+  (Lithuanian metrikai path, corrected OBD fields, re-reading a narrow period
+  before widening a search).
+
+## 0.25.1 — 16 November 2026
+
+- Zooming out always leads back to the wide tree: after all generations of a
+  person are open, the wheel, pinch and minus button return the way the
+  gesture came in, or, for a person chosen by a click or a link, step towards
+  the family's home people one relative at a time. Clicks keep working.
+
+## 0.25.0 — 16 November 2026
+
+- Give every person without a recorded birth year an orientation year: the
+  first known child minus the usual age of a father or mother at a first child
+  in that era (setting `tree.first_child_age`, regions and families may change
+  it), else a spouse, brothers and sisters, then parents. Shown in italics as
+  "≈1895" with its grounds under the card's evidence; never stored, and a
+  recorded year replaces it. The whole-family view places people by it too.
+- Draw the father on the left and the mother on the right: parent links
+  without a recorded role take it from the parent's sex.
+- Zooming out past the last generation no longer swaps the tree for the
+  whole-family view; that view opens from the corner miniature only.
+- Show birth and death years that research recorded as typed events.
+
+## 0.24.0 — 15 November 2026
+
+- Return the tree to a window around one person, with the corner miniature of
+  the whole family by year and generation levels; the flat map of 0.19–0.21 was
+  unreadable on a phone and hid the connections. Marks and link weights stay.
+- Zoom the tree in people: wheel or pinch outwards adds generations as the
+  gesture goes and then opens the whole family; inwards over a person moves the
+  tree to them and keeps their visible branch, with a button back.
+- A two-finger pinch on tree cards no longer opens the add-relative sheet.
+
+## 0.23.0 — 15 November 2026
+
+- Let chapter authors select up to four document crops for children.
+
+## 0.22.2 — 15 November 2026
+
+- Carry relationship decision confidence and weight into the working graph.
+
+## 0.22.1 — 15 November 2026
+
+- Give the reader page an empty icon so the browser console stays clean.
+
+## 0.22.0 — 15 November 2026
+
+- Count the family's own imported tree as firm family memory: a green check with
+  the grounds "from the family tree" (setting `tree.import_is_family_memory`,
+  on by default; research additions still need a document or firm testimony).
+- Read a document mark without a check as "documents exist, they do not confirm
+  the facts": muted on the map, stated on the full card.
+- Fix the desk add-person script: a duplicate `identity` name stopped it from loading.
+
+## 0.21.0 — 15 November 2026
+
+- Lay the tree out as one compact map of all groups (nested branches, childless
+  children folded into columns, cross links drawn lighter); open on the whole
+  tree or, when that is only dots, on the neighbours of whoever is looking, with
+  no card until a person is chosen and a way back to the whole tree.
+- Keep zoom smooth on hundreds of people; names stay readable at map scale.
+- Check firm family testimony also when the family's answer is saved as a record.
+- Show an unnamed connecting person's placeholder exactly as the family data has it.
+
+## 0.20.0 — 15 November 2026
+
+- Let the family owner issue, reset, enable, disable and remove personal desk
+  logins on Access, with tree search and a one-time password handoff.
+- Verify the current owner and revocable session in every administration call;
+  scope Cognito/KVS rights to this desk and provision its pinned signing runtime.
+
+## 0.19.0 — 15 November 2026
+
+- Navigate the whole family tree as a map; selecting a person keeps the map in place.
+- Mark firm family testimony or documentary confirmation with a check; explain its basis on the full card.
+- Correct unnamed connector evidence and singular English generation wording.
+
+## 0.18.0 — 15 November 2026
+
+- Let a reader attach a correction directly to a life event in the growing tree.
+- Render unnamed hypothetical connecting people compactly, using their children’s
+  clan form when it can be determined and keeping the explanation on the card.
+
+## 0.17.1 — 15 November 2026
+
+- Keep incidental login-page requests from replacing OAuth state/PKCE; carry person IDs only in signed JSON, without HTTP-header character restrictions.
+
+## 0.17.0 — 15 November 2026
+
+- Show attributed family-memory and documentary origins, evidence-based confirmation,
+  linked documents and a growing-tree summary in the reader.
+
+## 0.16.0 — 15 November 2026
+
+- Opt published AWS desks into host-created Cognito personal logins with reader
+  and owner roles, managed password changes/recovery and revocable edge sessions.
+- Add desk user commands and initialize reader kinship from the login's person;
+  readers retain their own choice and send remarks with a verified author.
+- Keep shared-login publication as the default and loopback viewing unchanged.
+
+## 0.15.0 — 15 November 2026
+
+- Show anonymous search coverage in the investigation: known and checked sources,
+  first journal appearances, working-day bars, repeat passes and source categories.
+  Normalize common aliases and domains only while counting existing journals;
+  collectors and search forms acquire no new steps, fields or checks.
+- Keep the remark sheet usable after scrolling an investigation past its header.
+
+## 0.14.0 — 15 November 2026
+
+- Compare and choose clan surname forms by birth names, excluding explicit married
+  names and untyped names shared with a husband. Preserve literal source names
+  and report genuine paternal spelling differences in full instance checks.
+- Share the page top across reader and investigation screens, reserving space
+  for unavailable controls. Combine work totals in the investigation and omit
+  zero values.
+
+## 0.13.0 — 15 November 2026
+
+- Use one lower navigation, private label, version and remark entry across the
+  reader and investigation. Open remarks on the first click without scrolling;
+  dismiss and resume drafts with a visible unsent-text indicator.
+- Put alternative outcomes beside research volume. Require a recorded browser
+  walk at desktop and phone widths for interface acceptance; provide a reusable
+  walk sheet in the reviewer method.
+- Render a translated feed period as text so the stories screen remains usable
+  with a language-keyed reader delivery.
+
+## 0.12.1 — 15 November 2026
+
+- Keep one installed journey and weighted core data, privacy and install checks.
+  Drop presentation and method lint requirements; time overruns only advise.
+  Core contracts remain authored with code; surface contracts are optional.
+- Use safe defaults for malformed presentation preferences while keeping privacy
+  configuration and trust modes strict.
+
+## 0.12.0 — 14 November 2026
+
+- Keep tree cards to names, life years and birthplace. Store one reversible clan
+  surname decision, preserve each person's documentary spellings, derive a
+  surname only for an unambiguous named father from his children, and report
+  undecided paternal spelling differences without blocking the reader.
+
+## 0.11.0 — 14 November 2026
+
+- Keep collector record and journal form findings separate from display readiness;
+  validate and watch adopted research dependencies, with strict own-path checks
+  and one unknown journal numeric-field finding per file and affected-row count.
+
+## 0.10.0
+
+- Investigation shows recorded weight shifts, all alternatives and rejection arguments, cumulative source coverage and paginated work without dates. Question remarks retain their question ID; privacy, navigation and feedback share one lower row.
+
+Engine numbers follow the rule in `AGENTS.md` ("Engine version"). Each desk build
+records the number it was built with in the family's `.secrets/desk-build.json`.
+
+## 0.9.0 — 14 November 2026
+
+- Add language-pack kinship words, qualified tree paths and an offline kinship
+  glossary with examples from the permitted reader graph (Russian, Polish, English).
+
+## 0.8.0 — 14 November 2026
+
+- Add remarks from every desk screen, precise page and reading context, persistent
+  drafts, browser-owned receipts and researcher replies. Invite unnamed relatives
+  to be named through the same inbox. Move the private label and engine version
+  to the lower edge. Cloud receivers require `desk provision` before publishing.
+
+## 0.7.0 — 14 November 2026
+
+- Keep unreferenced collector captures and archive bytes outside snapshots and
+  watches; retain referenced-file race checks and the full public corpus gate.
+  Compile host text identifier checks once for quick summaries on large families.
+- Serve pinned checked desks over persistent HTTP with conditional browser
+  caching and cheap corruption checks. Both local servers accept localhost names;
+  local desk feedback accepts consecutive messages without a cooldown.
+
+## 0.6.0 — 14 November 2026
+
+- Add `reader book`: an offline A5/A4 HTML book with one replaceable stylesheet,
+  full or children's text, document crops, original readings and chapter-end
+  grounds. Admission reuses current independent reader attestations and the
+  chosen public or host-private privacy projection; omissions are counted.
+- Private reader previews can save review tickets for the exact local bytes.
+  Existing private reader delivery remains available without book acceptance.
+
+## 0.5.0 — 14 November 2026
+
+- Expand the Belarus–Podlasie pack to 51 sources with dated provenance and
+  explicit unknown-year gaps. Pack answers retain unknown-year source candidates;
+  Polish and Latin record-reading cues are available by selected language.
+- License the engine, method and own pack texts under MIT; carry third-party
+  notices with wheels, reader shells and desk sites. Neutralize reader storage
+  keys and remove private implementation instructions.
+
+## 0.4.0 — 14 November 2026
+
+- `research replay` exposes offline capture replay with full request/capture
+  forms and actionable recipe/permission refusals. The separate module entry
+  is removed. Complete documents, chapters and evidence forms match file containers;
+  malformed containers name the file and repair example.
+- Text pages and family summaries report current reader confirmation separately
+  from pending feed review. Duplicate source declarations name both files and
+  explain intake ownership; PRD and README describe actual search and language defaults.
+
+## 0.3.0 — 14 November 2026
+
+- Publication is optional: absent `[publication]` or `target = "none"` keeps work
+  local. Desk build/serve ignore cloud settings; cloud commands require explicit
+  `aws` before any disk mutation or external process, including publish --build.
+- AWS failures explain missing CLI/profile and deployment state recovery;
+  an unbuilt local desk points to build or serve --build.
+- `method list` and `method show role/skill <id>` read bundled method resources
+  without family discovery or startup maintenance. A thin portable Agent Skill
+  and local-first documentation describe the installed path.
+
+## 0.2.2 — 14 November 2026
+
+- Person edits reuse build-local input reference indexes and resolve each distinct
+  dependency path once per check. Publication validates restricted-term forms
+  once; semantic text findings, privacy, gate and review checks remain in place.
+- Person normalization, prose/date adaptation and card serialization run in
+  memory instead of reading thousands of cache files. Feeds, documents and media
+  keep checked reuse; privacy and full graph validation remain authoritative.
+
+## 0.2.1 — 14 November 2026
+
+- Desk builds reuse their checked private reader and unchanged media. Person
+  projections and feed materialization are cached by content; shell and desk
+  wording changes do not export family data again. Privacy and gate checks remain
+  authoritative; the engine release number is recorded without clearing the cache.
+
+## 0.2.0 — 14 November 2026
+
+- Engine-owned reader sources and a locked Bun build reproduce the packaged shell
+  without a pilot checkout; all six existing delivery files retain their exact bytes.
+- Instances pin `[engine] version`; checks and desk builds warn on a mismatch.
+  `instance record-release` records the installed wheel's SHA-256 and engine commit.
+
+## 0.1.0 — 14 November 2026
+
+First numbered state of the engine: everything before it shipped as 0.0.1.
+
+- Number visible: `familiar --version`, `instance check`, a small mark in the desk
+  notice bar and in the private reader's notice; desk builds record `engine_version`
+  and `built_at`.
+- Desk tree: ghost places are a builder mode. Ordinary viewing shows none; a quiet
+  toggle beside the tree controls turns it on (automatic for a family under three
+  people); long-press or right-click on a person still adds a relative. Ghost words
+  fit any person: "Сын или дочь", "Муж или жена", "Родитель".
+- Version heat by meaning: отпала, ослабла / маловероятно, возможно, окрепла /
+  скорее всего так, почти наверняка, подтвердилась; "ослабла" and "окрепла" only
+  after a real fall or rise. Log events: ослабла, отпала, окрепла, подтвердилась;
+  versions born together on one branch are one row ("Новые версии: 6").
+- Large families: desk listings compare names in one order (case broke the check
+  on Windows); private display snapshots bind research originals that are only
+  tested for existence by name, size and time (pilot: 3.1 GiB became 262 MiB);
+  desk history reads one git log instead of one process per commit.
+- Desk journal dates in family words; one-row phone menu.

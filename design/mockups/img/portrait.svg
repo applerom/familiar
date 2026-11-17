@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" role="img" aria-label="Фото-заглушка макета: здесь будет старая фотография">
+<defs><radialGradient id="v" cx="50%" cy="45%" r="60%"><stop offset="0" stop-color="#e6d8bd"/><stop offset=".72" stop-color="#cdb895"/><stop offset="1" stop-color="#8f7754"/></radialGradient></defs>
+<rect width="600" height="800" fill="#8f7754"/>
+<ellipse cx="300" cy="380" rx="250" ry="330" fill="url(#v)"/>
+<text x="300" y="400" text-anchor="middle" font-family="Literata,Georgia,serif" font-style="italic" font-size="34" fill="#6d5636">фото-заглушка</text>
+<text x="300" y="446" text-anchor="middle" font-family="Manrope,sans-serif" font-size="22" fill="#7d6646">здесь будет снимок семьи</text>
+</svg>

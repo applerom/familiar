@@ -1,0 +1,453 @@
+# START_MODULE_CONTRACT: MOD-RULES-SETTINGS-DATA
+# PURPOSE: The one registry of declared settings with engine defaults; a value a layer names that is not declared here does not exist.
+# PRD_REF: docs/PRD.md#SETTINGS
+# INVARIANTS:
+# - every engine default loads only when it matches its type [review: engine lead]
+# - a layer naming an undeclared setting fails to load [review: cold reviewer]
+# - defaults are a sensible start for an unknown family, not the taste of any real family [review: engine lead]
+# - a setting read by a trust rule has a closed set of values or points at family data [review: engine lead]
+# CHANGES_WITH:
+# - docs/PRD.md#RULES-MODEL
+# - MOD-RULES-TRUST-DATA
+# - MOD-RULES-CATALOG-DATA
+# :END_MODULE_CONTRACT
+#
+# Shape: one table per setting, keyed by its dotted id: [setting."reader.default_age"],
+# with the RULES-MODEL fields type, default, help, serves, scopes (the key is the id).
+# type is one of string | integer | float | boolean | array | table, as MOD-RULES-MODEL loads it;
+# a closed set of string values is listed in `choices` (not yet named in RULES-MODEL).
+# scopes: which layers may set the value, from region, family, feed; empty = fixed by the engine.
+# A setting read by a trust rule only narrows or widens what is shown inside the
+# invariant; its values are a closed set so no layer can weaken the invariant.
+# In a layer file, dotted ids are quoted keys: "reader.default_age" = 8.
+
+# ---------- reader ----------
+
+[setting."host.address"]
+type = "string"
+choices = ["formal", "informal"]
+default = "formal"
+help = "How family letters address a relative: formal or informal. The source-language pack supplies the actual forms; no automatic inflection."
+serves = "UC-START"
+scopes = ["language", "family"]
+
+[setting."privacy.living_horizon"]
+type = "integer"
+minimum = 1
+maximum = 200
+default = 110
+help = "Recent corpus records require explicit mapping of structured personal names; older names remain review cues."
+serves = "UC-TRUST"
+scopes = ["family"]
+
+[setting."reader.default_age"]
+type = "integer"
+minimum = 0
+maximum = 120
+default = 8
+help = "Age of the youngest reader the shared text is read aloud to; plain-language and kids checks measure against it."
+serves = "UC-READ"
+scopes = ["family", "feed"]
+
+[setting."reader.address"]
+type = "string"
+choices = ["neutral", "direct"]
+default = "neutral"
+help = "neutral: the text does not depend on who reads it (no 'our', 'your'; kinship counted from the feed's anchor ancestor). direct: the text addresses one known reader."
+serves = "UC-READ"
+scopes = ["family", "feed"]
+
+# ---------- voice ----------
+
+[setting."voice.doubt_placement"]
+type = "string"
+choices = ["more_only", "inline"]
+default = "more_only"
+help = "Where doubt, weights and reasoning live. more_only: the chapter tells what happened, doubt sits in 'More'. inline: the narrator may voice doubt in the text."
+serves = "UC-READ"
+scopes = ["family", "feed"]
+
+[setting."voice.name_the_teller"]
+type = "boolean"
+default = false
+help = "Whether the text names which relative told a memory ('as grandmother recalls'). The teller is always kept in internal files."
+serves = "UC-READ"
+scopes = ["family", "feed"]
+
+[setting."voice.parallel_versions"]
+type = "string"
+choices = ["when_equal", "never", "free"]
+default = "when_equal"
+help = "When a chapter may tell two versions as scenes: when_equal - only when both are alive and neither is stronger; never; free."
+serves = "UC-STORY"
+scopes = ["family", "feed"]
+
+# ---------- story ----------
+
+[setting."story.chapter_unit"]
+type = "string"
+choices = ["fate", "event", "place"]
+default = "fate"
+help = "What a chapter is about: one person's fate or its turn, an event, or a place."
+serves = "UC-STORY"
+scopes = ["family", "feed"]
+
+[setting."story.line_order"]
+type = "string"
+choices = ["chronological", "free"]
+default = "chronological"
+help = "Order of chapters along the line."
+serves = "UC-STORY"
+scopes = ["family", "feed"]
+
+[setting."story.anchor_ancestor"]
+type = "string"
+default = ""
+help = "Tree id of the person kinship is counted from and where the line of the feed ends."
+serves = "UC-STORY"
+scopes = ["feed"]
+
+[setting."story.max_hardship_run"]
+type = "integer"
+minimum = 1
+maximum = 10000
+default = 2
+help = "How many chapters in a row may be carried by war, epidemic or loss before one is retold through a peaceful window."
+serves = "UC-STORY"
+scopes = ["family", "feed"]
+
+[setting."story.hardship_framing"]
+type = "string"
+choices = ["policy-of-power", "as-documented"]
+default = "policy-of-power"
+help = "How chapters on hardship and faith are framed. The trust core already forbids blaming a people or a faith as a group; this chooses the narrative frame."
+serves = "UC-STORY"
+scopes = ["family", "feed"]
+
+[setting."story.hard_history_depth"]
+type = "string"
+choices = ["brief", "full"]
+default = "full"
+help = "How much of repression, deportation and forced change of faith a feed tells: brief - fact and common practice; full - the policy with period documents and numbers."
+serves = "UC-STORY"
+scopes = ["region", "family", "feed"]
+
+[setting."story.number_density"]
+type = "string"
+choices = ["rare", "normal"]
+default = "rare"
+help = "rare: only dates everyone knows or that carry the plot; every number explained; the rest goes to 'More'."
+serves = "UC-READ"
+scopes = ["family", "feed"]
+
+[setting."story.titles"]
+type = "string"
+choices = ["turn_with_hook", "plain"]
+default = "turn_with_hook"
+help = "turn_with_hook: a chapter title names a turn of fate with a hook found in the text; never a date, season, record or archive code."
+serves = "UC-READ"
+scopes = ["family", "feed"]
+
+[setting."story.places_today"]
+type = "string"
+choices = ["none", "mention", "route_page"]
+default = "mention"
+help = "Places of the story that can be seen today: none; mention - at least one in the feed; route_page - a closing page collects them with one line each."
+serves = "UC-READ"
+scopes = ["family", "feed"]
+
+[setting."text.max_paragraph_sentences"]
+type = "integer"
+minimum = 1
+maximum = 10000
+default = 5
+help = "Longest paragraph in sentences; a paragraph should fit one phone screen."
+serves = "UC-READ"
+scopes = ["family", "feed"]
+
+# ---------- children ----------
+
+[setting."kids.layer"]
+type = "string"
+choices = ["none", "block", "separate_text"]
+default = "block"
+help = "none; block - one text for all ages plus a 'For children' block per page (question, find on the picture, small game); separate_text - a second text for children."
+serves = "UC-READ"
+scopes = ["family", "feed"]
+
+[setting."kids.original_word_task"]
+type = "boolean"
+default = false
+help = "Each part of a feed has at least one task where a child finds a word on a real cut-out."
+serves = "UC-READ"
+scopes = ["family", "feed"]
+
+[setting."kids.hard_topics"]
+type = "string"
+choices = ["one_gentle_sentence", "omit"]
+default = "one_gentle_sentence"
+help = "How death, prison and war appear where children read; cruel scenes and pictures never stand in such a chapter."
+serves = "UC-READ"
+scopes = ["family", "feed"]
+
+# ---------- language and names ----------
+
+[setting."lang.lexicon"]
+type = "string"
+default = ""
+help = "Word lists per language for the voice, plain-language and statistics checks (investigator words, dated words, preferred terms). Empty: the checks run on structure only. Value is a path relative to the family root."
+serves = "UC-TUNE"
+scopes = ["region", "family"]
+
+[setting."lang.preferred_terms"]
+type = "table"
+default = {}
+help = "Words of faith, institutions and daily life as the family said them, mapped from the bookish word they replace; explained at first use."
+serves = "UC-READ"
+scopes = ["language", "family"]
+
+[setting."names.text_form"]
+type = "string"
+choices = ["reader_language", "original"]
+default = "reader_language"
+help = "How names of people and places are written in story text. Headers, tree cards and document readings always show the original form first."
+serves = "UC-READ"
+scopes = ["family", "feed"]
+
+[setting."names.original_in_brackets"]
+type = "string"
+choices = ["first_mention", "never"]
+default = "first_mention"
+help = "Whether the original form follows once in brackets when the text form differs."
+serves = "UC-READ"
+scopes = ["family", "feed"]
+
+[setting."names.gendered_surnames"]
+type = "string"
+choices = ["keep", "translate"]
+default = "keep"
+help = "Gendered surname forms of the source language: keep them, or render them in the reader's language ('widow of X', maiden name in brackets)."
+serves = "UC-READ"
+scopes = ["language", "family", "feed"]
+
+[setting."names.lineage_forms"]
+type = "table"
+default = {}
+help = "The canonical form of each lineage surname; spellings written by ear appear only where the story is about spelling."
+serves = "UC-READ"
+scopes = ["family"]
+
+# ---------- drawings and pictures ----------
+
+[setting."drawing.enabled"]
+type = "boolean"
+default = true
+help = "Whether reconstructed drawings are made where no real picture of the family's scene exists."
+serves = "UC-STORY"
+scopes = ["family", "feed"]
+
+[setting."drawing.style"]
+type = "string"
+default = ""
+help = "The one drawing style of a feed, chosen by the host."
+serves = "UC-TUNE"
+scopes = ["family", "feed"]
+
+[setting."drawing.photoreal"]
+type = "boolean"
+default = false
+help = "Whether a photographic style is allowed; it shows every error and reads as a forgery."
+serves = "UC-TUNE"
+scopes = ["family", "feed"]
+
+[setting."drawing.from_photos_of_deceased"]
+type = "boolean"
+default = false
+help = "Whether drawings of the twentieth century may rest on family photos of deceased ancestors. Photos of children and of the living are never used (TRUST-06)."
+serves = "UC-TUNE"
+scopes = ["family"]
+
+[setting."drawing.disclosure"]
+type = "string"
+choices = ["caption", "once_in_more"]
+default = "caption"
+help = "How a drawing is called a reconstruction: caption - on every drawing; once_in_more - one line in 'More' plus the original shown beside it."
+serves = "UC-READ"
+scopes = ["family", "feed"]
+
+[setting."drawing.original_pair"]
+type = "boolean"
+default = true
+help = "A drawing made from a real sample carries that original as a small corner thumbnail that opens it."
+serves = "UC-READ"
+scopes = ["family", "feed"]
+
+[setting."picture.density"]
+type = "string"
+choices = ["low", "medium", "high"]
+default = "medium"
+help = "How many pictures stand next to documents on a page; a guide, not a limit."
+serves = "UC-READ"
+scopes = ["family", "feed"]
+
+[setting."picture.reuse_across_lines"]
+type = "boolean"
+default = false
+help = "Whether the same picture file may appear in feeds of different lineages."
+serves = "UC-READ"
+scopes = ["family"]
+
+[setting."picture.colorise"]
+type = "string"
+choices = ["none", "images", "images_and_period_documents"]
+default = "none"
+help = "Which real period pictures are coloured, by transfer from the original. Records read under a cut-out are never coloured (TRUST-08)."
+serves = "UC-TUNE"
+scopes = ["family", "feed"]
+
+# ---------- documents ----------
+
+[setting."doc.cutout_max_lines"]
+type = "integer"
+minimum = 1
+maximum = 10000
+default = 3
+help = "Highest number of handwritten lines in a cut-out; the full page is one tap away."
+serves = "UC-READ"
+scopes = ["family", "feed"]
+
+[setting."doc.frames_per_chapter"]
+type = "integer"
+minimum = 1
+maximum = 10000
+default = 2
+help = "Document frames shown in the flow of one chapter; further documents go to a tab."
+serves = "UC-READ"
+scopes = ["family", "feed"]
+
+[setting."doc.mini_tree"]
+type = "boolean"
+default = false
+help = "Chapters about a family show a mini tree: the couple, their children with birth years, '≈' for estimates, no labels beyond names and years."
+serves = "UC-READ"
+scopes = ["family", "feed"]
+
+[setting."media.external_embeds"]
+type = "array"
+item_choices = ["map", "video"]
+default = []
+help = "Kinds of external embeds the host allows in the app. The closed list is deliberate: documents and period images can never be named here (TRUST-10)."
+serves = "UC-READ"
+scopes = ["family"]
+
+[setting."tree.import_is_family_memory"]
+type = "boolean"
+default = true
+help = "People imported from the family's own tree (the narrator's tree kept from the family's memory) count as firm family memory: a green check, grounds 'from the family tree'. Set false for an instance whose imported tree is not the family's own."
+serves = "UC-READ"
+scopes = ["family"]
+
+[setting."tree.first_child_age"]
+type = "table"
+default = {"1700" = {father = 27, mother = 22}, "1950" = {father = 26, mother = 23}, "1990" = {father = 29, mother = 26}}
+help = "Orientation for a birth year nobody recorded: how old a father and a mother usually were at their first child, keyed by the year from which the row applies (the child's birth year). A person without a year is guessed from the first known child (minus this age), else a spouse, brothers and sisters, then parents (plus it); a real date always beats a chain of guesses. The reader shows the guess rounded to five years as 'about', with its grounds; it is never an event, a research bound or life-status evidence, and a recorded year replaces it. A person of unknown sex takes the middle."
+serves = "UC-READ"
+scopes = ["region", "family"]
+
+# ---------- privacy ----------
+
+[setting."privacy.living_years"]
+type = "integer"
+minimum = 100
+maximum = 150
+default = 110
+help = "Birth before this age horizon is treated as deceased for privacy, equally for memory and imports; unknown stays protected."
+serves = "UC-READ"
+scopes = ["family"]
+
+[setting."privacy.closed_topics_file"]
+type = "string"
+default = ""
+help = "Family file listing closed topics and the words to avoid in chapters about them. Value is a path relative to the family root."
+serves = "UC-READ"
+scopes = ["family"]
+
+[setting."privacy.present_day_politics_file"]
+type = "string"
+default = ""
+help = "List of present-day political names and terms kept out of story text. Value is a path relative to the family root."
+serves = "UC-READ"
+scopes = ["region", "family"]
+
+# ---------- research ----------
+
+[setting."research.witness_horizon_years"]
+type = "integer"
+minimum = 0
+maximum = 150
+default = 100
+help = "How far back living relatives can be asked as witnesses; before that, identity, kinship and dates are decided by agents with weights."
+serves = "UC-RESEARCH"
+scopes = ["family"]
+
+[setting."research.search_strength"]
+type = "table"
+default = {"haiku:*" = 1, "terra:low" = 1, "terra:medium" = 1, "sonnet:low" = 1, "sonnet:medium" = 1, "sol:low" = 1, "terra:high" = 2, "sonnet:high" = 2, "sol:medium" = 2, "opus:medium" = 2, "sol:high" = 3, "opus:high" = 3, "*:xhigh" = 4, "*:max" = 4, "human:*" = 4}
+help = "How hard a pass looked, 1-4, from who ran it: keys are model:effort, either side may be * (model is matched as a word inside the model name; human is the host or a family member reading it themselves). The most specific matching key wins; a model or effort that no key names has no known strength. A layer's keys are added to these and replace the same key."
+serves = "UC-RESEARCH"
+scopes = ["region", "family"]
+
+[setting."research.recheck_strength"]
+type = "integer"
+minimum = 1
+maximum = 4
+default = 3
+help = "A pass of at least this strength settles a person-by-source cell; a cell only ever looked at more weakly is queued for a stronger look in research coverage --recheck."
+serves = "UC-RESEARCH"
+scopes = ["region", "family"]
+
+[setting."research.scope"]
+type = "string"
+choices = ["known_lines_first", "all"]
+default = "known_lines_first"
+help = "known_lines_first: search wide along surnames the family bears or remembers and their parallel branches before going deep along forgotten ones; the unusual is still noted."
+serves = "UC-RESEARCH"
+scopes = ["family"]
+
+# ---------- review ----------
+
+[setting."review.readers"]
+type = "integer"
+minimum = 1
+maximum = 10000
+default = 1
+help = "Readers per page in an ordinary reading pass, after the checks."
+serves = "UC-STORY"
+scopes = ["family", "feed"]
+
+[setting."review.readers_before_host"]
+type = "integer"
+minimum = 1
+maximum = 10000
+default = 3
+help = "Readers per page before a feed is shown to the host (read aloud to a child, a teenager on a phone, a demanding editor)."
+serves = "UC-STORY"
+scopes = ["family", "feed"]
+
+[setting."review.app_width_px"]
+type = "integer"
+minimum = 240
+maximum = 16384
+default = 390
+help = "Screen width at which a changed page is looked at in the app."
+serves = "UC-READ"
+scopes = ["family"]
+
+[setting."rules.exception_alarm"]
+type = "integer"
+minimum = 1
+maximum = 10000
+default = 3
+help = "Number of recorded exceptions to one rule after which the rule's check is treated as wrong and reported."
+serves = "UC-TUNE"
+scopes = []

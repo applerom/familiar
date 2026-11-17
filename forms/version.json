@@ -1,0 +1,101 @@
+{
+  "id": "birthplace",
+  "title": "Where was Bea born?",
+  "line": "Example",
+  "people": [
+    "telling-bea"
+  ],
+  "status": "open",
+  "unknown_weight": 0.25,
+  "versions": [
+    {
+      "id": "same",
+      "label": "Same person",
+      "weight": 0.45,
+      "for": [
+        {
+          "text": "The home paper names Bea; compare its place and relatives before deciding identity.",
+          "sources": [
+            "paper"
+          ],
+          "dependency_group": "home-paper"
+        }
+      ],
+      "against": [
+        {
+          "text": "The remembered birthplace is uncertain.",
+          "sources": [
+            "memory-name"
+          ],
+          "dependency_group": "family-memory"
+        }
+      ],
+      "interest": {
+        "level": 0.6,
+        "tell": "A birthplace remembered differently from the paper."
+      }
+    },
+    {
+      "id": "different",
+      "label": "Namesake",
+      "weight": 0.3,
+      "for": [],
+      "against": []
+    }
+  ],
+  "tests": [
+    {
+      "test": "Read the spouse field in the original marriage record",
+      "outcomes": [
+        {
+          "kind": "positive",
+          "observation": "matching spouse",
+          "effects": [
+            {
+              "version": "same",
+              "change": "raise",
+              "reason": "Compare dates and namesakes; not proof alone"
+            }
+          ]
+        },
+        {
+          "kind": "contrary",
+          "observation": "incompatible spouse",
+          "effects": [
+            {
+              "version": "same",
+              "change": "lower",
+              "reason": "Test remarriage"
+            }
+          ]
+        },
+        {
+          "kind": "unreadable",
+          "observation": "field absent or illegible",
+          "effects": [
+            {
+              "version": "same",
+              "change": "unchanged",
+              "reason": "Try household record"
+            }
+          ]
+        },
+        {
+          "kind": "unavailable",
+          "observation": "source unavailable",
+          "effects": [
+            {
+              "version": "same",
+              "change": "unchanged",
+              "reason": "Access gap, no negative evidence"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "interest": {
+    "level": null,
+    "tell": null
+  }
+}

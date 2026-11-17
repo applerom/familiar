@@ -1,0 +1,150 @@
+<Why_Graph project="Familiar">
+  <!--
+    The ROUTER. Small on purpose and the only graph file an engine agent pins.
+    It holds use cases, one entry per capability, and every edge that crosses
+    capabilities. A capability's features and modules live in its shard under
+    docs/why-graph/. Authoring rules and the load rule: docs/why-layer.md.
+  -->
+
+  <PROJECT DATE="2026-11-12">
+    <WHAT>Agent-run engine that researches a family and tells its living history.</WHAT>
+    <WHY>A family's agents must be able to take the method for their own family without the first family's data, taste or tooling.</WHY>
+    <LOAD_RULE>Pin this file. Load the one shard your task names. Load a second shard only when an edge here says your change touches it.</LOAD_RULE>
+  </PROJECT>
+
+  <!-- ==================== USE CASES ==================== -->
+
+  <USECASE_START ID="UC-START">
+    <INTENT>A new family begins from living memory, home papers and an optional GEDCOM, and reaches a first honest page.</INTENT>
+    <PRD_REF>docs/PRD.md#USE-CASES</PRD_REF>
+    <REL TYPE="COVERS" TARGET="CAP-INSTANCE"/>
+    <REL TYPE="COVERS" TARGET="CAP-DEMO"/>
+  </USECASE_START>
+
+  <USECASE_RESEARCH ID="UC-RESEARCH">
+    <INTENT>An agent extends a line: finds records, reads them, weighs identity and kinship, records versions with weights.</INTENT>
+    <PRD_REF>docs/PRD.md#USE-CASES</PRD_REF>
+    <REL TYPE="COVERS" TARGET="CAP-RESEARCH"/>
+    <REL TYPE="COVERS" TARGET="CAP-TREE"/>
+  </USECASE_RESEARCH>
+
+  <USECASE_STORY ID="UC-STORY">
+    <INTENT>Evidence becomes a feed: scenario, text, document cut-outs, drawings, translations.</INTENT>
+    <PRD_REF>docs/PRD.md#USE-CASES</PRD_REF>
+    <REL TYPE="COVERS" TARGET="CAP-PIPELINE"/>
+    <REL TYPE="COVERS" TARGET="CAP-ROLES"/>
+  </USECASE_STORY>
+
+  <USECASE_READ ID="UC-READ">
+    <INTENT>A relative reads a chapter; facts, weights, doubts and the document are one tap away.</INTENT>
+    <PRD_REF>docs/PRD.md#USE-CASES</PRD_REF>
+    <REL TYPE="COVERS" TARGET="CAP-BUILD"/>
+  </USECASE_READ>
+
+  <USECASE_CORRECT ID="UC-CORRECT">
+    <INTENT>The family corrects a memory or a reading; affected pages are flagged, nothing is silently rewritten.</INTENT>
+    <PRD_REF>docs/PRD.md#USE-CASES</PRD_REF>
+    <REL TYPE="COVERS" TARGET="CAP-PIPELINE"/>
+  </USECASE_CORRECT>
+
+  <USECASE_TUNE ID="UC-TUNE">
+    <INTENT>The host changes voice, language, depth, privacy or drawing style through declared settings, never by editing the engine.</INTENT>
+    <PRD_REF>docs/PRD.md#USE-CASES</PRD_REF>
+    <REL TYPE="COVERS" TARGET="CAP-RULES"/>
+  </USECASE_TUNE>
+
+  <USECASE_REGION ID="UC-REGION">
+    <INTENT>A family from another region plugs in a region pack.</INTENT>
+    <PRD_REF>docs/PRD.md#USE-CASES</PRD_REF>
+    <REL TYPE="COVERS" TARGET="CAP-REGION"/>
+  </USECASE_REGION>
+
+  <USECASE_SHOW ID="UC-SHOW">
+    <INTENT>The app is shown to strangers in demo mode with a fictional family.</INTENT>
+    <PRD_REF>docs/PRD.md#USE-CASES</PRD_REF>
+    <REL TYPE="COVERS" TARGET="CAP-DEMO"/>
+  </USECASE_SHOW>
+
+  <!-- ==================== CAPABILITIES ==================== -->
+
+  <CAPABILITY_RULES ID="CAP-RULES" SHARD="docs/why-graph/rules.xml" STATE="STARTED">
+    <INTENT>Trust core, four kinds of rules, one registry of settings, one cascade, first-class exceptions.</INTENT>
+    <PRD_REF>docs/PRD.md#SETTINGS</PRD_REF>
+    <REL TYPE="DEPENDS_ON" TARGET="CAP-INSTANCE"/>
+  </CAPABILITY_RULES>
+
+  <CAPABILITY_GOVERN ID="CAP-GOVERN" SHARD="docs/why-graph/govern.xml" STATE="STARTED">
+    <INTENT>Keep this repository honest: the WHY validator and the layer boundary check.</INTENT>
+    <PRD_REF>docs/PRD.md#DOD</PRD_REF>
+    <REL TYPE="DEPENDS_ON" TARGET="CAP-BUILD"/>
+  </CAPABILITY_GOVERN>
+
+  <CAPABILITY_INSTANCE ID="CAP-INSTANCE" SHARD="docs/why-graph/instance.xml" STATE="STARTED">
+    <INTENT>The family root: one config from which tree, feeds, media, export and port are found; intake of GEDCOM and papers.</INTENT>
+    <PRD_REF>docs/PRD.md#ARCH</PRD_REF>
+    <REL TYPE="IMPACTS" TARGET="CAP-RULES"/>
+    <REL TYPE="DEPENDS_ON" TARGET="CAP-PIPELINE"/>
+    <REL TYPE="DEPENDS_ON" TARGET="CAP-BUILD"/>
+    <REL TYPE="DEPENDS_ON" TARGET="CAP-TREE"/>
+    <REL TYPE="DEPENDS_ON" TARGET="CAP-RULES"/>
+    <REL TYPE="DEPENDS_ON" TARGET="CAP-RESEARCH"/>
+    <REL TYPE="DEPENDS_ON" TARGET="CAP-REGION"/>
+  </CAPABILITY_INSTANCE>
+
+  <CAPABILITY_TREE ID="CAP-TREE" SHARD="docs/why-graph/tree.xml" STATE="STARTED">
+    <INTENT>The family graph: snapshot, evidence, researchers' contributions and identity decisions become one graph in which every person and link says what it stands on.</INTENT>
+    <PRD_REF>docs/PRD.md#FEATURES</PRD_REF>
+    <REL TYPE="DEPENDS_ON" TARGET="CAP-INSTANCE"/>
+    <REL TYPE="DEPENDS_ON" TARGET="CAP-RULES"/>
+  </CAPABILITY_TREE>
+
+  <CAPABILITY_ROLES ID="CAP-ROLES" SHARD="docs/why-graph/roles.xml" STATE="STARTED">
+    <INTENT>Role entry sheets; a role receives the rules that apply to it by command. A skill lives with the capability whose work it describes.</INTENT>
+    <PRD_REF>docs/PRD.md#ROLES</PRD_REF>
+    <REL TYPE="DEPENDS_ON" TARGET="CAP-RULES"/>
+  </CAPABILITY_ROLES>
+
+  <CAPABILITY_RESEARCH ID="CAP-RESEARCH" SHARD="docs/why-graph/research.xml" STATE="STARTED">
+    <INTENT>Two research starts, cases, versions with weights, coverage.</INTENT>
+    <PRD_REF>docs/PRD.md#PIPELINE</PRD_REF>
+    <REL TYPE="DEPENDS_ON" TARGET="CAP-TREE"/>
+    <REL TYPE="DEPENDS_ON" TARGET="CAP-INSTANCE"/>
+    <REL TYPE="DEPENDS_ON" TARGET="CAP-REGION"/>
+    <REL TYPE="DEPENDS_ON" TARGET="CAP-RULES"/>
+    <REL TYPE="DEPENDS_ON" TARGET="CAP-HOST"/>
+  </CAPABILITY_RESEARCH>
+
+  <CAPABILITY_PIPELINE ID="CAP-PIPELINE" SHARD="docs/why-graph/pipeline.xml" STATE="STARTED">
+    <INTENT>Feed stages as data: fingerprints, stale marks, next step.</INTENT>
+    <PRD_REF>docs/PRD.md#PIPELINE</PRD_REF>
+    <REL TYPE="DEPENDS_ON" TARGET="CAP-INSTANCE"/>
+    <REL TYPE="DEPENDS_ON" TARGET="CAP-RULES"/>
+    <REL TYPE="DEPENDS_ON" TARGET="CAP-TREE"/>
+  </CAPABILITY_PIPELINE>
+
+  <CAPABILITY_BUILD ID="CAP-BUILD" SHARD="docs/why-graph/build.xml" STATE="STARTED">
+    <INTENT>Validated reader bundles, permanent media and the reader app.</INTENT>
+    <PRD_REF>docs/PRD.md#FEATURES</PRD_REF>
+    <REL TYPE="DEPENDS_ON" TARGET="CAP-TREE"/>
+    <REL TYPE="DEPENDS_ON" TARGET="CAP-INSTANCE"/>
+    <REL TYPE="DEPENDS_ON" TARGET="CAP-PIPELINE"/>
+    <REL TYPE="DEPENDS_ON" TARGET="CAP-REGION"/>
+  </CAPABILITY_BUILD>
+
+  <CAPABILITY_REGION ID="CAP-REGION" SHARD="docs/why-graph/region.xml" STATE="STARTED">
+    <INTENT>Region pack contract and packs: sources, site recipes, name variants, calendars, daily-life reference.</INTENT>
+    <PRD_REF>docs/PRD.md#LAYERS</PRD_REF>
+    <REL TYPE="DEPENDS_ON" TARGET="CAP-RULES"/>
+  </CAPABILITY_REGION>
+
+  <CAPABILITY_DEMO ID="CAP-DEMO" SHARD="docs/why-graph/demo.xml" STATE="STARTED">
+    <INTENT>A fictional family that goes from zero to a first chapter; test data and the public face.</INTENT>
+    <PRD_REF>docs/PRD.md#FEATURES</PRD_REF>
+    <REL TYPE="DEPENDS_ON" TARGET="CAP-INSTANCE"/>
+  </CAPABILITY_DEMO>
+
+  <CAPABILITY_HOST ID="CAP-HOST" STATE="PLANNED">
+    <INTENT>The interface Familiar needs from the host environment: a model tier per role and a gate before launching an agent. The tooling itself lives outside.</INTENT>
+    <PRD_REF>docs/PRD.md#LAYERS</PRD_REF>
+  </CAPABILITY_HOST>
+</Why_Graph>

@@ -1,0 +1,239 @@
+{
+  "update": {
+    "person": "irina-2026-11-12-emma",
+    "title": "Family intake",
+    "date": "2026-11-12",
+    "text": "Attributed intake; identity remains to be researched",
+    "status": "export",
+    "sources": [
+      "ir-andrey",
+      "ir-deport",
+      "ir-emma-life",
+      "ir-friedrich",
+      "ir-gottlieb",
+      "ir-mama",
+      "ir-maria",
+      "ir-nina"
+    ]
+  },
+  "schema": 1,
+  "author": "intake",
+  "facts": {
+    "irina-2026-11-12-emma": [
+      {
+        "label": "names",
+        "text": "{\"given\": \"Эмма\", \"patronymic\": \"Богдановна\", \"surname\": \"Шмидт\", \"type\": \"birth\", \"provenance\": [\"ir-emma-life\"]}",
+        "status": "export",
+        "sources": [
+          "ir-emma-life"
+        ]
+      },
+      {
+        "label": "names",
+        "text": "{\"given\": \"Эмма\", \"patronymic\": \"Богдановна\", \"surname\": \"Корнеева\", \"type\": \"married\", \"provenance\": [\"ir-emma-life\"]}",
+        "status": "export",
+        "sources": [
+          "ir-emma-life"
+        ]
+      },
+      {
+        "label": "events",
+        "text": "{\"type\": \"birth\", \"date\": \"1931\", \"place\": \"немецкое село на Волге\", \"provenance\": [\"ir-emma-life\"]}",
+        "status": "export",
+        "sources": [
+          "ir-emma-life"
+        ]
+      },
+      {
+        "label": "events",
+        "text": "{\"type\": \"death\", \"date\": \"2009\", \"place\": \"Тольятти\", \"provenance\": [\"ir-emma-life\"]}",
+        "status": "export",
+        "sources": [
+          "ir-emma-life"
+        ]
+      },
+      {
+        "label": "events",
+        "text": "{\"type\": \"event\", \"value\": \"выселение в Казахстан\", \"date\": \"1941-09\", \"place\": \"Павлодарская область\", \"provenance\": [\"ir-deport\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "ir-deport"
+        ]
+      }
+    ],
+    "irina-2026-11-12-gottlieb": [
+      {
+        "label": "names",
+        "text": "{\"given\": \"Готлиб\", \"surname\": \"Шмидт\", \"type\": \"birth\", \"provenance\": [\"ir-gottlieb\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "ir-gottlieb"
+        ]
+      },
+      {
+        "label": "names",
+        "text": "{\"given\": \"Богдан\", \"surname\": \"Шмидт\", \"type\": \"as-written\", \"provenance\": [\"ir-gottlieb\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "ir-gottlieb"
+        ]
+      },
+      {
+        "label": "events",
+        "text": "{\"type\": \"event\", \"value\": \"трудармия, не вернулся\", \"date\": \"after 1941\", \"provenance\": [\"ir-gottlieb\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "ir-gottlieb"
+        ]
+      }
+    ],
+    "irina-2026-11-12-maria": [
+      {
+        "label": "names",
+        "text": "{\"given\": \"Мария\", \"surname\": \"Шмидт\", \"type\": \"married\", \"provenance\": [\"ir-maria\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "ir-maria"
+        ]
+      },
+      {
+        "label": "names",
+        "text": "{\"given\": \"Мария\", \"surname\": \"Келлер\", \"type\": \"birth\", \"provenance\": [\"ir-maria\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "ir-maria"
+        ]
+      },
+      {
+        "label": "events",
+        "text": "{\"type\": \"death\", \"date\": \"about 1960\", \"place\": \"Казахстан\", \"provenance\": [\"ir-maria\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "ir-maria"
+        ]
+      }
+    ],
+    "irina-2026-11-12-friedrich": [
+      {
+        "label": "names",
+        "text": "{\"given\": \"Фридрих\", \"surname\": \"Шмидт\", \"type\": \"birth\", \"provenance\": [\"ir-friedrich\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "ir-friedrich"
+        ]
+      },
+      {
+        "label": "names",
+        "text": "{\"given\": \"Федя\", \"surname\": \"Шмидт\", \"type\": \"as-written\", \"provenance\": [\"ir-friedrich\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "ir-friedrich"
+        ]
+      },
+      {
+        "label": "events",
+        "text": "{\"type\": \"event\", \"value\": \"отдан в детский дом\", \"date\": \"about 1942\", \"provenance\": [\"ir-friedrich\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "ir-friedrich"
+        ]
+      }
+    ],
+    "irina-2026-11-12-andrey": [
+      {
+        "label": "names",
+        "text": "{\"given\": \"Андрей\", \"patronymic\": \"Петрович\", \"surname\": \"Корнеев\", \"type\": \"birth\", \"provenance\": [\"ir-andrey\"]}",
+        "status": "export",
+        "sources": [
+          "ir-andrey"
+        ]
+      },
+      {
+        "label": "events",
+        "text": "{\"type\": \"death\", \"date\": \"1994\", \"place\": \"Тольятти\", \"provenance\": [\"ir-andrey\"]}",
+        "status": "export",
+        "sources": [
+          "ir-andrey"
+        ]
+      }
+    ],
+    "irina-2026-11-12-lyudmila": [
+      {
+        "label": "names",
+        "text": "{\"given\": \"Людмила\", \"patronymic\": \"Андреевна\", \"surname\": \"Корнеева\", \"type\": \"birth\", \"provenance\": [\"ir-mama\"]}",
+        "status": "export",
+        "sources": [
+          "ir-mama"
+        ]
+      },
+      {
+        "label": "names",
+        "text": "{\"given\": \"Людмила\", \"patronymic\": \"Андреевна\", \"surname\": \"Соколова\", \"type\": \"married\", \"provenance\": [\"ir-mama\"]}",
+        "status": "export",
+        "sources": [
+          "ir-mama"
+        ]
+      },
+      {
+        "label": "events",
+        "text": "{\"type\": \"birth\", \"date\": \"1957\", \"place\": \"Павлодар\", \"provenance\": [\"ir-mama\"]}",
+        "status": "export",
+        "sources": [
+          "ir-mama"
+        ]
+      }
+    ],
+    "irina-2026-11-12-nina": [
+      {
+        "label": "names",
+        "text": "{\"given\": \"Нина\", \"patronymic\": \"Андреевна\", \"surname\": \"Корнеева\", \"type\": \"birth\", \"provenance\": [\"ir-nina\"]}",
+        "status": "export",
+        "sources": [
+          "ir-nina"
+        ]
+      },
+      {
+        "label": "names",
+        "text": "{\"given\": \"Нина\", \"surname\": \"Вагнер\", \"type\": \"married\", \"provenance\": [\"ir-nina\"]}",
+        "status": "export",
+        "sources": [
+          "ir-nina"
+        ]
+      }
+    ]
+  },
+  "sources": {
+    "ir-andrey": {
+      "kind": "memory",
+      "intake": "irina-2026-11-12"
+    },
+    "ir-maria": {
+      "kind": "memory",
+      "intake": "irina-2026-11-12"
+    },
+    "ir-mama": {
+      "kind": "memory",
+      "intake": "irina-2026-11-12"
+    },
+    "ir-nina": {
+      "kind": "memory",
+      "intake": "irina-2026-11-12"
+    },
+    "ir-friedrich": {
+      "kind": "memory",
+      "intake": "irina-2026-11-12"
+    },
+    "ir-gottlieb": {
+      "kind": "memory",
+      "intake": "irina-2026-11-12"
+    },
+    "ir-deport": {
+      "kind": "memory",
+      "intake": "irina-2026-11-12"
+    },
+    "ir-emma-life": {
+      "kind": "memory",
+      "intake": "irina-2026-11-12"
+    }
+  }
+}

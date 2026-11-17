@@ -1,0 +1,91 @@
+# START_MODULE_CONTRACT: MOD-REGION-BP-PACK
+# PURPOSE: Name the first region pack, the territory and years it speaks for, the languages of its records, the files it holds and the gaps it knows, and act as the region layer of the rules cascade.
+# PRD_REF: docs/PRD.md#ARCH
+# INVARIANTS:
+# - the pack loads as a region layer of a fictional family and passes `familiar rules check` [review: pack keeper]
+# - identity, kind, coverage and files have the shape of the contract, and every named file exists [review: pack keeper]
+# CHANGES_WITH:
+# - regions/CONTRACT.md
+# - docs/PRD.md#RULES-MODEL (pack.toml as a layer file)
+# - method/rules/settings.toml (any value set under [settings])
+# :END_MODULE_CONTRACT
+
+schema_version = 1
+
+[pack]
+id = "belarus-podlasie"
+kind = "region"
+title = "Belarus and the Podlaskie borderland"
+version = "0.3.0"
+updated = 2026-11-16
+countries = ["BY", "PL", "LT"]
+territory = "Today's Belarus and the Podlaskie borderland of Poland: the old north-west governorates of the Russian Empire, the eastern provinces of interwar Poland, and Minsk as a Soviet city; with the Lithuanian archives that hold their older records."
+years = [1600, 2026]
+record_languages = ["la", "pl", "ru", "be"]
+files = { sources = "sources.toml", custody = "custody.toml", chronology = "chronology.toml", answers = "answers.md", variants = "variants.toml", recipes = "recipes/index.toml" }
+answers = ["RP-61", "RP-63", "RP-67", "RP-1", "RP-2", "RP-3", "RP-4", "RP-5", "RP-65"]
+
+[[gap]]
+what = "Daily-life reference by place and decade for drawings and text."
+next = "First entries when a feed of a second family asks for them."
+
+[[gap]]
+what = "Sources that serve every region: other researchers' trees, general web search, world cemetery and emigration sites."
+next = "A pack of kind region with a world scope, or engine defaults; decided when a second region arrives."
+
+[[gap]]
+what = "Unanswered registered questions: RP-21, RP-22, RP-23, RP-31, RP-32, RP-33, RP-34, RP-35, RP-36, RP-37, RP-38, RP-60, RP-61, RP-62, RP-63, RP-64."
+next = "Supply calendar seasons and daily-life context when supported by sources."
+
+[[gap]]
+what = "Interwar civil registration in the region: unverified. (The Polish civil records law of 2014 is verified in custody.toml.)"
+next = "Read the act on civil status records before the first Polish letter."
+
+[[gap]]
+what = "Рецепты: ноль и карточки не проверены сегодня кроме карточки базы потерь; одна база службы вернула отказ. Остальные сайты пока без рецептов."
+next = "Проверять под шлюзом только при следующем реальном исследовании; отказ не равен отсутствию записи."
+
+[[gap]]
+what = "Периоды и языки отдельных написаний не установлены; словарь даёт кандидаты поиска, а не доказанное тождество."
+next = "Проверить по датированным словарям и историческим картам; неопределённый язык помечен und."
+
+[[gap]]
+what = "RP-65 is a sourced starting chronicle, not an exhaustive map: the 1905 law text, parish attachments, post-1914 book movements and parish-specific second-copy holdings remain unchecked."
+next = "Check diocesan directories, consistory inventories and the law before using these candidates as proof of a sacrament or of a missing record."
+
+
+[[gap]]
+what = "R: неизвестные крайние годы новых источников: sodd-by, zhnivo, hryc, represii-by, niva-podlasie, maps-vlasenko, routes-to-roots, jri-poland, litvaksig, yad-vashem, jewishgen, stsg-pows. В proposal years=[] означает пробел, а не пустую коллекцию; договор не задаёт это представление явно. Неизвестные смысл нуля, доля индексации, нагрузка и цены оставлены пустыми."
+next = "Хранителю согласовать представление неизвестных лет либо установить их по описанию коллекции перед применением; по реальному вопросу уточнять нужный участок, без массового опроса сайтов."
+
+[[gap]]
+what = "metrikai-lt и lki-surnames: крайние годы неизвестны; связь конкретных белорусских приходов с индексом и полнота словаря не установлены."
+next = "Перед адресным исследованием проверить коллекцию, исторический приход и годы; years=[] сохраняет кандидата с неизвестными годами."
+
+[[gap]]
+what = "Советский тыл 1941–1945: не установлен единый открытый именной индекс работников заводов и трудового фронта; юбилейные картотеки 1986 года не подтверждены."
+next = "Проверять фонды предприятия, приказы, личный состав и наградные серии по хранителю и году. Не подменять советский тыл нацистским принудительным трудом; наличие наград 1985 года не устанавливает охват 1986 года."
+
+[[gap]]
+what = "familysearch-tree and familysearch-fulltext: years and collection coverage unknown; bare historical FamilySearch labels may not identify a channel. Parish/episode planning terms and search-language eras are orientation, not complete indexed coverage."
+next = "Establish the actual channel, collection, parish, language and years for the next bounded research question."
+
+[proper_names]
+# Every capitalised word the pack uses, by kind. A word here is a deliberate
+# act a reviewer can see: no person, no family, no village chosen for a family.
+place = ["Канада", "Томская область", "Латгалия", "Саксония", "Лунненский деканат", "Витебская губерния", "Świsłocz", "Klimówka", "Łopienica", "Koniuchy", "Zelwa", "Łysków", "Łukonica", "Dereczyn", "Międzyrzecz", "Różana", "Wołkowysk", "Słonim", "Kosów Poleski", "Porozów", "Sławatycze", "Jeremicze", "Siedzielniki", "Mała Brzostowica", "Krynki", "Wielka Brzostowica", "Szejpiaki", "Połońsk", "Belarus", "Poland", "Podlaskie", "Polesie", "Grodno", "Minsk", "Mogilev", "Vitebsk", "Vilna", "Wilno", "Gomel", "Brest", "Białystok", "Nowogródek", "Warsaw", "Riga", "Kingdom of Poland", "Commonwealth", "Russian Empire", "Soviet", "BSSR", "USSR", "Ukraine", "Lithuania", "Daugava", "Western Belarus", "Chełm", "Podlasie", "Niemirów", "Hajnówka", "Białowieża", "Jałówka", "Гродно", "Горадня", "Hrodna", "Grodna", "Grodnie", "Sokółka", "Sokolka", "Сокулка", "Radoszkowicze", "Радошковичи", "Радашковічы", "Radoshkovichi", "Zasław", "Заславль", "Заслав", "Заслаўе", "Zaslawl", "Zaslaw", "Zasłaŭje", "Минск", "Mińsk", "Менск", "Мінск", "Минскъ", "г. Минск", "Mińsk Litewski", "Minsk Litewski", "Minsk, Belarus", "Койданово", "Койданов", "Кайданово", "Кайданава", "Koidanow", "Kojdanów", "Kojdanowo", "Дзержинск", "Дзяржынск", "Dzierżyńsk", "Dzerzhinsk", "Светлогорск", "Светлагорск", "Svietłahorsk", "Svetlogorsk", "Świetłogorsk", "Копаткевичи", "Капаткевічы", "Kopatkiewicze", "Kopatkevichi", "Петриков", "Петрыкаў", "Petrykaw", "Petryków"]
+institution = ["Жніво / Zhnivo", "Мои предки — из Беларуси!: справочник переселенцев", "Віртуальны музей савецкіх рэпрэсій у Беларусі", "Ніва: архив беларуского еженедельника в Польше", "Podlaska Biblioteka Cyfrowa: инвентари Виленской комиссии", "Карты Власенко", "Yad Vashem: база имён и страницы свидетельств", "JewishGen: общины, тематические базы и книги памяти", "JDC Archives: Names Index", "Dokumentationsstelle Dresden: советские военнопленные", "МККК: картотека военнопленных Первой мировой", "Rigsarkivet: Датский Красный Крест, отдел военнопленных", "LAC: Immigrants from the Russian Empire", "СОДД НАФ Беларуси", "Жніво", "Zhnivo", "hryc.by", "Ніва", "Podlaska Biblioteka Cyfrowa", "Routes to Roots Foundation", "JRI-Poland", "LitvakSIG", "Yad Vashem", "JewishGen", "JDC Archives", "Names Index", "Dokumentationsstelle Dresden", "МККК", "Rigsarkivet", "LAC", "ГАТО", "Radzima.net", "Geneszukacz", "Forum Rodów Grodzieńskich", "AAB", "FamilySearch", "Geneteka", "Metryki", "EAIS", "LVIA", "Epaveldas",
+               "Archiwum Archidiecezjalne w Białymstoku", "NIAB", "НашиПредки", "Polona",
+               "Szukaj w Archiwach", "AGAD", "ЗАГС", "Минский городской архив", "НАРБ",
+               "Государственный архив Могилёвской области", "Архивы Беларуси", "Эталон",
+               "НББ", "Память народа", "Подвиг народа", "ОБД Мемориал",
+               "Памяти героев Великой войны", "ЦАМО", "CAW", "WBH", "IPN",
+               "Открытый список", "Arolsen Archives", "Straty", "Spachyn", "Помним",
+               "Mapywig", "Council of Ministers", "Supreme Soviet", "Red Army", "metrikai.lt", "Институт литовского языка", "Bundesarchiv"]
+publication = ["Biskupstwo wileńskie", "Słownik geograficzny Królestwa Polskiego", "Lietuvių pavardžių žodynas"]
+term = ["Julian", "Gregorian", "Catholic", "Orthodox", "Church Slavonic", "Latin", "Polish", "Russian", "Belarusian", "Lithuanian", "German", "Cyrillic", "BYN", "323-З", "Curzon", "RP-21", "RP-22", "RP-23", "RP-31", "RP-32", "RP-33", "RP-34", "RP-35", "RP-36", "RP-37", "RP-38", "RP-60", "RP-61", "RP-62", "RP-63", "RP-64", "Kowalski", "Иванов", "Иванович", "HTTP", "Вашему", "Найдено", "Latn", "Cyrl"]
+given_name = ["Jan", "Janek", "Jaś", "Johann", "Johannes", "John", "Ян", "Ясь", "Янка", "Иван", "Іван", "Iwan", "Ioannes", "Michał", "Michal", "Michael", "Michel", "Mikhail", "Михаил", "Михась", "Міхал", "Міхась", "Michaël", "Michaelis", "Михал", "Franciszek", "Franz", "Frank", "Francis", "Франц", "Францишек", "Франциск", "Франциш", "Франак", "Franciscus", "Kazimierz", "Kasimir", "Casimir", "Казимир", "Казімір", "Казюк", "Casimirus", "Antoni", "Anton", "Anthony", "Antonius", "Антон", "Антоний", "Антось", "Антоні", "Józef", "Jozef", "Joseph", "Josef", "Иосиф", "Осип", "Юзеф", "Язэп", "Josephus", "Paweł", "Pawel", "Paul", "Павел", "Паўлюк", "Paulus", "Stanisław", "Stanislaw", "Stanley", "Станислав", "Стась", "Станіслаў", "Stanislaus", "Wiktor", "Victor", "Виктор", "Віктар", "Piotr", "Peter", "Пётр", "Петр", "Пятро", "Petrus", "Adam", "Адам", "Tadeusz", "Тадеуш", "Фаддей", "Thaddaeus", "Wincenty", "Викентий", "Вінцэнт", "Vincent", "Vincentius", "Aleksander", "Alexander", "Александр", "Алесь", "Аляксандр", "Mikołaj", "Nikolai", "Nicholas", "Николай", "Мікалай", "Nicolaus", "Bazyli", "Wasyl", "Wasil", "Василий", "Базыль", "Basilius", "Grzegorz", "Григорий", "Рыгор", "Gregorius", "Ignacy", "Игнатий", "Ігнат", "Ignatius", "Игнаций", "Andrzej", "Andreas", "Андрей", "Андрэй", "Włodzimierz", "Владимир", "Уладзімір", "Stefan", "Stephan", "Степан", "Стефан", "Сцяпан", "Stephanus", "Marcin", "Martin", "Мартин", "Марцін", "Martinus", "Maciej", "Matthias", "Матвей", "Мацей", "Mateusz", "Matthew", "Матфей", "Matthaeus", "Sergiusz", "Siergiej", "Сергей", "Сяргей", "Tomasz", "Thomas", "Фома", "Томаш", "Хама", "Anna", "Hanna", "Ганна", "Анна", "Ann", "Marianna", "Maria", "Maryja", "Marja", "Mary", "Мария", "Марыля", "Марьяна", "Salomea", "Соломея", "Саламея", "Salome", "Petronela", "Петронеля", "Пятрунэля", "Petronilla", "Janina", "Янина", "Яніна", "Emilia", "Эмилия", "Emily", "Agata", "Агафья", "Агата", "Agatha", "Zofia", "Zofja", "Софья", "Софія", "Sophia", "Зофья", "Katarzyna", "Екатерина", "Катерина", "Кацярына", "Catharina", "Катажина", "Helena", "Елена", "Алена", "Гелена", "Хелена", "Helen", "Хелен", "Antonina", "Антонина", "Антаніна", "Krystyna", "Христина", "Хрысціна", "Christina", "Aniela", "Анеля", "Angela", "Albina", "Альбина", "Franciszka", "Франтишка", "Францишка", "Jadwiga", "Ядвига", "Bronisława", "Бронислава", "Bolesław", "Болеслав", "Dominik", "Доминик", "Dominick", "Dominic", "Konstancja", "Констанция", "Magdalena", "Магдалена", "Marian", "Мариан", "Ewa", "Ева", "Filip", "Филип", "Teodor", "Теодор", "Daniel", "Дэниел", "Даниэль", "Евгений", "Яўген", "Eugeniusz", "Jewgienij", "Evgeny", "Evgeniy", "Eugene", "Eugenius", "Вячеслав", "Вячаслаў", "Wiaczesław", "Wiaczeslaw", "Vyacheslav", "Виталий", "Віталь", "Witalij", "Vitaly", "Vitaliy", "Виталик", "Валентина", "Валянціна", "Walentyna", "Valentina", "Valentyna", "Виктория", "Вікторыя", "Wiktoria", "Victoria", "Viktoria", "Амелия", "Амэлiя", "Амелія", "Amelia", "Амалия", "Амалія", "Amalia", "Amalja"]
+
+[settings]
+
+[modes]

@@ -1,0 +1,33 @@
+{
+  "_about": "Invented for the Familiar demo. Head and profile of the one feed of this family.",
+  "fictional": true,
+  "id": "ferrolho",
+  "title": "The Ferrolho family: an island and a mill town",
+  "lead": "A young man from an Atlantic island crosses the ocean with a cousin's address, and a girl follows him. An invented family, made for the Familiar demo: the people, places and papers exist nowhere else.",
+  "period": "1921-1925",
+  "line": "Ferrolho",
+  "cover": null,
+  "people": ["AMARO", "ROSA", "HELENA"],
+  "profile": {
+    "anchor": "AMARO",
+    "readers": "family of all ages, read aloud",
+    "kids": "block",
+    "pictures": "none",
+    "depth": "feed",
+    "languages": ["en"],
+    "games": "none",
+    "names": {"text": "as the papers write them"}
+  },
+  "parts": [],
+  "gens": [
+    {"name": "Island", "years": "about 1898-1921", "ids": ["JOAQUINA", "AMARO"]},
+    {"name": "Mill town", "years": "1921-1925", "ids": ["AMARO", "ROSA", "HELENA"]}
+  ],
+  "persons": {
+    "AMARO": "p-amaro",
+    "ROSA": "p-rosa",
+    "HELENA": "p-helena",
+    "JOAQUINA": "p-joaquina",
+    "MANUEL": "p-manuel"
+  }
+}

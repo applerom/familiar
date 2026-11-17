@@ -1,0 +1,61 @@
+[project]
+name = "familiar"
+version = "0.30.0"
+description = "Agent-run engine that researches a family and tells its living history"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE", "THIRD_PARTY_NOTICES.txt"]
+requires-python = ">=3.11"
+dependencies = []
+
+[project.urls]
+Homepage = "https://applerom.github.io/familiar/"
+Repository = "https://github.com/applerom/familiar"
+Issues = "https://github.com/applerom/familiar/issues"
+Changelog = "https://github.com/applerom/familiar/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+images = ["Pillow>=10"]
+
+[project.scripts]
+familiar = "familiar.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "ruff>=0.6",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/familiar"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"LICENSE" = "familiar/_licenses/LICENSE"
+"method" = "familiar/_method"
+"regions" = "familiar/_regions"
+"forms" = "familiar/_forms"
+"reader-shell" = "familiar/_reader_shell"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["installed: builds and installs a wheel in an isolated environment"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests", "scripts"]
+
+[tool.familiar.test-budget]
+# Read by tests/conftest.py (printed after each level) and scripts/validate_why.py.
+# Time is always advisory; size remains blocking (docs/why-layer.md section 9).
+# Size limits and data-test failures apply under all loads.
+max_test_code_ratio = 0.03
+max_fast_run_seconds = 10
+max_full_run_seconds = 22
+
+[tool.ruff.lint]
+# Optional install diagnostics only; style rules are deleted.
+select = ["E9", "F821", "F822", "F823"]

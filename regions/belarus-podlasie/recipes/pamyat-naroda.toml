@@ -1,0 +1,37 @@
+# START_MODULE_CONTRACT: MOD-REGION-BP-RECIPE-PAMYAT-NARODA
+# PURPOSE: Describe the Память народа search route, result and absence signals without any family query.
+# PRD_REF: docs/PRD.md#REGION-PACK
+# INVARIANTS:
+# CHANGES_WITH:
+# - regions/belarus-podlasie/data-contract.md
+# :END_MODULE_CONTRACT
+
+schema_version = 1
+
+[recipe]
+id = "pamyat-naroda"
+source = "pamyat-naroda"
+title = "Память народа"
+seeks = "служба, потери и награды советских военнослужащих; применимо к региону, но охват шире него"
+url = "https://pamyat-naroda.ru/heroes/"
+parameters = { "adv_search" = "y", "last_name" = "{surname}", "first_name" = "{given_name}", "middle_name" = "{patronymic}", "date_birth_from" = "{from}", "date_birth_to" = "{to}" }
+list_reader = "pamyat-naroda"
+list_ready = "ответ /entrypoint/api/ с операцией heroes/search: data и metadata.total"
+list_fields = ["имя", "рождение", "место рождения", "звание", "призыв", "судьба", "тип записи", "ссылка"]
+list_limits = "поиск нечёткий; годы не отсекают строго; счёт до 10000, по 10 строк на странице; данные защиты не повторять; запросы страниц только под общим шлюзом"
+card_reader = "не установлен: прежняя попытка открыть страницу /heroes/{record} завершилась ожиданием; читать строку списка, не обещать доступность карточки"
+zero_signal = "metadata.total = 0 и явное сообщение об отсутствии документов; HTTP 403, капча и пустая оболочка не ноль"
+zero_status = "reported"
+access = "host-login"
+site_limits = "числовой опубликованный темп не установлен; капча и запрет требуют остановки, проверку проходит только пользователь"
+control = { "last_name" = "Иванов", "first_name" = "Иван", "middle_name" = "Иванович", "date_birth_from" = "1910", "date_birth_to" = "1910" }
+control_contains = "Иванов"
+status = "reported"
+basis = "прежний рабочий рецепт без семейного контроля; сегодня живая проба получила HTTP 403, refused, 1,6 с; сохранённая страница требует подтвердить, что пользователь не робот: капча; ноль не установлен, повтор не делался"
+ready_pattern = "Найдено документов:\\s*([\\d\\s\\u00a0]+)"
+empty_pattern = "не найдено документов по Вашему запросу"
+api_match = "pamyat-naroda.ru/entrypoint/api/"
+checked = 2026-11-12
+stop = "капча, вход, платная стена, HTTP 403 или 429: остановиться; секреты и проверки только у пользователя; отказ потолка шлюза не отказ сайта"
+not_ready = "нет явного признака готовой выдачи или нуля; отсутствие ответа и ошибка приложения не доказывают отсутствие записи"
+site_limits_status = "unverified"

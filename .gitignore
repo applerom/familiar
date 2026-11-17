@@ -1,0 +1,22 @@
+node_modules/
+__pycache__/
+*.pyc
+.env
+*.local.json
+tmp/
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+demo-russian/family/.state/
+demo-russian/family/originals/
+demo-russian/results/reader-feeds/
+.check-*/
+
+# Disposable demo builds; independent reading remains versioned family data.
+demo/.secrets/
+demo/.state/build-cache/
+demo/.state/snapshots/
+demo/.build/
+demo/export/
+_site/

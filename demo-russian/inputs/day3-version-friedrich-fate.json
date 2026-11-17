@@ -1,0 +1,122 @@
+{
+  "id": "friedrich-fate",
+  "title": "Что стало с Федей, младшим братом бабушки Эммы",
+  "line": "Шмидт",
+  "people": [
+    "irina-2026-11-12-friedrich"
+  ],
+  "status": "open",
+  "unknown_weight": 0.3,
+  "versions": [
+    {
+      "id": "found-alive",
+      "label": "Вырос в детском доме, около 1985 года нашёлся, но знаться не захотел",
+      "weight": 0.45,
+      "for": [
+        {
+          "kind": "memory",
+          "text": "Бабушка один раз сказала об этом маме около 1985 года",
+          "sources": [
+            "ir-friedrich"
+          ],
+          "dependency_group": "origin:ir-friedrich"
+        }
+      ],
+      "against": [
+        {
+          "kind": "memory",
+          "text": "Слышано один раз и через сорок лет пересказано",
+          "sources": [
+            "ir-friedrich"
+          ],
+          "dependency_group": "origin:ir-friedrich"
+        }
+      ]
+    },
+    {
+      "id": "died-child",
+      "label": "Умер ребёнком в детском доме в войну",
+      "weight": 0.25,
+      "for": [
+        {
+          "kind": "export",
+          "text": "Так записано в выгрузке двоюродного брата",
+          "sources": [
+            "export-wagner-2026-11"
+          ],
+          "dependency_group": "origin:export-wagner-2026-11"
+        }
+      ],
+      "against": [
+        {
+          "kind": "export",
+          "text": "В выгрузке это помечено как предположение, без бумаги",
+          "sources": [
+            "export-wagner-2026-11"
+          ],
+          "dependency_group": "origin:export-wagner-2026-11"
+        },
+        {
+          "kind": "memory",
+          "text": "Противоречит словам бабушки",
+          "sources": [
+            "ir-friedrich"
+          ],
+          "dependency_group": "origin:ir-friedrich"
+        }
+      ]
+    }
+  ],
+  "tests": [
+    {
+      "test": "Найти дома ответ на розыск брата (около 1985 года) или письмо от него",
+      "text": "Письмо-ответ о розыске брата, около 1985 года, если оно сохранилось у мамы или у тёти Нины",
+      "outcomes": [
+        {
+          "kind": "positive",
+          "observation": "есть ответ с фамилией, отчеством и городом",
+          "effects": [
+            {
+              "version": "found-alive",
+              "change": "raise",
+              "reason": "Новая фамилия и город дают один поиск"
+            }
+          ]
+        },
+        {
+          "kind": "unavailable",
+          "observation": "письма не нашли",
+          "effects": [
+            {
+              "version": "found-alive",
+              "change": "unchanged",
+              "reason": "Письмо могли не хранить; это ничего не опровергает"
+            }
+          ]
+        },
+        {
+          "kind": "contrary",
+          "observation": "бумага называет другое",
+          "effects": [
+            {
+              "version": "found-alive",
+              "change": "lower",
+              "reason": "Записать прочитанное буквально и решить заново"
+            }
+          ]
+        },
+        {
+          "kind": "unreadable",
+          "observation": "нужное место не читается",
+          "effects": [
+            {
+              "version": "found-alive",
+              "change": "unchanged",
+              "reason": "Записать прочитанное буквально и решить заново"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

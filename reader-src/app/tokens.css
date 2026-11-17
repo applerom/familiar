@@ -1,0 +1,99 @@
+/* Familiar design tokens · 2026-11-13
+   One idea: a family book with paste-ins. Paper and a book face for the story,
+   a quiet sans for the interface, documents and photos as pasted-in inserts,
+   the Familiar's own voice small, in the margins.
+   Every value here has a role; components use roles, never raw hex. */
+
+@font-face{font-family:"Literata";src:url("./assets/Literata.woff2") format("woff2");font-weight:200 900;font-style:normal;font-display:swap}
+@font-face{font-family:"Literata";src:url("./assets/Literata-Italic.woff2") format("woff2");font-weight:200 900;font-style:italic;font-display:swap}
+@font-face{font-family:"Manrope";src:url("./assets/Manrope.woff2") format("woff2");font-weight:200 800;font-style:normal;font-display:swap}
+
+:root{
+  color-scheme:light;
+
+  /* Faces */
+  --font-story:"Literata",Georgia,"PT Serif",serif;      /* chapters, titles, names */
+  --font-ui:"Manrope",system-ui,"Segoe UI",sans-serif;    /* controls, labels, data */
+
+  /* Type scale (ratio ~1.2, anchored on the reading size) */
+  --t-xs:12px;  /* captions, axis years */
+  --t-sm:13px;  /* labels, meta */
+  --t-ui:15px;  /* buttons, lists */
+  --t-md:17px;  /* card names, lead on phone */
+  --t-read:19px;/* story body on phone */
+  --t-lg:23px;  /* section titles */
+  --t-xl:30px;  /* chapter title on phone */
+  --t-2xl:40px; /* chapter title wide, family name */
+  --t-3xl:56px; /* cover title wide */
+  --lh-read:1.62;
+  --lh-tight:1.18;
+  --measure:680px; /* story column: ~66 characters at the wide reading size */
+
+  /* Colour roles: paper and ink */
+  --paper:#f6f1e7;        /* page */
+  --paper-deep:#ece4d4;   /* mats behind pictures, hover wells */
+  --sheet:#fffdf8;        /* raised surfaces: cards, sheets, bars */
+  --ink:#1f2a26;          /* text */
+  --ink-soft:#4b5550;     /* secondary text */
+  --ink-mute:#666b64;     /* meta, axis: 4.8:1 on paper */
+  --rule:#ddd3c1;         /* hairlines */
+
+  /* Action and light */
+  --act:#2f5b48;          /* links, primary buttons, focus: bottle green */
+  --act-soft:#e3ece5;
+  --ember:#c8741c;        /* the Familiar's light: you-are-here, current, mark */
+  --ember-text:#9a5512;   /* ember when it is small text: 5:1 on paper */
+  --ember-soft:#f6e5cc;
+
+  /* Meaning */
+  --version:#5f6490;      /* a version, not yet firm: dotted lines, margin notes */
+  --version-soft:#e9e8f3;
+  --doc-paper:#fbf5e4;    /* a document insert */
+  --doc-ink:#4a3a26;      /* reading of a document */
+  --doc-mark:#f3dc8a;     /* highlighted word in a reading */
+
+  /* Family lines: muted, distinguishable, never the brand */
+  --line-1:#40679a; --line-2:#a24f73; --line-3:#5d4f93; --line-4:#2d7b80; --line-5:#8a6a2c; --line-6:#5d7d3a;
+
+  /* Space: 4px base */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --gutter:20px;          /* phone page margin; 32px from 768, 48px from 1200 */
+
+  /* Shape */
+  --r-xs:4px;   /* inserts: documents and photos are paper, nearly square */
+  --r-sm:8px;   /* chips, inputs */
+  --r-md:12px;  /* cards, buttons */
+  --r-lg:20px;  /* sheets, overlays */
+
+  /* Depth: two levels only */
+  --lift-1:0 1px 0 rgba(60,45,20,.06),0 6px 18px -10px rgba(60,45,20,.28);   /* card, insert */
+  --lift-2:0 18px 48px -18px rgba(30,25,15,.38);                               /* sheet, overlay */
+
+  /* Motion */
+  --ease:cubic-bezier(.2,.7,.2,1);
+  --d-fast:140ms;   /* hover, press */
+  --d-base:220ms;   /* sheets, chips */
+  --d-page:320ms;   /* chapter turn, tree camera */
+
+  /* Fixed bars */
+  --bar:56px;       /* top bar */
+  --tabbar:60px;    /* phone bottom tabs */
+}
+
+@media (min-width:768px){:root{--gutter:32px;--t-read:20px}}
+@media (min-width:1200px){:root{--gutter:48px;--t-read:21px;--lh-read:1.65}}
+
+/* Evening: same structure, not a different style. Follows the device; the
+   reader can switch it in "Аа". */
+:root[data-theme="evening"]{
+  color-scheme:dark;
+  --paper:#171b19; --paper-deep:#1f2522; --sheet:#212724;
+  --ink:#ebe6da; --ink-soft:#c3bfb3; --ink-mute:#8f948c; --rule:#343b37;
+  --act:#9cc7ad; --act-soft:#26332c; --ember:#e39a4a; --ember-text:#e7a660; --ember-soft:#3a2c1c;
+  --version:#a9acd6; --version-soft:#2a2b3a;
+  --doc-paper:#efe7d2; --doc-ink:#3d3020; --doc-mark:#ead27a;  /* documents stay paper */
+  --lift-1:0 1px 0 rgba(0,0,0,.4),0 8px 20px -10px rgba(0,0,0,.6);
+  --lift-2:0 18px 48px -18px rgba(0,0,0,.7);
+}
+
+@media (prefers-reduced-motion:reduce){:root{--d-fast:0ms;--d-base:0ms;--d-page:0ms}}

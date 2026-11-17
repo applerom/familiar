@@ -1,0 +1,616 @@
+# START_MODULE_CONTRACT: MOD-LANGUAGE-PL
+# PURPOSE: Supply Polish host wording and attested feminine-surname cues while preserving original spelling.
+# PRD_REF: docs/PRD.md#REGION-PACK
+# INVARIANTS:
+# - pl resources load only in their explicitly selected language scope [review: engine lead]
+# - pl data contains no family names, places or private locators [review: pack keeper]
+# CHANGES_WITH:
+# - MOD-READER-GRAPH (reader_intake notice keys)
+# - regions/pl/kinship.json (reader words, explanations and table)
+# - MOD-REGION-CONTRACT
+# - docs/PRD.md#RULES-MODEL
+# :END_MODULE_CONTRACT
+schema_version = 1
+
+[pack]
+id = "pl"
+kind = "language"
+title = "польский язык семейного рассказа"
+version = "0.3.0"
+updated = 2026-11-14
+countries = []
+territory = "язык рассказа; без привязки к территории"
+years = [0, 2026]
+record_languages = ["pl"]
+files = { answers = "answers.md" }
+answers = ["RP-60", "RP-66"]
+
+[proper_names]
+place = []
+institution = []
+publication = []
+term = []
+
+[[gap]]
+what = "нет польских списков голоса отчёта, простого языка и границ предложений"
+next = "нужно отдельное польское чтение и языковой справочник; русские шаблоны не переносить переводом"
+
+[[gap]]
+what = "нет таблицы имён и транслитерации"
+next = "сохранять оригинальную форму с диакритикой; соответствия имён не угадывать"
+
+[[gap]]
+what = "нет полного польского склонения; суффиксы только признаки исторической формы"
+next = "для восстановления основной фамилии нужны исходная запись и контекст; не снимать суффикс автоматически"
+
+[language]
+schema_version = 1
+tag = "pl"
+status = "reported"
+basis = "обобщённые языковые наблюдения; не полный словарь и не автоматический морфологический анализ"
+usage = "списки — признаки для проверки и чтения; запрет и тяжесть задаёт каталог и слой семьи; документальные цитаты сохраняются буквально"
+
+[language.writing]
+purpose = "сохранять буквальное польское написание, включая диакритические знаки"
+rule = "TASTE-NAMES"
+check = "name-forms"
+alphabet = "латиница с польской диакритикой"
+diacritics = "ąćęłńóśźżĄĆĘŁŃÓŚŹŻ"
+normalization = "NFC"
+policy = "имена берутся из исходной записи; упрощённая графика годится для поиска, не для переписывания имени"
+
+[language.surnames]
+purpose = "распознавать кандидаты на историческую женскую форму без подмены основной фамилии"
+rule = "TASTE-NAMES"
+check = "name-forms"
+operation = "detect-only"
+policy = "суффикс не доказывает вдовство, родство или девичью фамилию; окончание может быть частью неизменяемой фамилии; цитаты не менять"
+
+[[language.surname_forms]]
+id = "married"
+pattern = "\\b[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+owa\\b"
+meaning = "историческая форма замужней женщины; не свидетельство вдовства"
+action = "review-only"
+
+[[language.surname_forms]]
+id = "daughter"
+pattern = "\\b[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+ówna\\b"
+meaning = "историческая дочерняя форма; основание фамилии проверяется по документу"
+action = "review-only"
+
+[[language.surname_forms]]
+id = "daughter-plain"
+pattern = "\\b[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+owna\\b"
+meaning = "написание без диакритики: только кандидат на форму с диакритикой"
+action = "review-only"
+
+[[language.surname_forms]]
+id = "daughter-anka"
+pattern = "\\b[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+anka\\b"
+meaning = "возможная историческая женская форма; совпадение окончания особенно неоднозначно"
+action = "review-only"
+
+# Wording for the host; these templates do not add linguistic check resources.
+[host]
+consent_forward = "W tym samym liście są pytania o zgodę na opowieść. Jeśli pytanie dotyczy innej osoby, przekaż je proszę osobie wskazanej; tylko ona może udzielić zgody."
+hidden_count = "Czytelnicy nie widzą jeszcze części opowieści o tej osobie: {name} ({chapters}; {paragraphs})."
+hidden_other = "Nie pokazano także: {details}."
+clarify_life = "Pytanie do badacza: czy ta osoba żyje — {person}? Trzeba sprawdzić informacje o jej życiu i zapisać wniosek z uzasadnieniem. Do tego czasu te fragmenty pozostają prywatne."
+ask_consent = "Poproście gospodarza rodziny o przekazanie wspólnej prośby o zgodę. Kogo zapytać: {name}. Tekst jest gotowy w listach do krewnych."
+consent_question = "Jeszcze jedno pytanie o naszą historię rodzinną. {name}, czy zgadzasz się pokazać krewnym dokładnie te słowa o Tobie?\n\n{passages}\n\nMożesz zgodzić się tylko na część albo odmówić. Podaj proszę, które słowa wolno pokazać, komu i datę odpowiedzi. Dokumenty i adresy żyjących nie będą pokazywane nawet za zgodą."
+consent_no_passage = "Najpierw autor musi przygotować dokładny tekst do przeczytania i zaakceptowania lub odrzucenia."
+disclosure_unavailable = "Nie udało się jeszcze przygotować pełnej listy ukrytych fragmentów. Poproście autora o sprawdzenie szkiców; nie oznacza to zgody na pokazanie wszystkiego."
+hidden_title = "tytuł rozdziału"
+hidden_period = "okres opowieści"
+hidden_line = "podpis linii rodzinnej"
+hidden_facts = "objaśnienia wydarzeń"
+hidden_variants = "wersje opowieści"
+hidden_places = "miejsca i objaśnienia"
+hidden_extras = "uzupełnienia opowieści"
+hidden_links = "odnośniki z objaśnieniami"
+hidden_kids = "opowieść dla dzieci"
+hidden_years = "lata w schemacie rodzinnym"
+hidden_chapters_one = "{count} rozdział"
+hidden_chapters_few = "{count} rozdziały"
+hidden_chapters_many = "{count} rozdziałów"
+hidden_chapters_other = "{count} rozdziałów"
+hidden_paragraphs_one = "{count} akapit"
+hidden_paragraphs_few = "{count} akapity"
+hidden_paragraphs_many = "{count} akapitów"
+hidden_paragraphs_other = "{count} akapitów"
+unknown_name = '{name} (status życia nieznany)'
+working_view = 'Prywatny widok roboczy rodziny. To są Twoje słowa i dokumenty, jeszcze nie publikacja.'
+reader_limits = 'Czytelnicy bez zapisanej zgody zobaczą tylko imiona i pokrewieństwo: {names}. Adresy i dokumenty tych osób nie są publikowane nawet za zgodą. Oddziel informacje lub zapisz zgodę na konkretny zakres; wyjaśnij nieznany status życia.'
+host = "opiekuna rodzinnych dokumentów"
+relative = "osoby z rodziny"
+question = "Co pamięta rodzina?"
+witness = "Na początek proszę odpowiedzieć z pamięci: {question}"
+our_version = "Nasze przypuszczenie: {version} Jeśli było inaczej, proszę o tym napisać."
+request = "Proszę poszukać jednego dokumentu: {paper}. {why}"
+no_paper = "Odpowiedź, że nie ma tego dokumentu, też nam pomoże. Wtedy poszukamy inną drogą."
+not_recorded = "Nie zapisano przypuszczenia w formie, którą można bezpiecznie pokazać."
+purpose_unknown = "Może pomóc odpowiedzieć na to pytanie."
+withheld = "Ten tekst pominięto, ponieważ może zawierać prywatne informacje lub robocze odsyłacze. Proszę poprosić pomocnika o wersję zawierającą tylko dozwolone imiona i pokrewieństwo."
+no_requests = "Nie ma jeszcze próśb do rodziny."
+draft = "Szkic — jeszcze bez potwierdzenia niezależnego czytelnika."
+reviewed = "Przeczytane i potwierdzone przez niezależnego czytelnika."
+reader_confirmed_feed_pending = "Strona czytnika jest potwierdzona; osobny widok opowieści nie jest potwierdzony. Widoki mogą pokazywać różny materiał i wymagają osobnej lektury."
+children = "Dla dzieci"
+support = "Na czym opiera się ta opowieść"
+support_missing = "Nie opisano jeszcze podstaw opowieści. Przed udostępnieniem proszę poprosić autora o ich dodanie."
+no_pages = "Nie ma jeszcze stron opowieści."
+story_ready = "Można przeczytać: {title}"
+story_draft = "Proszę poprosić niezależnego czytelnika o przeczytanie szkicu: {title}"
+draft_request = "Prośba jest gotowa, ale jeszcze nie została przekazana. Dokument: {paper}. Adresat: {who}. Po przekazaniu proszę powiedzieć o tym pomocnikowi."
+waiting = "Czekamy na {paper} od {who} ({elapsed}). Nie zapisano nowej odpowiedzi; czekamy na ten dokument, bez ponawiania tej samej prośby."
+date_unknown = "nie zapisano daty prośby"
+answer = "Jest odpowiedź dotycząca {paper}: {answer} {decision}"
+answer_private = "Odpowiedź wymaga wersji bez prywatnych szczegółów."
+answer_open = "Pytanie pozostaje otwarte. Proszę poprosić pomocnika o wyjaśnienie, co zmienia ta odpowiedź."
+decision_unknown = "Pytanie zamknięto, ale nie opisano jeszcze wniosku dla rodziny."
+not_presented = "Nie przedstawiono dokumentu {paper}; to nie dowodzi, że nigdy nie istniał. Następny krok: {next}"
+choose_test = "Proszę poprosić pomocnika o wskazanie innego dokumentu lub sprawdzenie możliwości uzyskania odpisu."
+no_test = "Nie wybrano jeszcze dokumentu do tego pytania. Proszę poprosić pomocnika o propozycję. Pytanie: {question}"
+bridge = "Znalazł się dokument potwierdzający pokrewieństwo. Proszę poprosić pomocnika o wyjaśnienie, co już wiadomo. Dokument: {paper}"
+case_review = "Przed kolejnym szukaniem proszę poprosić prowadzącego badanie o przegląd pytania: {question}"
+run_test = "Zaplanowano kolejne sprawdzenie. Proszę zapytać pomocnika, jaka pomoc będzie potrzebna. Pytanie: {question}"
+choose_story = "Decyzje dotyczące pytań zostały zapisane. Proszę wybrać z pomocnikiem opowieść na podstawie zebranych świadectw i przygotować stronę do przeczytania."
+intake_ready = "Materiały zostały przyjęte. Proszę wybrać z pomocnikiem pierwsze pytanie na podstawie wspomnień i dokumentów, założyć sprawę i wskazać dokument do sprawdzenia wersji."
+tree_ready = "Drzewo zostało przyjęte. Proszę dodać wspomnienie lub domowy dokument do wybranej gałęzi, aby wybrać pierwsze pytanie do sprawdzenia."
+start = "Na początek wystarczy jedno rodzinne wspomnienie albo domowy dokument. Pomocnik pomoże wybrać pierwsze pytanie."
+papers = "Co zapisano w dokumentach — sam wpis nie potwierdza tożsamości ani pokrewieństwa"
+documented = "{person}: {event}, {detail}. Dokument: {source}."
+firm_memory = "Pewne wspomnienia rodziny — świadectwo, a nie dowód z dokumentu"
+hearsay = "Co przekazano ze słyszenia lub pozostaje niepewne"
+questions = "Otwarte pytania i dokumenty, które mogą je rozstrzygnąć"
+open_question = "{question} Dokument lub próba: {paper}"
+test_missing = "Nie wskazano jeszcze dokumentu ani próby."
+stories = "Co można już opowiedzieć"
+none = "W tej części niczego jeszcze nie zapisano."
+event_birth = "urodzenie"
+event_death = "śmierć"
+event_baptism = "chrzest"
+event_marriage = "małżeństwo"
+event_emigration = "wyjazd"
+event_immigration = "przyjazd"
+event_occupation = "praca"
+confirmation = "Co oznacza potwierdzenie\n\nProgram sprawdza formę materiału: osoby i dokumenty mają lokalne odpowiedniki, słabe przypuszczenia nie są przedstawione jako przyjęte fakty, a tekst nie zawiera ukrytych znaczników. Ustala, kogo pokazuje strona, także na zdjęciach i w dokumentach. O żyjących pokazuje tylko imię, nazwisko i pokrewieństwo, chyba że zapisano zgodę na więcej. Adresów ani dokumentów dotyczących żyjących nie można w ten sposób udostępnić. Obrazy żyjących lub dzieci nie trafiają do generatora. Te kontrole dotyczą danych, nie dowodzą prawdy historycznej.\n\nPrzed potwierdzeniem gospodarz lub czytelnik inny niż autor musi przeczytać całą stronę, część dla dzieci i podstawy opowieści, a także obejrzeć ilustracje i podpisy we wszystkich pokazywanych językach. Trzeba sprawdzić, czy tekst o żyjących mieści się w ich zgodzie, pomija zamknięte tematy rodzinne, opiera sceny na świadectwach i nie obwinia całego narodu lub wyznania. Trzeba sprawdzić osoby w kadrze, oznaczenia rekonstrukcji oraz sprzeczności między dokumentami i przypuszczeniami. Automatyczna kontrola może przeoczyć parafrazę, zbieżność nazwisk i sens zdania. Brak zasobów językowych oznacza, że tych kontroli nie wykonano.\n\nProszę potwierdzać tylko to, co rzeczywiście przeczytano. Program wymaga wskazanego czytelnika innego niż autor; nie potrafi sprawdzić uczciwości ani niezależności lektury. Bez lektury strona pozostaje szkicem, a zwykły eksport dla czytelników jest wstrzymany. Świadome udostępnienie przez gospodarza wymaga osobnej zapisanej decyzji i nie omija błędu kontroli danych.\n\nZmiana pokazywanej strony albo istotnych danych o bezpieczeństwie unieważnia potwierdzenie. Zmieniony materiał trzeba przeczytać ponownie. O publikacji decyduje gospodarz; lokalny program nie może wycofać kopii już przekazanej poza nim."
+
+greeting = "Dzień dobry!"
+
+greeting_named = "Dzień dobry, {name}!"
+
+purpose = "Zbieram historię naszej rodziny, żeby przekazać ją dzieciom."
+
+closing = "Dziękuję za pomoc!"
+
+closing_named = "Dziękuję za pomoc!\n{name}"
+
+self_heading = "Pytanie i dokument do znalezienia w domu"
+
+request_self = "Proszę poszukać w rodzinnych papierach: {paper}. {why}"
+
+no_paper_self = "Jeśli dokumentu nie ma, proszę powiedzieć o tym pomocnikowi — to też odpowiedź. Wybierzemy inną drogę."
+
+draft_request_self = "Warto zacząć od rodzinnych papierów w domu. Szukany dokument: {paper}. Proszę dać pomocnikowi znać, co udało się znaleźć lub że dokumentu nie ma."
+
+waiting_self = "Szukanie w domowych papierach jeszcze trwa. Dokument: {paper} ({elapsed}). Po sprawdzeniu proszę przekazać wynik pomocnikowi."
+
+days_one = "{days} dzień"
+
+days_few = "{days} dni"
+
+days_many = "{days} dni"
+
+days_other = "{days} dni"
+
+date = "{day} {month} {year}"
+
+living_name = "Na stronie: {name}."
+kinship_unknown = "Pokrewieństwo nie zostało jeszcze zapisane."
+
+kinship_parent = "Rodzic: {parent}. Dziecko: {child}."
+
+kinship_spouse = "Małżonkowie: {first}; {second}."
+
+[host_informal]
+greeting = "Cześć!"
+greeting_named = "Cześć, {name}!"
+witness = "Na początek odpowiedz proszę z pamięci: {question}"
+our_version = "Nasze przypuszczenie: {version} Jeśli pamiętasz inaczej, napisz proszę."
+request = "Czy możesz poszukać jednego dokumentu: {paper}? {why}"
+no_paper = "Jeśli nie masz tego dokumentu, napisz — to też odpowiedź. Wtedy poszukamy inną drogą."
+request_self = "Poszukaj w rodzinnych papierach: {paper}. {why}"
+no_paper_self = "Jeśli dokumentu nie ma, powiedz pomocnikowi — to też odpowiedź. Wybierzemy inną drogę."
+draft_request_self = "Zacznij od rodzinnych papierów w domu. Dokument: {paper}. Powiedz pomocnikowi, co jest, albo że dokumentu nie ma."
+waiting_self = "Szukanie w domowych papierach jeszcze trwa. Dokument: {paper} ({elapsed}). Kiedy je sprawdzisz, przekaż wynik pomocnikowi."
+answer_open = "Pytanie pozostaje otwarte. Poproś pomocnika o wyjaśnienie, co zmienia ta odpowiedź."
+choose_test = "Poproś pomocnika o wskazanie innego dokumentu lub sprawdzenie możliwości uzyskania odpisu."
+no_test = "Nie wybrano jeszcze dokumentu do tego pytania. Poproś pomocnika o propozycję. Pytanie: {question}"
+run_test = "Zaplanowano kolejne sprawdzenie. Zapytaj pomocnika, jaka pomoc będzie potrzebna. Pytanie: {question}"
+bridge = "Znalazł się dokument potwierdzający pokrewieństwo. Poproś pomocnika o wyjaśnienie, co już wiadomo. Dokument: {paper}"
+
+question = "pytanie o rodzinę"
+withheld = "Ten tekst pominięto, ponieważ może zawierać prywatne informacje lub robocze odsyłacze. Poproś badacza o wersję zawierającą tylko dozwolone imiona i pokrewieństwo."
+support_missing = "Nie opisano jeszcze podstaw opowieści; przed udostępnieniem poproś autora o ich dodanie."
+story_draft = "Poproś niezależnego czytelnika o przeczytanie szkicu: {title}"
+draft_request = "Prośba jest gotowa, ale jeszcze nie została przekazana. Dokument: {paper}. Adresat: {who}. Po przekazaniu powiedz o tym pomocnikowi."
+case_review = "Poproś prowadzącego badanie o przegląd pytania przed kolejnym szukaniem: {question}"
+confirmation = "Co potwierdzasz\n\nProgram sprawdza formę materiału: osoby i dokumenty mają lokalne odpowiedniki, słabe przypuszczenia nie są przedstawione jako przyjęte fakty, a tekst nie zawiera ukrytych znaczników. Ustala, kogo pokazuje strona, także na zdjęciach i w dokumentach. O żyjących pokazuje tylko imię, nazwisko i pokrewieństwo, chyba że zapisano zgodę na więcej. Adresów ani dokumentów dotyczących żyjących nie można w ten sposób udostępnić. Obrazy żyjących lub dzieci nie trafiają do generatora. Te kontrole dotyczą danych, nie dowodzą prawdy historycznej.\n\nTy lub czytelnik inny niż autor musicie przeczytać całą stronę, część dla dzieci i podstawy opowieści, a także obejrzeć ilustracje i podpisy we wszystkich pokazywanych językach. Sprawdźcie, czy tekst o żyjących mieści się w ich zgodzie, pomija zamknięte tematy rodzinne, opiera sceny na świadectwach i nie obwinia całego narodu lub wyznania. Sprawdźcie osoby w kadrze, oznaczenia rekonstrukcji oraz sprzeczności między dokumentami i przypuszczeniami. Automatyczna kontrola może przeoczyć parafrazę, zbieżność nazwisk i sens zdania. Brak zasobów językowych oznacza, że tych kontroli nie wykonano.\n\nPotwierdzaj tylko to, co rzeczywiście przeczytano. Program wymaga wskazanego czytelnika innego niż autor; nie potrafi sprawdzić uczciwości ani niezależności lektury. Bez lektury strona pozostaje szkicem, a zwykły eksport dla czytelników jest wstrzymany. Świadome udostępnienie przez gospodarza wymaga osobnej zapisanej decyzji i nie omija błędu kontroli danych.\n\nZmiana pokazywanej strony albo istotnych danych o bezpieczeństwie unieważnia potwierdzenie. Zmieniony materiał trzeba przeczytać ponownie. O publikacji decydujesz Ty; lokalny program nie może wycofać kopii już przekazanej poza nim."
+
+[host_format]
+address_forms = ["formal", "informal"]
+months = ["stycznia", "lutego", "marca", "kwietnia", "maja", "czerwca", "lipca", "sierpnia", "września", "października", "listopada", "grudnia"]
+plural_default = "many"
+
+[[host_format.plurals]]
+category = "one"
+values = [1]
+
+[[host_format.plurals]]
+category = "few"
+modulo = 10
+values = [2, 3, 4]
+except_mod100 = [12, 13, 14]
+
+[[gap]]
+what = "нет автоматического звательного падежа и форм pan/pani по роду; вежливый вариант использует proszę без определения пола, обращение печатается буквально"
+next = "хозяин даёт готовое обращение; род и падеж имени не угадывать"
+
+[reader_intake]
+graphKinship = "Według powiązań w drzewie"
+inferredNameParts = "Wywnioskowane części imienia i nazwiska"
+placeEventUnknown = "Miejsce podano; nie wiadomo, czy dotyczy urodzenia, czy śmierci"
+memorySource = "Opowieść: {witness} · zapisana {date}"
+narratorLabel = "rodzina"
+name_label = "Imię i nazwisko"
+notes_label = "Pamięć rodzinna"
+event_label = "Wydarzenie"
+paper_label = "Dokument: {title}"
+unknownName = "Imienia nie zapisano"
+familyFirm = "pamięć rodzinna"
+familyUncertain = "pamięć rodzinna"
+derivedVersion = ""
+basisLabel = ""
+spouseVersion = "Być może małżonkowie"
+storiesEmpty = "Opowieści pojawią się tutaj, gdy zostaną zapisane."
+deathEvent = "Śmierć"
+deathCause = "Przyczyna śmierci: {cause}"
+birth = "Narodziny"
+death = "Śmierć"
+marriage = "Małżeństwo"
+baptism = "Chrzest"
+burial = "Pogrzeb"
+occupation = "Zajęcie"
+residence = "Miejsce zamieszkania"
+emigration = "Przeprowadzka"
+immigration = "Przeprowadzka"
+private_notice = "wersja niepubliczna"
+memory = "Do rodzinnego archiwum dodano wspomnienia. Można je teraz porównać z dokumentami."
+paper = "Do rodzinnego archiwum dodano domowy dokument. Pomoże sprawdzić rodzinne wspomnienia."
+gedcom = "Dodano inne drzewo rodzinne. Jego informacje wymagają jeszcze sprawdzenia."
+
+[table_intake]
+alive=["tak"]
+dead=["nie"]
+[table_intake.headers]
+person=["osoba"]
+kin=["pokrewieństwo"]
+birth=["data urodzenia"]
+death=["data śmierci"]
+birth_place=["miejsce urodzenia"]
+death_place=["miejsce śmierci"]
+notes=["uwagi"]
+witness=["skąd wiem"]
+living=["czy żyje"]
+[table_intake.kin_paths]
+"ojciec"="f"
+"matka"="m"
+
+[table_intake.words]
+ask_place_event="Czy „{value}” jest miejscem urodzenia, czy śmierci? Zachowaliśmy miejsce; trzeba ustalić rodzaj wydarzenia."
+father_unknown="Patronimik {patronymic} wskazuje ojca; jego imię i związek z osobą z tabeli wymagają wyjaśnienia"
+ask_father="Jak miał na imię ojciec osoby z patronimikiem {patronymic}?"
+hypothesis_context="Hipoteza: {parent} jest ojcem {child}. Podstawa: patronimik {patronymic}, sąsiednie pokolenia, nazwisko {surname} sąsiedniej kobiety z jego pokolenia; nazwisko rodowe córki nieznane"
+mother_hypothesis="Hipoteza: {parent} jest matką {child}. Podstawa: wspólne nazwisko rodowe córki i sąsiednie pokolenia"
+birth="Urodzenie"
+death="Śmierć"
+birth_place="Miejsce urodzenia"
+death_place="Miejsce śmierci"
+place="Miejsce urodzenia/śmierci"
+notes="Opowieść"
+kin="Pokrewieństwo z narratorem"
+witness="Skąd wiadomo"
+living="Status życia"
+reported="według narratora"
+uncertain="niepewne"
+no_kin="W tabeli nie podano pokrewieństwa z narratorem"
+link="Narrator podał odnośnik (zachowany w tabeli źródłowej, komórka {cell})"
+misplaced="W kolumnie miejsca zapisano {value} — być może rok urodzenia"
+ask_place="Co oznacza „{value}” w kolumnie miejsca: rok urodzenia czy miejsce?"
+ask_date="Proszę doprecyzować {label}: „{value}”."
+ask_years="Który rok jest właściwy — {years}?"
+ask_kin="Proszę doprecyzować pokrewieństwo z narratorem: „{value}”. Czyj to rodzic?"
+ask_person="Kogo opisuje komórka „{value}”?"
+ask_name="Jak rozdzielić imię i nazwisko: „{value}”?"
+father="Patronimik wskazuje ojca: {father}; nie zapisano go w tabeli"
+hypothesis="Hipoteza: {parent} jest ojcem {child}. Podstawa: patronimik {patronymic}, wspólne nazwisko {surname}, sąsiednie pokolenia"
+variant="Obserwacja: różna pisownia nazwiska — {first} / {second}; osoby pozostają osobno"
+ask_variant="Czy nazwiska {first} i {second} należą do tej samej rodziny?"
+consent="Zgoda na badanie"
+[table_intake.vocabulary]
+self=["ja", "narrator"]
+male=["ojciec", "dziadek", "brat", "syn", "mąż"]
+female=["matka", "babcia", "siostra", "córka", "żona"]
+male_suffix=[]
+female_suffix=[]
+death_words=["zmarł", "zmarła", "zaginął", "poległ"]
+[table_intake.vocabulary.generations]
+"ojciec"=1
+"matka"=1
+"dziadek"=2
+"babcia"=2
+[table_intake.vocabulary.fathers]
+
+[table_intake.bridge_words]
+narrator="narrator"
+narrator_genitive="narratora"
+father="ojciec"
+mother="matka"
+father_genitive="ojca"
+mother_genitive="matki"
+patronymic_basis="Imię ojca odczytano z patronimiku „{patronymic}” według słownika pakietu językowego"
+place_basis="Liczba w kolumnie miejsca przypomina rok; potrzebne potwierdzenie narratora"
+basis_separator=". Podstawa: "
+
+[table_intake.placeholders]
+""="narrator"
+"f"="ojciec narratora"
+"m"="matka narratora"
+
+
+[desk]
+nav_stories="Opowieści"
+nav_families="Rodziny"
+nav_kinship="Słowa pokrewieństwa"
+nav_photos="Zdjęcia"
+nav_world="Mapa"
+nav_progress="Badania"
+unsent_draft="niewysłany tekst"
+remark="Uwaga"
+received="Otrzymano"
+my_remarks="Moje uwagi"
+no_remarks="Tutaj pojawią się Twoje uwagi."
+status_sent="Wysłano"
+status_read="Przeczytano"
+status_addressed="Uwzględniono"
+researcher_reply="Odpowiedź badacza"
+attached_to="Do tej strony"
+name_person="Podaj imię"
+screen_tree="Drzewo"
+screen_families="Rodziny"
+screen_stories="Historie"
+screen_photos="Zdjęcia"
+screen_world="Mapa"
+screen_search="Wyszukiwanie"
+screen_progress="Przebieg badań"
+where_person="Karta: {person}"
+where_feed="Historia „{feed}”, krok {step}, {mode}"
+kids_text="tekst dla dzieci"
+full_text="pełny tekst"
+private_notice="wersja niepubliczna"
+tree_short="Drzewo"
+tree="Drzewo rodziny"
+progress="Przebieg badań"
+correct="Uzupełnij lub popraw"
+add_elsewhere="Nową osobę dodaje się osobnym formularzem:"
+add_relative="Dodaj krewnego"
+answer="Odpowiedz"
+question="Co pamiętasz?"
+feedback_label="Twoje słowa zostaną zachowane dosłownie."
+send="Wyślij"
+close="Zamknij"
+sending="Zapisywanie…"
+failed="Nie udało się zapisać. Tekst pozostał tutaj; spróbuj ponownie."
+
+[desk.show]
+branch="Gałąź {n}"
+version_n="Wersja {n}"
+version_started="Nowa wersja"
+checks="Sprawdzeń: {n}"
+document_in_tree="Dokument w drzewie"
+tree_extended="Drzewo uzupełnione"
+first_day="Pierwszy dzień"
+first_title="Pierwsze gałęzie już rosną"
+since_title="Praca trwa: umocnionych wersji {warm}, znalezisk {finds}"
+since="Od ostatniej wizyty"
+log="Przebieg pracy"
+log_hint="Każda gałąź to pytanie i jego wersje. Kolor oznacza siłę wersji; zielone jest już w drzewie."
+versions="Co teraz sądzimy"
+versions_hint="Pytania, które rozstrzygamy. Im cieplej, tym bardziej prawdopodobne. Jeśli coś wiesz — napisz."
+chapters="Z tego powstaną rozdziały"
+queries="zapytań w archiwach i bazach"
+sources="otwartych źródeł"
+sheets="przeczytanych kart"
+grains="zebranych śladów"
+finds="znalezisk w drzewie"
+unknown="jeszcze nie liczone"
+possible="możliwe"
+probable="najprawdopodobniej"
+firm="✓ potwierdzona"
+more="jeszcze {n} sprawdzeń"
+last_visit="tu zakończyła się ostatnia wizyta"
+ask_family="Zapytam rodzinę"
+dont_know="Nie wiem"
+ask_label="Można uzupełnić"
+answer_saved="Odpowiedź zapisana"
+child="Dziecko"
+spouse="Mąż/żona"
+parent="Rodzic"
+sibling="Brat/siostra"
+beside="Kto obok {name}?"
+pending="czeka na badacza"
+next_publication="Pojawi się w następnej publikacji"
+add="Dodaj"
+name_hint="Imię i to, co pamiętasz o tej osobie"
+builder="Zacznijmy od bliskich"
+progress="Badania"
+stories="Historie"
+tree="Drzewo"
+
+self="Ty"
+mother="Mama"
+father="Tata"
+mothers_mother="Mama mamy"
+mothers_father="Tata mamy"
+fathers_mother="Mama taty"
+fathers_father="Tata taty"
+
+ghost_child="Syn lub córka"
+ghost_spouse="Mąż lub żona"
+ghost_wife="Żona"
+ghost_husband="Mąż"
+ghost_parent="Ojciec lub matka"
+
+ongoing="Badania trwają"
+
+ongoing_title="Historia rodziny stopniowo się odsłania"
+
+active_title="Rozważane wersje: {n}"
+
+firm_title="Rozważane wersje: {n} · już w drzewie: {k}"
+
+know="Wiem coś o tym"
+
+
+cousin="Kuzyn lub kuzynka"
+
+volume_queries="Wykonane sprawdzenia: {n}"
+
+volume_sources="źródła: {n}"
+
+volume_sheets="przeczytane karty: {n}"
+
+volume_grains="zebrane zapisy: {n}"
+
+volume_finds="dokumenty w drzewie: {n}"
+
+add_heading="Dodaj krewnego"
+
+beside_caption="obok: {name}"
+add_person="Dodaj krewnego"
+add_kin="Dodaj rodzinę"
+add_relation="Kim jest"
+add_rel_father="Ojciec"
+add_rel_mother="Matka"
+add_rel_sibling="Brat lub siostra"
+add_rel_child="Syn lub córka"
+add_rel_spouse="Mąż lub żona"
+add_rel_relative="Inne pokrewieństwo"
+add_rel_parent="Ojciec lub matka"
+add_rel_self="Ty"
+add_surname="Nazwisko"
+add_surname_ex="Kowalska"
+add_given="Imię"
+add_given_ex="Maria"
+add_patronymic="Imię ojca"
+add_patronymic_ex="Piotra"
+add_maiden_surname="Nazwisko panieńskie"
+add_maiden_surname_ex="dla kobiet: Nowak"
+add_maiden_short="z d."
+add_born="Urodzenie"
+add_birth="Rok lub data"
+add_birth_ex="około 1930 albo lata 30."
+add_birth_place="Miejsce"
+add_birth_place_ex="wieś Nowosiółki, pow. grodzieński"
+add_living="Żyje czy zmarł?"
+add_living_alive="Żyje"
+add_living_dead="Zmarł(a)"
+add_living_unknown="Nie wiem"
+add_died="Śmierć"
+add_death="Kiedy zmarł(a)"
+add_death_ex="1995 albo około 1990"
+add_death_place="Gdzie zmarł(a) lub pochowany(a)"
+add_death_place_ex="Grodno"
+add_known_from="Skąd wiadomo"
+add_known_from_memory="Pamiętam sam(a)"
+add_known_from_told="Z opowieści rodziny"
+add_known_from_document="Jest dokument lub zdjęcie"
+add_told_by="Z czyich słów?"
+add_told_by_ex="babci Niny"
+add_note="Co jeszcze pamiętasz"
+add_note_ex="praca, wojna, przeprowadzki, dzieci…"
+add_need="Wpisz imię albo wybierz, kim jest."
+add_done="Zobaczymy i dodamy do drzewa."
+add_more="Dodaj kolejną osobę"
+add_finish="Gotowe"
+add_many="Dużo osób naraz? Można tabelą (Excel lub Arkusze Google), wiersz na osobę: nazwisko, imię, lata, miejsca, pokrewieństwo. Wyślij plik albo link osobie, która otworzyła Ci ten gabinet."
+added_title="Dodane przez Ciebie — wkrótce zobaczymy"
+versions_started="Nowe wersje: {n}"
+version_weakened="Wersja osłabła"
+version_dropped="Wersja odpadła"
+version_strengthened="Wersja się umocniła"
+version_confirmed="Wersja potwierdzona"
+dropped="odpadła"
+weakened="osłabła"
+unlikely="mało prawdopodobne"
+strengthened="umocniła się"
+near_certain="prawie na pewno"
+build_tree="Uzupełnij drzewo"
+build_done="Gotowe"
+build_hint="Plus obok osoby dodaje bliskich"
+
+
+latest_shifts="Co posunęło się w badaniu"
+no_shifts="Pytania i wersje są zapisane. Historia nie zawiera jeszcze zmian wag."
+no_events="Przebieg pracy nie został jeszcze zapisany."
+work_volume="Zakres pracy"
+searched_title="Gdzie szukaliśmy"
+searched_sources="Źródła: znane {known} · sprawdzone {checked}"
+searched_growth="+{n} nowych w dzienniku przez ostatnie {days} dni pracy"
+searched_repeat="Powtórne przeglądy: {n} źródeł sprawdzonych w różne dni"
+searched_requests="Zapytania: {n} przez {days} dni pracy"
+searched_requests_undated="Zapytania: {n} · brak zapisanych dni"
+searched_day="Dzień {n}"
+searched_days="Zapytania według dni pracy: dzień 1, dzień 2 i dalej"
+searched_undated="Bez daty: {n} zapytań, poza wykresem"
+searched_categories="Według rodzaju źródła · liczba zapytań"
+searched_military="Bazy wojskowe"
+searched_registers="Metryki i rewizje"
+searched_census="Spisy ludności i księgi gospodarstw"
+searched_trees="Drzewa rodzinne"
+searched_repression="Represje i osiedla specjalne"
+searched_press="Księgi pamięci i prasa"
+searched_other="Pozostałe"
+searched_note="W przybliżeniu, na podstawie dziennika. Nowe oznacza pierwszy zapis. Liczymy tylko dni z zapisami; zapytania obejmują brak dostępu."
+total_questions="pytań"
+total_versions="rozważonych wersji"
+total_dropped="odrzuconych"
+total_firm="potwierdzonych w drzewie"
+total_open="w toku"
+total_confirmed="potwierdzone, jeszcze poza drzewem"
+confirmed_pending="potwierdzona, brak zapisanego powiązania z drzewem"
+know_question="Wiesz coś na ten temat?"
+volume_documents_read="przeczytane dokumenty: {n}"
+record_found="Zapis zachowany"
+source_archive="Dokumenty archiwalne"
+source_index="Indeksy"
+source_database="Bazy danych"
+source_home_paper="Dokumenty domowe"
+source_website="Strony internetowe"
+source_memory="Pamięć rodzinna"
+source_unknown="Rodzaj źródła niepodany"
+coverage_volume="Sprawdzono, brak wyniku: {zero} · luki dostępu: {gap}"
+volume_zero="Sprawdzono, brak wyniku: {n}"
+volume_gap="luki dostępu: {n}"
+newer="← Nowsze"
+older="Wcześniejsze →"
+page_n="{n} z {total}"
+add_one_form="Jedna osoba — jeden formularz."
+add_whose="Czyj to krewny"
+add_kin_words="Pokrewieństwo własnymi słowami"
+add_kin_words_ex="brat dziadka, kuzynka mamy"
+ghost_sibling="Brat lub siostra"
+
+[reader_kinship]
+file = "kinship.json"

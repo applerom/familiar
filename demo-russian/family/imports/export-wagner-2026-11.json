@@ -1,0 +1,6 @@
+{
+  "id": "export-wagner-2026-11",
+  "kind": "gedcom",
+  "original": "imports/export-wagner-2026-11/day2-export-myheritage.ged",
+  "living_rule": "No death and latest stated birth year > 1916; no birth defaults living for privacy. As of 2026-11-12, threshold 110 years."
+}

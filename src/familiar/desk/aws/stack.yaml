@@ -1,0 +1,331 @@
+# START_MODULE_CONTRACT: MOD-DESK-AWS-TEMPLATE
+# PURPOSE: Create one portable private static desk and a CloudFront-only feedback receiver.
+# PRD_REF: docs/PRD.md#FAMILY-DESK
+# INVARIANTS:
+# - every viewer behavior authenticates before origin access; the template contains only a credential hash [review: engine lead]
+# - the bucket denies public access and both origins allow only this distribution [review: engine lead]
+# - feedback retains bounded literal text, extensible context and atomic idempotency without a cooldown [review: engine lead]
+# CHANGES_WITH:
+# - MOD-DESK-AWS (stack parameters and outputs)
+# - MOD-DESK-CLIENT (body digest and request schema)
+# :END_MODULE_CONTRACT
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Familiar private narrator desk; static site and literal feedback in one account-owned stack
+Parameters:
+  AuthHash:
+    Type: String
+    NoEcho: true
+    AllowedPattern: '[a-f0-9]{64}'
+    Description: SHA256 of the complete Basic Authorization header; never a plaintext password
+  FamilyTag:
+    Type: String
+    AllowedPattern: '[a-z0-9-]{1,40}'
+Resources:
+  Bucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: RetainExceptOnCreate
+    UpdateReplacePolicy: Retain
+    Properties:
+      OwnershipControls:
+        Rules: [{ObjectOwnership: BucketOwnerEnforced}]
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault: {SSEAlgorithm: AES256}
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireRateSlots
+            Status: Enabled
+            Prefix: feedback-rate/
+            ExpirationInDays: 1
+      Tags:
+        - {Key: project, Value: familiar}
+        - {Key: family, Value: !Ref FamilyTag}
+  SiteOAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub '${AWS::StackName}-site'
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+  FeedbackOAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub '${AWS::StackName}-feedback'
+        OriginAccessControlOriginType: lambda
+        SigningBehavior: always
+        SigningProtocol: sigv4
+  Login:
+    Type: AWS::CloudFront::Function
+    Properties:
+      Name: !Sub '${AWS::StackName}-login'
+      AutoPublish: true
+      FunctionConfig:
+        Comment: Authenticate every desk request without storing a plaintext credential
+        Runtime: cloudfront-js-2.0
+      FunctionCode: !Sub |
+        var crypto = require('crypto');
+        function handler(event) {
+          var request = event.request;
+          var h = request.headers.authorization;
+          if (!h || crypto.createHash('sha256').update(h.value).digest('hex') !== '${AuthHash}') {
+            return {statusCode: 401, statusDescription: 'Unauthorized', headers: {
+              'www-authenticate': {value: 'Basic realm="Family desk", charset="UTF-8"'},
+              'cache-control': {value: 'no-store'},
+              'x-robots-tag': {value: 'noindex, nofollow, noarchive'},
+              'strict-transport-security': {value: 'max-age=31536000'},
+              'content-type': {value: 'text/plain; charset=utf-8'}}, body: 'Authentication required'};
+          }
+          delete request.headers.authorization;
+          if (request.uri === '/') request.uri = '/index.html';
+          return request;
+        }
+  FeedbackRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: {Service: lambda.amazonaws.com}
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: SubjectFeedback
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: s3:PutObject
+                Resource:
+                  - !Sub '${Bucket.Arn}/feedback/inbox/*'
+              - Effect: Allow
+                Action: s3:GetObject
+                Resource: !Sub '${Bucket.Arn}/feedback/inbox/*'
+              - Effect: Allow
+                Action: s3:ListBucket
+                Resource: !GetAtt Bucket.Arn
+                Condition:
+                  StringLike:
+                    s3:prefix: 'feedback/inbox/*'
+              - Effect: Allow
+                Action: [logs:CreateLogStream, logs:PutLogEvents]
+                Resource: !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${AWS::StackName}-feedback:*'
+      Tags:
+        - {Key: project, Value: familiar}
+        - {Key: family, Value: !Ref FamilyTag}
+  FeedbackLog:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${AWS::StackName}-feedback'
+      RetentionInDays: 7
+      Tags:
+        - {Key: project, Value: familiar}
+        - {Key: family, Value: !Ref FamilyTag}
+  Feedback:
+    Type: AWS::Lambda::Function
+    DependsOn: FeedbackLog
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-feedback'
+      Runtime: python3.13
+      Architectures: [arm64]
+      Handler: index.handler
+      Role: !GetAtt FeedbackRole.Arn
+      MemorySize: 128
+      Timeout: 10
+      Environment:
+        Variables:
+          BUCKET: !Ref Bucket
+      Tags:
+        - {Key: project, Value: familiar}
+        - {Key: family, Value: !Ref FamilyTag}
+      Code:
+        ZipFile: |
+          import base64
+          import json
+          import os
+          import uuid
+          from datetime import datetime, timezone
+          import boto3
+          from botocore.exceptions import ClientError
+          s3 = boto3.client('s3')
+          def reply(status, value):
+              return {'statusCode': status, 'headers': {'content-type': 'application/json',
+                  'cache-control': 'no-store', 'x-content-type-options': 'nosniff'},
+                  'body': json.dumps(value)}
+          def handler(event, context):
+              method = event.get('requestContext', {}).get('http', {}).get('method')
+              if event.get('rawPath') != '/api/feedback' or method not in {'POST', 'GET'}:
+                  return reply(404, {'error': 'not_found'})
+              if method == 'GET':
+                  query = event.get('queryStringParameters') or {}
+                  subject = query.get('subject', '')
+                  identities = set(query.get('ids', '').split(',')) - {''}
+                  if not identities and (not subject or len(subject) > 200):
+                      return reply(400, {'error': 'subject_required'})
+                  items = []
+                  for page in s3.get_paginator('list_objects_v2').paginate(Bucket=os.environ['BUCKET'], Prefix='feedback/inbox/'):
+                      for obj in page.get('Contents', []):
+                          item = json.loads(s3.get_object(Bucket=os.environ['BUCKET'], Key=obj['Key'])['Body'].read())
+                          if item.get('id') in identities or subject and any(item.get(k) == subject for k in ('subject', 'anchor', 'question', 'ask_id', 'person')):
+                              items.append({k: v for k, v in item.items() if k not in {'status', 'reply'}})
+                  return reply(200, {'items': items})
+              headers = event.get('headers', {})
+              if headers.get('content-type', '').split(';')[0].strip().lower() != 'application/json':
+                  return reply(415, {'error': 'json_required'})
+              raw = event.get('body') or ''
+              if len(raw) > 28000:
+                  return reply(413, {'error': 'too_large'})
+              try:
+                  body = base64.b64decode(raw, validate=True) if event.get('isBase64Encoded') else raw.encode('utf-8')
+                  if len(body) > 20000:
+                      return reply(413, {'error': 'too_large'})
+                  data = json.loads(body)
+                  allowed = ['anchor', 'ask_id', 'build', 'client_time', 'engine_version', 'feed', 'finding', 'id', 'kind', 'language', 'page', 'person', 'place', 'question', 'relation', 'screen', 'selection', 'step', 'subject', 'text', 'text_mode', 'viewport', 'where']
+                  if not isinstance(data, dict):
+                      raise ValueError()
+                  if not all(isinstance(data.get(k, ''), str) for k in allowed):
+                      raise ValueError()
+                  if not 1 <= len(data.get('text', '').strip()) <= 6000 or len(data['text']) > 6000:
+                      raise ValueError()
+                  if not data.get('kind', '').strip():
+                      raise ValueError()
+                  if data.get('kind') == 'add_person' and (not data.get('anchor') or data.get('relation') not in {'child', 'spouse', 'parent', 'father', 'mother', 'sibling', 'relative', 'self'}):
+                      raise ValueError()
+                  person = data.get('new_person')
+                  if person is not None and (data.get('kind') != 'add_person' or not isinstance(person, dict) or set(person) - {'surname', 'given', 'patronymic', 'maiden_surname', 'birth', 'birth_place', 'living', 'death', 'death_place', 'known_from', 'told_by', 'kin_words', 'note'}
+                          or not all(isinstance(v, str) and len(v) <= (4000 if k == 'note' else 200) for k, v in person.items())
+                          or person.get('living', '') not in {'', 'alive', 'dead', 'unknown'} or person.get('known_from', '') not in {'', 'memory', 'told', 'document'}):
+                      raise ValueError()
+                  if any(len(data.get(k, '')) > limit for k, limit in
+                         [('page', 2048), ('person', 200), ('question', 200), ('ask_id', 200), ('finding', 1000), ('client_time', 40), ('subject', 200), ('anchor', 200), ('relation', 40), ('place', 200), ('where', 1000), ('screen', 80), ('feed', 200), ('step', 40), ('text_mode', 40), ('language', 40), ('selection', 300), ('viewport', 40), ('engine_version', 80), ('build', 100)]):
+                      raise ValueError()
+                  if not data.get('page', '').startswith('/') or data['page'].startswith('//'):
+                      raise ValueError()
+                  identity = str(uuid.UUID(data['id']))
+              except (ValueError, TypeError, KeyError, UnicodeError):
+                  return reply(400, {'error': 'invalid_feedback'})
+              key = 'feedback/inbox/' + identity + '.json'
+              existing = s3.list_objects_v2(Bucket=os.environ['BUCKET'], Prefix=key, MaxKeys=1)
+              if any(obj['Key'] == key for obj in existing.get('Contents', [])):
+                  return reply(200, {'id': identity, 'duplicate': True})
+              data.update({'schema_version': 1, 'id': identity,
+                  'received_at': datetime.now(timezone.utc).isoformat()})
+              try:
+                  s3.put_object(Bucket=os.environ['BUCKET'], Key='feedback/inbox/' + identity + '.json',
+                      Body=(json.dumps(data, ensure_ascii=False) + '\n').encode('utf-8'),
+                      IfNoneMatch='*', ContentType='application/json; charset=utf-8')
+              except ClientError as exc:
+                  if exc.response['Error']['Code'] != 'PreconditionFailed':
+                      raise
+                  return reply(200, {'id': identity, 'duplicate': True})
+              return reply(201, {'id': identity})
+  FeedbackUrl:
+    Type: AWS::Lambda::Url
+    Properties:
+      TargetFunctionArn: !Ref Feedback
+      AuthType: AWS_IAM
+      InvokeMode: BUFFERED
+  Headers:
+    Type: AWS::CloudFront::ResponseHeadersPolicy
+    Properties:
+      ResponseHeadersPolicyConfig:
+        Name: !Sub '${AWS::StackName}-headers'
+        CustomHeadersConfig:
+          Items:
+            - {Header: X-Robots-Tag, Value: 'noindex, nofollow, noarchive', Override: true}
+        SecurityHeadersConfig:
+          ContentTypeOptions: {Override: true}
+          FrameOptions: {FrameOption: DENY, Override: true}
+          ReferrerPolicy: {ReferrerPolicy: no-referrer, Override: true}
+          StrictTransportSecurity: {AccessControlMaxAgeSec: 31536000, Override: true}
+  Distribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: Private Familiar narrator desk
+        DefaultRootObject: index.html
+        HttpVersion: http2and3
+        IPV6Enabled: true
+        PriceClass: PriceClass_100
+        ViewerCertificate: {CloudFrontDefaultCertificate: true}
+        Origins:
+          - Id: site
+            DomainName: !GetAtt Bucket.RegionalDomainName
+            OriginPath: /site
+            S3OriginConfig: {OriginAccessIdentity: ''}
+            OriginAccessControlId: !Ref SiteOAC
+          - Id: feedback
+            DomainName: !Select [2, !Split ['/', !GetAtt FeedbackUrl.FunctionUrl]]
+            CustomOriginConfig:
+              OriginProtocolPolicy: https-only
+              OriginSSLProtocols: [TLSv1.2]
+            OriginAccessControlId: !Ref FeedbackOAC
+        DefaultCacheBehavior:
+          TargetOriginId: site
+          ViewerProtocolPolicy: https-only
+          AllowedMethods: [GET, HEAD]
+          Compress: true
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+          ResponseHeadersPolicyId: !Ref Headers
+          FunctionAssociations:
+            - {EventType: viewer-request, FunctionARN: !GetAtt Login.FunctionARN}
+        CacheBehaviors:
+          - PathPattern: /api/*
+            TargetOriginId: feedback
+            ViewerProtocolPolicy: https-only
+            AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+            OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
+            ResponseHeadersPolicyId: !Ref Headers
+            FunctionAssociations:
+              - {EventType: viewer-request, FunctionARN: !GetAtt Login.FunctionARN}
+      Tags:
+        - {Key: project, Value: familiar}
+        - {Key: family, Value: !Ref FamilyTag}
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref Bucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Deny
+            Principal: '*'
+            Action: s3:*
+            Resource: [!GetAtt Bucket.Arn, !Sub '${Bucket.Arn}/*']
+            Condition: {Bool: {'aws:SecureTransport': 'false'}}
+          - Effect: Allow
+            Principal: {Service: cloudfront.amazonaws.com}
+            Action: s3:GetObject
+            Resource: !Sub '${Bucket.Arn}/site/*'
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub 'arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${Distribution}'
+  AllowUrl:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref Feedback
+      Action: lambda:InvokeFunctionUrl
+      Principal: cloudfront.amazonaws.com
+      FunctionUrlAuthType: AWS_IAM
+      SourceArn: !Sub 'arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${Distribution}'
+  AllowInvoke:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref Feedback
+      Action: lambda:InvokeFunction
+      Principal: cloudfront.amazonaws.com
+      InvokedViaFunctionUrl: true
+      SourceArn: !Sub 'arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${Distribution}'
+Outputs:
+  Bucket: {Value: !Ref Bucket}
+  Distribution: {Value: !Ref Distribution}
+  Url: {Value: !Sub 'https://${Distribution.DomainName}'}
+  FeedbackUrl: {Value: !GetAtt FeedbackUrl.FunctionUrl}

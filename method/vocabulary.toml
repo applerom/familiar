@@ -1,0 +1,103 @@
+# START_MODULE_CONTRACT: MOD-METHOD-VOCABULARY
+# PURPOSE: Supply canonical method enums and numeric domains to validators and delivered guidance.
+# PRD_REF: docs/PRD.md#FORMS
+# INVARIANTS:
+# - method delivery and form validators read this same schema [review: cold reviewer]
+# CHANGES_WITH:
+# - MOD-INSTANCE-RESEARCH-FORMS
+# :END_MODULE_CONTRACT
+[enums]
+review_classes = ['trust', 'craft', 'taste', 'check']
+review_verdicts = ['correct', 'contested', 'error']
+review_readers = ['parent-and-child', 'teenager', 'editor']
+review_weights = ['trust', 'breaks-story', 'stumble', 'taste']
+case_states = ['open', 'waiting-for-family', 'bridged', 'review', 'closed', 'waiting']
+output_states = ['clean', 'preview', 'stale', 'outdated', 'withdrawn', 'host release']
+
+[doubt]
+visible = 'literal text'
+uncertain = '[?]'
+missing = '[...]'
+supplied = '[supplied: text]'
+
+[numeric.probability]
+keys = ['weight', 'unknown_weight', 'probability']
+min = 0
+max = 1
+
+[numeric.interest]
+keys = ['level']
+min = 0
+max = 1
+
+[numeric.count]
+recursive = true
+keys = ['read', 'hits', 'total', 'returned', 'indexed', 'lists_indexed', 'lists_total', 'limit', 'spent', 'count', 'priority', 'number', 'after', 'record', 'figure', 'part', 'pick', 'at', 'reads', 'line', 'lines', 'line_start', 'line_end', 'frame', 'roundedTo', 'people', 'version']
+min = 0
+max = 9007199254740991
+
+[numeric.index_base]
+keys = ['index_base']
+min = 0
+max = 1
+integer = true
+
+[numeric.schema]
+keys = ['schema', 'schema_version']
+min = 1
+max = 1
+integer = true
+
+[numeric.year]
+keys = ['year', 'years', 'family_period', 'birth_year', 'eventYear', 'from', 'to', 'interval']
+min = -9999
+max = 9999
+integer = true
+
+[numeric.coordinates]
+keys = ['map', 'boxes', 'x', 'y', 'w', 'h', 'cut']
+min = -1000000000
+max = 1000000000
+
+[numeric.angle]
+keys = ['yaw']
+min = -360
+max = 360
+
+[numeric.pitch]
+keys = ['pitch']
+min = -90
+max = 90
+
+[numeric.age]
+keys = ['age']
+min = 0
+max = 130
+
+[numeric.literal]
+keys = ['fields']
+min = -9007199254740991
+max = 9007199254740991
+
+# Geographic pairs use latitude first, longitude second (decimal degrees).
+[numeric.latitude]
+keys = ['lat']
+min = -90
+max = 90
+required_numeric = true
+
+[numeric.longitude]
+keys = ['lon']
+min = -180
+max = 180
+required_numeric = true
+
+[numeric.geo_pair]
+keys = ['home_coords']
+items = ['latitude', 'longitude']
+required_numeric = true
+
+[numeric.distance]
+keys = ['km_from_home']
+min = 0
+required_numeric = true

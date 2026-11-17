@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-label="Рисунок-заглушка макета: степь, дом, колодец">
+<rect width="1200" height="800" fill="#e9dcc0"/>
+<rect y="0" width="1200" height="430" fill="#d9cfb6"/>
+<circle cx="930" cy="170" r="54" fill="#efe3c5"/>
+<path d="M0 430 Q300 400 600 425 T1200 415 V800 H0Z" fill="#c7b48a"/>
+<path d="M0 520 Q400 490 800 520 T1200 510 V800 H0Z" fill="#b9a476"/>
+<path d="M0 640 Q500 610 1200 650 V800 H0Z" fill="#a8935f"/>
+<g fill="#6f5b3c"><rect x="250" y="360" width="150" height="90"/><path d="M235 362 L325 300 L415 362Z" fill="#5b4a31"/><rect x="300" y="395" width="28" height="55" fill="#e9dcc0"/></g>
+<g stroke="#5b4a31" stroke-width="7" fill="none" stroke-linecap="round"><path d="M520 450 V330"/><path d="M470 300 L640 370"/><path d="M640 370 V420"/></g>
+<rect x="500" y="440" width="44" height="26" fill="#6f5b3c"/>
+<text x="1176" y="776" text-anchor="end" font-family="Manrope,sans-serif" font-size="22" fill="#7b6a4a">рисунок-заглушка макета</text>
+</svg>

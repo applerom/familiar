@@ -1,0 +1,93 @@
+<Why_Graph_Shard project="Familiar" CAPABILITY="CAP-REGION">
+  <!--
+    One capability: the region pack contract and the packs that follow it.
+    A pack is data and text for agents, not code; its files carry contracts in
+    TOML comments or a Markdown comment. Guarantees that hold for every file of
+    every pack sit on FEAT-REGION; a pack file keeps only its own promise.
+    Edges to other capabilities live in docs/why-graph.xml.
+  -->
+
+  <!-- Table intake wording, sex vocabulary and conservative patronymic mappings are pack-owned. -->
+  <FEATURE_REGION ID="FEAT-REGION" STATE="STARTED">
+    <INTENT>A detachable pack of what is true of a place for any family from there: sources, custody and closure of records, calendars, borders and languages of records, answers to the skills' numbered questions; nothing of any one family.</INTENT>
+    <PRD_REF>docs/PRD.md#LAYERS</PRD_REF>
+    <PRD_REF>docs/PRD.md#ARCH</PRD_REF>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-REGION-BP-PACK"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-REGION-BP-SOURCES"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-REGION-BP-CUSTODY"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-REGION-BP-CHRONOLOGY"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-REGION-BP-ANSWERS"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-REGION-BP-DATA-CONTRACT"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-REGION-BP-VARIANTS"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-REGION-BP-RECIPES"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-REGION-BP-RECIPE-GENETEKA"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-REGION-BP-RECIPE-SZUKAJWARCHIWACH"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-REGION-BP-RECIPE-PAMYAT-NARODA"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-REGION-BP-RECIPE-OBD-MEMORIAL"/>
+    <INVARIANT REVIEW="pack keeper">a pack holds no person, family, case or family search: every capitalised name is declared by kind in pack.toml, and long identifiers, file-level archive references, paths and full names with patronymics are refused</INVARIANT>
+    <INVARIANT REVIEW="pack keeper">every record and every answer line carries a status of verified, reported or unverified, with its basis, and a verified one with the date it was seen</INVARIANT>
+    <INVARIANT REVIEW="pack keeper">every declared proper name is used by the pack and none has the shape of a person's name</INVARIANT>
+    <INVARIANT REVIEW="pack keeper">a search refusal or unfinished page cannot establish an empty result</INVARIANT>
+  </FEATURE_REGION>
+
+  <FEATURE_LANGUAGE_PACK ID="FEAT-LANGUAGE-PACK" STATE="STARTED">
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-READER-KINSHIP"/>
+    <INVARIANT REVIEW="pack keeper">Kinship tables define native words, explanations and historical markers; absent terms retain an honest descriptive fallback.</INVARIANT>
+    <PRD_REF>docs/PRD.md#KINSHIP-WORDS</PRD_REF>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-REGION-DEMO-ENGLISH"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-LANGUAGE-RU"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-LANGUAGE-PL"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-LANGUAGE-PL-ANSWERS"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-LANGUAGE-LA"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-LANGUAGE-LA-ANSWERS"/>
+    <INTENT>The second kind of pack: host templates, address and date forms, surnames, transliteration and advisory word lists scoped to authored text in that language, never internal metadata or literal document readings.</INTENT>
+    <PRD_REF>docs/PRD.md#PLAN</PRD_REF>
+  </FEATURE_LANGUAGE_PACK>
+
+  <MODULE_REGION_CONTRACT ID="MOD-REGION-CONTRACT" FILE="regions/CONTRACT.md" STATE="IMPLEMENTED"/>
+  <MODULE_READER_KINSHIP ID="MOD-READER-KINSHIP" FILE="reader-src/app/tree/kinship.ts" STATE="IMPLEMENTED"/>
+
+  <MODULE_REGION_BP_PACK ID="MOD-REGION-BP-PACK" FILE="regions/belarus-podlasie/pack.toml" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-REGION-CONTRACT"/>
+  </MODULE_REGION_BP_PACK>
+
+  <MODULE_REGION_BP_SOURCES ID="MOD-REGION-BP-SOURCES" FILE="regions/belarus-podlasie/sources.toml" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-REGION-CONTRACT"/>
+  </MODULE_REGION_BP_SOURCES>
+
+  <MODULE_REGION_BP_CUSTODY ID="MOD-REGION-BP-CUSTODY" FILE="regions/belarus-podlasie/custody.toml" STATE="IMPLEMENTED">
+    <REL TYPE="READS" TARGET="MOD-REGION-BP-SOURCES"/>
+  </MODULE_REGION_BP_CUSTODY>
+
+  <MODULE_REGION_BP_CHRONOLOGY ID="MOD-REGION-BP-CHRONOLOGY" FILE="regions/belarus-podlasie/chronology.toml" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-REGION-CONTRACT"/>
+  </MODULE_REGION_BP_CHRONOLOGY>
+
+  <MODULE_REGION_BP_ANSWERS ID="MOD-REGION-BP-ANSWERS" FILE="regions/belarus-podlasie/answers.md" STATE="IMPLEMENTED">
+    <REL TYPE="READS" TARGET="MOD-REGION-BP-SOURCES"/>
+    <REL TYPE="READS" TARGET="MOD-REGION-BP-CUSTODY"/>
+  </MODULE_REGION_BP_ANSWERS>
+  <MODULE_REGION_DEMO_ENGLISH ID="MOD-REGION-DEMO-ENGLISH" FILE="regions/demo-english/pack.toml" STATE="IMPLEMENTED"/>
+  <MODULE_REGION_BP_DATA_CONTRACT ID="MOD-REGION-BP-DATA-CONTRACT" FILE="regions/belarus-podlasie/data-contract.md" STATE="IMPLEMENTED"/>
+  <MODULE_REGION_BP_VARIANTS ID="MOD-REGION-BP-VARIANTS" FILE="regions/belarus-podlasie/variants.toml" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-REGION-BP-DATA-CONTRACT"/>
+  </MODULE_REGION_BP_VARIANTS>
+  <MODULE_REGION_BP_RECIPES ID="MOD-REGION-BP-RECIPES" FILE="regions/belarus-podlasie/recipes/index.toml" STATE="IMPLEMENTED">
+    <REL TYPE="READS" TARGET="MOD-REGION-BP-SOURCES"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-REGION-BP-DATA-CONTRACT"/>
+  </MODULE_REGION_BP_RECIPES>
+  <MODULE_REGION_BP_RECIPE_GENETEKA ID="MOD-REGION-BP-RECIPE-GENETEKA" FILE="regions/belarus-podlasie/recipes/geneteka.toml" STATE="IMPLEMENTED"/>
+  <MODULE_REGION_BP_RECIPE_SZUKAJWARCHIWACH ID="MOD-REGION-BP-RECIPE-SZUKAJWARCHIWACH" FILE="regions/belarus-podlasie/recipes/szukajwarchiwach.toml" STATE="IMPLEMENTED"/>
+  <MODULE_REGION_BP_RECIPE_PAMYAT_NARODA ID="MOD-REGION-BP-RECIPE-PAMYAT-NARODA" FILE="regions/belarus-podlasie/recipes/pamyat-naroda.toml" STATE="IMPLEMENTED"/>
+  <MODULE_REGION_BP_RECIPE_OBD_MEMORIAL ID="MOD-REGION-BP-RECIPE-OBD-MEMORIAL" FILE="regions/belarus-podlasie/recipes/obd-memorial.toml" STATE="IMPLEMENTED"/>
+  <MODULE_LANGUAGE_RU ID="MOD-LANGUAGE-RU" FILE="regions/ru/pack.toml" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-REGION-CONTRACT"/>
+  </MODULE_LANGUAGE_RU>
+  <MODULE_LANGUAGE_PL ID="MOD-LANGUAGE-PL" FILE="regions/pl/pack.toml" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-REGION-CONTRACT"/>
+  </MODULE_LANGUAGE_PL>
+  <MODULE_LANGUAGE_PL_ANSWERS ID="MOD-LANGUAGE-PL-ANSWERS" FILE="regions/pl/answers.md" STATE="IMPLEMENTED"/>
+  <MODULE_LANGUAGE_LA ID="MOD-LANGUAGE-LA" FILE="regions/la/pack.toml" STATE="IMPLEMENTED"/>
+  <MODULE_LANGUAGE_LA_ANSWERS ID="MOD-LANGUAGE-LA-ANSWERS" FILE="regions/la/answers.md" STATE="IMPLEMENTED"/>
+  <MODULE_COMMAND ID="MOD-PACK-CALENDAR" FILE="src/familiar/instance/calendar.py" STATE="IMPLEMENTED"/>
+</Why_Graph_Shard>

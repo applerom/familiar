@@ -1,0 +1,185 @@
+# START_MODULE_CONTRACT: MOD-REGION-BP-CHRONOLOGY
+# PURPOSE: Give the reader of a record from this region the calendar, the border and the language of records that applied in its year, so that a date is not shifted by thirteen days and a place is not put in the wrong state.
+# PRD_REF: docs/PRD.md#LAYERS
+# INVARIANTS:
+# - every record language names BCP-47 tags and a script, so a language pack can be found for it [review: pack keeper]
+# - a date shift or a border change is told with its years, never as "at that time" [review: engine lead]
+# CHANGES_WITH:
+# - regions/CONTRACT.md (record shape)
+# - MOD-ROLES-SECOND-LOOK (script notes for a period)
+# :END_MODULE_CONTRACT
+
+# ---------- calendars ----------
+
+[[calendar]]
+id = "julian-offset"
+countries = ["BY", "LT"]
+years = [1795, 1918]
+text = "The Julian date runs behind the Gregorian date by 11 days from 1795 to 1800-02-28 (Julian), by 12 days from 1800-03-01 to 1900-02-28 (Julian; 1900-02-29 exists in the Julian calendar), and by 13 days from 1900-03-01 (Julian) = 1900-03-14 (Gregorian) to 1918-01-31 (Julian) = 1918-02-13 (Gregorian). To turn a Julian date into a Gregorian one add 11, 12 or 13 days by these limits; the note \"12 days in the 19th century\" is right only from 1800-03-01."
+status = "verified"
+checked = 2026-11-12
+basis = "Computed on 2026-11-12 from the rules of the two calendars (Julian: a leap year every fourth year; Gregorian: no leap year in 1700, 1800, 1900), by day numbers; the catalogue of the Soviet decrees lists the decree on the change under \"24 января (6 февраля)\" 1918, which is the same 13-day gap. This verifies the arithmetic, not which calendar a given register used."
+
+[[calendar]]
+id = "julian-empire"
+countries = ["BY", "LT"]
+years = [1795, 1918]
+text = "Civil and Orthodox records of the Russian Empire use the Julian calendar. Catholic registers of the same lands often give both dates or the Gregorian one."
+status = "unverified"
+basis = "General knowledge of the agent; no primary text found on 2026-11-12. Check the double dating on a page of the register before shifting a date."
+
+[[calendar]]
+id = "soviet-switch-1918"
+countries = ["BY"]
+years = [1918, 1918]
+text = "Soviet power switched to the Gregorian calendar in 1918: 1918-01-31 was followed by 1918-02-14, and until 1918-07-01 the old date was written in brackets after the new one."
+status = "reported"
+checked = 2026-11-12
+basis = "The catalogue of documents lists the decree as \"24 января (6 февраля)\", published in the collection of laws of 1918, no. 19, item 289 (another entry of the same catalogue gives 1918-01-26); the operative text was not opened (the library page gave a security check, the transcription site no page). The jump from 1918-01-31 to 1918-02-14 and the bracket rule rest on several secondary pages."
+
+[[calendar]]
+id = "german-occupation-calendar"
+countries = ["BY", "LT"]
+years = [1915, 1918]
+text = "Lands under German occupation in 1915-1918 used the Gregorian calendar earlier."
+status = "unverified"
+basis = "General knowledge of the agent; no primary text found on 2026-11-12."
+
+[[calendar]]
+id = "gregorian-poland"
+countries = ["PL"]
+years = [1582, 2026]
+text = "Gregorian throughout; a register kept in Russian in the Kingdom of Poland in 1868-1918 may still give a double date."
+status = "unverified"
+basis = "General knowledge of the agent; no primary text found on 2026-11-12."
+
+# ---------- borders and administration ----------
+
+[[border]]
+id = "partitions"
+countries = ["BY", "PL", "LT"]
+years = [1772, 1795]
+text = "The partitions put the lands of today's Belarus into the Russian Empire; the north-west governorates (Grodno, Vilna, Minsk, Mogilev, Vitebsk) replace the old voivodeships and powiats."
+status = "unverified"
+basis = "General knowledge of the agent; no primary text (the acts of partition or the decrees forming the governorates) opened on 2026-11-12."
+
+[[border]]
+id = "interwar"
+countries = ["BY", "PL"]
+years = [1921, 1939]
+text = "The treaty of peace signed in Riga on 1921-03-18 (official gazette 1921, no. 49, item 300), article 2, recognises the independence of Ukraine and Belarus and fixes the eastern border of Poland along the river Daugava, then along the borders of the former Vilna and Vitebsk governorates and further south; the west of today's Belarus lay on the Polish side of the line until 1939, the east on the Soviet side."
+status = "verified"
+checked = 2026-11-12
+basis = "Text of the treaty read from the official scan (preamble and article 2, the description of the northern part of the line and the recognition of Belarus). The southern part of the line and the map were not read."
+
+[[border]]
+id = "interwar-voivodeships"
+countries = ["BY", "PL"]
+years = [1921, 1939]
+text = "The Polish side was administered as the Białystok, Nowogródek, Polesie and Wilno voivodeships; the Soviet side formed the BSSR with Minsk."
+status = "unverified"
+basis = "General knowledge of the agent; the laws forming the voivodeships were not opened (the treaty of Riga does not name them)."
+
+[[border]]
+id = "border-1939"
+countries = ["BY", "PL"]
+years = [1939, 1941]
+text = "The law of the USSR of 1939-11-02 includes Western Belarus in the USSR (article 1) and proposes to the Supreme Soviet of the BSSR to accept it into the BSSR (article 3). The law does not name Białystok."
+status = "verified"
+checked = 2026-11-12
+basis = "Text of the law read on a transcription of the collection of USSR laws of 1938-1956 (the printed collection, pages 21-22); the original gazette of the Supreme Soviet and the act of the BSSR itself were not read."
+
+[[border]]
+id = "border-1945"
+countries = ["BY", "PL", "LT"]
+years = [1945, 2026]
+text = "The agreement of 1945-08-16 between Poland and the USSR on the state border (printed in the official gazette 1947, no. 35, item 167) sets the line along the Curzon line with deviations in favour of Poland of 5 to 8 kilometres, and gives Poland the area of Niemirów, Hajnówka, Białowieża and Jałówka; article 2 leaves Grodno on the Soviet side. The text does not name Białystok; its place on the Polish side follows from the line. The ratification documents were exchanged in 1946 (government declaration of 1946-07-02). Later adjustments of the line were not checked."
+status = "verified"
+checked = 2026-11-12
+basis = "Text of the agreement read from the official file of the gazette (articles 1 and 2 of the Polish text; the map and the demarcation articles not read)."
+
+[[border]]
+id = "occupation-1939-1946"
+countries = ["BY", "PL", "LT"]
+years = [1939, 1946]
+text = "The Red Army entered in 1939-09. In 1939-1941 the Białystok region was part of the BSSR; German occupation 1941-1944, the Białystok district under a separate German administration. Population exchanges follow in 1944-1946."
+status = "unverified"
+basis = "General knowledge of the agent; a place's district in a given year is taken from a record or a map, not from this summary. No primary text opened on 2026-11-12."
+
+# ---------- languages of records ----------
+
+[[record_language]]
+id = "commonwealth"
+countries = ["PL", "BY", "LT"]
+years = [1600, 1830]
+languages = ["la", "pl"]
+script = "Latn"
+text = "Catholic registers in Latin, later often Polish; Uniate and Orthodox books may be in Polish or Church Slavonic. Given names take their Latin form in Latin entries."
+status = "unverified"
+basis = "General knowledge of the agent."
+
+[[record_language]]
+id = "empire"
+countries = ["BY", "LT", "PL"]
+years = [1830, 1919]
+languages = ["pl", "ru", "la"]
+script = "Latn, Cyrl"
+text = "Russian replaces Polish in the registers and administration of the north-west governorates in the decades after the uprisings; second copies of a Catholic deanery near Grodno are in Russian from at least 1865. Old orthography until 1918."
+status = "reported"
+basis = "Russian second copies from 1865 seen in a diocesan archive inventory; the start year of the switch in each parish not checked. On 2026-11-12 the diocesan archive's page confirmed that its oldest registers are of 1865 and that a reader must read Russian."
+
+[[record_language]]
+id = "interwar-west"
+countries = ["BY", "PL"]
+years = [1919, 1939]
+languages = ["pl"]
+script = "Latn"
+text = "Polish in registers and administration of the west; Belarusian names written in Polish spelling."
+status = "unverified"
+basis = "General knowledge of the agent."
+
+[[record_language]]
+id = "soviet"
+countries = ["BY"]
+years = [1919, 1991]
+languages = ["ru", "be"]
+script = "Cyrl"
+text = "Russian dominates civil records and military files; Belarusian appears in some forms and periods. A Polish name is written by ear in Cyrillic and comes back to Latin letters in many ways."
+status = "unverified"
+basis = "General knowledge of the agent."
+
+[[border]]
+id = "church-suppressions-1832"
+countries = ["BY", "PL"]
+years = [1832, 1833]
+text = "The Catholic network changed after 1832: the list reports suppressions at Świsłocz, Klimówka, Łopienica and Koniuchy in 1832; in Grodno the Dominican monastery was suppressed in 1833 but its church continued as a school church until 1863. Suppression of a monastery is not necessarily the end of parish registers."
+status = "reported"
+checked = 2026-11-13
+basis = "Forum transcription of Biskupstwo wileńskie, Wilno 1912, Grodno and Wołkowysk deaneries; source: wilno-churches-1910. Receiving parishes not established."
+
+[[border]]
+id = "church-suppressions-1863"
+countries = ["BY", "PL"]
+years = [1863, 1869]
+text = "Closures altered the Catholic network: Grodno Dominican church 1863; Wielka Brzostowica 1864, converted to an Orthodox church; Zelwa 1866, handed to the Orthodox; Łysków and Łukonica 1866; Dereczyn 1867-1869. The same list places Mała Brzostowica as a later chapel in Krynki parish and the Łukonica cemetery chapel under Słonim. These are attachment leads, not proof of individual sacraments."
+status = "reported"
+checked = 2026-11-13
+basis = "Forum transcription, Grodno, Wołkowysk and Słonim deaneries; source: wilno-churches-1910. Index endpoints must not be substituted for closure dates."
+
+[[border]]
+id = "church-transfer-1891"
+countries = ["BY", "PL"]
+years = [1891, 1907]
+text = "Międzyrzecz Catholic church was suppressed in 1891 and taken for an Orthodox church. A regional place report dates resumed Catholic worship to 1906-1907; the forum list mentions a new church under construction in 1912. Reopening, return of a building and construction are distinct events."
+status = "reported"
+checked = 2026-11-13
+basis = "Closure and transfer: source wilno-churches-1910. Resumed worship: regional place synthesis reviewed 2026-11-13, underlying publications not rechecked; reported, not a verified return date."
+
+[[border]]
+id = "temporary-worship-1905"
+countries = ["BY", "PL"]
+years = [1905, 1912]
+text = "Zelwa parishioners built a temporary shed for worship in 1905; Łysków held services in a shed from 1906, with new churches built later. Wielka Brzostowica had a new church in 1910. A post-1905 Catholic record need not belong to the old building."
+status = "reported"
+checked = 2026-11-13
+basis = "Forum transcription, Wołkowysk and Grodno deaneries; source: wilno-churches-1910. These local dates do not demonstrate that every closed church was returned after 1905."

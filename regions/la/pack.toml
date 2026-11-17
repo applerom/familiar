@@ -1,0 +1,24 @@
+# START_MODULE_CONTRACT: MOD-LANGUAGE-LA
+# PURPOSE: Offer explicitly selected Latin register-reading context without pretending to supply Latin host templates.
+# PRD_REF: docs/PRD.md#REGION-PACK
+# INVARIANTS:
+# - Latin formulas are advisory and supply no automatic kinship inference [review: pack keeper]
+# CHANGES_WITH:
+# - MOD-REGION-CONTRACT
+# :END_MODULE_CONTRACT
+schema_version = 1
+[pack]
+id = "la"
+kind = "language"
+title = "Latin register-reading cues"
+version = "0.1.0"
+updated = 2026-11-14
+countries = []
+territory = "Latin record language, without a territory"
+years = [0, 2026]
+record_languages = ["la"]
+files = { answers = "answers.md" }
+answers = ["RP-66"]
+[[gap]]
+what = "No Latin host templates, full grammar or abbreviation dictionary"
+next = "Keeper: establish the document's local usage from parallel complete entries."

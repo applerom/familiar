@@ -1,0 +1,70 @@
+{
+  "_about": "Invented for the Familiar demo: this paper does not exist and no parish issued it. It shows the shape of a home paper read literally.",
+  "id": "doc-helena-baptism",
+  "fictional": true,
+  "kind": "home-paper",
+  "title": "Certificate of baptism of Helena, 1925",
+  "source": {
+    "kind": "home",
+    "holder": "host",
+    "received": "2026-11-12",
+    "description": "One printed sheet of the parish of the Holy Ghost, Quarry Bend, filled in by hand in ink; folded in four, torn along the vertical fold.",
+    "image": null,
+    "invented": "Invented for the demo. There is no scan: a demo paper is shown only as its reading."
+  },
+  "language": [
+    "en",
+    "pt"
+  ],
+  "fields": {
+    "Printed heading": "Church of the Holy Ghost, Quarry Bend - Certificate of Baptism",
+    "Name of child": "Helena",
+    "Date of birth": "April 2 1925",
+    "Date of baptism": "April 19 1925",
+    "Father": "Amaro Ferrolho, nat. de Lajedo do Vento",
+    "Mother": "Rosa Calhau, nat. de Ponta d[...]",
+    "Sponsors": "Manuel Tavares e Concei[?]ão Tavares",
+    "Officiating": "Rev. A. Sardinha",
+    "Issued": "May 1 1925"
+  },
+  "reading": "Church of the Holy Ghost, Quarry Bend - Certificate of Baptism. Helena, born April 2 1925, baptized April 19 1925. Father: Amaro Ferrolho, nat. de Lajedo do Vento. Mother: Rosa Calhau, nat. de Ponta d[...]. Sponsors: Manuel Tavares e Concei[?]ão Tavares. Rev. A. Sardinha. May 1 1925.",
+  "doubt": [
+    {
+      "field": "Mother",
+      "text": "After 'Ponta d' the paper is torn along the fold; about six or seven letters are lost. Nothing after the tear is read."
+    },
+    {
+      "field": "Sponsors",
+      "text": "The cedilla in 'Conceição' is a blot; the name is clear from the rest of the word."
+    }
+  ],
+  "people": {
+    "Helena": "p-helena",
+    "Amaro Ferrolho": "p-amaro",
+    "Rosa Calhau": "p-rosa",
+    "Manuel Tavares": "p-manuel"
+  },
+  "privacy": "dead",
+  "subjects": [
+    {
+      "person": "p-helena",
+      "role": "named",
+      "written": "Helena"
+    },
+    {
+      "person": "p-amaro",
+      "role": "named",
+      "written": "Amaro Ferrolho"
+    },
+    {
+      "person": "p-rosa",
+      "role": "named",
+      "written": "Rosa Calhau"
+    },
+    {
+      "person": "p-manuel",
+      "role": "named",
+      "written": "Manuel Tavares"
+    }
+  ]
+}

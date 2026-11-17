@@ -1,0 +1,12 @@
+{
+  "pipeline": {
+    "reading": {
+      "amaro-1921": "2220a126d6f8ca687e904da716666e8ed839344f55099161e68d2c1c735a15b6",
+      "rosa-1925": "eb666cb47f2c9f8dae8a982d928511b6d1c29c2a5dd750277429c583c44edca9"
+    }
+  },
+  "build_fingerprints": {
+    "amaro-1921": "2220a126d6f8ca687e904da716666e8ed839344f55099161e68d2c1c735a15b6",
+    "rosa-1925": "eb666cb47f2c9f8dae8a982d928511b6d1c29c2a5dd750277429c583c44edca9"
+  }
+}

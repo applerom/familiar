@@ -1,0 +1,845 @@
+{
+  "people": [
+    {
+      "id": "irina-2026-11-12-emma",
+      "sex": "f",
+      "living": false,
+      "life_origin": "memory",
+      "names": [
+        {
+          "given": "Эмма",
+          "patronymic": "Богдановна",
+          "surname": "Шмидт",
+          "type": "birth",
+          "provenance": [
+            "ir-emma-life"
+          ],
+          "display": "Эмма Богдановна Шмидт"
+        },
+        {
+          "given": "Эмма",
+          "patronymic": "Богдановна",
+          "surname": "Корнеева",
+          "type": "married",
+          "provenance": [
+            "ir-emma-life"
+          ],
+          "display": "Эмма Богдановна Корнеева"
+        },
+        {
+          "given": "Эмма",
+          "patronymic": "Богдановна",
+          "surname": "Корнеева",
+          "type": "as-written",
+          "provenance": [
+            "svid-lyudmila-1957"
+          ],
+          "display": "Эмма Богдановна Корнеева"
+        },
+        {
+          "given": "Эмма",
+          "patronymic": "Готлибовна",
+          "surname": "Шмидт",
+          "type": "as-written",
+          "provenance": [
+            "spravka-emma-1994"
+          ],
+          "display": "Эмма Готлибовна Шмидт"
+        }
+      ],
+      "events": [
+        {
+          "type": "birth",
+          "date": "1931",
+          "place": "немецкое село на Волге",
+          "provenance": [
+            "ir-emma-life"
+          ],
+          "tag": "BIRT"
+        },
+        {
+          "type": "death",
+          "date": "2009",
+          "place": "Тольятти",
+          "provenance": [
+            "ir-emma-life"
+          ],
+          "tag": "DEAT"
+        },
+        {
+          "type": "event",
+          "value": "выселение в Казахстан",
+          "date": "1941-09",
+          "place": "Павлодарская область",
+          "provenance": [
+            "ir-deport"
+          ],
+          "tag": "EVENT"
+        },
+        {
+          "type": "birth",
+          "date": "1931",
+          "place": "с. Гнаденфлюр Палласовского кантона АССР Немцев Поволжья",
+          "provenance": [
+            "spravka-emma-1994"
+          ],
+          "tag": "BIRT"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "id": "irina-2026-11-12-gottlieb",
+      "sex": "m",
+      "living": true,
+      "life_origin": "memory",
+      "names": [
+        {
+          "given": "Готлиб",
+          "surname": "Шмидт",
+          "type": "birth",
+          "provenance": [
+            "ir-gottlieb"
+          ],
+          "display": "Готлиб Шмидт"
+        },
+        {
+          "given": "Богдан",
+          "surname": "Шмидт",
+          "type": "as-written",
+          "provenance": [
+            "ir-gottlieb"
+          ],
+          "display": "Богдан Шмидт"
+        },
+        {
+          "given": "Готлиб",
+          "patronymic": "Иванович",
+          "surname": "Шмидт",
+          "type": "as-written",
+          "provenance": [
+            "spravka-emma-1994"
+          ],
+          "display": "Готлиб Иванович Шмидт"
+        }
+      ],
+      "events": [
+        {
+          "type": "event",
+          "value": "трудармия, не вернулся",
+          "date": "after 1941",
+          "provenance": [
+            "ir-gottlieb"
+          ],
+          "tag": "EVENT"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "id": "irina-2026-11-12-maria",
+      "sex": "f",
+      "living": false,
+      "life_origin": "memory",
+      "names": [
+        {
+          "given": "Мария",
+          "surname": "Шмидт",
+          "type": "married",
+          "provenance": [
+            "ir-maria"
+          ],
+          "display": "Мария Шмидт"
+        },
+        {
+          "given": "Мария",
+          "surname": "Келлер",
+          "type": "birth",
+          "provenance": [
+            "ir-maria"
+          ],
+          "display": "Мария Келлер"
+        },
+        {
+          "given": "Мария",
+          "patronymic": "Генриховна",
+          "surname": "Шмидт",
+          "type": "as-written",
+          "provenance": [
+            "spravka-emma-1994"
+          ],
+          "display": "Мария Генриховна Шмидт"
+        }
+      ],
+      "events": [
+        {
+          "type": "death",
+          "date": "about 1960",
+          "place": "Казахстан",
+          "provenance": [
+            "ir-maria"
+          ],
+          "tag": "DEAT"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "id": "irina-2026-11-12-friedrich",
+      "sex": "m",
+      "living": true,
+      "life_origin": "memory",
+      "names": [
+        {
+          "given": "Фридрих",
+          "surname": "Шмидт",
+          "type": "birth",
+          "provenance": [
+            "ir-friedrich"
+          ],
+          "display": "Фридрих Шмидт"
+        },
+        {
+          "given": "Федя",
+          "surname": "Шмидт",
+          "type": "as-written",
+          "provenance": [
+            "ir-friedrich"
+          ],
+          "display": "Федя Шмидт"
+        },
+        {
+          "given": "Фр[...]",
+          "surname": "Шмидт",
+          "type": "as-written",
+          "provenance": [
+            "spravka-emma-1994"
+          ],
+          "display": "Фр[...] Шмидт"
+        }
+      ],
+      "events": [
+        {
+          "type": "event",
+          "value": "отдан в детский дом",
+          "date": "about 1942",
+          "provenance": [
+            "ir-friedrich"
+          ],
+          "tag": "EVENT"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "id": "irina-2026-11-12-andrey",
+      "sex": "m",
+      "living": false,
+      "life_origin": "memory",
+      "names": [
+        {
+          "given": "Андрей",
+          "patronymic": "Петрович",
+          "surname": "Корнеев",
+          "type": "birth",
+          "provenance": [
+            "ir-andrey"
+          ],
+          "display": "Андрей Петрович Корнеев"
+        }
+      ],
+      "events": [
+        {
+          "type": "death",
+          "date": "1994",
+          "place": "Тольятти",
+          "provenance": [
+            "ir-andrey"
+          ],
+          "tag": "DEAT"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "id": "irina-2026-11-12-lyudmila",
+      "sex": "f",
+      "living": true,
+      "life_origin": "memory",
+      "names": [
+        {
+          "given": "Людмила",
+          "patronymic": "Андреевна",
+          "surname": "Корнеева",
+          "type": "birth",
+          "provenance": [
+            "ir-mama"
+          ],
+          "display": "Людмила Андреевна Корнеева"
+        },
+        {
+          "given": "Людмила",
+          "patronymic": "Андреевна",
+          "surname": "Соколова",
+          "type": "married",
+          "provenance": [
+            "ir-mama"
+          ],
+          "display": "Людмила Андреевна Соколова"
+        }
+      ],
+      "events": [
+        {
+          "type": "birth",
+          "date": "1957",
+          "place": "Павлодар",
+          "provenance": [
+            "ir-mama"
+          ],
+          "tag": "BIRT"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "id": "irina-2026-11-12-nina",
+      "sex": "f",
+      "living": true,
+      "life_origin": "memory",
+      "names": [
+        {
+          "given": "Нина",
+          "patronymic": "Андреевна",
+          "surname": "Корнеева",
+          "type": "birth",
+          "provenance": [
+            "ir-nina"
+          ],
+          "display": "Нина Андреевна Корнеева"
+        },
+        {
+          "given": "Нина",
+          "surname": "Вагнер",
+          "type": "married",
+          "provenance": [
+            "ir-nina"
+          ],
+          "display": "Нина Вагнер"
+        }
+      ],
+      "events": [],
+      "notes": []
+    },
+    {
+      "id": "export-wagner-2026-11-I1",
+      "sex": "f",
+      "living": false,
+      "life_origin": "gedcom",
+      "names": [
+        {
+          "given": "Emma",
+          "surname": "Schmidt",
+          "type": "as-written",
+          "source_text": [],
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "display": "Emma Schmidt",
+          "status": "hypothesis"
+        },
+        {
+          "given": "Emma",
+          "surname": "Korneeva",
+          "type": "married",
+          "source_text": [],
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "display": "Emma Korneeva",
+          "status": "hypothesis"
+        },
+        {
+          "given": "Эмма Богдановна",
+          "surname": "Корнеева",
+          "type": "as-written",
+          "source_text": [],
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "display": "Эмма Богдановна Корнеева",
+          "status": "hypothesis"
+        }
+      ],
+      "events": [
+        {
+          "type": "birth",
+          "tag": "BIRT",
+          "date": "12 MAR 1931",
+          "value": "",
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "place": "Gnadenflur, Wolgadeutsche Republik, UdSSR",
+          "source_text": [
+            "@S2@; MyHeritage Smart Matches; MyHeritage; PAGE: Smart Match: Emma Schmidt in Familienstammbaum Becker-Schmidt; QUAY: 1"
+          ],
+          "status": "hypothesis"
+        },
+        {
+          "type": "event",
+          "tag": "EVEN",
+          "date": "1941",
+          "value": "Deportation",
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "place": "Pawlodar, Kasachstan",
+          "source_text": [],
+          "status": "hypothesis"
+        },
+        {
+          "type": "death",
+          "tag": "DEAT",
+          "date": "2009",
+          "value": "",
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "place": "Toljatti, Russland",
+          "source_text": [],
+          "status": "hypothesis"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "id": "export-wagner-2026-11-I2",
+      "sex": "m",
+      "living": false,
+      "life_origin": "gedcom",
+      "names": [
+        {
+          "given": "Gottlieb",
+          "surname": "Schmidt",
+          "type": "as-written",
+          "source_text": [],
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "display": "Gottlieb Schmidt",
+          "status": "hypothesis"
+        }
+      ],
+      "events": [
+        {
+          "type": "birth",
+          "tag": "BIRT",
+          "date": "1899",
+          "value": "",
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "place": "Norka, Saratow, Russisches Reich",
+          "source_text": [
+            "@S2@; MyHeritage Smart Matches; MyHeritage; PAGE: Smart Match: Gottlieb Schmidt, geb. 1899 Norka (4 Stammbäume); QUAY: 0"
+          ],
+          "status": "hypothesis"
+        },
+        {
+          "type": "death",
+          "tag": "DEAT",
+          "date": "14 FEB 1943",
+          "value": "",
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "place": "Krasnoturinsk, Bogoslowlag",
+          "source_text": [
+            "@S3@; Gedenkbuch Trudarmee (Teilindex, fremder Eintrag); PAGE: Gedenkbuch der Trudarmisten: Schmidt Gottlieb Johannes, 1899; QUAY: 1"
+          ],
+          "status": "hypothesis"
+        }
+      ],
+      "notes": [
+        {
+          "text": "Vater laut Oma Nina (Tante): Bogdan. Geburtsort Norka nach Smart Match uebernommen.",
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "plain": "Vater laut Oma Nina (Tante): Bogdan. Geburtsort Norka nach Smart Match uebernommen."
+        }
+      ]
+    },
+    {
+      "id": "export-wagner-2026-11-I3",
+      "sex": "f",
+      "living": false,
+      "life_origin": "gedcom",
+      "names": [
+        {
+          "given": "Maria",
+          "surname": "Schmidt",
+          "type": "as-written",
+          "source_text": [],
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "display": "Maria Schmidt",
+          "status": "hypothesis"
+        }
+      ],
+      "events": [
+        {
+          "type": "birth",
+          "tag": "BIRT",
+          "date": "ABT 1908",
+          "value": "",
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "source_text": [],
+          "status": "hypothesis"
+        },
+        {
+          "type": "death",
+          "tag": "DEAT",
+          "date": "1965",
+          "value": "",
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "place": "Pawlodar, Kasachstan",
+          "source_text": [],
+          "status": "hypothesis"
+        }
+      ],
+      "notes": [
+        {
+          "text": "geb. Keller",
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "plain": "geb. Keller"
+        }
+      ]
+    },
+    {
+      "id": "export-wagner-2026-11-I4",
+      "sex": "m",
+      "living": false,
+      "life_origin": "gedcom",
+      "names": [
+        {
+          "given": "Friedrich",
+          "surname": "Schmidt",
+          "type": "as-written",
+          "source_text": [],
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "display": "Friedrich Schmidt",
+          "status": "hypothesis"
+        }
+      ],
+      "events": [
+        {
+          "type": "birth",
+          "tag": "BIRT",
+          "date": "1935",
+          "value": "",
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "place": "Gnadenflur",
+          "source_text": [],
+          "status": "hypothesis"
+        },
+        {
+          "type": "death",
+          "tag": "DEAT",
+          "date": "BEF 1945",
+          "value": "",
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "place": "Pawlodar, Kinderheim",
+          "note": "Vermutung: im Kinderheim gestorben, niemand hat ihn wieder gesehen.",
+          "source_text": [],
+          "status": "hypothesis"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "id": "export-wagner-2026-11-I5",
+      "sex": "m",
+      "living": false,
+      "life_origin": "gedcom",
+      "names": [
+        {
+          "given": "Andrej",
+          "surname": "Korneev",
+          "type": "as-written",
+          "source_text": [],
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "display": "Andrej Korneev",
+          "status": "hypothesis"
+        }
+      ],
+      "events": [
+        {
+          "type": "birth",
+          "tag": "BIRT",
+          "date": "1929",
+          "value": "",
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "place": "Kursk, Russland",
+          "source_text": [],
+          "status": "hypothesis"
+        },
+        {
+          "type": "death",
+          "tag": "DEAT",
+          "date": "1994",
+          "value": "",
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "place": "Toljatti, Russland",
+          "source_text": [],
+          "status": "hypothesis"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "id": "export-wagner-2026-11-I6",
+      "sex": "f",
+      "living": true,
+      "life_origin": "gedcom",
+      "names": [
+        {
+          "given": "Ljudmila",
+          "surname": "Korneeva",
+          "type": "as-written",
+          "source_text": [],
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "display": "Ljudmila Korneeva",
+          "status": "hypothesis"
+        },
+        {
+          "given": "Ljudmila",
+          "surname": "Sokolova",
+          "type": "married",
+          "source_text": [],
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "display": "Ljudmila Sokolova",
+          "status": "hypothesis"
+        }
+      ],
+      "events": [
+        {
+          "type": "birth",
+          "tag": "BIRT",
+          "date": "1957",
+          "value": "",
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "place": "Pawlodar, Kasachstan",
+          "source_text": [],
+          "status": "hypothesis"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "id": "export-wagner-2026-11-I7",
+      "sex": "f",
+      "living": true,
+      "life_origin": "gedcom",
+      "names": [
+        {
+          "given": "Nina",
+          "surname": "Wagner",
+          "type": "as-written",
+          "source_text": [],
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "display": "Nina Wagner",
+          "status": "hypothesis"
+        }
+      ],
+      "events": [
+        {
+          "type": "birth",
+          "tag": "BIRT",
+          "date": "1960",
+          "value": "",
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "place": "Pawlodar, Kasachstan",
+          "source_text": [],
+          "status": "hypothesis"
+        },
+        {
+          "type": "event",
+          "tag": "EVEN",
+          "date": "1995",
+          "value": "Aussiedlung nach Deutschland",
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "source_text": [],
+          "status": "hypothesis"
+        }
+      ],
+      "notes": [
+        {
+          "text": "geb. Korneeva",
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "plain": "geb. Korneeva"
+        }
+      ]
+    },
+    {
+      "id": "export-wagner-2026-11-I8",
+      "sex": "m",
+      "living": true,
+      "life_origin": "gedcom",
+      "names": [
+        {
+          "given": "Alexander",
+          "surname": "Wagner",
+          "type": "as-written",
+          "source_text": [],
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "display": "Alexander Wagner",
+          "status": "hypothesis"
+        }
+      ],
+      "events": [
+        {
+          "type": "birth",
+          "tag": "BIRT",
+          "date": "1984",
+          "value": "",
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "place": "Pawlodar",
+          "source_text": [],
+          "status": "hypothesis"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "id": "export-wagner-2026-11-I9",
+      "sex": "m",
+      "living": false,
+      "life_origin": "gedcom",
+      "names": [
+        {
+          "given": "Johann",
+          "surname": "Schmidt",
+          "type": "as-written",
+          "source_text": [],
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "display": "Johann Schmidt",
+          "status": "hypothesis"
+        }
+      ],
+      "events": [
+        {
+          "type": "birth",
+          "tag": "BIRT",
+          "date": "1868",
+          "value": "",
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "place": "Norka",
+          "source_text": [
+            "@S2@; MyHeritage Smart Matches; MyHeritage; PAGE: Smart Match: Familienstammbaum Becker-Schmidt; QUAY: 0"
+          ],
+          "status": "hypothesis"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "id": "export-wagner-2026-11-I10",
+      "sex": "f",
+      "living": false,
+      "life_origin": "gedcom",
+      "names": [
+        {
+          "given": "Katharina",
+          "surname": "Becker",
+          "type": "as-written",
+          "source_text": [],
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "display": "Katharina Becker",
+          "status": "hypothesis"
+        }
+      ],
+      "events": [
+        {
+          "type": "birth",
+          "tag": "BIRT",
+          "date": "1872",
+          "value": "",
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "place": "Norka",
+          "source_text": [
+            "@S2@; MyHeritage Smart Matches; MyHeritage; PAGE: Smart Match: Familienstammbaum Becker-Schmidt; QUAY: 0"
+          ],
+          "status": "hypothesis"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "id": "export-wagner-2026-11-I11",
+      "sex": "m",
+      "living": true,
+      "life_origin": "gedcom",
+      "names": [
+        {
+          "given": "Viktor",
+          "surname": "Wagner",
+          "type": "as-written",
+          "source_text": [],
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "display": "Viktor Wagner",
+          "status": "hypothesis"
+        }
+      ],
+      "events": [],
+      "notes": []
+    }
+  ]
+}

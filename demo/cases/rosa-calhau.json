@@ -1,0 +1,46 @@
+{
+  "_about": "Invented for the Familiar demo.",
+  "id": "rosa-calhau",
+  "state": "waiting-for-family",
+  "question": "rosa-birthplace",
+  "waiting_on": "rosa-death-paper",
+  "story_level": "feed",
+  "basis": [
+    "doc-helena-baptism",
+    "rec-santa-ludovina-1921-14"
+  ],
+  "budget": {
+    "unit": "source moves",
+    "limit": 3,
+    "spent": 1,
+    "checkpoint": "Obtain the named bridge paper before another search."
+  },
+  "second_looks": [
+    {
+      "id": "demo-review",
+      "claim": "The torn field settles the birthplace",
+      "scope": "Literal reading only; invented demo, no original image",
+      "inspected": [
+        "records/home/doc-helena-baptism.json: reading and doubt",
+        "tree/snapshot/people.json: p-rosa notes",
+        "family/memory/memory-2026-11-12.json"
+      ],
+      "missing": [
+        "Original image does not exist in this fictional demo"
+      ],
+      "objections": [
+        {
+          "text": "The letters after Ponta d are lost; the reading cannot settle the place.",
+          "strength": "strong",
+          "locator": "doc-helena-baptism: doubt Mother"
+        }
+      ],
+      "verdict": "error",
+      "next_test": "Read the requested death certificate if presented",
+      "owner_response": {
+        "state": "answered",
+        "text": "Retain both versions; do not promote a torn reading to a settled birthplace."
+      }
+    }
+  ]
+}

@@ -1,0 +1,163 @@
+"""The single installed journey: memory and a paper, independent reading, a checked reader page."""
+import os
+import shutil
+import subprocess
+from pathlib import Path
+
+import pytest
+
+REPO = Path(__file__).resolve().parents[2]
+
+
+@pytest.mark.installed
+def test_installed_engine(tmp_path):
+    uv = shutil.which('uv')
+    assert uv, 'installed test requires uv'
+    env = {k: v for k, v in os.environ.items()
+           if not k.startswith(('AWS_', 'FAMILIAR_')) and k not in ('PYTHONPATH', 'PYTHONHOME', 'VIRTUAL_ENV')}
+    for key in ('AWS_CONFIG_FILE', 'AWS_SHARED_CREDENTIALS_FILE'):
+        env[key] = str(tmp_path / key); Path(env[key]).touch()
+    env['AWS_EC2_METADATA_DISABLED'] = 'true'
+
+    def run(*args, check=True):
+        result = subprocess.run(args, cwd=tmp_path, env=env, check=False,
+                                capture_output=True, text=True, encoding='utf-8')
+        assert not check or result.returncode == 0, result.stdout + result.stderr
+
+    run(uv, 'build', '--wheel', '--out-dir', str(tmp_path / 'dist'), str(REPO))
+    venv = tmp_path / 'venv'
+    run(uv, 'venv', str(venv))
+    python = str(venv / ('Scripts/python.exe' if os.name == 'nt' else 'bin/python'))
+    run(uv, 'pip', 'install', '--python', python, str(next((tmp_path / 'dist').glob('*.whl'))))
+    shutil.copyfile(REPO / 'demo-russian/inputs/relatives.xlsx', tmp_path / 'relatives.xlsx')
+    run(python, '-X', 'utf8', '-c', INSTALLED_PATH, str(tmp_path), str(next((tmp_path / 'dist').glob('*.whl'))))
+
+
+INSTALLED_PATH = r"""
+import contextlib, io, json, os, subprocess, sys
+from pathlib import Path
+from familiar.cli import main
+from unittest.mock import patch
+tmp_path = Path(sys.argv[1])
+family = tmp_path / 'family'
+
+def cli(*args, check=True):
+    out, err = io.StringIO(), io.StringIO()
+    with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+        code = main(['--root', str(family), *args])
+    result = subprocess.CompletedProcess(args, code, out.getvalue(), err.getvalue())
+    assert not check or code == 0, result.stdout + result.stderr
+    return result
+
+assert main(['instance', 'init', str(family)]) == 0
+import hashlib
+config = family / 'familiar.toml'
+wheel = Path(sys.argv[2]); cli('instance', 'record-release', '--wheel', str(wheel), '--commit', 'a' * 40)
+cli('intake', 'table', str(tmp_path / 'relatives.xlsx'), '--id', 'table', '--told-by', 'Invented narrator', '--date', '2026-11-13')
+draft = family / '.state/intake/table-table'
+from familiar.intake.table import toml
+import tomllib
+memory = tomllib.loads((draft / 'memory.toml').read_text(encoding='utf-8'))
+memory['people'][0]['names'][0]['inferred_parts'] = {'patronymic': {'basis': 'An invented inference from the father row'}}
+(draft / 'memory.toml').write_bytes(toml(memory))
+cli('intake', 'memory', str(draft / 'memory.toml'), '--original', str(draft / 'original.xlsx'))
+assert (family / 'originals/table/original.xlsx').read_bytes() == (tmp_path / 'relatives.xlsx').read_bytes()
+form = lambda name: cli('research', 'form', name).stdout
+
+unions = family / 'tree/snapshot/families.json'; rows = json.loads(unions.read_text(encoding='utf-8'))
+rows['families'].append({'id': 'invented-union', 'husband': 'table-p4', 'wife': 'table-p3', 'children': ['table-p2'], 'events': [], 'provenance': ['table-c7'], 'status': 'hypothesis', 'derived': True, 'basis': 'Shared child in the family account.'})
+unions.write_text(json.dumps(rows), encoding='utf-8')
+doc = json.loads(form('card-document.json')); doc.update(subjects=['table-p3', 'table-p4'], snippets=[])
+doc['record'].update(id='paper', fields={'Name': 'Bea Example', 'Birth': '1880'}, reading='Name: Bea Example')
+(tmp_path / 'doc.json').write_text(json.dumps(doc), encoding='utf-8'); cli('research', 'document', str(tmp_path / 'doc.json'), '--author', 'reader')
+cli('feed', 'new', 'city')
+folder = family / 'feeds/city'
+for name, data in [('feed', json.loads(form('feed.json'))),
+                   ('chapters', json.loads(form('chapters'))),
+                   ('documents', json.loads(form('documents')))]:
+    if name == 'feed': data['persons']['BEA'] = 'table-p3'
+    (folder / (name + '.json')).write_text(json.dumps(data), encoding='utf-8')
+archive = tmp_path / 'host-originals'; archive.mkdir()
+scan = archive / 'certificate.txt'; scan.write_text('Invented original', encoding='utf-8')
+evidence = family / 'tree/evidence.json'
+saved = json.loads(evidence.read_text(encoding='utf-8')) if evidence.exists() else {}
+saved.setdefault('sources', []).append({'id': 'external-original', 'kind': 'archive-record', 'record': 'paper', 'local': str(scan), 'subjects': ['table-p3']})
+saved['sources'].append({'id': 'placeholder-original', 'kind': 'archive-record', 'record': 'paper', 'local': '<snapshot>/media/absent.jpg', 'subjects': ['table-p3']})
+evidence.write_text(json.dumps(saved), encoding='utf-8')
+record = family / 'records/paper.json'; literal = json.loads(record.read_text(encoding='utf-8'))
+literal['source']['image'] = str(tmp_path / 'undeclared-legacy-image.jpg'); record.write_text(json.dumps(literal), encoding='utf-8')
+assert cli('reader', 'export', '--host-private', '--output', str(tmp_path / 'private'), check=False).returncode != 0
+os.environ['FAMILIAR_HOST_PATHS'] = json.dumps({str(family): {'originals': str(archive)}})
+from familiar.instance.model import Instance
+from familiar.tree.builder import build
+before = build(Instance(family), view='working'); union = next(f for f in before['families'] if f['id'] == 'invented-union')
+old = before['people']['table-p3']['facts'][0]
+from familiar.tree.revisions import apply
+edge = {'parent': 'table-p4', 'child': 'table-p2', 'status': 'hypothesis', 'confidence': 'possible', 'weight': .5}
+apply({'relationship_decisions': [{'parent': 'table-p4', 'child': 'table-p2', 'previous_status': 'hypothesis', 'status': 'verified', 'text': 'Established', 'basis': 'Record', 'sources': ['paper'], 'confidence': 'same', 'weight': 1.0}]}, before['people'], [edge], [], {'paper': {'record': 'record', 'kind': 'record'}}, lambda row: None, 'reader', {'record'})
+assert (edge['confidence'], edge['weight']) == ('same', 1.0)
+decision = {'id': 'settled', 'author': 'reader', 'schema': 1, 'relationship_decisions': [{'family': union['id'], 'previous_status': union['status'], 'status': 'verified', 'text': 'The entry establishes the union.', 'basis': 'Both people are named.', 'sources': ['paper']}], 'fact_replacements': [{'person': 'table-p3', 'prior': {'text': old['text'], 'sources': old['sources']}, 'reason': 'Read the certificate.', 'fact': {'label': 'document', 'text': 'Born in 1880.', 'status': 'verified', 'sources': ['paper']}}], 'events': {'table-p3': [{'type': 'birth', 'date': '1880', 'provenance': ['paper']}], 'table-p4': [{'type': 'birth', 'date': '1878', 'provenance': ['paper']}]}}
+(tmp_path / 'decision.json').write_text(json.dumps(decision), encoding='utf-8'); cli('research', 'contribute', str(tmp_path / 'decision.json'))
+review = tmp_path / 'review'
+
+assert json.loads(cli('reader', 'preview', '--output', str(review)).stdout)['state'] == 'preview'
+assert not (review / 'CURRENT.json').exists()
+cli('feed', 'accept', 'city', '--stage', 'reading', '--kind', 'reader',
+    '--reviewer', 'reader', '--author', 'writer', '--ticket', str(review / 'review-ticket.json'))
+import base64, importlib, shutil
+from familiar.instance.packs import bundled_root
+desk = importlib.import_module('familiar.desk.build')
+pack = family / '.secrets/test-pack'; shutil.copytree(bundled_root() / 'demo-english', pack)
+os.environ['FAMILIAR_HOST_PACKS'] = json.dumps({'demo-english': str(pack)})
+config.write_text('language_packs = { en = "demo-english" }\n' + config.read_text() + '\n[desk]\nsource="."\n', encoding='utf-8')
+assert 'desk serve --build' in cli('desk', 'serve', check=False).stderr
+fingerprint = lambda: {p.relative_to(family): p.read_bytes() for p in family.rglob('*') if p.is_file()}
+before_cloud = fingerprint()
+with patch('subprocess.run', side_effect=AssertionError('cloud subprocess')), patch('urllib.request.urlopen', side_effect=AssertionError('cloud HTTP')), patch('familiar.instance.writer.reap_snapshots', side_effect=AssertionError('cloud maintained family')):
+    assert 'Publication is not configured' in cli('desk', 'publish', '--build', check=False).stderr
+assert fingerprint() == before_cloud
+access = family / 'family/desk-access.json'
+access.write_text(json.dumps({'schema_version': 1, 'family_id': Instance(family).id, 'projection': 'reader-private', 'host': 'Invented host', 'recipient': 'Invented narrator', 'decided_at': '2026-11-14', 'reason': 'Fictional check', 'dataset': 'accepted-family-reader', 'pages': ['reader', 'journal', 'stories', 'cases', 'plan', 'questions']}))
+media = family / 'media'; media.mkdir(exist_ok=True)
+image = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aV1sAAAAASUVORK5CYII=')
+(media / 'dot.png').write_bytes(image)
+(media / 'manifest.json').write_text(json.dumps({'schema_version': 1, 'assets': [{'id': 'dot', 'file': 'dot.png', 'export': 'dot.png', 'sha256': hashlib.sha256(image).hexdigest(), 'kind': 'family-photograph', 'origin': 'Fictional fixture'}]}))
+edition = family / 'edition/cards.json'; edition.parent.mkdir(exist_ok=True)
+edition.write_text(json.dumps({'people': {'table-p3': {'media': [{'asset': '/dot.png', 'photo': True, 'kind': 'family-photograph'}]}}}))
+desk.build(Instance(family))
+from familiar.desk.server import server
+import threading, urllib.request, uuid
+with server(Instance(family), 0) as http:
+    http.timeout = 5
+    worker = threading.Thread(target=lambda: http.serve_forever(poll_interval=.01)); worker.start()
+    try:
+        with urllib.request.urlopen(f'http://127.0.0.1:{http.server_port}/', timeout=5) as response:
+            assert response.status == 200 and response.read()
+        headers = {'Host': f'invented.localhost:{http.server_port}', 'Origin': f'http://invented.localhost:{http.server_port}'}
+        for kind in ('correction',):
+            identity = str(uuid.uuid4())
+            body = json.dumps({'id': identity, 'text': 'An invented correction', 'kind': kind, 'page': '/#person=table-p3', 'where': 'Invented person', 'selection': 'A line', 'future_context': {'kept': True}}).encode()
+            request = urllib.request.Request(f'http://127.0.0.1:{http.server_port}/api/feedback', data=body, headers=headers | {'Content-Type': 'application/json'})
+            with urllib.request.urlopen(request, timeout=5) as response:
+                assert response.status == 201
+        marks = family / 'family/feedback/read'; marks.mkdir(parents=True, exist_ok=True)
+        (marks / (identity + '.json')).write_text(json.dumps({'status': 'addressed', 'reply': 'Thank you; corrected.', 'internal': 'not for delivery'}))
+        with urllib.request.urlopen(f'http://127.0.0.1:{http.server_port}/api/feedback?ids={identity}', timeout=5) as response:
+            item = json.load(response)['items'][0]
+            assert item['status'] == 'addressed' and item['reply'] == 'Thank you; corrected.' and 'internal' not in item and item['future_context']['kept']
+    finally:
+        http.shutdown()
+        worker.join(timeout=6)
+        assert not worker.is_alive()
+from familiar.reader.server import CheckedReader
+private_graph = json.loads(CheckedReader(Instance(family), family / '.secrets/desk-reader-cache').resource('graph.json')[0]); private = private_graph['people']
+assert any(c.get('text') for f in private_graph['feeds'] for c in f['chapters'])
+assert private_graph['sources']['external-original']['asset'].endswith('.html')
+assert scan.read_text() == 'Invented original'
+assert next(f for f in private_graph['families'] if f['id'] == union['id'])['status'] == 'verified' and all(e['status'] != 'verified' for e in private_graph['edges'] if (e['parent'], e['child']) == ('table-p4', 'table-p2'))
+assert any(f['text'] == old['text'] for f in private['table-p3']['retiredFacts']) and private['table-p3']['events'][0]['date'] == '1880'
+assert private['table-p1']['names'][0]['inferred_parts'] and private['table-p3']['reportedKinship'][0]['text'] == 'прабабушка по мат линии'
+assert private['table-p7']['reportedKinship'][0]['viewer'] == private_graph['narrator']
+assert any('март (?) 1931' in f['text'] for f in private['table-p1']['facts']) and private['table-p4']['facts']
+
+"""

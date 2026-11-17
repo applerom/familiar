@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "source": {
+    "repository": "familiar",
+    "directory": "reader-src",
+    "command": "bun run reader:shell",
+    "toolchain_sha256": "e66029a37816c83d10c9e179a6fbb6ac669fa0869bc94b061e53e70e93ee6f5d"
+  },
+  "contracts": {
+    "reader_profile": 1,
+    "reader_export": 1
+  },
+  "license": {
+    "sha256": "3e0f19ad14d4556ac2a974de10da75f98cdd9f10e18cce335cbae3ffb3b1e739",
+    "size": 1069
+  },
+  "files": {
+    "assets/index-0jb-cpOC.css": {
+      "sha256": "940587dda7a798d2ea8df74b6ef32f246e5ae76b9560e244f85bd8883773c995",
+      "size": 83407
+    },
+    "assets/index-CAYeEmVT.js": {
+      "sha256": "94f2ae3f4e0510f9d9cf14d98136bd09498ed334b1d32c37122f8d49dc838b40",
+      "size": 206741
+    },
+    "assets/Literata-CuqrGnnX.woff2": {
+      "sha256": "fbf8199381bc34ce9318bef1f612ecd58fac5ece5225c637dcbb7fd79866e15e",
+      "size": 286944
+    },
+    "assets/Literata-Italic-yjdCmmSL.woff2": {
+      "sha256": "dd92b7cbc6694fea1b213bc01db7dbcd4c3b60fdb22331e157ba5dee7f9784eb",
+      "size": 284708
+    },
+    "assets/Manrope-C7G8V-jg.woff2": {
+      "sha256": "db13d369f93f282f7f6277ea03c7fcda9c93ad88be4232cf9fb5b825ec76efe2",
+      "size": 38520
+    },
+    "assets/page-top-CN-BSdFj.js": {
+      "sha256": "a029486a5b91b6ee36cf6eba97702aa78fe0954a55e6601385cc2730a754d787",
+      "size": 330056
+    },
+    "assets/page-top-h3QduTQz.css": {
+      "sha256": "f6f4f6eadeadbe205a5e8ba23907eeacdc8fc1d6995b327aec70cba2e369985f",
+      "size": 1550
+    },
+    "assets/pageTop-CeocZUcf.js": {
+      "sha256": "f0c6bbba5b272c04564a3c9e0336750a0f4895e621c21dadb79293b5c00a2cf2",
+      "size": 464
+    },
+    "assets/tokens-ChzF_6gm.css": {
+      "sha256": "080c3aac7ddd4478a576035bc1d3e18c7d1b6664b779adc0cbb7abbc563c0644",
+      "size": 2204
+    },
+    "index.html": {
+      "sha256": "21528947a3cd5f206060b59cb34a8986ba3458586fb0b7c5f11f46a3edecb489",
+      "size": 610
+    },
+    "THIRD_PARTY_NOTICES.txt": {
+      "sha256": "42d1ae6848910a593185e0034e4b88e8164293b972ff6ab0f05afc399e67ac58",
+      "size": 16661
+    }
+  }
+}

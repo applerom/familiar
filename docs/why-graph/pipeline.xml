@@ -1,0 +1,98 @@
+<Why_Graph_Shard project="Familiar" CAPABILITY="CAP-PIPELINE">
+  <FEATURE_FEED_CHECKS ID="FEAT-FEED-CHECKS" STATE="IMPLEMENTED">
+    <INTENT>Enforce weighted core data and privacy guarantees. Text, style and editorial completeness are read manually. Malformed data containers name their file before traversal; unweighted findings only advise.</INTENT>
+    <PRD_REF>docs/PRD.md#PIPELINE</PRD_REF>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-CHECKS-ENGINE"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-CHECKS-CLI"/>
+  </FEATURE_FEED_CHECKS>
+  <MODULE_CHECKS_ENGINE ID="MOD-CHECKS-ENGINE" FILE="src/familiar/checks/engine.py" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-CHECKS-PRIVACY"/>
+  </MODULE_CHECKS_ENGINE>
+  <MODULE_CHECKS_LANGUAGE ID="MOD-CHECKS-LANGUAGE" FILE="src/familiar/checks/language.py" STATE="IMPLEMENTED"/>
+  <MODULE_CHECKS_CLI ID="MOD-CHECKS-CLI" FILE="src/familiar/checks/cli.py" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-CHECKS-ENGINE"/>
+  </MODULE_CHECKS_CLI>
+  <FEATURE_FEED_BUILD ID="FEAT-FEED-MATERIALIZE" STATE="IMPLEMENTED">
+    <INTENT>Materialize a family feed into a separate build directory; keep source dependencies and translations visible.</INTENT>
+    <PRD_REF>docs/PRD.md#PIPELINE</PRD_REF>
+    <INVARIANT REVIEW="engine lead">changed authoring inputs invalidate approvals and translation dependencies</INVARIANT>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-FEED-SERVICE"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-FEED-CLI"/>
+  </FEATURE_FEED_BUILD>
+  <MODULE_FEED ID="MOD-FEED-BUILDER" FILE="src/familiar/feeds/builder.py" STATE="IMPLEMENTED">
+    <!-- Weighted person/source/asset failures block; new unweighted holes advise. Profile, alphabet, cover-required and layout lint are removed. -->
+  </MODULE_FEED>
+  <MODULE_FEED ID="MOD-FEED-CONTEXT" FILE="src/familiar/feeds/builder_context.py" STATE="IMPLEMENTED"/>
+  <MODULE_FEED ID="MOD-FEED-CLI" FILE="src/familiar/feeds/cli.py" STATE="IMPLEMENTED"/>
+  <MODULE_FEED ID="MOD-FEED-DOC" FILE="src/familiar/feeds/feed_doc.py" STATE="IMPLEMENTED"/>
+  <MODULE_FEED ID="MOD-FEED-PERSON" FILE="src/familiar/feeds/feed_person.py" STATE="IMPLEMENTED"/>
+  <MODULE_FEED ID="MOD-FEED-SERVICE" FILE="src/familiar/feeds/service.py" STATE="IMPLEMENTED">
+    <!-- An invalid presentation-language selection falls back to configured source language. Referenced files still resolve before output. -->
+  </MODULE_FEED>
+  <MODULE_FEED ID="MOD-FEED-TRANSLATIONS" FILE="src/familiar/feeds/translations.py" STATE="IMPLEMENTED"/>
+  <FEATURE_ENGINE_SKILLS ID="FEAT-ENGINE-SKILLS" STATE="IMPLEMENTED">
+    <INTENT>Story scenarios read optional editorial interest without changing evidence weights. Portable engine skills share one checked boundary, from living memory and version tests to scenarios, chapters and page reading.</INTENT>
+    <PRD_REF>docs/PRD.md#PIPELINE</PRD_REF>
+    <INVARIANT REVIEW="engine lead">a skill restates no rule of the engine and names only rule ids that exist</INVARIANT>
+    <INVARIANT REVIEW="engine lead">a skill has no non-ASCII name, domain or known pilot marker; real-place neutrality requires keeper review</INVARIANT>
+    <INVARIANT REVIEW="engine lead">every engine command a skill names is in its command table, and the table says truly whether the engine has it</INVARIANT>
+    <INVARIANT REVIEW="engine lead">a skill defines exactly the region questions its order asks</INVARIANT>
+    <INVARIANT REVIEW="engine lead">a registered region question id means the same question in every skill that asks it</INVARIANT>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-SKILL-MEMORY-FIRST"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-SKILL-RESEARCH-VERSIONS"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-SKILL-SECOND-LOOK"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-SKILL-STORY-SCENARIO"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-SKILL-STORY-TEXT"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-SKILL-STORY-READING"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-SKILL-SHOT-CARD"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-SKILL-DRAWING"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-SKILL-BLIND-CHECK"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-SKILL-TRANSLATION"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-SKILL-GAME"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-SKILL-BRANCH-ABROAD"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-SKILL-GENERATION-REVIEW"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-SKILL-WIDE-HYPOTHESES"/>
+  </FEATURE_ENGINE_SKILLS>
+  <MODULE_SKILL_STORY_SCENARIO ID="MOD-SKILL-STORY-SCENARIO" FILE="method/skills/story-scenario/SKILL.md" STATE="IMPLEMENTED">
+  </MODULE_SKILL_STORY_SCENARIO>
+  <MODULE_SKILL_STORY_TEXT ID="MOD-SKILL-STORY-TEXT" FILE="method/skills/story-text/SKILL.md" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-SKILL-STORY-SCENARIO"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-CHECKS-CLI"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-FEED-CLI"/>
+  </MODULE_SKILL_STORY_TEXT>
+  <MODULE_SKILL_STORY_READING ID="MOD-SKILL-STORY-READING" FILE="method/skills/story-reading/SKILL.md" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-CHECKS-CLI"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-FEED-CLI"/>
+  </MODULE_SKILL_STORY_READING>
+  <MODULE_SKILL_MEMORY_FIRST ID="MOD-SKILL-MEMORY-FIRST" FILE="method/skills/memory-first/SKILL.md" STATE="IMPLEMENTED">
+  </MODULE_SKILL_MEMORY_FIRST>
+  <MODULE_SKILL_RESEARCH_VERSIONS ID="MOD-SKILL-RESEARCH-VERSIONS" FILE="method/skills/research-versions/SKILL.md" STATE="IMPLEMENTED">
+  </MODULE_SKILL_RESEARCH_VERSIONS>
+  <MODULE_SKILL_SECOND_LOOK ID="MOD-SKILL-SECOND-LOOK" FILE="method/skills/second-look/SKILL.md" STATE="IMPLEMENTED">
+  </MODULE_SKILL_SECOND_LOOK>
+  <MODULE_COMMAND ID="MOD-FEED-PAGES" FILE="src/familiar/feeds/pages.py" STATE="IMPLEMENTED"/>
+  <MODULE_CHECKS_PRIVACY ID="MOD-CHECKS-PRIVACY" FILE="src/familiar/checks/privacy.py" STATE="IMPLEMENTED"/>
+  <MODULE_SKILL_SHOT_CARD ID="MOD-SKILL-SHOT-CARD" FILE="method/skills/shot-card/SKILL.md" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-FEED-CLI"/>
+  </MODULE_SKILL_SHOT_CARD>
+  <MODULE_SKILL_DRAWING ID="MOD-SKILL-DRAWING" FILE="method/skills/drawing/SKILL.md" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-SKILL-SHOT-CARD"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-CHECKS-CLI"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-FEED-CLI"/>
+  </MODULE_SKILL_DRAWING>
+  <MODULE_SKILL_BLIND_CHECK ID="MOD-SKILL-BLIND-CHECK" FILE="method/skills/blind-check/SKILL.md" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-SKILL-DRAWING"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-FEED-CLI"/>
+  </MODULE_SKILL_BLIND_CHECK>
+  <MODULE_SKILL_TRANSLATION ID="MOD-SKILL-TRANSLATION" FILE="method/skills/translation/SKILL.md" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-FEED-TRANSLATIONS"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-FEED-CLI"/>
+  </MODULE_SKILL_TRANSLATION>
+  <MODULE_SKILL_GAME ID="MOD-SKILL-GAME" FILE="method/skills/game/SKILL.md" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-FEED-TRANSLATIONS"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-FEED-CLI"/>
+  </MODULE_SKILL_GAME>
+  <MODULE_SKILL_BRANCH_ABROAD ID="MOD-SKILL-BRANCH-ABROAD" FILE="method/skills/branch-abroad/SKILL.md" STATE="IMPLEMENTED"/>
+  <MODULE_SKILL_GENERATION_REVIEW ID="MOD-SKILL-GENERATION-REVIEW" FILE="method/skills/generation-review/SKILL.md" STATE="IMPLEMENTED"/>
+  <MODULE_SKILL_WIDE_HYPOTHESES ID="MOD-SKILL-WIDE-HYPOTHESES" FILE="method/skills/wide-hypotheses/SKILL.md" STATE="IMPLEMENTED"/>
+</Why_Graph_Shard>

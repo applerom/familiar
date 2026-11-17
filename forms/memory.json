@@ -1,0 +1,13 @@
+{
+  "id": "telling",
+  "told_by": "host",
+  "date": "2026-11-12",
+  "items": [
+    {
+      "id": "memory-name",
+      "text": "Bea lived in a city",
+      "strength": "hearsay",
+      "witness": "her child"
+    }
+  ]
+}

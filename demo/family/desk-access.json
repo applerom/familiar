@@ -1,0 +1,12 @@
+{
+  "_about": "Invented host decision for the fictional Familiar demo; no real family data is authorized.",
+  "schema_version": 1,
+  "family_id": "demo-ferrolho",
+  "host": "Daniel Pike (fictional demo host)",
+  "recipient": "Visitors to the public fictional demonstration",
+  "decided_at": "2026-11-17",
+  "reason": "Show the invented family's accepted reader and investigation as a static public demonstration. All people, places and papers are fictional; feedback is disabled.",
+  "projection": "reader-private",
+  "dataset": "accepted-family-reader",
+  "pages": ["reader", "journal", "stories", "cases", "plan", "questions"]
+}

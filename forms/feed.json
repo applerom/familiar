@@ -1,0 +1,14 @@
+{
+  "id": "city",
+  "title": "A city memory",
+  "lead": "A remembered life",
+  "persons": {
+    "BEA": "telling-bea"
+  },
+  "profile": {
+    "pictures": "none",
+    "languages": [
+      "en"
+    ]
+  }
+}

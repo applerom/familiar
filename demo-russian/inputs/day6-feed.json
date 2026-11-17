@@ -1,0 +1,33 @@
+{
+  "id": "volga-1941",
+  "title": "Шмидты: Волга и степь",
+  "lead": "Девочка из немецкого села на Волге в десять лет едет в товарном вагоне в казахстанскую степь. Её дочь родится в Павлодаре, а внучка через восемьдесят лет найдёт справку, где записано, откуда всё началось.",
+  "period": "1941-1957",
+  "line": "Шмидт",
+  "people": [
+    "EMMA",
+    "GOTTLIEB",
+    "MARIA",
+    "FRIEDRICH"
+  ],
+  "persons": {
+    "EMMA": "irina-2026-11-12-emma",
+    "GOTTLIEB": "irina-2026-11-12-gottlieb",
+    "MARIA": "irina-2026-11-12-maria",
+    "FRIEDRICH": "irina-2026-11-12-friedrich"
+  },
+  "profile": {
+    "anchor": "EMMA",
+    "readers": "семья всех возрастов, вслух",
+    "kids": "block",
+    "pictures": "none",
+    "depth": "page",
+    "languages": [
+      "ru"
+    ],
+    "games": "none",
+    "names": {
+      "text": "как в бумагах"
+    }
+  }
+}

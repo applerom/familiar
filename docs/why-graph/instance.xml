@@ -1,0 +1,144 @@
+<Why_Graph_Shard project="Familiar" CAPABILITY="CAP-INSTANCE">
+  <!-- Referenced source cards retain unknown-year candidates; language answers require explicit selection. -->
+  <!-- One capability. Edges to other capabilities live in docs/why-graph.xml. -->
+
+  <FEATURE_INSTANCE ID="FEAT-INSTANCE" STATE="STARTED">
+    <INVARIANT REVIEW="engine lead">Instance checks report every differing paternal clan display without a saved surname decision as an actionable, nonblocking invitation to name the clan form.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">New instances pin an exact engine release; checks and desk builds explain drift, and a separate work record binds the installed wheel to a declared source commit.</INVARIANT>
+    <INTENT>One family root from which every path is read; the engine is installed, the instance is opened.</INTENT>
+    <PRD_REF>docs/PRD.md#ARCH</PRD_REF>
+    <PRD_REF>docs/PRD.md#INSTANCE</PRD_REF>
+    <PRD_REF>docs/PRD.md#FORMS</PRD_REF>
+    <INVARIANT REVIEW="engine lead">Malformed documents, chapters and evidence containers name the file, expected container and complete example while selected validation retains all findings.</INVARIANT>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INSTANCE-ROOT"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-CLI"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INSTANCE-MODEL"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INSTANCE-CLI"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INSTANCE-VALIDATION"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-FAMILY-WRITER"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DISPLAY-INPUTS"/>
+    <INVARIANT REVIEW="engine lead">Absent optional source details remain null without discarding records. Collector records and journals stay outside output snapshots and watches until adopted by explicit references from authored state, including cases and versions. Working findings are grouped separately; own-path checks and adopted dependencies remain strict.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Own-path or prefix checks list their full selected file set and findings without implying a family or publication verdict.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Snapshots live beside the family, link archive and feed asset bytes without staged writes reaching originals, treat missing/invalid-name dependencies consistently in their watch, report large input sizes, and reap only marked directories older than a day whose owning process is gone.</INVARIANT>
+  </FEATURE_INSTANCE>
+
+  <MODULE_INSTANCE_VALIDATION ID="MOD-INSTANCE-VALIDATION" FILE="src/familiar/instance/validation.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">A saved controlled zero may support a weak against argument only within its recorded read scope; positive arguments still require findings, and refusals or dubious queries supply no negative evidence.</INVARIANT>
+    <PRD_REF>docs/PRD.md#FORMS</PRD_REF>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-ARCHIVE-RIGHTS"/>
+  </MODULE_INSTANCE_VALIDATION>
+  <MODULE_DISPLAY_INPUTS ID="MOD-DISPLAY-INPUTS" FILE="src/familiar/instance/display.py" STATE="IMPLEMENTED">
+    <!-- Shared adoption closure selects records and referenced search files recursively for validation, life assessment and every output dependency watch. Unknown journal numeric metadata is allowed; stored finite probabilities, source references and adoption closure remain core data guarantees. -->
+    <!-- Writer-owned build-local reference indexes bind input metadata. Each
+         check resolves shared directories once and rechecks final reparse points. -->
+    <!-- Desk input digests reuse writer-verified hashes only while file identity,
+         size and timestamps match. Explicit reader verify retains full byte checks. -->
+    <!-- Display selection shares document delivery's host-mapped originals boundary; record file inputs are typed top-level saved index results. A referenced research original the reader only tests for existence binds by name, size and time, not bytes (pilot: 3.1 GiB snapshot became 0.26 GiB). -->
+  </MODULE_DISPLAY_INPUTS>
+  <MODULE_ARCHIVE_RIGHTS ID="MOD-ARCHIVE-RIGHTS" FILE="src/familiar/instance/archive.py" STATE="IMPLEMENTED"/>
+
+  <FEATURE_INTAKE ID="FEAT-INTAKE" STATE="STARTED">
+    <INVARIANT REVIEW="engine lead">Table memories retain the narrator's literal kinship word independently of graph confidence; inferred name components carry their own explanation instead of weakening the whole name.</INVARIANT>
+    <INTENT>Attributed table drafts, memory, home papers with literal fields or reading, and GEDCOM enter a family with explicit losses and identity candidates.</INTENT>
+    <INVARIANT REVIEW="engine lead">Memory and an imported tree retain distinct grounds, married names and source text after an explicit identity decision.</INVARIANT>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INTAKE-FEEDBACK"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INTAKE-TABLE"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INTAKE-TABLE-REVIEW"/>
+    <INVARIANT REVIEW="engine lead">Table cards use pack labels, private questions are separated from reviewer hints, and an enabled flag removes a kin hypothesis with both facts. Unnamed bridges carry pack placeholders; inferred claims carry derived and basis. Narrator anchors the tree; research permission never grants publication.</INVARIANT>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INTAKE-SHEET"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INTAKE-CORE"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INTAKE-NAMES"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INTAKE-GEDCOM"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INTAKE-CLI"/>
+    <PRD_REF>docs/PRD.md#FEATURES</PRD_REF>
+  </FEATURE_INTAKE>
+
+  <MODULE_INSTANCE_ROOT ID="MOD-INSTANCE-ROOT" FILE="src/familiar/instance/root.py" STATE="IMPLEMENTED">
+  </MODULE_INSTANCE_ROOT>
+
+  <MODULE_CLI ID="MOD-CLI" FILE="src/familiar/cli.py" STATE="IMPLEMENTED">
+    <!-- Method commands read only installed resources; cloud desk commands select publication before any startup mutation. -->
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-INSTANCE-ROOT"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-ENGINE-VERSION"/>
+  </MODULE_CLI>
+  <MODULE_ENGINE_VERSION ID="MOD-ENGINE-VERSION" FILE="src/familiar/__init__.py" STATE="IMPLEMENTED">
+    <!-- One engine number (pyproject, AGENTS.md rule, CHANGELOG.md) shown by the CLI, desk and private reader and recorded per desk build. -->
+  </MODULE_ENGINE_VERSION>
+  <MODULE_INSTANCE_MODEL ID="MOD-INSTANCE-MODEL" FILE="src/familiar/instance/model.py" STATE="IMPLEMENTED">
+  </MODULE_INSTANCE_MODEL>
+  <MODULE_INSTANCE_CLI ID="MOD-INSTANCE-CLI" FILE="src/familiar/instance/cli.py" STATE="IMPLEMENTED">
+  </MODULE_INSTANCE_CLI>
+  <MODULE_INSTANCE_PACKS ID="MOD-INSTANCE-PACKS" FILE="src/familiar/instance/packs.py" STATE="IMPLEMENTED"/>
+  <MODULE_INTAKE_TABLE_REVIEW ID="MOD-INTAKE-TABLE-REVIEW" FILE="src/familiar/intake/table_review.py" STATE="IMPLEMENTED"/>
+  <MODULE_INTAKE_FEEDBACK ID="MOD-INTAKE-FEEDBACK" FILE="src/familiar/intake/feedback.py" STATE="IMPLEMENTED"/>
+  <MODULE_INTAKE_TABLE ID="MOD-INTAKE-TABLE" FILE="src/familiar/intake/table.py" STATE="IMPLEMENTED"/>
+  <MODULE_INTAKE_SHEET ID="MOD-INTAKE-SHEET" FILE="src/familiar/intake/sheet.py" STATE="IMPLEMENTED"/>
+  <MODULE_INTAKE_CORE ID="MOD-INTAKE-CORE" FILE="src/familiar/intake/core.py" STATE="IMPLEMENTED">
+    <!-- Literal union notes remain attributed snapshot input across repeat exchange. -->
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-INTAKE-GEDCOM"/>
+  </MODULE_INTAKE_CORE>
+  <MODULE_INTAKE_NAMES ID="MOD-INTAKE-NAMES" FILE="src/familiar/intake/names.py" STATE="IMPLEMENTED"/>
+  <MODULE_INTAKE_GEDCOM ID="MOD-INTAKE-GEDCOM" FILE="src/familiar/intake/gedcom.py" STATE="IMPLEMENTED">
+    <!-- PHRASE survives as literal attributed notes with tag path and enum value;
+         unsupported adoption/role semantics remain explicit import losses. -->
+  </MODULE_INTAKE_GEDCOM>
+  <MODULE_INTAKE_CLI ID="MOD-INTAKE-CLI" FILE="src/familiar/intake/cli.py" STATE="IMPLEMENTED"/>
+  <MODULE_FAMILY_GATE ID="MOD-FAMILY-GATE" FILE="src/familiar/instance/gate.py" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-PUBLICATION"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-INSTANCE-VALIDATION"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-OUTPUT-REVIEW"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-SUBJECT-CLOSURE"/>
+  </MODULE_FAMILY_GATE>
+  <MODULE_FAMILY_WRITER ID="MOD-FAMILY-WRITER" FILE="src/familiar/instance/writer.py" STATE="IMPLEMENTED">
+    <!-- Standalone demo storage accepts only a checked fictional desk and an empty
+         destination; the ordinary private-reader publication refusal is unchanged. -->
+    <!-- Dependency watches reuse the selection's record index; digest identity
+         and metadata reuse file classification's stat, without changing stored hashes. -->
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-FAMILY-GATE"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-OUTPUT-REVIEW"/>
+  </MODULE_FAMILY_WRITER>
+  <MODULE_PUBLICATION ID="MOD-PUBLICATION" FILE="src/familiar/instance/publication.py" STATE="IMPLEMENTED">
+    <!-- Plain card serialization is cheaper than reading and checking hundreds
+         of cache payloads; the full declared projection is always applied. -->
+    <!-- Serializer validates term declarations once; semantic worklist matches
+         remain in text inspection rather than an output-discarding regex pass. -->
+    <!-- TRUST-03 collects every displayed internal locator; typed references and manuscript rows remain valid. -->
+    <!-- Card surfaces and their dead-only/never policies: PRD FORMS dictionary. -->
+    <PRD_REF>docs/PRD.md#TRUST</PRD_REF>
+    <PRD_REF>docs/PRD.md#FORMS</PRD_REF>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-SUBJECT-CLOSURE"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-NARRATIVE-DISCLOSURE"/>
+  </MODULE_PUBLICATION>
+  <MODULE_NARRATIVE_DISCLOSURE ID="MOD-NARRATIVE-DISCLOSURE" FILE="src/familiar/instance/narrative.py" STATE="IMPLEMENTED"/>
+  <MODULE_SUBJECT_CLOSURE ID="MOD-SUBJECT-CLOSURE" FILE="src/familiar/instance/subjects.py" STATE="IMPLEMENTED">
+    <!-- Structured gallery, chapter and fact attachments accumulate across shared document identities before either reader projection. -->
+  </MODULE_SUBJECT_CLOSURE>
+  <MODULE_OUTPUT_REVIEW ID="MOD-OUTPUT-REVIEW" FILE="src/familiar/instance/review.py" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-SUBJECT-CLOSURE"/>
+  </MODULE_OUTPUT_REVIEW>
+  <MODULE_METHOD_VOCABULARY ID="MOD-METHOD-VOCABULARY" FILE="method/vocabulary.toml" STATE="IMPLEMENTED"/>
+  <FEATURE_HOST_TEXT ID="FEAT-HOST-TEXT" STATE="IMPLEMENTED">
+    <INTENT>The host gets private reading, evidence and forwardable letters; exact reader omissions become counted life-status questions or permission requests in the existing family letter. Text pages and summaries distinguish current reader acceptance from separate feed review, without transferring attestations.</INTENT>
+    <PRD_REF>docs/PRD.md#FORMS</PRD_REF>
+    <INVARIANT REVIEW="cold reviewer">Next actions distinguish empty, tree-only and accepted-material starts. Minimal and detailed letters in each shipped host language ask a witness before the guess, name one paper and purpose, and omit missing guidance.</INVARIANT>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-HOST-CLI"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-HOST-LANGUAGE"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-HOST-TEXT"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-HOST-PAGES"/>
+  </FEATURE_HOST_TEXT>
+  <MODULE_HOST_CLI ID="MOD-HOST-CLI" FILE="src/familiar/instance/host_cli.py" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-FAMILY-GATE"/>
+  </MODULE_HOST_CLI>
+  <MODULE_HOST_LANGUAGE ID="MOD-HOST-LANGUAGE" FILE="src/familiar/instance/host_language.py" STATE="IMPLEMENTED">
+    <!-- Compile the bounded internal-ID matcher once per host view, retaining fragment and final-surface checks. -->
+  </MODULE_HOST_LANGUAGE>
+  <MODULE_HOST_TEXT ID="MOD-HOST-TEXT" FILE="src/familiar/instance/host_text.py" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-HOST-LANGUAGE"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-HOST-PAGES"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-NARRATIVE-DISCLOSURE"/>
+  </MODULE_HOST_TEXT>
+  <MODULE_HOST_PAGES ID="MOD-HOST-PAGES" FILE="src/familiar/instance/host_pages.py" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-OUTPUT-REVIEW"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-PUBLICATION"/>
+  </MODULE_HOST_PAGES>
+</Why_Graph_Shard>

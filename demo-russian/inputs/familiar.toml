@@ -1,0 +1,11 @@
+schema_version = 1
+region_packs = []
+# Без этой строки `instance init --language ru` не даёт хозяину ни одного текста (см. README).
+language_packs = { ru = "ru" }
+
+[family]
+id = "walk-2-shmidt-invented"
+title = "Семья Корнеевых-Шмидт (вымышленная)"
+source_language = "ru"
+languages = ["ru"]
+fictional = true

@@ -1,0 +1,12 @@
+{
+  "_about": "thread and next_test are shown in the family's private desk. Write a short human topic and next step, without paths, internal IDs, staff assignments or search syntax. In a desk search-table plan, the first (topic) and third (question) columns are also family-facing.",
+  "id": "birthplace-case",
+  "question": "birthplace",
+  "state": "open",
+  "story_level": "story-page",
+  "thread": "Where the family lived before the move",
+  "next_test": "Find the marriage entry: it may name the village where both grew up.",
+  "basis": [
+    "memory-name"
+  ]
+}

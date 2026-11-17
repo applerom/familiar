@@ -1,0 +1,1593 @@
+# START_MODULE_CONTRACT: MOD-REGION-BP-SOURCES
+# PURPOSE: Tell a researcher of this region which sources exist for a place and a period, what each holds, how to reach it and how its zero reads, with what was actually seen kept apart from what was only retold.
+# PRD_REF: docs/PRD.md#LAYERS
+# INVARIANTS:
+# - source ids are unique, and kind, classes and access come from closed lists [review: pack keeper]
+# - pace is never a pack value: a source states what the site publishes, the host's ledger decides the pace [review: engine lead]
+# CHANGES_WITH:
+# - regions/CONTRACT.md (record shape)
+# - MOD-ROLES-RECIPE-SEARCHER (reads a source before its recipe)
+# :END_MODULE_CONTRACT
+#
+# Region: today's Belarus and the Podlaskie borderland of Poland; the old
+# governorates of the north-west of the Russian Empire; Minsk as a Soviet city.
+# Includes cross-region cemetery, forum and emigration routes relevant to
+# this borderland's diaspora. Unknown dates stay [] and never filter planning.
+
+# Only explicit place/country words establish planning geography. A bare town
+# is ambiguous; historical borderlands retain all plausible catalogue countries.
+[[coverage.places]]
+aliases = ["Poland", "Polska", "Польша", "Польши", "Польшча"]
+countries = ["PL"]
+[[coverage.places]]
+aliases = ["Belarus", "Беларусь", "Беларуси", "Białoruś", "Белоруссия", "Белоруссии", "Минская", "Мінская", "Minsk", "Могилёвская", "Могилевская", "Витебская"]
+countries = ["BY"]
+[[coverage.places]]
+aliases = ["Lithuania", "Lietuva", "Litwa", "Литва", "Литвы"]
+countries = ["LT"]
+[[coverage.places]]
+aliases = ["Russia", "Россия", "России", "Rosja"]
+countries = ["RU"]
+[[coverage.places]]
+aliases = ["Ukraine", "Украина", "Украины", "Ukraina"]
+countries = ["UA"]
+[[coverage.places]]
+aliases = ["Grodno", "Гродно", "Гродненская", "Grodzieńska", "Гродненской"]
+countries = ["BY", "PL", "LT"]
+
+# ---------- parish registers, revisions, inventories (to about 1920) ----------
+
+[[source]]
+id = "familysearch"
+title = "FamilySearch (channel unrecorded)"
+kind = "reference"
+classes = ["parish-register", "census-revision"]
+countries = ["BY", "PL", "LT"]
+years = [1600, 1925]
+holds = "Microfilmed parish books and revisions of the region's archives, viewable as frames; a catalogue by place; some indexed collections."
+domains = ["familysearch.org"]
+access = "host-login"
+how = "Catalogue by place, then the film; frames are read, not searched. The indexed collection of the Grodno governorate is searchable only in the Cyrillic script."
+zero = "An index zero says nothing about the frames: most films of this region are not indexed. The Grodno indexed collection ends in 1884; later years are in the archives, not here."
+coverage = ""
+site_limits = "Throttling per user by processing time, answer 429 with a retry delay; no request count published."
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-11-07
+basis = "Pilot notes on the index in one script and its end year; developer page on throttling read 2026-10-31. Not rechecked on 2026-11-12: the site is reached only through the host's sign-in, and an anonymous request is refused by the pilot's rules."
+
+[[source]]
+id = "familysearch-tree"
+title = "FamilySearch · Family Tree"
+kind = "index"
+classes = ["family-tree"]
+countries = []
+years = []
+domains = []
+aliases = ["FamilySearch Tree", "FamilySearch Family Tree"]
+holds = "User-contributed family trees; a profile is separate from historical Records and Full Text."
+access = "host-login"
+how = "Read the linked profile and its cited evidence; do not infer identity from a search result."
+zero = "A tree-search zero says nothing about historical records."
+coverage = "Unknown; profiles are contributed by users."
+status = "reported"
+checked = 2026-11-16
+basis = "Channel distinction in existing source recipes and saved journal labels; no new live source check."
+
+[[source]]
+id = "familysearch-records"
+title = "FamilySearch · Records"
+kind = "index"
+classes = ["parish-register", "census-revision"]
+countries = ["BY", "PL", "LT"]
+years = [1600, 1925]
+search_scripts = ["Latn", "Cyrl"]
+search_language_eras = [{years = [1600, 1864], languages = ["pl", "la", "ru"]}, {years = [1865, 1918], languages = ["ru"]}, {years = [1919, 1925], languages = ["pl", "ru"]}]
+domains = []
+aliases = ["FamilySearch Records"]
+holds = "Historical records, their indexes and catalogue images; indexed coverage is not image coverage."
+access = "host-login"
+how = "Choose the collection or catalogue film and establish its language and indexed years."
+zero = "An index zero says nothing about unindexed images or Family Tree and Full Text."
+coverage = "Per collection; the regional catalogue's broad years are planning orientation only."
+status = "reported"
+checked = 2026-11-16
+basis = "Split of the existing FamilySearch source card; no new live check or extension of its reported regional years."
+
+[[source]]
+id = "familysearch-fulltext"
+title = "FamilySearch · Full Text"
+kind = "index"
+classes = ["parish-register", "census-revision"]
+countries = []
+years = []
+domains = []
+aliases = ["FamilySearch Full-Text", "FamilySearch Full-Text original", "familysearch.fulltext"]
+holds = "Full Text searches transcribed image text; it is a separate pass from Records and Family Tree."
+access = "host-login"
+how = "Establish the actual collection, languages and years before interpreting a zero."
+zero = "A Full Text zero does not close the Records or Family Tree cells."
+coverage = "Unknown; collection coverage must be established for each pass."
+status = "reported"
+checked = 2026-11-16
+basis = "Existing saved Full-Text journal labels; channel separation only, no new live check."
+
+[[source]]
+id = "geneteka"
+search_languages = ["pl", "ru", "be", "la"]
+search_scripts = ["Latn", "Cyrl"]
+planning_requires = "parish"
+title = "Geneteka"
+kind = "index"
+classes = ["parish-register"]
+countries = ["PL", "BY", "LT", "UA"]
+years = [1600, 1940]
+holds = "Volunteer indexes of baptisms, marriages and deaths of parishes, including Podlaskie and the parishes of the old Grodno district."
+domains = ["geneteka.genealodzy.pl"]
+access = "open"
+how = "Search by surname, register type, parish and year range; results are rows of the index. Для восточных территорий выбрать также Białoruś или Litwa; не отключать поиск в родителях, если ищутся дети пары. Поле oraz и режим Wyszukaj jako para помогают искать пару в одном акте. Радиус соседних приходов 15 км не устанавливает исторической принадлежности."
+zero = "A zero covers only the parishes and years indexed; indexes have gaps of decades inside one parish. Check the coverage table of the parish first."
+coverage = "Per parish and register type; published on the site. Наличие индекса не обещает ссылку на образ; Geneszukacz — другой вход в те же региональные индексы, а не независимое подтверждение."
+site_limits = "The robots file asks crawlers for a delay of 120 s and closes the search path; one refusal seen at a slow pace."
+paid = ""
+recipe = "geneteka"
+status = "reported"
+checked = 2026-11-08
+basis = "Search used through a pilot recipe; robots file read 2026-10-31. Дополнение R: ex-ussr-kinship-research v1.44.0, references/source-strategy.md, строка 98. Строки 98–102; наблюдение PR #160 от 02.11.2026 в строке 100. Geneszukacz: references/seed-sources.md, строка 319, чтение формы 05.11.2026. Проверенный рецепт не заменяется чужим описанием. Внешнее сообщение; нами сайт, выдача и охват не проверялись."
+
+[[source]]
+id = "metryki"
+title = "Metryki"
+kind = "index"
+classes = ["parish-register"]
+countries = ["PL", "BY", "UA", "LT"]
+years = [1600, 1940]
+holds = "A base of scans of registry (metric) books run by the Polish genealogical society: about 14.3 million images; the start page groups the collections by voivodeship, Podlaskie among them, with a few for Belarus, Ukraine and Lithuania."
+domains = ["metryki.genealodzy.pl"]
+access = "open"
+how = "The start page lists the collections by voivodeship with a count beside each (the counts are not labelled); how a name or a unit is searched was not tried."
+zero = "A scan base is not a name index: no zero from a name can be read from it until the unit of the parish and year is found."
+coverage = ""
+site_limits = "Nothing published on the start page."
+paid = ""
+recipe = ""
+status = "verified"
+checked = 2026-11-12
+basis = "Start page seen on 2026-11-12: title, image count, list of voivodeships with counts, no sign-in prompt. Terms of use and the search itself not tried; that it is not a name index is a reading of the page, not a quoted line."
+
+[[source]]
+id = "eais"
+title = "EAIS"
+kind = "archive"
+classes = ["parish-register", "census-revision", "inventory"]
+countries = ["LT", "BY"]
+years = [1500, 1920]
+holds = "Lithuanian state archives online: the historical archive LVIA with church books (fond 604), inventories of royal estates (fond 11) and revisions, part of them digitised."
+domains = ["eais.archyvai.lt"]
+access = "host-login"
+how = "Search by fond and description; open the digitised case as a set of files. Цифровая читальня: https://eais.archyvai.lt/repo-ext; перечень оцифрованных дел LVIA: https://lvia.archyvai.lrv.lt/en/news/updated-list-of-digitized-files-of-the-lithuanian-state-historical-archives-DKv/ . Если ePaveldas показывает только обложку, искать полный просмотр здесь по шифру или ссылке хранителя. Заголовочный поиск личных дел не ищет всех упомянутых внутри людей."
+zero = "The first zero is an intermediate screen; wait for the result list before reading it as empty."
+coverage = "Only part of the cases is digitised; a case missing from the list may still exist on paper."
+site_limits = "Nothing published."
+paid = "Copies of undigitised cases by order."
+recipe = ""
+status = "reported"
+checked = 2026-11-14
+basis = "Прежняя проверка Familiar 29.10.2026: поиск и скачивание оцифрованной описи работали. Дополнение: ex-ussr-kinship-research v1.46.0, references/seed-sources.md:285–286; чужое чтение справки LVIA и сообщения об оцифровке 14.11.2026. Автор PR #267 сообщил о заголовочном поиске 02–03.10.2026 и о делах только с описанием. Это внешние наблюдения, не новая проверка поиска, образов или полноты Familiar."
+
+[[source]]
+id = "epaveldas"
+title = "Epaveldas"
+kind = "library"
+classes = ["inventory", "parish-register"]
+countries = ["LT"]
+years = [1500, 1920]
+holds = "The Lithuanian portal of digitised heritage: about 2.5 million pages of old books, newspapers, manuscripts and church metric books, among them books of the Lithuanian historical archive, each with a usage-rights label."
+domains = ["epaveldas.lt"]
+access = "open"
+how = "Advanced search with the holder of the item chosen (the historical archive for church books); a full view opens under the data of the object. Участник сообщил о каталожном адресе /search?term=<слово>; это непроверенный параметр, сначала сверить текущую форму. Проверять наличие указателя и доступ к образам отдельно по книге."
+zero = ""
+coverage = ""
+site_limits = ""
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-11-12
+basis = "Search listings of the portal's own pages and its guide on 2026-11-12; the start page itself was only a loading shell, so no search was run. Share of the archive's church books online unknown. Дополнение R: ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строка 284. Наблюдение участника PR #160 от 02.11.2026; параметр в проекте независимо не подтверждён. Внешнее сообщение; нами сайт, выдача и охват не проверялись."
+
+[[source]]
+id = "aab"
+title = "Archiwum Archidiecezjalne w Białymstoku"
+kind = "archive"
+classes = ["parish-register"]
+countries = ["PL", "BY"]
+years = [1865, 1937]
+holds = "Second copies of the registers of the parishes of the Grodno deanery, one volume per year, in Russian, with a name index per parish; 1865-1910 also digitised in the archive. По внешнему чтению страницы фондов также названы копии Лунненского деканата 1922–1937; охват конкретных приходов требует инвентаря."
+domains = ["arch.apogelion.pl"]
+access = "request"
+how = "Inventories are open as files. The archive's page on access says that books are lent for genealogical searches after a telephone call, that the reader must read Russian, and that books up to 100 years old can be consulted; a letter route, fees and digital copies are not described there. Дополнительный путь: https://arch.apogelion.pl/archiwum/zbiory-archiwum/; внешний проект сообщает о прямом описании Гродненского и Лунненского деканатов."
+zero = "There is no online viewer and nothing on the Polish archives portal; absence online is not absence."
+coverage = "Digital copies 1865-1910 except one year."
+site_limits = ""
+paid = "Copies on the archive's terms; the terms are not on the access page."
+recipe = ""
+status = "reported"
+checked = 2026-11-12
+basis = "Inventory files read in the pilot; on 2026-11-12 the archive's start page, access page and list of inventories were read: the access rules above are from them. The Grodno deanery, the years 1865-1937 and the digital copies are not on those pages (the list names parish fonds, none of the Grodno deanery), so these statements stay as reported. Дополнение R: ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строка 328. Чужое чтение страницы фондов 05.11.2026 не устраняет ограничение нашей проверки 12.11.2026: нужен повторный просмотр точного раздела, без повышения статуса. Внешнее сообщение; нами сайт, выдача и охват не проверялись."
+
+[[source]]
+id = "niab"
+title = "NIAB"
+kind = "archive"
+classes = ["parish-register", "census-revision", "inventory", "civil-register"]
+countries = ["BY"]
+years = [1500, 1920]
+holds = "The national historical archive in Minsk and its branch in Grodno: parish registers, revisions and administration of the former Minsk, Mogilev, Vitebsk and part of the Grodno governorates, up to about 1920."
+domains = ["niab.by", "niab-grodno.by"]
+access = "request"
+how = "Минск: https://niab.by/newsite/by/zaprosy-i-paslugi; во внешнем проекте сообщено о приостановке генеалогических и тематических заявок с 02.04.2026 и биографических от физических лиц с 17.09.2026. Гродно: https://niab-grodno.by/science/ — описи и XLSX-указатели приходов; https://niab-grodno.by/zaprosy/ — условия обращений, сообщённая приостановка генеалогических заявок с 01.02.2025 и запись в читальный зал. Перед обращением перепроверить отдельно оба учреждения."
+zero = "Inventories list cases, not people; reading a case is a separate step."
+coverage = "Онлайн-указатели показывают годы и шифры, а не полноту образов. В фонде 1781 Минска сообщены консисторские копии метрик и исповедные ведомости; наличие каждого прихода и года проверять по описи."
+site_limits = "Nothing published."
+paid = "По чужому чтению страницы Гродно 11.11.2026 биографическая услуга — 47 BYN по прейскуранту с 01.02.2026; актуальность и применимость неизвестны. Платная услуга — опция, не поручение."
+recipe = ""
+status = "reported"
+checked = 2026-11-11
+basis = "The archive's page: acceptance of genealogical requests suspended since 2024-01-18; the current state is not known. On 2026-11-12 the national archive's page on genealogy was read: it sends genealogical requests to this archive (Minsk for the former Minsk, Mogilev, Vitebsk and part of the Grodno governorates, the Grodno branch for the former Grodno governorate and part of the Vilna one) and says copies of metric records of birth, marriage and death are given; it does not say whether requests are open now. Дополнение R: ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строка 250. Также строки 251–253. Даты чтения участниками: Минск 05.11.2026, Гродно 11.11.2026. Прежняя дата 18.01.2024 не подтверждает нынешнее состояние; обращения и каталожный доступ различаются. Внешнее сообщение; нами сайт, выдача и охват не проверялись."
+
+[[source]]
+id = "nashipredki"
+title = "НашиПредки"
+kind = "finding-aid"
+classes = ["parish-register", "census-revision"]
+countries = ["BY", "RU", "UA"]
+years = [1700, 1920]
+holds = "Where the registers and revisions of a place are kept and where scans are published: archive, fond, case and links."
+domains = ["nashipredki.com"]
+access = "host-login"
+how = "Начать с формы населённого пункта на https://nashipredki.com/; участник описал /location/result/?location=<название>. Учесть размер страницы и реально просмотренную пагинацию. Пустой список документов в карточке не равен отсутствию метрик; церковь из печатного списка мест не устанавливает хранителя."
+zero = ""
+coverage = ""
+site_limits = "Во внешнем наблюдении после серии частых запросов возникала CAPTCHA. Это наблюдение защиты, опубликованный сайтом темп неизвестен; при защите остановиться."
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-11-01
+basis = "Tab opened; protection page seen once. Not rechecked on 2026-11-12: the site is reached only in the host's session. Дополнение R: ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строка 125. Наблюдения участника PR #127 от 31.10–01.11.2026; прежний host-login и зафиксированная защита не снимаются чужим сообщением об открытии главной. Внешнее сообщение; нами сайт, выдача и охват не проверялись."
+
+[[source]]
+id = "polona"
+search_languages = ["pl"]
+search_scripts = ["Latn"]
+planning_requires = "episode"
+planning_terms = ["Polska", "Польша", "Польши", "польской", "польском", "Podlasie", "Подляшье", "Warszawa", "Варшава"]
+title = "Polona"
+kind = "library"
+classes = ["inventory", "address-book", "newspaper", "place-reference"]
+countries = ["PL", "BY", "LT"]
+years = [1500, 1950]
+holds = "The Polish national digital library: inventories and lustrations of estates, official journals, address books, newspapers."
+domains = ["polona.pl"]
+access = "host-login"
+how = "Full-text and title search; read the scan."
+zero = "Full text comes from recognition and misses old prints; a zero is weak."
+coverage = ""
+site_limits = "Nothing published."
+paid = ""
+recipe = ""
+status = "verified"
+checked = 2026-10-29
+basis = "Host signed in; search worked."
+
+[[source]]
+id = "szukajwarchiwach"
+search_languages = ["pl"]
+search_scripts = ["Latn"]
+title = "Szukaj w Archiwach"
+kind = "archive"
+classes = ["parish-register", "civil-register", "military", "inventory"]
+countries = ["PL"]
+years = [1600, 1990]
+holds = "Inventories and scans of Polish state archives: registers, military and interwar administration, the eastern provinces of 1919-1939 among them."
+domains = ["szukajwarchiwach.gov.pl"]
+access = "host-login"
+how = "Search form of the main page within one session; quotes narrow a stemmed search, exact matches come first."
+zero = "The site marks a zero with its own empty-result block; an empty answer during an outage is not protection and not a zero."
+coverage = ""
+site_limits = "The robots file sets no limits."
+paid = ""
+recipe = "szukajwarchiwach"
+status = "verified"
+checked = 2026-11-08
+basis = "Search used through a pilot recipe."
+
+[[source]]
+id = "agad"
+title = "AGAD"
+kind = "archive"
+classes = ["inventory", "parish-register"]
+countries = ["PL", "BY", "LT"]
+years = [1500, 1800]
+holds = "Main archive of old records in Warsaw: inventories of royal estates, the crown treasury, the chamber accounts of the Grodno estate. Внешний каталог дополнительно называет метрические книги восточных земель, включая Восточную Галицию; наличие прихода и лет не следует из общего названия архива."
+domains = ["agad.gov.pl"]
+access = "open"
+how = "Inventories online; microfilms in the reading room."
+zero = "Accounts are often summed by estate district and name no village."
+coverage = "Старый диапазон years 1500–1800 относится к прежнему описанию хозяйственных фондов; диапазон добавленного метрического маршрута не установлен и здесь не расширен."
+site_limits = ""
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-10-29
+basis = "An inventory of the chamber archive read. Дополнение R: ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строка 317. Текст каталога шире нашего исходного хозяйственного маршрута, но не даёт новых крайних лет; требуется отдельная уточняющая проверка. Внешнее сообщение; нами сайт, выдача и охват не проверялись."
+
+# ---------- twentieth century: civil registry and archives ----------
+
+[[source]]
+id = "zags-by"
+title = "ЗАГС"
+kind = "registry"
+classes = ["civil-register"]
+countries = ["BY"]
+years = [1918, 2026]
+holds = "Civil registry offices of Belarus: records of birth, marriage and death; first copies in the office of the place, second copies in the archives of the registry bodies of each region and of Minsk."
+domains = []
+access = "request"
+how = "A written request to the registry office of residence or to the office or archive that keeps the record; a certificate with data from a record goes to the person, to parents for a child's birth, to relatives for a death, in exceptional cases to heirs, close relatives and the spouse (resolution 610, point 114). Copies of records are not issued to citizens. Not a research service: genealogical research is not among the procedures read."
+zero = "The notice that no record exists is based on a check of the registers of the named locality for the year asked and three years before and after (resolution 610, point 118); it is not a denial for other years or places."
+coverage = "More than 26 million records, over 40 percent digitised (minister of justice, reported 2026-08-12); the share for the years before 1944 is not stated."
+site_limits = ""
+paid = "Paid additional services exist (resolution 610, annex 1); the fee for a repeat certificate was not checked."
+recipe = ""
+status = "verified"
+checked = 2026-11-12
+basis = "Resolution 610 of 2025-11-06 read on the legal portal (points 12, 87-88, 108, 114-118, annex 1); the news item of the legal portal of 2026-08-12 read for the digitisation figures."
+
+[[source]]
+id = "minsk-city-archive"
+title = "Минский городской архив"
+kind = "archive"
+classes = ["personnel-file"]
+countries = ["BY"]
+years = [1944, 2026]
+holds = "Records of liquidated organisations of Minsk, personnel files and pay records among them; the district outside the city has its own archive."
+domains = []
+access = "request"
+how = "A letter with the organisation's name and years. Requests of a social and legal kind that do not touch property or inheritance are free; a request for personal purposes, a publication or research is biographical and paid (official archives portal, page on services)."
+zero = ""
+coverage = ""
+site_limits = ""
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-11-12
+basis = "Duty of territorial archives from the archives law (verified); the free and paid rule from the portal's page on services (read). The archive's own page was not obtained: the city site answered 403 once (not repeated); the official portal's page on the justice department's group says it organises the work of this archive but gives no holdings. Snippets of the city site give two different addresses: check before a visit."
+
+[[source]]
+id = "narb"
+title = "НАРБ"
+kind = "archive"
+classes = ["forced-labour"]
+countries = ["BY"]
+years = [1917, 2026]
+holds = "National archive of Belarus: records of republican bodies (the composition of the fonds is in a separate reference system and a short printed guide); it has a request form on forced labour in the war years; publications include a study of Belarusian forced labourers (Minsk, 2001, 336 pages). Дополнительные публикации: виртуальные выставки и шесть областных документальных сборников «Без срока давности. Беларусь», включая акты ЧГК. Это отбор документов, не всеобщий именной индекс."
+domains = ["narb.by"]
+access = "request"
+how = "Requests and services are on its site, among them a form about forced labour in 1941-1945. Genealogical requests are not taken here: its page on genealogy directs them to the national historical archive. Отдельный описанный внешним проектом маршрут — запрос о пребывании в нацистских концлагерях и тюрьмах, с анкетой на сайте НАРБ; не смешивать с формой о принудительном труде."
+zero = "A zero from this archive on a family question means the wrong archive first: personnel files of ordinary enterprises are in territorial archives (by-liquidated-orgs)."
+coverage = "Выставки и областные сборники выборочны. Состав каждого опубликованного документа и именной охват выяснять по шифру; чтение списка томов не равно чтению PDF."
+site_limits = ""
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-11-12
+basis = "Start page, the pages on fonds and on genealogy, and the portal's page on the 2001 study read on 2026-11-12. Corrected: the earlier entry spoke of a three-volume printed book and of a party archive; neither was found (a list on the portal gives a documents collection of 1996 in two books, seen in a search snippet only), so both are dropped. Дополнение R: ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строка 271. Также строка 272. Чужое чтение 07.11.2026; PDF Гомельской области не был прочитан из-за лимита инструмента. Внешнее сообщение; нами сайт, выдача и охват не проверялись."
+
+[[source]]
+id = "mogilev-regional-archive"
+title = "Государственный архив Могилёвской области"
+kind = "archive"
+classes = ["forced-labour", "village-council", "personnel-file"]
+countries = ["BY"]
+years = [1917, 2026]
+holds = "2 433 fonds of the city of Mogilev and nine districts from 1917; records of the occupation and of the deportation of about 100 000 people to forced labour."
+domains = []
+access = "request"
+how = "Страница учреждения — через общий портал archives-by (archives.gov.by); процедура запроса в прочитанной странице не описана. Уточнить условия и адрес обращения у хранителя."
+zero = ""
+coverage = ""
+site_limits = ""
+paid = ""
+recipe = ""
+status = "verified"
+checked = 2026-11-11
+basis = "The archive's page on the state archives portal read."
+
+[[source]]
+id = "archives-by"
+title = "Архивы Беларуси"
+kind = "reference"
+classes = ["archive-guide"]
+countries = ["BY"]
+years = [1917, 2026]
+holds = "The state archives portal: which archive keeps which period, the rule that genealogical searches are paid and service-record certificates are free."
+domains = ["archives.gov.by"]
+access = "open"
+how = "Read the guide pages; they list archives and services."
+zero = ""
+coverage = ""
+site_limits = ""
+paid = ""
+recipe = ""
+status = "verified"
+checked = 2026-11-11
+basis = "Guide page on services read; read again on 2026-11-12 for who may apply and which services are free."
+
+[[source]]
+id = "by-law-texts"
+title = "Эталон"
+kind = "reference"
+classes = ["law"]
+countries = ["BY"]
+years = [1991, 2026]
+holds = "Current texts of Belarusian laws, the archives law among them, with the list of amendments."
+domains = ["etalonline.by", "pravo.by"]
+access = "open"
+how = "Open the law by its registration number; read the article."
+zero = ""
+coverage = ""
+site_limits = ""
+paid = ""
+recipe = ""
+status = "verified"
+checked = 2026-11-12
+basis = "The archives law read in its current version; on 2026-11-12 articles 12, 20 and 29 and the list of amending laws (163-З of 2022, 134-З of 2026) were read, and resolution 610 of 2025 was read on the same portal."
+
+[[source]]
+id = "nlb"
+title = "НББ"
+kind = "library"
+classes = ["address-book", "newspaper"]
+countries = ["BY"]
+years = [1900, 2026]
+holds = "The national library: city address and telephone books, newspapers and obituaries."
+domains = ["nlb.by"]
+access = "request"
+how = ""
+zero = ""
+coverage = ""
+site_limits = ""
+paid = ""
+recipe = ""
+status = "unverified"
+basis = "Named as the place of city address books; not opened. Rechecked on 2026-11-12: the site refused the connection twice from this host; search listings show the library's departments and catalogue but name no holding of address books."
+
+# ---------- wars, service, awards, repression, forced labour ----------
+
+[[source]]
+id = "pamyat-naroda"
+search_languages = ["ru"]
+search_scripts = ["Cyrl"]
+title = "Память народа"
+kind = "index"
+classes = ["military", "award"]
+countries = ["RU", "BY", "UA"]
+years = [1941, 1985]
+holds = "Loss reports, award files and the award card index of 1941-1945, the jubilee awards of 1985 among them; about 22 million award cards."
+domains = ["pamyat-naroda.ru"]
+access = "host-login"
+how = "Surname, given name, patronymic; ten rows per page; the search is fuzzy in names and loose in birth years; the counter stops at 10 000."
+zero = "The site states that no documents were found; a zero for a woman or a non-combatant is the norm, not an absence."
+coverage = ""
+site_limits = "Captchas appear; only the host passes them."
+paid = ""
+recipe = "pamyat-naroda"
+status = "verified"
+checked = 2026-11-08
+basis = "Search used through a pilot recipe; the zero message seen."
+
+[[source]]
+id = "podvig-naroda"
+search_languages = ["ru"]
+search_scripts = ["Cyrl"]
+title = "Подвиг народа"
+kind = "index"
+classes = ["award"]
+countries = ["RU", "BY", "UA"]
+years = [1941, 1985]
+holds = "Award documents of 1941-1945."
+domains = ["podvignaroda.ru"]
+access = "host-login"
+how = ""
+zero = ""
+coverage = ""
+site_limits = "A captcha on the tab; only the host passes it."
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-10-29
+basis = "Tab opened by the host. Not rechecked on 2026-11-12: a site behind a captcha, reached only in the host's session."
+
+[[source]]
+id = "obd-memorial"
+search_languages = ["ru"]
+search_scripts = ["Cyrl"]
+title = "ОБД Мемориал"
+kind = "index"
+classes = ["military"]
+countries = ["RU", "BY", "UA"]
+years = [1941, 1945]
+holds = "Losses and prisoners of war of 1941-1945."
+domains = ["obd-memorial.ru"]
+access = "open"
+how = "Обычная поисковая страница в браузере; f/n/s — фамилия/имя/отчество, bd — рождение, d — призыв, r — звание, pb — место рождения, lp — последнее место службы, dateout — выбытие; страница p. Прежние y=год и r=призыв не применять. Карточку открывать по настоящему id_common строки."
+zero = "A shell page is not a zero."
+coverage = ""
+site_limits = ""
+paid = ""
+recipe = "obd-memorial"
+status = "reported"
+checked = 2026-11-14
+basis = "Две живые пробы Familiar 12.11.2026: список 254 / 20 строк и карточка 12 пар полей, HTTP 200; ноль не проверялся. Исправление параметров: общая карточка host sources/obd-memorial.md:5–8, свод наблюдений 05–13.11.2026, перенесённый 14.11.2026; новая именная проба при исправлении не выполнялась."
+
+[[source]]
+id = "gwar"
+title = "Памяти героев Великой войны"
+kind = "index"
+classes = ["military", "award"]
+countries = ["RU", "BY", "PL", "LT"]
+years = [1914, 1918]
+holds = "Losses, awards and hospitals of the war of 1914-1918."
+domains = ["gwar.mil.ru"]
+access = "host-login"
+how = "Через обычную форму https://gwar.mil.ru/heroes/ выбирать фамилию, различающие имена, губернию, уезд и волость. Внешняя проверка формы относит birth_place и birth_place_volost к месту жительства/призыва, не устанавливает рождение. Отдельно выбирать картотеку военнопленных; каждый кандидат ведёт к карточке и образу штатным путём."
+zero = ""
+coverage = "Карточки донесений, госпиталей, наград и пленных могут повторять человека и сведения одного документа. Выборка по волости не является переписью населения или всех служивших; при ограничении выдачи сохранять неполноту."
+site_limits = ""
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-10-29
+basis = "Used in the pilot without a recipe. Not rechecked on 2026-11-12: a site behind a captcha, reached only in the host's session. Дополнение R: ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строка 374. Форма описана как проверенная 26.10.2026; details references/ww1-search.md, строки 17–21. Чужой скрипт не переносится и не запускается; прежний доступ host-login сохраняется. Внешнее сообщение; нами сайт, выдача и охват не проверялись."
+
+[[source]]
+id = "tsamo"
+title = "ЦАМО"
+kind = "archive"
+classes = ["military", "award"]
+countries = ["RU"]
+years = [1941, 1991]
+holds = "Central archive of the defence ministry: personnel and unit records and award documents."
+domains = ["archive.mil.ru"]
+access = "request"
+how = "A request by post, in person at the reception or as an electronic document; one request per award with the data of the order or decree, and a copy of an identity document (snippet of the archive's page on requests)."
+zero = ""
+coverage = ""
+site_limits = ""
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-11-12
+basis = "The archive's pages (requests, contacts, reading room) listed by search on 2026-11-12 and their rules read from the snippet; the site refused the connection when opened. The jubilee award index of 1985 by cabinet and drawer, named in the earlier entry, was not found in them and is dropped."
+
+[[source]]
+id = "caw-wbh"
+title = "CAW, WBH"
+kind = "archive"
+classes = ["military"]
+countries = ["PL"]
+years = [1918, 1939]
+holds = "Polish army 1918-1939: personnel files and regimental lists; the historical office has an online search."
+domains = ["wbh.wp.mil.pl"]
+access = "open"
+how = "The online search of the historical office works; the central archive by request and in the reading room."
+zero = ""
+coverage = ""
+site_limits = "A bot protection page in front of the site; on 2026-11-12 the page of the search showed an image captcha and was not passed."
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-10-29
+basis = "Online search used in the pilot without a recipe."
+
+[[source]]
+id = "ipn"
+search_languages = ["pl"]
+search_scripts = ["Latn"]
+planning_requires = "episode"
+planning_terms = ["Polska", "Польша", "Польши", "польской", "репрессии", "репрессирован", "арест", "ссылка", "депортация", "prison", "deportation"]
+title = "IPN"
+kind = "index"
+classes = ["repression", "military"]
+countries = ["PL"]
+years = [1939, 1990]
+holds = "Index of people who after 1939-09-17 came under Soviet occupation and ended up in prisons, camps or exile in the former USSR (over 316 000 records in the public base, an internal base of about 1 200 000 for the institute's own searches); the institute's archival inventory is a second site, the Polish army formed in the east in 1941-1942 among its subjects. Происхождение карточек неоднородно: архивные сведения, анкеты пострадавших и родственников; связь с делом устанавливать по записи."
+domains = ["indeksrepresjonowanych.pl", "inwentarz.ipn.gov.pl"]
+access = "open"
+how = "A search section is linked from the start page of the index; its fields are not listed there. Learn on a known case what the exact-match switch means: here it means contains. В другом проекте наблюдался поиск с % в конце основы; внутри слова тот же знак не сработал. До проверки интерфейса не считать это постоянным оператором, использовать также точные варианты."
+zero = ""
+coverage = ""
+site_limits = ""
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-11-12
+basis = "Start page of the index read on 2026-11-12 (record counts, scope); the inventory site and the exact-match behaviour come from the pilot's use and were not rechecked. Дополнение R: ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строка 223. Наблюдение участника PR #160 от 02.11.2026; описание начальной страницы и происхождение сведений различать. Внешнее сообщение; нами сайт, выдача и охват не проверялись."
+
+[[source]]
+id = "openlist"
+search_match = "prefix"
+search_match_basis = "A single surname prefix includes longer surname forms in the read index results; separate alternative surnames require separate queries."
+title = "Открытый список"
+kind = "index"
+classes = ["repression"]
+countries = ["RU", "BY", "UA"]
+years = [1917, 1991]
+holds = "Victims of Soviet political repression, with forms by place of birth and residence; memorial lists alongside it."
+domains = ["openlist.wiki", "lists.memo.ru"]
+access = "open"
+how = ""
+zero = ""
+coverage = ""
+site_limits = "The memorial list site refused requests."
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-11-12
+basis = "Forms read in the pilot; no recipe. On 2026-11-12 the start page gave only navigation and language links, no count or scope."
+
+[[source]]
+id = "arolsen"
+title = "Arolsen Archives"
+kind = "index"
+classes = ["forced-labour", "emigration"]
+countries = ["DE", "BY", "PL"]
+years = [1939, 1960]
+holds = "Forced labour, camps, displaced persons and emigration after 1945."
+domains = ["collections.arolsen-archives.org"]
+access = "open"
+how = "Type the name into the form (an address with a query gives an empty form); results arrive in 15-30 s, a common surname up to 85 s; one request, then wait. Оболочка без загрузившихся результатов не подтверждает ноль. При пробеле подготовить запрос по официальной форме; отправляет хозяин."
+zero = "Both counters at zero; the page itself writes nothing at zero. The search is fuzzy and full-text; lists are cut at 1 000 rows per type."
+coverage = "Онлайн-коллекции уже полного архива. Отсутствие онлайн-документа оставляет официальный запрос: https://arolsen-archives.org/en/archive/inquiry/."
+site_limits = "Nothing published."
+paid = "Согласно чужому чтению 28.10.2026, услуги обычно бесплатны, редкие исключения согласуются заранее; актуальные условия и срок проверить перед запросом."
+recipe = ""
+status = "reported"
+checked = 2026-11-08
+basis = "Search used through a pilot recipe; the zero seen. Дополнение R: ex-ussr-kinship-research v1.44.0, references/germany-forced-labour.md, строка 20. Пункт о полном архиве и форме запроса, чужое описание условий 28.10.2026; прежнее наблюдение поисковой формы сохранено отдельно в начале basis. Внешнее сообщение; нами сайт, выдача и охват не проверялись."
+
+[[source]]
+id = "straty"
+search_languages = ["pl"]
+search_scripts = ["Latn"]
+planning_requires = "episode"
+planning_terms = ["Polska", "Польша", "Польши", "польской", "оккупация", "лагерь", "остарбайтер", "forced labour", "occupation"]
+title = "Straty"
+kind = "index"
+classes = ["forced-labour", "military"]
+countries = ["PL"]
+years = [1939, 1945]
+holds = "A base of losses: Polish citizens murdered and repressed under German occupation in 1939-1945, 5 565 892 records of which 5 059 663 are named; regional societies and the press of the Podlaskie borderland alongside it."
+domains = ["straty.pl"]
+access = "open"
+how = "A public search is linked from the start page; a sign-in page also exists and the terms of use are not stated there."
+zero = ""
+coverage = ""
+site_limits = ""
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-11-12
+basis = "Start page read on 2026-11-12 (description, record counts, links); a search was not run, so access and the reading of a zero are not confirmed. The regional societies and press come from the pilot's use."
+
+# ---------- cemeteries ----------
+
+[[source]]
+id = "spachyn"
+title = "Spachyn"
+kind = "index"
+classes = ["cemetery"]
+countries = ["BY"]
+years = [1800, 2026]
+holds = "Burials of Belarus: 956 520 names on 5 633 cemeteries; the Minsk region 188 483; no separate figure for the city of Minsk."
+domains = ["spachyn.by"]
+access = "open"
+how = "One line: surname, given name, patronymic, year; tolerant to typos and Latin letters. The result page is server-rendered: parameters q, region (7 Minsk, 3 Mogilev, 6 Vitebsk, 2 Gomel, 5 Grodno, 4 Brest), death_from, death_to, birth_from, birth_to, photo."
+zero = "Shows the 30 closest names, marked exact or close spelling; no exact row is a zero for that form. If fewer than 30 are exact, the list of the exact surname is complete. About half of the cemeteries are not digitised: a zero is not a denial. Many rows of one village sharing one wartime date mark a mass killing: read the date as the event, not as a separate death record."
+coverage = "Two large Minsk cemeteries: about 2 700 and 321 rows against catalogues of 49 722 and 11 070."
+site_limits = "No captcha seen."
+paid = "Grave search 150 BYN, care 300-350 BYN, as options."
+recipe = ""
+status = "verified"
+checked = 2026-11-12
+basis = "Result pages fetched and read; counts on the main page seen."
+
+[[source]]
+id = "pomnim"
+title = "Помним"
+kind = "index"
+classes = ["cemetery"]
+countries = ["BY"]
+years = [1900, 2026]
+holds = "A public burial base and social project: grave search by name, years, place and cemetery, with coordinates and photographs. The number of graves is not on the start page: one earlier publication says about 100 000, a publication of 2026-02 says tens of thousands."
+domains = ["pomnim.by"]
+access = "open"
+how = "Search by surname, given name, patronymic, birth and death years, location and cemetery."
+zero = ""
+coverage = "Unknown; the site states no total."
+site_limits = ""
+paid = "The site offers paid cleaning and maintenance of graves."
+recipe = ""
+status = "reported"
+checked = 2026-11-12
+basis = "Start page read on 2026-11-12 (description, search fields, paid care); figures from two news publications."
+
+# ---------- places and maps ----------
+
+[[source]]
+id = "sgkp"
+title = "Słownik geograficzny Królestwa Polskiego"
+kind = "reference"
+classes = ["place-reference"]
+countries = ["PL", "BY", "LT", "UA"]
+years = [1880, 1902]
+holds = "Gazetteer of places of the old Commonwealth lands with history, parish and owners; regional sites on places and local history alongside it."
+domains = ["dir.icm.edu.pl", "radzima.net", "knihi.com"]
+access = "open"
+how = "Look up the place in its Polish form. Не смешивать Słownik со справочником Radzima.net: последний описывает сохранность метрик и ссылки на образы, которые нужно сверять с описью."
+zero = ""
+coverage = ""
+site_limits = ""
+paid = "Radzima.net — отдельный коммерческий справочник в этой агрегированной карточке: значительная часть по сообщению оператора требует Premium. Тариф не установлен; платный доступ — только опция."
+recipe = ""
+status = "reported"
+checked = 2026-10-29
+basis = "Used in the pilot for places. Rechecked on 2026-11-12 without result: the digital edition's host answered 403 once (not repeated). Дополнение R: ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строка 160. Чужое чтение описания Radzima 05.11.2026. Домен knihi.com уже в записи, поэтому отдельная карточка тома XXV не создаётся; seed-sources.md, строка 34. Внешнее сообщение; нами сайт, выдача и охват не проверялись."
+
+[[source]]
+id = "old-maps"
+title = "Mapywig"
+kind = "reference"
+classes = ["map"]
+countries = ["PL", "BY", "LT"]
+years = [1800, 1945]
+holds = "Old military and administrative maps; a site on historical administrative division alongside it."
+domains = ["mapywig.org", "territorial.de"]
+access = "open"
+how = ""
+zero = ""
+coverage = ""
+site_limits = "On 2026-11-12 the certificate of mapywig.org had expired; the site was not opened further and the warning was not bypassed."
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-10-29
+basis = "Used in the pilot as background."
+
+[[source]]
+id = "wilno-churches-1910"
+title = "Forum Rodów Grodzieńskich: churches and chapels of the Vilna diocese in 1910"
+kind = "reference"
+classes = ["parish-register"]
+countries = ["BY", "PL", "LT"]
+years = [1832, 1912]
+holds = "Deanery-by-deanery list of Catholic churches and chapels, including suppressions, transfers and temporary worship; a forum transcription attributed to Biskupstwo wileńskie, Wilno 1912."
+domains = []
+access = "open"
+how = "Read https://forum.rodygrodzienskie.pl/index.php?topic=910.0 by deanery and place; verify against the printed work before relying on an attachment."
+zero = "An omitted church or year does not prove absence of worship or records."
+coverage = "Catholic list for 24 deaneries; the contributor explicitly excludes the former Uniate churches described in the printed source."
+site_limits = "Not established."
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-11-13
+basis = "Read the saved text of the forum post dated 2019-02-26, revised 2019-02-27, collected by a regional collection service on 2026-11-13. The printed 1912 work and its page numbers were not checked. All dates taken from this transcription remain reported."
+
+# Выборочное пополнение Belarus–Podlasie; предложение, не установленный пакет.
+# Все сведения reported; checked хранит дату чужого наблюдения, указанного в basis.
+# Неизвестные текстовые поля — "". Неизвестный фактический диапазон — years = [];
+# договор не определяет этот случай явно: перед применением хранителю принять
+# такое представление пробела либо установить годы по источнику. Годы не выдуманы.
+# countries — применимость к краю и связанным маршрутам; не обещание полного охвата.
+# access — сообщённый начальный маршрут; полный документ может иметь другие условия.
+
+[[source]]
+id = "sodd-by"
+title = "СОДД НАФ Беларуси"
+kind = "finding-aid"
+classes = ["archive-guide", "inventory"]
+countries = ["BY"]
+years = []
+holds = "Описания архивных материалов Беларуси на уровнях фонда, описи, дела и документа; карточка не обещает цифровой образ."
+domains = ["sodd.by"]
+access = "open"
+how = "Начать с https://sodd.by/; искать учреждение, историческое место или вид документа. По справке допускается часть слова без учёта регистра; сохранить шифр, ID и URL карточки."
+zero = "Ничего не найдено по фамилии в описаниях не означает отсутствия имени внутри дел."
+coverage = ""
+site_limits = ""
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-10-27
+basis = "ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строка 268. В проекте сообщено о чтении описания и справки 27.10.2026; способ поиска уточнён в references/source-strategy.md, строка 57. Внешнее сообщение; нами сайт, выдача и охват не проверялись."
+
+[[source]]
+id = "zhnivo"
+title = "Жніво / Zhnivo"
+kind = "index"
+classes = ["parish-register", "census-revision", "military"]
+countries = ["BY", "PL", "LT"]
+years = []
+holds = "Волонтёрские указатели документов исторических белорусских земель и переселений; часть текста получена машинным распознаванием."
+domains = ["db.zhnivo.com"]
+access = "open"
+how = "https://db.zhnivo.com/by/belarus-genealogical-databases/: адресная форма без смены URL. На host доступен site_search.py form zhnivo: surname, first_name, middle_name, place, district, region; | для вариантов, * для маски. Одна отправка и одна показанная страница, не более 100 строк; expand запрещён. Перед оценкой нуля сверить место и годы исходной коллекции. Проверять лист и происхождение строки."
+zero = "По карточке host: recordsTotal=0, data=[] и видимое «Нічога не знойдзена» после готовности; пустая оболочка не ноль. Пустой индекс оставляет открытыми документы, которые в него не внесены."
+coverage = ""
+site_limits = "Согласно пересказу условий, автоматическая выгрузка базы или её части, регулярный автоматизированный и коммерческий доступ требуют согласия проекта."
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-11-14
+basis = "ex-ussr-kinship-research v1.44.0, references/seed-sources.md:269, references/source-strategy.md:92–94, внешняя проверка 27.10.2026. Дополнение: карточка host sources/zhnivo.md:3–11 и sources/SITE-WORK.md, раздел формы; сообщены контроль формы 14.11.2026, первая страница и ноль, но место/район/губерния не проверены. Это не установление охвата коллекций Familiar. Рецепт host не объявляется установленным рецептом движка."
+
+[[source]]
+id = "hryc"
+title = "hryc.by"
+kind = "index"
+classes = ["archive-guide", "newspaper", "inventory"]
+countries = ["BY", "PL", "LT"]
+years = []
+holds = "Поиск по распознанным страницам документов и печатных изданий. Оператор в прочитанном справочнике не установлен."
+domains = ["hryc.by"]
+access = "open"
+how = "Открыть https://hryc.by/ и выбрать подходящие коллекции. По справке кавычки учитывают порядок и расстояние слов; без них ищутся все слова страницы. Маски одного слова: ? и *. Открыть контекст совпадения и архивную ссылку."
+zero = ""
+coverage = ""
+site_limits = ""
+paid = "Внешний справочник сообщает о различиях доступа по тарифу; состав платных возможностей и цена неизвестны. Платный просмотр — только опция."
+recipe = ""
+status = "reported"
+checked = 2026-10-27
+basis = "ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строка 42. Сообщено о чтении справки 27.10.2026; доступ к оригиналу, шифру и фильтрам зависит от условий; references/source-strategy.md, строки 106–108. Внешнее сообщение; нами сайт, выдача и охват не проверялись."
+
+[[source]]
+id = "belarus-tomsk"
+title = "Мои предки — из Беларуси!: справочник переселенцев"
+kind = "finding-aid"
+classes = ["emigration", "place-reference"]
+countries = ["BY", "LT", "RU"]
+years = [1906, 1917]
+holds = "Фамилии переселенцев из белорусских и соседних губерний в нынешнюю Томскую область, место выхода и вселения по историческому делению, ссылки на ГАТО, фонд 196, опись 15. Это уровень фамилии, без отдельных персон."
+domains = ["belarus-tomsk.ru"]
+access = "open"
+how = "https://belarus-tomsk.ru/spravochnik/: выбрать губернию через форму или province, искать фамилию либо место, переписать обе географические цепочки и архивное основание."
+zero = ""
+coverage = ""
+site_limits = ""
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-10-31
+basis = "ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строка 151. Чтение страницы 31.10.2026 описано участником внешнего проекта, PR #113. Внешнее сообщение; нами сайт, выдача и охват не проверялись."
+
+[[source]]
+id = "represii-by"
+title = "Віртуальны музей савецкіх рэпрэсій у Беларусі"
+kind = "index"
+classes = ["repression"]
+countries = ["BY"]
+years = [1917, 1991]
+holds = "Гражданский мемориальный проект с биографическими сведениями о репрессированных и ссылками на архивные дела; юридический оператор в справочнике не назван."
+domains = ["represii.net"]
+access = "open"
+how = "https://represii.net/repressed: форма фамилии, сообщённый путь /repressed?search=<фамилия>. Проверить белорусское написание наряду с русским, дождаться текста выдачи, сохранить ссылку на дело."
+zero = ""
+coverage = ""
+site_limits = ""
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-10-31
+basis = "ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строка 221. Наблюдение участника PR #112 от 31.10.2026: разные результаты для русского и белорусского написаний одной фамилии; это не правило для всех запросов. Внешнее сообщение; нами сайт, выдача и охват не проверялись."
+
+[[source]]
+id = "niva-podlasie"
+search_languages = ["be", "pl"]
+search_scripts = ["Latn", "Cyrl"]
+planning_requires = "episode"
+planning_terms = ["Podlasie", "Подляшье", "Белосток", "Białystok", "Bialystok", "Bielsk", "Бельск", "Hajnówka", "Гайновка", "Ніва", "Нива"]
+title = "Ніва: архив беларуского еженедельника в Польше"
+kind = "library"
+classes = ["newspaper"]
+countries = ["PL", "BY"]
+years = []
+holds = "Редакционный архив местной прессы в HTML и PDF: краеведение, воспоминания и некрологи. Сообщено о найденных выпусках 2001 года и более поздних."
+domains = ["niva.bialystok.pl"]
+access = "open"
+how = "https://niva.bialystok.pl/issue/archive.htm: выбрать выпуск, искать польские и белорусские формы места и фамилии; сохранять выпуск, дату и страницу, отделяя рассказ автора от цитируемого документа."
+zero = ""
+coverage = "Непрерывность по годам и полнота редакционного архива не установлены."
+site_limits = ""
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-11-05
+basis = "ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строка 330. Внешний проект описывает находки выпусков 05.11.2026, но не сплошной просмотр архива. Внешнее сообщение; нами сайт, выдача и охват не проверялись."
+
+[[source]]
+id = "pbc-vilna-inventories"
+title = "Podlaska Biblioteka Cyfrowa: инвентари Виленской комиссии"
+kind = "library"
+classes = ["inventory"]
+countries = ["BY", "LT", "PL"]
+years = [1720, 1798]
+holds = "Два выбранных печатных тома хозяйственных описаний владений: XXXV с документами 1751–1789 и XXXVIII с документами 1720–1798. Годы публикации 1910 и 1914 не являются годами населения."
+domains = ["pbc.biaman.pl"]
+access = "open"
+how = "Том XXXV: https://pbc.biaman.pl/dlibra/publication/734/edition/1096; том XXXVIII: https://pbc.biaman.pl/Content/1137/download/. Выбирать владение по оглавлению и указателям, сверять печатную страницу с кадром, затем читать сам инвентарь."
+zero = ""
+coverage = "Только выбранные владения двух томов; сплошного перечня жителей края и полноты сканов справочник не устанавливает."
+site_limits = ""
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-10-31
+basis = "ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строка 35. Также references/seed-sources.md, строка 36. Участник PR #117 сообщил 31.10.2026 о скачивании PDF и выборочном чтении обоих томов; независимая проверка и права распространения копий не установлены. Внешнее сообщение; нами сайт, выдача и охват не проверялись."
+
+[[source]]
+id = "maps-vlasenko"
+title = "Карты Власенко"
+kind = "reference"
+classes = ["map", "place-reference"]
+countries = ["BY", "RU", "UA", "MD"]
+years = []
+holds = "Частная подборка советских топографических карт с поиском населённых пунктов; лицензия карт и оператор в справочнике не установлены."
+domains = ["maps.vlasenko.net"]
+access = "open"
+how = "https://maps.vlasenko.net/: найти место и лист карты; для ссылки записать номенклатуру листа и год съёмки, затем сопоставить с историческим названием."
+zero = ""
+coverage = ""
+site_limits = ""
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-10-28
+basis = "ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строка 195. В проекте сообщено об открытии страницы 28.10.2026; просмотр всех листов не заявлен. Внешнее сообщение; нами сайт, выдача и охват не проверялись."
+
+[[source]]
+id = "routes-to-roots"
+title = "Routes to Roots Foundation"
+kind = "finding-aid"
+classes = ["archive-guide", "parish-register"]
+countries = ["BY", "PL", "LT"]
+years = []
+holds = "Городской справочник сохранившихся записей еврейских общин с указанием архивов; помогает выбрать хранителя до обращения."
+domains = ["rtrfoundation.com"]
+access = "open"
+how = "https://rtrfoundation.com: выбрать город и вид записей, выписать архив и период; проверить сохранность нужного тома по описи хранителя."
+zero = ""
+coverage = ""
+site_limits = ""
+paid = ""
+recipe = ""
+status = "reported"
+basis = "ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строка 341. Строка не содержит отдельной даты проверки ресурса; общий перечень additions не заменяет её. Внешнее сообщение; нами сайт, выдача и охват не проверялись."
+
+[[source]]
+id = "jri-poland"
+title = "JRI-Poland"
+kind = "index"
+classes = ["parish-register", "civil-register"]
+countries = ["PL", "BY", "LT"]
+years = []
+holds = "Указатели еврейских актовых и метрических записей польских архивов, включая восточные территории; конкретные города и годы выбирать по коллекции."
+domains = ["jri-poland.org"]
+access = "open"
+how = "https://jri-poland.org: выбрать относящуюся к месту коллекцию, искать фамилию; из строки перейти к указанному шифру или доступному образу. Условия полного просмотра уточнить в текущем интерфейсе."
+zero = ""
+coverage = ""
+site_limits = ""
+paid = ""
+recipe = ""
+status = "reported"
+basis = "ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строка 339.  Внешнее сообщение; нами сайт, выдача и охват не проверялись."
+
+[[source]]
+id = "litvaksig"
+title = "LitvakSIG"
+kind = "index"
+classes = ["parish-register", "census-revision"]
+countries = ["LT", "BY", "PL"]
+years = []
+holds = "Тематические указатели еврейских документов литовских архивов; сообщено также о части белорусских и польских материалов."
+domains = ["litvaksig.org"]
+access = "open"
+how = "https://www.litvaksig.org/: выбрать раздел или проект по историческому месту, выяснить состав индекса и его источник; доступ к конкретным материалам проверять отдельно."
+zero = ""
+coverage = ""
+site_limits = ""
+paid = "Часть материалов доступна участникам; членство — необязательный путь, стоимость в прочитанном тексте не названа."
+recipe = ""
+status = "reported"
+checked = 2026-10-28
+basis = "ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строка 348. Общая заметка references/seed-sources.md, строка 448, относит описание LitvakSIG к прочитанному review 28.10.2026; именной поиск не проверялся. Внешнее сообщение; нами сайт, выдача и охват не проверялись."
+
+[[source]]
+id = "yad-vashem"
+title = "Yad Vashem: база имён и страницы свидетельств"
+kind = "index"
+classes = ["repression"]
+countries = ["BY", "PL", "LT"]
+years = []
+holds = "Имена жертв Шоа и свидетельские листы, в которых возможны сведения о родственниках и местах со слов подателя. Показание отделять от регистрационной записи."
+domains = ["yadvashem.org"]
+access = "open"
+how = "https://www.yadvashem.org: открыть центральную базу имён, искать имя и место; сохранять страницу свидетельства и сведения о составителе, сопоставлять с документами и происхождением других карточек."
+zero = ""
+coverage = ""
+site_limits = ""
+paid = ""
+recipe = ""
+status = "reported"
+basis = "ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строка 340.  Внешнее сообщение; нами сайт, выдача и охват не проверялись."
+
+[[source]]
+id = "jewishgen"
+title = "JewishGen: общины, тематические базы и книги памяти"
+kind = "reference"
+classes = ["place-reference", "archive-guide"]
+countries = ["BY", "PL", "LT"]
+years = []
+holds = "Тематические указатели и справочник местечек Восточной Европы; для региона полезны материалы общин и книги памяти. Пользовательский Family Finder даёт лишь контакты и наводки."
+domains = ["jewishgen.org"]
+access = "open"
+how = "https://www.jewishgen.org: начать с места и подходящей базы; книги памяти выбирать по местечку, имени и разделу, различая воспоминание и опубликованный документ. Условия выбранного поиска и вход выяснять отдельно."
+zero = ""
+coverage = ""
+site_limits = ""
+paid = ""
+recipe = ""
+status = "reported"
+basis = "ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строка 338. Книги памяти по местечку упомянуты в references/source-strategy.md, строка 329. Открытым здесь назван начальный справочный маршрут, а не обещание доступа ко всем базам. Внешнее сообщение; нами сайт, выдача и охват не проверялись."
+
+[[source]]
+id = "jdc-names"
+title = "JDC Archives: Names Index"
+kind = "index"
+classes = ["emigration"]
+countries = ["BY", "PL", "LT"]
+years = [1943, 1945]
+holds = "Именной указатель архива Джойнта. Выбранный для пакета участок — коллекция посылок в СССР 1943–1945; весь указатель шире этого периода."
+domains = ["names.archives.jdc.org"]
+access = "open"
+how = "https://names.archives.jdc.org/: выбрать коллекцию и искать имя; сохранить строку, коллекцию и ссылку на исходный документ, не распространяя диапазон выбранной коллекции на весь архив."
+zero = ""
+coverage = ""
+site_limits = ""
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-11-05
+basis = "ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строка 342. Главная описана как прочитанная 05.11.2026; участник PR #165 сообщил 03.11.2026 о поиске в браузере при 403 веб-инструменту. Внешнее сообщение; нами сайт, выдача и охват не проверялись."
+
+[[source]]
+id = "stsg-pows"
+title = "Dokumentationsstelle Dresden: советские военнопленные"
+kind = "index"
+classes = ["military"]
+countries = ["BY", "PL", "LT", "DE"]
+years = []
+holds = "Учётные сведения о советских военнопленных: имена, даты и места, национальность и ID. Рядом на сайте есть отдельный раздел советских граждан, умерших в Саксонии."
+domains = ["en.stsg.de"]
+access = "open"
+how = "https://en.stsg.de/cms/dokstelle/search-online-archives/soviet-prisoners-war: форма по имени. Участники сообщают suchwort=<подстрока>&teil=Name+contains; страницы открывать по ссылкам сайта. По сообщённым правилам центра справки относятся к лагерям и захоронениям территории, названной Саксонией; для остальных центр направляет в Bundesarchiv. Исторический Wehrkreis IV шире современной Саксонии: адресата уточнять по лагерю и правилам учреждения, запись в индексе его не определяет."
+zero = ""
+coverage = ""
+site_limits = ""
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-11-05
+basis = "ex-ussr-kinship-research v1.44.0, references/seed-sources.md:367, наблюдения PR #157 от 03–04.11 и #165 от 05.11.2026. Дополнение v1.46.0, references/seed-sources.md:371 и references/correspondence.md:28: чужое чтение правил 15.11.2026. Bundesarchiv: русская форма запроса к базе и немецкий Benutzungsantrag, подписывает и отправляет хозяин. Это внешние сообщения, не наша проверка выдачи, правил или постоянного API."
+
+[[source]]
+id = "metrikai-lt"
+title = "metrikai.lt"
+kind = "index"
+classes = ["parish-register", "archive-guide"]
+countries = ["LT", "BY"]
+years = []
+holds = "Волонтёрские выписки из метрик и других документов; кандидат для исторических приходов края в фондах LVIA, наличие конкретного прихода не установлено."
+domains = ["metrikai.lt"]
+access = "open"
+how = "https://metrikai.lt/: по сообщению участника есть фильтры места и типа записи; сохранять шифр LVIA, лист, номер акта и ссылку ePaveldas, затем сверять образ."
+zero = "Пустой волонтёрский индекс не покрывает все документы; годы и приходы сначала сверить по составу базы."
+coverage = "Не установлены годы, полнота и охват белорусских приходов."
+site_limits = ""
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-11-14
+basis = "ex-ussr-kinship-research v1.46.0, references/seed-sources.md:287, PR #267: сообщено 14.11.2026 о форме и ссылках; прямое открытие веб-инструментом там вернуло 403. Это чужое наблюдение; Familiar не проверял поиск, образы или охват."
+
+[[source]]
+id = "lki-surnames"
+title = "Lietuvių pavardžių žodynas"
+kind = "reference"
+classes = ["place-reference"]
+countries = ["LT", "BY"]
+years = []
+holds = "Словарь вариантов и географии литовских фамилий; помогает выбрать написание и место поиска при документально обоснованной связи с краем."
+domains = ["pavardes.lki.lt", "lki.lt"]
+access = "open"
+how = "https://pavardes.lki.lt/: сначала прочитать условия; география словарной статьи не доказывает происхождение или родство. Ранние списки 1930-х не включали Виленский и Клайпедский края; их материал собирался позже."
+zero = "Отсутствие формы не исключает её употребления; словарь не перепись людей."
+coverage = "Годы сбора и территория различаются; статьи и полнота не проверены."
+site_limits = "По сообщению внешнего проекта, условия ограничивают копирование, сохранение и создание баз; согласие и допустимый доступ решает хозяин."
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-11-14
+basis = "ex-ussr-kinship-research v1.46.0, references/seed-sources.md:288; там 14.11.2026 прочитаны условия и описание Института литовского языка, статьи не проверены. Внешнее сообщение, не проверка Familiar."
+
+[[source]]
+id = "icrc-ww1"
+title = "МККК: картотека военнопленных Первой мировой"
+kind = "index"
+classes = ["military"]
+countries = ["BY", "PL", "LT"]
+years = [1914, 1918]
+holds = "Карточки и списки Международного агентства военнопленных; материалы по российским военным не образуют полного списка пленных Российской империи."
+domains = ["grandeguerre.icrc.org"]
+access = "open"
+how = "https://grandeguerre.icrc.org/en/File/Search: выбрать подданство и картотеку, найти карточку и связанный список. Для российских военных проверить применимость раздела западного фронта; сообщение о недоступности запросов требует отдельного уточнения."
+zero = "Отсутствие имени в ограниченной российской части картотеки не исключает плен."
+coverage = ""
+site_limits = ""
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-10-28
+basis = "ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строка 412. Участник PR #61 от 28.10.2026 указал российский экспедиционный корпус; review сообщило о временном отсутствии ответов на запросы. references/ww1-search.md, раздел «Военнопленные», предупреждает об ограниченности российских материалов. Внешнее сообщение; нами сайт, выдача и охват не проверялись."
+
+[[source]]
+id = "rigsarkivet-pows"
+title = "Rigsarkivet: Датский Красный Крест, отдел военнопленных"
+kind = "archive"
+classes = ["military"]
+countries = ["BY", "PL", "LT", "DK"]
+years = [1915, 1918]
+holds = "Выборочно сохранившиеся материалы о российских военнопленных в Германии: приблизительно 1915–1918 для картотеки и 1917–1918 для списков. Описания отдела в целом шире выбранных серий."
+domains = ["daisy.rigsarkivet.dk"]
+access = "request"
+how = "Картотека: https://daisy.rigsarkivet.dk/arkivserie_detaljer?heid=7624777&henid=7624777; списки: https://daisy.rigsarkivet.dk/arkivserie_detaljer?heid=7629319&henid=7629319. Сверить описание единицы и условия заказа; при необходимости подготовить запрос с лагерем, частью и датой пленения."
+zero = "Ненахождение имени в этих выборочных материалах не исключает плен."
+coverage = "В прочитанном описании только отобранные пробные единицы, не вся картотека и не все списки."
+site_limits = ""
+paid = "Условия и возможная стоимость заказа не установлены; заказ исследования — только по отдельному решению хозяина."
+recipe = ""
+status = "reported"
+checked = 2026-10-28
+basis = "ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строка 369. В проекте описано чтение каталога 28.10.2026: две пробные коробки картотеки и одна пробная пачка списков; онлайн-образы в этих сериях не найдены. Внешнее сообщение; нами сайт, выдача и охват не проверялись."
+
+[[source]]
+id = "lac-russian-immigrants"
+title = "LAC: Immigrants from the Russian Empire"
+kind = "index"
+classes = ["emigration"]
+countries = ["BY", "PL", "LT", "CA"]
+years = [1898, 1922]
+holds = "Дела российских консульств в Канаде с паспортами и удостоверениями, доступные через именной поисковый маршрут; историческое обозначение империи не определяет этничность."
+domains = ["canada.ca"]
+access = "open"
+how = "https://www.canada.ca/en/library-archives/collection/research-help/genealogy-family-history/immigration/immigrants-russian-empire.html: из описания перейти к именному поиску, затем к делу; выбирать обоснованные варианты латинского имени и исторического места."
+zero = ""
+coverage = ""
+site_limits = ""
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-10-28
+basis = "ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строка 416. В проекте сообщено об открытии страницы 28.10.2026; именной поиск и полнота коллекции этой отметкой не подтверждаются. Внешнее сообщение; нами сайт, выдача и охват не проверялись."
+
+[[source]]
+id = "vgd"
+title = "ВГД"
+kind = "finding-aid"
+classes = ["archive-guide"]
+countries = []
+years = []
+holds = "Генеалогический форум: обсуждения, сообщения об архивах и семейные наводки."
+domains = ["forum.vgd.ru"]
+aliases = ["ВГД", "VGD", "forum.vgd.ru"]
+access = "open"
+how = "https://forum.vgd.ru/"
+zero = "Отсутствие результата относится только к прочитанной коллекции, годам и формам; неизвестный охват не даёт отрицательного доказательства."
+coverage = ""
+site_limits = "Не установлены; действуют общие остановки host source_gate."
+paid = ""
+recipe = ""
+status = "verified"
+checked = 2026-11-16
+basis = "Стартовая страница прочитана: разделы, правила, вход и регистрация; годы документов не установлены."
+
+[[source]]
+id = "partizany-by"
+title = "Беларусь партизанская"
+kind = "index"
+classes = ["military"]
+countries = ["BY"]
+years = []
+holds = "Именной поиск партизан, бригады, отряды и архивные документы."
+domains = ["partizany.by"]
+aliases = ["partizany", "partizany.by"]
+access = "open"
+how = "https://partizany.by/"
+zero = "Отсутствие результата относится только к прочитанной коллекции, годам и формам; неизвестный охват не даёт отрицательного доказательства."
+coverage = ""
+site_limits = "Не установлены; действуют общие остановки host source_gate."
+paid = ""
+recipe = ""
+status = "verified"
+checked = 2026-11-16
+basis = "На главной странице доступны поля имени, годов рождения и смерти и ссылки на документы. Крайний диапазон дат не опубликован."
+
+[[source]]
+id = "bessmertnybarak"
+title = "Бессмертный барак"
+kind = "index"
+classes = ["repression"]
+countries = []
+years = []
+holds = "Документы и имена жертв политических репрессий СССР."
+domains = ["bessmertnybarak.ru"]
+aliases = ["Бессмертный барак", "bessmertnybarak.ru", "barak"]
+access = "open"
+how = "https://bessmertnybarak.ru/"
+zero = "Отсутствие результата относится только к прочитанной коллекции, годам и формам; неизвестный охват не даёт отрицательного доказательства."
+coverage = ""
+site_limits = "Не установлены; действуют общие остановки host source_gate."
+paid = ""
+recipe = ""
+status = "verified"
+checked = 2026-11-16
+basis = "На главной видны разделы имён, расстрельных списков и документов; общий диапазон не установлен."
+
+[[source]]
+id = "dapamoznik"
+title = "Дапаможнік"
+kind = "library"
+classes = ["census-revision", "military", "inventory"]
+countries = ["BY"]
+years = []
+holds = "Блог: фотографии и публикации рукописных списков, переписей, инвентарей и документов Полесья."
+domains = ["dapamoznik.blogspot.com"]
+aliases = ["ДАПАМОЖНІК", "dapamoznik.blogspot.com"]
+access = "open"
+how = "https://dapamoznik.blogspot.com/"
+zero = "Отсутствие результата относится только к прочитанной коллекции, годам и формам; неизвестный охват не даёт отрицательного доказательства."
+coverage = ""
+site_limits = "Не установлены; действуют общие остановки host source_gate."
+paid = ""
+recipe = ""
+status = "verified"
+checked = 2026-11-16
+basis = "На главной видны списки детей 1923–1924, военнообязанных 1926–1927 и переселенцев 1910–1914; это примеры, не границы всего блога."
+
+[[source]]
+id = "yivo"
+title = "YIVO Archives"
+kind = "archive"
+classes = ["archive-guide"]
+countries = []
+years = []
+holds = "Архивные коллекции еврейской истории; точный состав и доступ проверять по коллекции."
+domains = ["yivo.org"]
+aliases = ["YIVO"]
+access = "request"
+how = "https://yivo.org/Archives"
+zero = "Отсутствие результата относится только к прочитанной коллекции, годам и формам; неизвестный охват не даёт отрицательного доказательства."
+coverage = ""
+site_limits = "Не установлены; действуют общие остановки host source_gate."
+paid = ""
+recipe = ""
+status = "unverified"
+checked = 2026-11-16
+basis = "Одна попытка через общий gate получила HTTP 403; содержание и условия заказа не проверены. request — кандидат маршрута, не подтверждённая услуга."
+
+[[source]]
+id = "jewish-galicia-bukovina"
+title = "Jewish Galicia and Bukovina"
+kind = "index"
+classes = ["cemetery", "archive-guide"]
+countries = ["UA", "PL"]
+years = []
+holds = "Общины, надгробия, кладбища, люди, документы и регистрационные книги Галиции и Буковины."
+domains = ["jgaliciabukovina.net"]
+aliases = ["Jewish Galicia and Bukovina", "Jewish Galicia & Bukovina", "JGB"]
+access = "open"
+how = "https://jgaliciabukovina.net/"
+zero = "Отсутствие результата относится только к прочитанной коллекции, годам и формам; неизвестный охват не даёт отрицательного доказательства."
+coverage = ""
+site_limits = "Не установлены; действуют общие остановки host source_gate."
+paid = ""
+recipe = ""
+status = "verified"
+checked = 2026-11-16
+basis = "На главной доступны поиск по общинам и ссылки на Tombstones, Cemeteries, People and documents, Registration Books; единый период не установлен."
+
+[[source]]
+id = "zbioryspoleczne"
+title = "Zbiory Społeczne"
+kind = "archive"
+classes = ["archive-guide"]
+countries = ["PL"]
+years = []
+holds = "Портал общественных архивов Centrum Archiwistyki Społecznej."
+domains = ["zbioryspoleczne.pl"]
+aliases = ["zbioryspoleczne.pl", "Zbiory Spoleczne"]
+access = "open"
+how = "https://zbioryspoleczne.pl/"
+zero = "Отсутствие результата относится только к прочитанной коллекции, годам и формам; неизвестный охват не даёт отрицательного доказательства."
+coverage = ""
+site_limits = "Не установлены; действуют общие остановки host source_gate."
+paid = ""
+recipe = ""
+status = "verified"
+checked = 2026-11-16
+basis = "Главная описывает поиск коллекций во времени и пространстве, карту и правила пользования; общие годы не установлены."
+
+[[source]]
+id = "paperspast"
+title = "Papers Past"
+kind = "library"
+classes = ["newspaper"]
+countries = ["NZ"]
+years = []
+holds = "Кандидат: историческая пресса Новой Зеландии, точный охват проверить."
+domains = ["paperspast.natlib.govt.nz"]
+aliases = ["Papers Past", "paperspast.natlib.govt.nz"]
+access = "open"
+how = "https://paperspast.natlib.govt.nz/"
+zero = "Отсутствие результата относится только к прочитанной коллекции, годам и формам; неизвестный охват не даёт отрицательного доказательства."
+coverage = ""
+site_limits = "Не установлены; действуют общие остановки host source_gate."
+paid = ""
+recipe = ""
+status = "unverified"
+checked = 2026-11-16
+basis = "Первая загрузка определена общим gate как CAPTCHA; дальнейших обращений не было. Открытый маршрут предполагается, полнота и годы не проверены."
+
+[[source]]
+id = "nzetc"
+title = "New Zealand Electronic Text Collection"
+kind = "library"
+classes = ["archive-guide"]
+countries = ["NZ"]
+years = []
+holds = "Кандидат: электронные исторические тексты Новой Зеландии."
+domains = ["nzetc.victoria.ac.nz"]
+aliases = ["NZETC", "nzetc.victoria.ac.nz"]
+access = "open"
+how = "https://nzetc.victoria.ac.nz/"
+zero = "Отсутствие результата относится только к прочитанной коллекции, годам и формам; неизвестный охват не даёт отрицательного доказательства."
+coverage = ""
+site_limits = "Не установлены; действуют общие остановки host source_gate."
+paid = ""
+recipe = ""
+status = "unverified"
+checked = 2026-11-16
+basis = "Первая загрузка определена общим gate как CAPTCHA; дальнейших обращений не было. Доступ, годы и состав требуют проверки."
+
+[[source]]
+id = "nara"
+title = "US National Archives (NARA)"
+kind = "archive"
+classes = ["census-revision", "military", "emigration"]
+countries = ["US"]
+years = []
+holds = "Генеалогические справочники, каталог, переписи, военные дела, иммиграция и натурализация."
+domains = ["archives.gov"]
+aliases = ["NARA", "National Archives", "US National Archives"]
+access = "open"
+how = "https://www.archives.gov/research/genealogy"
+zero = "Отсутствие результата относится только к прочитанной коллекции, годам и формам; неизвестный охват не даёт отрицательного доказательства."
+coverage = ""
+site_limits = "Не установлены; действуют общие остановки host source_gate."
+paid = ""
+recipe = ""
+status = "verified"
+checked = 2026-11-16
+basis = "На официальной странице перечислены Census Records, Military Service Records, Immigration, Naturalization и перепись 1950; общий диапазон всех фондов не установлен. Открыт каталог, выдача дел может требовать заказа."
+
+[[source]]
+id = "ecmentarze"
+title = "eCmentarze"
+kind = "index"
+classes = ["cemetery"]
+countries = ["PL"]
+years = []
+holds = "Поиск кладбищ и похороненных; полнота различается по кладбищу."
+domains = ["ecmentarze.pl"]
+aliases = ["ecmentarze", "eCmentarze.pl"]
+access = "open"
+how = "https://ecmentarze.pl/"
+zero = "Отсутствие результата относится только к прочитанной коллекции, годам и формам; неизвестный охват не даёт отрицательного доказательства."
+coverage = ""
+site_limits = "Не установлены; действуют общие остановки host source_gate."
+paid = ""
+recipe = ""
+status = "verified"
+checked = 2026-11-16
+basis = "Главная содержит поиск кладбищ и похороненных и различает полную инвентаризацию, списки и карточки кладбищ; общий период не установлен."
+
+[[source]]
+id = "kresy-siberia"
+title = "Kresy-Siberia"
+kind = "index"
+classes = ["repression", "forced-labour", "emigration"]
+countries = ["PL", "BY", "LT", "UA", "RU"]
+years = []
+holds = "Виртуальный музей, Wall of Tribute, свидетельства о депортациях и диаспоре."
+domains = ["kresy-siberia.org"]
+aliases = ["kresy-siberia", "Kresy Siberia"]
+access = "open"
+how = "https://kresy-siberia.org/"
+zero = "Отсутствие результата относится только к прочитанной коллекции, годам и формам; неизвестный охват не даёт отрицательного доказательства."
+coverage = ""
+site_limits = "Не установлены; действуют общие остановки host source_gate."
+paid = ""
+recipe = ""
+status = "verified"
+checked = 2026-11-16
+basis = "Главная: разделы межвоенных Кресов 1918–1939 и депортаций 1944–1956; это даты отдельных разделов, не предел всего музея (есть диаспора после 1946)."
+
+[[source]]
+id = "findagrave"
+title = "Find a Grave"
+kind = "index"
+classes = ["cemetery"]
+countries = []
+years = []
+holds = "Кандидат: международные мемориальные страницы захоронений."
+domains = ["findagrave.com"]
+aliases = ["findagrave", "FindAGrave", "Find a Grave"]
+access = "open"
+how = "https://www.findagrave.com/"
+zero = "Отсутствие результата относится только к прочитанной коллекции, годам и формам; неизвестный охват не даёт отрицательного доказательства."
+coverage = ""
+site_limits = "Не установлены; действуют общие остановки host source_gate."
+paid = ""
+recipe = ""
+status = "unverified"
+checked = 2026-11-16
+basis = "Одна попытка получила HTTP 403; сведения, период и открытый маршрут остаются непроверенными, повторов не было."
+
+[[source]]
+id = "rody-grodzienskie"
+title = "Forum Rodów Grodzieńskich"
+kind = "finding-aid"
+classes = ["archive-guide", "parish-register"]
+countries = ["BY", "PL", "LT"]
+years = []
+holds = "Форум родов Гродненщины: поиск семей, мест и документов."
+domains = ["forum.rodygrodzienskie.pl"]
+aliases = ["Rodów Grodzieńskich", "Rodow Grodzienskich", "forum.rodygrodzienskie.pl"]
+access = "open"
+how = "https://forum.rodygrodzienskie.pl/"
+zero = "Отсутствие результата относится только к прочитанной коллекции, годам и формам; неизвестный охват не даёт отрицательного доказательства."
+coverage = ""
+site_limits = "Не установлены; действуют общие остановки host source_gate."
+paid = ""
+recipe = ""
+status = "verified"
+checked = 2026-11-16
+basis = "Главная прочитана: разделы поиска фамилий и мест, справочные ссылки, вход и регистрация; единый диапазон не установлен."
+
+[[source]]
+id = "forum-genealodzy"
+title = "Forum Genealodzy.pl"
+kind = "finding-aid"
+classes = ["archive-guide"]
+countries = ["PL"]
+years = []
+holds = "Кандидат: обсуждения польских генеалогов; сообщения не устанавливают полноту актов."
+domains = ["forum.genealodzy.pl"]
+aliases = ["forum.genealodzy.pl", "Forum Genealodzy"]
+access = "open"
+how = "https://forum.genealodzy.pl/"
+zero = "Отсутствие результата относится только к прочитанной коллекции, годам и формам; неизвестный охват не даёт отрицательного доказательства."
+coverage = ""
+site_limits = "Не установлены; действуют общие остановки host source_gate."
+paid = ""
+recipe = ""
+status = "unverified"
+checked = 2026-11-16
+basis = "Одна попытка получила HTTP 503; содержание и доступ не проверены, повторов не было."
+
+[[source]]
+id = "jewishgen-belarus"
+title = "JewishGen Belarus Database"
+kind = "index"
+classes = ["civil-register", "census-revision"]
+countries = ["BY"]
+years = []
+holds = "Сводный поиск по коллекциям Беларуси; состав подбаз загружается отдельно."
+domains = []
+aliases = ["JewishGen Belarus", "JewishGen Belarus Database", "JewishGen / Belarus"]
+access = "host-login"
+how = "https://www.jewishgen.org/databases/Belarus/"
+zero = "Отсутствие результата относится только к прочитанной коллекции, годам и формам; неизвестный охват не даёт отрицательного доказательства."
+coverage = ""
+site_limits = "Не установлены; действуют общие остановки host source_gate."
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-11-16
+basis = "Прочитана сохранённая страница: свыше 800000 записей, поля surname/given/town и поиск по нескольким базам; список подбаз не загрузился. Результаты требуют входа; общий gate уже остановил источник, новых запросов не было. Не обещаем ни состав подбаз, ни годы."
+
+[[source]]
+id = "memsearch"
+title = "Memsearch"
+kind = "index"
+classes = ["repression", "forced-labour"]
+countries = []
+years = []
+holds = "Сводный поиск по ресурсам Мемориала и региональных проектов памяти."
+domains = ["memsearch.org"]
+aliases = ["Memsearch", "memsearch.org"]
+access = "open"
+how = "https://www.memsearch.org/ru/sources"
+zero = "Отсутствие результата относится только к прочитанной коллекции, годам и формам; неизвестный охват не даёт отрицательного доказательства."
+coverage = ""
+site_limits = "Не установлены; действуют общие остановки host source_gate."
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-11-16
+basis = "Прочитана сохранённая страница Источники: base.memo.ru, stalin.memo.ru, Пермь-36 и другие коллекции; единый диапазон не опубликован. memo неоднозначно и не является алиасом."
+
+[[source]]
+id = "inv-velikie"
+title = "Оцифрованные описи"
+kind = "finding-aid"
+classes = ["inventory"]
+countries = ["BY"]
+years = []
+holds = "Каталог описей, включая НИАБ; опись и сам акт — разные источники."
+domains = ["inv.velikie.org"]
+aliases = ["inv.velikie.org", "Оцифрованные описи"]
+access = "open"
+how = "https://inv.velikie.org/niab/"
+zero = "Отсутствие результата относится только к прочитанной коллекции, годам и формам; неизвестный охват не даёт отрицательного доказательства."
+coverage = ""
+site_limits = "Не установлены; действуют общие остановки host source_gate."
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-11-16
+basis = "Адрес каталога и ссылки на фонд/опись встречены в сохранённых описаниях источника; общие годы неизвестны. Не подменяет официальный архив НИАБ."
+
+[[source]]
+id = "raskulachennye-ural"
+title = "Раскулаченные. Свердловская область"
+kind = "index"
+classes = ["repression"]
+countries = ["RU"]
+years = [1920, 1939]
+holds = "Поиск жителей Уральской области, раскулаченных в 1920–1930-е годы."
+domains = ["раскулаченные.рф"]
+aliases = ["раскулаченные.рф"]
+access = "open"
+how = "https://раскулаченные.рф/archive/search/"
+zero = "Отсутствие результата относится только к прочитанной коллекции, годам и формам; неизвестный охват не даёт отрицательного доказательства."
+coverage = ""
+site_limits = "Не установлены; действуют общие остановки host source_gate."
+paid = ""
+recipe = ""
+status = "reported"
+checked = 2026-11-16
+basis = "Прочитана сохранённая форма: название ресурса, Уральская область и явные 1920–30-е годы; 79410 записей — наблюдавшийся счётчик, не полнота."

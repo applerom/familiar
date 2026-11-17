@@ -1,0 +1,37 @@
+# START_MODULE_CONTRACT: MOD-REGION-BP-RECIPE-OBD-MEMORIAL
+# PURPOSE: Describe the ОБД Мемориал search route, result and absence signals without any family query.
+# PRD_REF: docs/PRD.md#REGION-PACK
+# INVARIANTS:
+# CHANGES_WITH:
+# - regions/belarus-podlasie/data-contract.md
+# :END_MODULE_CONTRACT
+
+schema_version = 1
+
+[recipe]
+id = "obd-memorial"
+source = "obd-memorial"
+title = "ОБД Мемориал"
+seeks = "донесения о потерях и плене советских военнослужащих; применимо к региону, но охват шире него"
+url = "https://obd-memorial.ru/html/search.htm"
+parameters = { "f" = "{surname}", "n" = "{given_name}", "s" = "{patronymic}", "bd" = "{birth_year}", "pb" = "{birth_place}", "d" = "{call_place}", "r" = "{rank}", "lp" = "{last_service}", "dateout" = "{departure_date}", "p" = "{page}" }
+list_reader = "obd-memorial"
+list_ready = "счёт записей и div.row.search-result с id_common; ссылки карточек из этого атрибута, не только a[href]"
+list_fields = ["имя", "год рождения", "выбытие", "место", "ссылка карточки"]
+list_limits = "первые 20 строк; поля f/n/s, bd — рождение, pb — место рождения, d — призыв, r — звание, lp — служба, dateout — выбытие, страница p; y не использовать; оболочка с ожиданием не готовая выдача"
+card_reader = "ссылка /html/info.htm?id={id} из строки; буквальные пары span.card_param-title / span.card_param-result; удалять комментарии разметки; родные и часть не гарантированы"
+zero_signal = "К сожалению, не найдено документов по Вашему запросу; только завершённая выдача, пустая оболочка и отсутствие строк не ноль"
+zero_status = "reported"
+access = "open"
+site_limits = "числовой опубликованный темп не установлен; квоты и профиль шлюза относятся к хосту"
+control = { "f" = "Иванов", "n" = "Иван", "s" = "Иванович", "bd" = "1910" }
+control_contains = "Иванов"
+status = "reported"
+basis = "Прежние пробы Familiar 12.11.2026: HTTP 200, список 254 / 20 строк и карточка 12 пар полей; ноль тогда не проверялся. Исправление по карточке host sources/obd-memorial.md:5–8 (наблюдения 05–13.11, перенос 14.11.2026). 16.11.2026 одна проба пустой формы через шлюз вернула HTTP 500, unknown; это не проверка параметров, списка, карточки или нуля."
+ready_pattern = "(?!)"
+empty_pattern = "(?!)"
+api_match = ""
+checked = 2026-11-16
+stop = "капча, вход, платная стена, HTTP 403 или 429: остановиться; секреты и проверки только у пользователя; отказ потолка шлюза не отказ сайта"
+not_ready = "нет явного признака готовой выдачи или нуля; отсутствие ответа и ошибка приложения не доказывают отсутствие записи"
+site_limits_status = "unverified"

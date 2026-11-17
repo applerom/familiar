@@ -1,0 +1,17 @@
+{
+  "merges": [
+    {
+      "canonical": "memory-person",
+      "alias": "import-person",
+      "status": "accepted_evidence",
+      "weight": 0.9,
+      "basis": "Compare the source evidence before accepting.",
+      "decision": "Record who decided, when and why; remove this merge to undo it.",
+      "sources": ["source-id"],
+      "evidence": "State which names, relatives and dates establish this identity.",
+      "name": "Ada Example",
+      "summary": "Identity established from the named sources.",
+      "birth": "unknown"
+    }
+  ]
+}

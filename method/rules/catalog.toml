@@ -1,0 +1,683 @@
+# START_MODULE_CONTRACT: MOD-RULES-CATALOG-DATA
+# PURPOSE: Craft, taste and process rules of the method as data, so each role receives only its own rules by command and a family tunes taste by settings instead of editing the engine.
+# PRD_REF: docs/PRD.md#SETTINGS
+# INVARIANTS:
+# - every record has a kind and a default mode that kind allows [review: cold reviewer]
+# - no craft rule blocks [review: cold reviewer]
+# - every setting a rule reads is declared in the registry [review: cold reviewer]
+# - every taste rule reads at least one setting and defaults to advise [review: engine lead]
+# - catalog wording is generic: no real family's people, places or decisions [review: engine lead]
+# CHANGES_WITH:
+# - docs/PRD.md#RULES-MODEL
+# - docs/PRD.md#ROLES
+# - MOD-RULES-SETTINGS-DATA
+# :END_MODULE_CONTRACT
+#
+# Shape: an array of tables [[rule]] with the RULES-MODEL fields only:
+# id, kind, statement, roles, serves, check, mode, reads.
+# Role ids: lead, researcher, second-look, recipe-searcher, feed-author,
+# shot-director, artist, reviewer, translator.
+# A taste rule is "by default, so": its setting carries the default, its check advises.
+# Any craft or taste rule may be set aside for one item with a recorded reason.
+
+# =====================================================================
+# CRAFT: research
+# =====================================================================
+
+[[rule]]
+id = "CRAFT-RESEARCH-BEFORE-TEXT"
+kind = "craft"
+statement = "Before the scenario, collect the whole line with siblings, a table of each person's age in the main years of the region, what lay within a day's travel by year, and how each step of a fate was actually done (papers, fares, prices, conscription)."
+roles = ["researcher", "lead"]
+serves = "UC-STORY"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "CRAFT-ANOMALY-IS-STORY"
+kind = "craft"
+statement = "A break of pattern (late or group baptism, a long pause, a missing record, a change of parish, faith or spelling, deaths in a cluster) is a reason to dig, not to mark 'doubtful': notice, measure the local norm, lay the history of the area within a day's travel and ten years, propose a bold version, test what else it explains. A missing record is first asked of the institution (closure, war, lost volume); small discrepancies get one line in 'More', not a chapter."
+roles = ["researcher", "feed-author"]
+serves = "UC-RESEARCH"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "CRAFT-FACT-PLUS-NORM"
+kind = "craft"
+statement = "A family fact comes alive next to the norm of its place: show whether it was the fate of the whole area or the family's own. Tell the norm as a scene of who left and who stayed, not in the voice of statistics ('as a rule', 'most families')."
+roles = ["researcher", "feed-author"]
+serves = "UC-STORY"
+check = "check:statistics-voice"
+mode = "advise"
+reads = ["lang.lexicon"]
+
+[[rule]]
+id = "CRAFT-VERSION-SCENES"
+kind = "craft"
+statement = "Ask 'why?' of every data point and propose two or three version-scenes, each with what would confirm it and what would kill it; leave a version-scene without basis or interest out of the story without regret, while the version itself keeps its weight in the versions file. Where documents do not decide, tell the strongest version as it was and keep the alternatives in 'More'; a few days' difference is not a fork."
+roles = ["researcher", "feed-author"]
+serves = "UC-STORY"
+check = ""
+mode = "advise"
+reads = ["voice.parallel_versions"]
+
+[[rule]]
+id = "CRAFT-PROBABILISTIC"
+kind = "craft"
+statement = "The best weighted version is the working one; go on from it without waiting for confirmation, and doubt documents, family memory and your own agents alike. Ask relatives only what a living witness could have seen or been told; beyond the witness horizon decide with a weight and name the record that would test it."
+roles = ["researcher", "second-look", "lead"]
+serves = "UC-RESEARCH"
+check = ""
+mode = "advise"
+reads = ["research.witness_horizon_years"]
+
+[[rule]]
+id = "CRAFT-FAMILY-WORD-WEIGHT"
+kind = "craft"
+statement = "Firm family memory is firm testimony: it is not asked again and stands until a document contradicts it; a hearsay impression is a lead that research verifies before it reaches a feed. The host's views on regional history, custom and faith are doubts to check; the last word there belongs to research."
+roles = ["researcher", "feed-author"]
+serves = "UC-RESEARCH"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "CRAFT-CUSTOM-FITS"
+kind = "craft"
+statement = "A custom, song or rite is taken from the place, faith and century of this family with its local name and a source; the same custom does not travel through every feed, and it gets one or two sentences unless it is the plot."
+roles = ["researcher", "feed-author"]
+serves = "UC-STORY"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "CRAFT-EVENT-FIT"
+kind = "craft"
+statement = "A hero meets a great event only where the table of ages and places allows it; no links of fates by stretch. A sky event (comet, eclipse, aurora) enters a scene only with a visibility verdict, at most one per chapter, next to a family date."
+roles = ["researcher", "feed-author"]
+serves = "UC-STORY"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "CRAFT-SURNAME-ORIGIN"
+kind = "craft"
+statement = "The origin of a surname is told as several real versions with arguments and a choice, not as 'most likely' plus one guess; pronunciation is not claimed when it is unknown."
+roles = ["researcher", "feed-author"]
+serves = "UC-STORY"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "CRAFT-PUBLISHER-FIRST"
+kind = "craft"
+statement = "A paid or hidden line on an aggregator proves the record exists and usually names its publisher: go to the publisher first (newspaper, district, cemetery, archive) and list paid access only as an option. An empty page without results means it did not load, not that nothing exists."
+roles = ["researcher", "recipe-searcher"]
+serves = "UC-RESEARCH"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "CRAFT-IDENTITY-BY-FAMILY-SET"
+kind = "craft"
+statement = "A person in the tree without dates is a version from memory: test it, remove it only on an argument against. Cards differing only in spelling are usually one person: compare years, parents, spouses and children, and merge keeping every spelling. Names remembered without dates are found as a set: map coverage by parish, year and source, enumerate all acts of the parents, and match whole candidate families, not single names."
+roles = ["researcher", "recipe-searcher"]
+serves = "UC-RESEARCH"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "CRAFT-FIX-IMPOSSIBLE-LINKS"
+kind = "craft"
+statement = "A link the dates make unlikely is an anomaly, not an error: flag it, keep the literal facts, and weigh how exact the dates are, which parent it concerns and what kind of event it is. Replace the link only with evidence for the replacement, recorded as an argument; the family is not asked about it and no parallel card is made."
+roles = ["researcher"]
+serves = "UC-RESEARCH"
+check = "check:impossible-links"
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "CRAFT-DOCUMENT-TO-CARD"
+kind = "craft"
+statement = "A real document about a person goes onto that person's card as a readable cut-out with the full page beside it, after checking that the page really holds this record."
+roles = ["researcher"]
+serves = "UC-READ"
+check = ""
+mode = "advise"
+reads = []
+
+# =====================================================================
+# CRAFT: story and text
+# =====================================================================
+
+[[rule]]
+id = "CRAFT-READ-ALOUD"
+kind = "craft"
+statement = "A feed tells how the family lived, what they saw and chose, not a chronicle or a court case. The measure is a page read aloud to a grandchild: a stumble, a list of facts, numbers in a row or an apology means rewrite. The tone is warm and never belittles the family's people."
+roles = ["feed-author", "reviewer"]
+serves = "UC-READ"
+check = "review:reviewer"
+mode = "advise"
+reads = ["reader.default_age"]
+
+[[rule]]
+id = "CRAFT-ARC"
+kind = "craft"
+statement = "Every page has a hero, a set-up, a turn, a resolution and a hook into the next; a page without a hero is rebuilt around one thing a family member holds. Do not run ahead (no spoilers in text, titles or trees) and do not end tension on a doubt. A feed may carry one object that opens and closes it."
+roles = ["feed-author", "reviewer"]
+serves = "UC-READ"
+check = "check:spoilers"
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "CRAFT-HOOKS-FAMILIAR"
+kind = "craft"
+statement = "Each part of a feed holds at least one hook the reader already knows: a school book, a film, a song, a famous name, a place to see today."
+roles = ["feed-author"]
+serves = "UC-READ"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "CRAFT-WORLD-THROUGH-PEOPLE"
+kind = "craft"
+statement = "Regional history appears as what a person saw, heard, held and paid. Double test per paragraph: remove the person and it still stands - it is a reference; remove the world and a form remains - it is a biography. One or two windows on the world per chapter, different in neighbouring chapters."
+roles = ["feed-author", "reviewer"]
+serves = "UC-STORY"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "CRAFT-SIDE-AND-LENGTH"
+kind = "craft"
+statement = "A chapter without a story is merged, not dropped; famous hooks survive in a chapter or a tab. Side material goes into a fold-out or a branch of two to four pages that returns to the main line; a vivid documented branch is not shortened for symmetry."
+roles = ["feed-author", "lead"]
+serves = "UC-STORY"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "CRAFT-DOCUMENT-SUPPORTS"
+kind = "craft"
+statement = "A document supports the story and does not retell it: every shown cut-out is told in the text, but no paragraph translates it, and a census or register is never the subject of a sentence. Find one visible detail of the paper that becomes the turn of the scene; a strong argument or an award is shown large from the original."
+roles = ["feed-author"]
+serves = "UC-STORY"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "CRAFT-CAPTIONS-AND-MORE"
+kind = "craft"
+statement = "A caption is a short name of what is shown; archive codes, act numbers, licences and links go to 'More'. 'More' is a short list for the reader: what the documents say, what was reconstructed and on what basis, where pictures come from, what is still missing; never a working log."
+roles = ["feed-author", "reviewer"]
+serves = "UC-READ"
+check = "check:captions-and-more"
+mode = "advise"
+reads = []
+
+# =====================================================================
+# CRAFT: shots and drawings
+# =====================================================================
+
+[[rule]]
+id = "CRAFT-SHOT-MEANING"
+kind = "craft"
+statement = "A shot has one sentence of meaning a child grasps in two seconds; composition serves it. The card says where the viewer stands, who is where, where each person looks and why, what each hand does; if what they look at is in the frame, they are seen from behind or in profile. Every visible thing is needed by these people at this hour, people walk somewhere, and the caption says what is visible."
+roles = ["shot-director", "artist", "reviewer"]
+serves = "UC-STORY"
+check = "review:reviewer"
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "CRAFT-SHOT-PHYSICS"
+kind = "craft"
+statement = "One main light by the time of day; season decides clothes and ground. House, place, uniform and power look as they did in that year and region, by the region's visual reference. People differ in build, age and poverty and do not pose; a hero is recognisable from scene to scene. Count people, limbs, wheels and runners; everyone seated sits on something."
+roles = ["shot-director", "artist", "reviewer"]
+serves = "UC-STORY"
+check = "review:reviewer"
+mode = "advise"
+reads = []
+
+# =====================================================================
+# TASTE
+# =====================================================================
+
+[[rule]]
+id = "TASTE-CHAPTER-UNIT"
+kind = "taste"
+statement = "By default a chapter follows one person's fate or its turn, with documents as the points that confirm it, and every person of the line with documents gets a whole fate without gaps."
+roles = ["feed-author", "lead"]
+serves = "UC-STORY"
+check = "review:reviewer"
+mode = "advise"
+reads = ["story.chapter_unit"]
+
+[[rule]]
+id = "TASTE-ONE-LINE"
+kind = "taste"
+statement = "By default a feed opens on one surname and one place, runs in time from the oldest record of the line itself, and ends on those who kept the surname and the anchor ancestor, not on an in-law."
+roles = ["feed-author", "lead"]
+serves = "UC-STORY"
+check = "check:line-order"
+mode = "advise"
+reads = ["story.line_order", "story.anchor_ancestor", "names.lineage_forms"]
+
+[[rule]]
+id = "TASTE-READER-NEUTRAL"
+kind = "taste"
+statement = "By default the text does not depend on who reads it: no 'our', 'your', 'you'; the family is 'the family' and kinship is counted from the feed's anchor ancestor."
+roles = ["feed-author", "translator"]
+serves = "UC-READ"
+check = "check:reader-address"
+mode = "advise"
+reads = ["reader.address", "story.anchor_ancestor", "lang.lexicon"]
+
+[[rule]]
+id = "TASTE-NARRATOR-VOICE"
+kind = "taste"
+statement = "By default the chapter is told by a narrator, not an investigator: no 'apparently', 'we do not know', 'no papers', 'our version', 'it later turned out', no named teller of a memory; doubt and reasoning live in 'More'. Two versions told as a plot inside one scene are not a violation."
+roles = ["feed-author", "translator", "reviewer"]
+serves = "UC-READ"
+check = "check:narrator-voice"
+mode = "advise"
+reads = ["voice.doubt_placement", "voice.name_the_teller", "voice.parallel_versions", "lang.lexicon"]
+
+[[rule]]
+id = "TASTE-NUMBERS"
+kind = "taste"
+statement = "By default numbers and dates are rare: the year sits on the chapter plate, the first sentence is a person or a scene, ages are words, every number says what it meant; what the plot does not carry goes to 'More'."
+roles = ["feed-author", "reviewer"]
+serves = "UC-READ"
+check = "check:numbers-and-dates"
+mode = "advise"
+reads = ["story.number_density"]
+
+[[rule]]
+id = "TASTE-TITLES"
+kind = "taste"
+statement = "By default a chapter title names a turn of fate with a hook that the text redeems; never a date, a season, a record or an obscure place, and the turn is not given away."
+roles = ["feed-author", "reviewer"]
+serves = "UC-READ"
+check = "check:titles"
+mode = "advise"
+reads = ["story.titles"]
+
+[[rule]]
+id = "TASTE-PARAGRAPHS"
+kind = "taste"
+statement = "By default a paragraph is one thought in two to four sentences that fits a phone screen; an event is told once and later referred to; the last paragraph of a page and the first of the next read as one."
+roles = ["feed-author", "reviewer"]
+serves = "UC-READ"
+check = "check:paragraphs"
+mode = "advise"
+reads = ["text.max_paragraph_sentences"]
+
+[[rule]]
+id = "TASTE-HARDSHIP-DENSITY"
+kind = "taste"
+statement = "By default war or epidemic carries a chapter only when it is its plot, hardship chapters do not run longer than the set limit, and a death everyone died of then is grief without diagnosis or term."
+roles = ["feed-author", "reviewer"]
+serves = "UC-STORY"
+check = "review:reviewer"
+mode = "advise"
+reads = ["story.max_hardship_run"]
+
+[[rule]]
+id = "TASTE-PLACES-TODAY"
+kind = "taste"
+statement = "By default a feed names places of its story that stand near the family today (church, cemetery, street), never the addresses of the living; at the set level a closing page collects them with one line each."
+roles = ["researcher", "feed-author"]
+serves = "UC-READ"
+check = "check:places-today"
+mode = "advise"
+reads = ["story.places_today"]
+
+[[rule]]
+id = "TASTE-KIDS"
+kind = "taste"
+statement = "By default one text serves every age and each page ends with a 'For children' block: a question answerable from that page or a child's own life, a find on the picture, a short game whose choice leads to the truth. Hard things for children are one gentle sentence, with no cruel pictures on such pages."
+roles = ["feed-author", "reviewer"]
+serves = "UC-READ"
+check = "check:kids-block"
+mode = "advise"
+reads = ["kids.layer", "kids.original_word_task", "kids.hard_topics", "reader.default_age"]
+
+[[rule]]
+id = "TASTE-PLAIN-LANGUAGE"
+kind = "taste"
+statement = "By default write as one speaks to a child today: replace words a child of the default age has not heard, keep a period word only when the scene needs it and explain it in the same sentence, name who acts in every action, and avoid officialese."
+roles = ["feed-author", "translator", "reviewer"]
+serves = "UC-READ"
+check = "check:plain-language"
+mode = "advise"
+reads = ["reader.default_age", "lang.lexicon"]
+
+[[rule]]
+id = "TASTE-PREFERRED-TERMS"
+kind = "taste"
+statement = "By default words of faith, institutions and daily life are the ones the family said, explained at first use; translations use the natural word of their language."
+roles = ["feed-author", "translator"]
+serves = "UC-READ"
+check = "check:preferred-terms"
+mode = "advise"
+reads = ["lang.preferred_terms"]
+
+[[rule]]
+id = "TASTE-NAMES"
+kind = "taste"
+statement = "By default names in story text follow the set form, with the original once in brackets where it matters; readings and quoted inscriptions stay literal. A lineage has one canonical surname; spellings written by ear appear only where the story is about spelling, never as a person's name."
+roles = ["feed-author", "translator", "reviewer"]
+serves = "UC-READ"
+check = "check:name-forms"
+mode = "advise"
+reads = ["names.text_form", "names.original_in_brackets", "names.gendered_surnames", "names.lineage_forms"]
+
+[[rule]]
+id = "TASTE-DRAWINGS"
+kind = "taste"
+statement = "By default, where no real picture of the family's scene exists, a drawing shows the family's people, and 'they had the same' is drawn from a real sample; one feed keeps one non-photographic style chosen by the host."
+roles = ["shot-director", "artist", "lead"]
+serves = "UC-STORY"
+check = "review:reviewer"
+mode = "advise"
+reads = ["drawing.enabled", "drawing.style", "drawing.photoreal", "drawing.from_photos_of_deceased"]
+
+[[rule]]
+id = "TASTE-RECONSTRUCTION-DISCLOSURE"
+kind = "taste"
+statement = "By default a drawing made from a real sample shows that original as a quiet corner thumbnail, and the way drawings are made is disclosed at the set level."
+roles = ["artist", "feed-author", "reviewer"]
+serves = "UC-READ"
+check = "check:drawing-disclosure"
+mode = "advise"
+reads = ["drawing.disclosure", "drawing.original_pair"]
+
+[[rule]]
+id = "TASTE-PICTURE-DENSITY"
+kind = "taste"
+statement = "By default pictures follow the set density as a guide, each stands after the paragraph it shows, and a picture is not reused in feeds of different lineages."
+roles = ["feed-author", "artist", "reviewer"]
+serves = "UC-READ"
+check = "check:picture-reuse"
+mode = "advise"
+reads = ["picture.density", "picture.reuse_across_lines"]
+
+[[rule]]
+id = "TASTE-COLORISE"
+kind = "taste"
+statement = "At the set level real period pictures are coloured by transfer: brightness from the original, blurred colour from an aligned coloured copy, gentle enhancement; the original stays one tap away."
+roles = ["artist", "reviewer"]
+serves = "UC-READ"
+check = "check:colour-pairs"
+mode = "advise"
+reads = ["picture.colorise"]
+
+[[rule]]
+id = "TASTE-CUTOUT"
+kind = "taste"
+statement = "By default a handwritten cut-out is one or two lines, never above the set limit, with margin so no letter is cut, and shows what it stands for (surname, name, place, year); a printed document is one note or line; the full page is cropped to the historical sheet."
+roles = ["feed-author", "researcher", "reviewer"]
+serves = "UC-READ"
+check = "check:cutout-size"
+mode = "advise"
+reads = ["doc.cutout_max_lines"]
+
+[[rule]]
+id = "TASTE-DOC-PLACEMENT"
+kind = "taste"
+statement = "By default a cut-out stands right after the paragraph it proves, nothing is appended after the text, a chapter shows up to the set number of document frames, and every mentioned document is present at least in a tab."
+roles = ["feed-author", "reviewer"]
+serves = "UC-READ"
+check = "check:flow-placement"
+mode = "advise"
+reads = ["doc.frames_per_chapter"]
+
+[[rule]]
+id = "TASTE-MINI-TREE"
+kind = "taste"
+statement = "When enabled, chapters about a family show a mini tree with names and years only, no labels that give away the story."
+roles = ["feed-author"]
+serves = "UC-READ"
+check = "check:mini-tree"
+mode = "advise"
+reads = ["doc.mini_tree"]
+
+[[rule]]
+id = "TASTE-RESEARCH-SCOPE"
+kind = "taste"
+statement = "By default research goes wide along surnames the family bears or remembers and their parallel branches before going deep along forgotten lines; before a move, name who in the family will recognise its result. The unusual is still noted."
+roles = ["lead", "researcher"]
+serves = "UC-RESEARCH"
+check = ""
+mode = "advise"
+reads = ["research.scope"]
+
+# =====================================================================
+# PROCESS
+# =====================================================================
+
+[[rule]]
+id = "PROC-SCENARIO-FIRST"
+kind = "process"
+statement = "A scenario (one line per chapter: whose fate, the scene, the shot, the document) exists before text; text never starts from the first document."
+roles = ["feed-author", "lead"]
+serves = "UC-STORY"
+check = "check:stage-scenario"
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "PROC-FEED-LIVES"
+kind = "process"
+statement = "A new finding is a reason to rewrite a chapter or part; a feed built to an older standard is rewritten whole from the scenario, while host remarks are applied inside the accepted frame."
+roles = ["lead", "feed-author"]
+serves = "UC-CORRECT"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "PROC-CONTESTED-VERDICT"
+kind = "process"
+statement = "A merge or link that an independent check calls 'contested' stays visible as a version: its review names the conflict, the story that could explain it and the next test. Its weight and rank follow the evidence; nothing is kept leading by rule."
+roles = ["researcher", "second-look"]
+serves = "UC-RESEARCH"
+check = "check:contested-review"
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "PROC-SHOT-CARD"
+kind = "process"
+statement = "Before a drawing: a proposed scene gets two questions (clear to a child without caption? anything that breaks today's picture of the past?); an approved one gets the full shot questionnaire and a shot card from the region's visual reference with a 'do not draw' list. Each host remark on a drawing maps to a questionnaire question, adding one if none fits."
+roles = ["shot-director", "artist"]
+serves = "UC-STORY"
+check = "check:shot-card"
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "PROC-BLIND-CHECK"
+kind = "process"
+statement = "A drawing is checked by a reviewer who did not make it and sees only the picture and the page title: who is who, who came to whom, where people look, season and hour, light, what a child will ask; plus gaze in space, a full-size count and the logic of the place. One check per drawing covers all shot rules."
+roles = ["reviewer", "lead"]
+serves = "UC-STORY"
+check = "review:reviewer"
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "PROC-TRANSLATION-FOLLOWS"
+kind = "process"
+statement = "Feeds are written in the family's primary language; translations follow after the host accepts the primary text, in batches per language, small edits at once. An outdated translation is better than none."
+roles = ["translator", "lead"]
+serves = "UC-READ"
+check = "check:translation-lag"
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "PROC-CHECKS-FIRST"
+kind = "process"
+statement = "Mechanical checks run before any human-like reading; a finding is fixed, waived with a reason, or reported as a wrong check."
+roles = ["feed-author", "reviewer"]
+serves = "UC-STORY"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "PROC-READING-LAYERS"
+kind = "process"
+statement = "A feed is read page by page against the rules, never 'whole' or 'new chapters only'; an ordinary pass uses the set number of readers, the pass before showing the host uses the larger panel plus one reading for logic, with fixes as ready sentences."
+roles = ["reviewer", "lead"]
+serves = "UC-STORY"
+check = ""
+mode = "advise"
+reads = ["review.readers", "review.readers_before_host"]
+
+[[rule]]
+id = "PROC-STRONG-CHECK"
+kind = "process"
+statement = "A key number, contested reading or date that a chapter or a tree link stands on is checked by a separate strong reviewer; a contested key reading by two strong reviewers independently, with neighbouring pages in the same hand, and to the host with our version if they disagree and the conclusion changes."
+roles = ["lead", "second-look"]
+serves = "UC-RESEARCH"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "PROC-APP-CHECK"
+kind = "process"
+statement = "After a change: build, open the app at the set width, confirm new pictures are served and new text is visible on the page, not only in the data."
+roles = ["feed-author", "reviewer"]
+serves = "UC-READ"
+check = ""
+mode = "advise"
+reads = ["review.app_width_px"]
+
+[[rule]]
+id = "PROC-REMARK-INTAKE"
+kind = "process"
+statement = "A host remark is answered with its class and fixed in the feed it concerns: trust becomes a rule and a check now; craft becomes a line of a role's rules; taste becomes a setting of that family. Craft becomes a rule only after it repeats."
+roles = ["lead"]
+serves = "UC-CORRECT"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "PROC-CHECK-SERVES-STORY"
+kind = "process"
+statement = "A check serves the story: text is never made worse to satisfy it. A false finding is waived with a reason in the same move and the check is fixed or reported; when the engine cannot hold a story, the engine is changed, not the story."
+roles = ["lead", "feed-author", "reviewer"]
+serves = "UC-TUNE"
+check = ""
+mode = "advise"
+reads = ["rules.exception_alarm"]
+
+# ---------- memory-first start ----------
+
+[[rule]]
+id = "CRAFT-KEEP-THE-MASS"
+kind = "craft"
+statement = "Precision is derived from the whole mass of the possible, not reached by sifting at the entry. A collector keeps literally everything that may concern the family's people, each with what matches and what diverges and no identity verdict; a divergence of year, spelling, patronymic or place is no reason to drop a find or to rule 'not them', and a zero for one form means nothing. The one who composes lays out the whole mass at once: how many people stand behind the lines, which lines are one person, which fates the material allows, as versions with weights and an honest unknown. A leading version at half or more reads 'most likely so' and is told as it happened, with weights and rivals in 'More'; only what stands on a document or firm memory is called a fact."
+roles = ["lead", "researcher", "recipe-searcher", "second-look", "feed-author"]
+serves = "UC-RESEARCH"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "CRAFT-NAME-BY-EAR"
+kind = "craft"
+statement = "A name, a surname and a village were written by whoever heard them: a parish priest, an imperial clerk, a shipping agent, a border officer. For a person who left, served or entered foreign papers, build search forms along the route as each scribe would have written what they heard in their own language and script, add them to the variant dictionary as unverified with whose ear they assume, and search them on a par with the rest. A record found through such a form is a grain; a matching set of family names beside it makes it strong."
+roles = ["researcher", "recipe-searcher", "lead"]
+serves = "UC-RESEARCH"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "CRAFT-NEIGHBOUR-PARISH"
+kind = "craft"
+statement = "When one family's records turn up in a neighbouring parish (their own church closed, burned or lost its books, or people travelled to another), treat it as an address for the whole village, not a find for one family: in those years the other families went there too. At once, by the same collector or the next one, make one pass over that parish for the same years for every surname of the family from that village. Silent books are a reason to ask where people went instead, not a gap in their lives."
+roles = ["researcher", "recipe-searcher", "lead"]
+serves = "UC-RESEARCH"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "CRAFT-WIDE-HYPOTHESES"
+kind = "craft"
+statement = "A load-bearing zero with read coverage, or a broken line, is a question about behaviour: what did people do instead of what we searched for, and what paper did that leave? Before archive letters, generate weighted behaviour hypotheses with a located trace each and test the cheap ones in bulk; skill wide-hypotheses."
+roles = ["lead", "researcher"]
+serves = "UC-RESEARCH"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "CRAFT-WEIGHT-BY-FIELDS"
+kind = "craft"
+statement = "A candidate's weight follows the number of independent fields it matches: none keeps only a share of the unknown, one is 'possible' (0.05-0.15), two or more independent fields are 'probable' (0.3 and up). A matching year alone is not identity, and fields copied from one source count once."
+roles = ["researcher", "recipe-searcher", "second-look"]
+serves = "UC-RESEARCH"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "PROC-STORY-LEVEL"
+kind = "process"
+statement = "Evidence sets the ceiling of a line's story and interest sets its size. Memory and weighted versions give a card, and a card may carry a micro-story; a document about the line's own people gives a story page; a feed needs documents across generations, linked by accepted links or leading versions, and a researched scenario. The ceiling is raised by a bridge paper or a stronger version, never by text; below the ceiling a story is as long as its interest, not its records."
+roles = ["lead", "feed-author", "researcher"]
+serves = "UC-STORY"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "CRAFT-INTEREST"
+kind = "craft"
+statement = "A finding carries two numbers: weight (how likely it is about this person) and interest (would a grandparent reading aloud hear 'that is interesting' from a child). Collectors mark what is worth telling, with one line of what there is to tell, and never filter by it; the one who composes chooses by it. Interest comes from an upturned order of things, from distance itself (kin scattered across the world is interesting simply because it is far), a journey, a choice, something the reader can count or still see; a run of births, deaths and funerals is real life but not by itself a story. The length of a story follows interest, not the number of records: one interesting finding is a micro-story of a paragraph that fits into a feed, a card or a page, and is never inflated into chapters."
+roles = ["lead", "feed-author", "researcher", "reviewer"]
+serves = "UC-STORY"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "TASTE-HARDSHIP-FRAMING"
+kind = "taste"
+statement = "How hardship and faith are framed follows story.hardship_framing: 'policy-of-power' tells them through what an authority did to categories of people and districts; 'as-documented' tells each conflict as the documents give it, including conflict between neighbours. Depth follows story.hard_history_depth."
+roles = ["feed-author", "reviewer", "translator"]
+serves = "UC-STORY"
+check = "review:reviewer"
+mode = "advise"
+reads = ["story.hardship_framing", "story.hard_history_depth"]
+
+[[rule]]
+id = "CRAFT-CUTOUT-READING"
+kind = "craft"
+statement = "The reading printed under a cut-out covers only the lines the cut-out shows, marks the words the scene rests on, and tells in a few words where to find them on the full sheet (which page, which entry from the top)."
+roles = ["feed-author", "reviewer"]
+check = "review:reviewer"
+serves = "UC-STORY"
+mode = "advise"
+reads = []

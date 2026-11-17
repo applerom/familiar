@@ -1,0 +1,136 @@
+{
+  "id": "emma-origin",
+  "title": "Где родилась бабушка Эмма и откуда семья Шмидт",
+  "line": "Шмидт",
+  "people": [
+    "irina-2026-11-12-emma",
+    "irina-2026-11-12-gottlieb",
+    "irina-2026-11-12-maria"
+  ],
+  "status": "resolved",
+  "unknown_weight": 0.05,
+  "versions": [
+    {
+      "id": "gnadenflur",
+      "label": "Село Гнаденфлюр (Gnadenflur) в АССР немцев Поволжья",
+      "weight": 0.85,
+      "for": [
+        {
+          "kind": "export",
+          "text": "Выгрузка двоюродного брата называет Gnadenflur и точную дату 12.03.1931",
+          "sources": [
+            "export-wagner-2026-11"
+          ],
+          "dependency_group": "origin:export-wagner-2026-11"
+        },
+        {
+          "kind": "document",
+          "text": "Справка 1994 года: уроженка с. Гнаденфлюр Палласовского кантона",
+          "sources": [
+            "spravka-emma-1994"
+          ],
+          "dependency_group": "origin:spravka-emma-1994"
+        }
+      ],
+      "against": [
+        {
+          "kind": "export",
+          "text": "Источник даты и места в выгрузке — совпадение с чужим деревом (Smart Match), не бумага",
+          "sources": [
+            "export-wagner-2026-11"
+          ],
+          "dependency_group": "origin:export-wagner-2026-11"
+        }
+      ],
+      "status": "accepted_evidence",
+      "basis": "Место рождения прочитано в справке о реабилитации; совпадает с догадкой выгрузки, но не зависит от неё.",
+      "sources": [
+        "spravka-emma-1994"
+      ],
+      "decision": "Принял агент-исследователь 2026-11-16 по прочитанной справке."
+    },
+    {
+      "id": "other-volga",
+      "label": "Другое немецкое село на Волге",
+      "weight": 0.1,
+      "for": [
+        {
+          "kind": "memory",
+          "text": "Память семьи говорит только 'немецкое село на Волге'",
+          "sources": [
+            "ir-emma-life"
+          ],
+          "dependency_group": "origin:ir-emma-life"
+        },
+        {
+          "kind": "export",
+          "text": "У прадеда в выгрузке рождение в Norka тоже из чужих деревьев",
+          "sources": [
+            "export-wagner-2026-11"
+          ],
+          "dependency_group": "origin:export-wagner-2026-11"
+        }
+      ],
+      "against": []
+    }
+  ],
+  "tests": [
+    {
+      "test": "Прочитать место рождения и место выселения в справке о реабилитации бабушки Эммы",
+      "text": "Справка о реабилитации бабушки Эммы называет место рождения и откуда семью выселили",
+      "outcomes": [
+        {
+          "kind": "positive",
+          "observation": "названо Гнаденфлюр",
+          "effects": [
+            {
+              "version": "gnadenflur",
+              "change": "raise",
+              "reason": "Бумага подтверждает догадку выгрузки"
+            }
+          ]
+        },
+        {
+          "kind": "contrary",
+          "observation": "названо другое село",
+          "effects": [
+            {
+              "version": "gnadenflur",
+              "change": "lower",
+              "reason": "Выгрузка ошиблась; новое село — новый поиск"
+            },
+            {
+              "version": "other-volga",
+              "change": "raise",
+              "reason": "Названо по бумаге"
+            }
+          ]
+        },
+        {
+          "kind": "unavailable",
+          "observation": "справки нет дома",
+          "effects": [
+            {
+              "version": "gnadenflur",
+              "change": "unchanged",
+              "reason": "Отсутствие бумаги ничего не опровергает; повторную справку можно запросить"
+            }
+          ]
+        },
+        {
+          "kind": "unreadable",
+          "observation": "нужное место не читается",
+          "effects": [
+            {
+              "version": "gnadenflur",
+              "change": "unchanged",
+              "reason": "Записать прочитанное буквально и решить заново"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "updated": "2026-11-16",
+  "summary": "Справка о реабилитации 1994 года называет село Гнаденфлюр и Лебяжинский район, куда семью выселили."
+}

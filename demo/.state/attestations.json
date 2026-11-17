@@ -1,0 +1,128 @@
+{
+  "feed:ferrolho/__feed__@en": {
+    "page": "feed:ferrolho/__feed__",
+    "language": "en",
+    "reviewer": "lead-claude-fable-5.2",
+    "author": "familiar-demo-original-authors",
+    "digest": "26a47929088a324d91f56043ef0cecae0ed3f083351e48ac7ffb087c0192ac77",
+    "safety_digest": "f18f43e3458a795b2e0dc892b6948863cdad1b817ef6808fea056426a5029b57",
+    "rules": [
+      "R1",
+      "R2",
+      "R3",
+      "R4"
+    ],
+    "inspection_digest": "afcce38154619ae22d02e974954597d4a51aafcc4fa52ad09bd2b11a2be06572",
+    "verdict": "pass",
+    "at": "2026-11-17T07:09:51.121521+00:00",
+    "stage": "reading"
+  },
+  "feed:ferrolho/amaro-1921@en": {
+    "page": "feed:ferrolho/amaro-1921",
+    "language": "en",
+    "reviewer": "lead-claude-fable-5.2",
+    "author": "familiar-demo-original-authors",
+    "digest": "d7f115055e882efb80264284dfaac609c85098c43f1a0945dbbe4591561adb02",
+    "safety_digest": "f18f43e3458a795b2e0dc892b6948863cdad1b817ef6808fea056426a5029b57",
+    "rules": [
+      "R1",
+      "R2",
+      "R3",
+      "R4"
+    ],
+    "inspection_digest": "4aceb3ded657688f27b99e10785a1edc3de5c7744da067b90ab03ef64f936dc5",
+    "verdict": "pass",
+    "at": "2026-11-17T07:09:51.121521+00:00",
+    "stage": "reading"
+  },
+  "feed:ferrolho/rosa-1925@en": {
+    "page": "feed:ferrolho/rosa-1925",
+    "language": "en",
+    "reviewer": "lead-claude-fable-5.2",
+    "author": "familiar-demo-original-authors",
+    "digest": "d65a5df6621afcec1b27e3b93e6bed9c25437126362d8e3367c0a310148552cb",
+    "safety_digest": "f18f43e3458a795b2e0dc892b6948863cdad1b817ef6808fea056426a5029b57",
+    "rules": [
+      "R1",
+      "R2",
+      "R3",
+      "R4"
+    ],
+    "inspection_digest": "2827f8f8e930ff9e3c86ce67293581af4639c83bf28a4b5d53ca206bf43a7a8b",
+    "verdict": "pass",
+    "at": "2026-11-17T07:09:51.121521+00:00",
+    "stage": "reading"
+  },
+  "reader:tree@en": {
+    "page": "reader:tree",
+    "language": "en",
+    "reviewer": "lead-claude-fable-5.2",
+    "author": "familiar-demo-original-authors",
+    "digest": "9e7b2df44499ecde8e53b4a00eb59ed1b45809538fe8bc97926b499b72c0b78f",
+    "safety_digest": "f18f43e3458a795b2e0dc892b6948863cdad1b817ef6808fea056426a5029b57",
+    "rules": [
+      "R1",
+      "R2",
+      "R3",
+      "R4"
+    ],
+    "inspection_digest": "08439355f232807b929715155f1dcdcbad274476238ac7a9adff2c0b8952183f",
+    "verdict": "pass",
+    "at": "2026-11-17T07:09:51.121521+00:00",
+    "stage": "reading"
+  },
+  "reader:file:reader-profile.json@en": {
+    "page": "reader:file:reader-profile.json",
+    "language": "en",
+    "reviewer": "lead-claude-fable-5.2",
+    "author": "familiar-demo-original-authors",
+    "digest": "3bc904fe88f65f85d583a9ca6934d00d6ce5c386c28af12c6c91758b950a2f68",
+    "safety_digest": "f18f43e3458a795b2e0dc892b6948863cdad1b817ef6808fea056426a5029b57",
+    "rules": [
+      "R1",
+      "R2",
+      "R3",
+      "R4"
+    ],
+    "inspection_digest": "18313068b648c0bb70deab973e8df0f3f9efb6bc7c66492d228d3ec58b2b3eed",
+    "verdict": "pass",
+    "at": "2026-11-17T07:09:51.121521+00:00",
+    "stage": "reading"
+  },
+  "reader:file:sources/accb322b9224a59dc54c.html@en": {
+    "page": "reader:file:sources/accb322b9224a59dc54c.html",
+    "language": "en",
+    "reviewer": "lead-claude-fable-5.2",
+    "author": "familiar-demo-original-authors",
+    "digest": "4e175aa76263a1afaa2676a02cfe5666403befcf8b4baccb4cb44962ee1e7c79",
+    "safety_digest": "f18f43e3458a795b2e0dc892b6948863cdad1b817ef6808fea056426a5029b57",
+    "rules": [
+      "R1",
+      "R2",
+      "R3",
+      "R4"
+    ],
+    "inspection_digest": "e7d28edef8c2bdf1492e1b3c626e7eb3c5a70b3b1bc349751ae464e80651b346",
+    "verdict": "pass",
+    "at": "2026-11-17T07:09:51.121521+00:00",
+    "stage": "reading"
+  },
+  "reader:file:sources/7cebdfd04b3813e08a8b.html@en": {
+    "page": "reader:file:sources/7cebdfd04b3813e08a8b.html",
+    "language": "en",
+    "reviewer": "lead-claude-fable-5.2",
+    "author": "familiar-demo-original-authors",
+    "digest": "b0cd2fb37c5caf7b0d43e8524f4cf48a8f6822603729d5fc00b012386dcb81c8",
+    "safety_digest": "f18f43e3458a795b2e0dc892b6948863cdad1b817ef6808fea056426a5029b57",
+    "rules": [
+      "R1",
+      "R2",
+      "R3",
+      "R4"
+    ],
+    "inspection_digest": "eca27f95e68f8bfc7a824cac36fa6108fdc8b382605aecf496961beef8279816",
+    "verdict": "pass",
+    "at": "2026-11-17T07:09:51.121521+00:00",
+    "stage": "reading"
+  }
+}

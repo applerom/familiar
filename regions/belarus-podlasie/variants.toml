@@ -1,0 +1,1018 @@
+# START_MODULE_CONTRACT: MOD-REGION-BP-VARIANTS
+# PURPOSE: Offer shared given-name and town search forms without importing people, surnames or family geography.
+# PRD_REF: docs/PRD.md#REGION-PACK
+# INVARIANTS:
+# - each form has a script and an explicit period with its own confidence [review: pack keeper]
+# CHANGES_WITH:
+# - regions/belarus-podlasie/data-contract.md
+# :END_MODULE_CONTRACT
+
+schema_version = 1
+semantics = "search-candidates"
+
+[[variant]]
+id = "jan"
+kind = "given_name"
+canonical = "Jan"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Jan", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Janek", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Jaś", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Johann", "script" = "Latn", "language" = "de", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Johannes", "script" = "Latn", "language" = "la", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "John", "script" = "Latn", "language" = "en", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Ян", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Ясь", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Янка", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Иван", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Іван", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Iwan", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Ioannes", "script" = "Latn", "language" = "la", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "michal"
+kind = "given_name"
+canonical = "Michał"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Michał", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Michal", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Michael", "script" = "Latn", "language" = "la", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Michel", "script" = "Latn", "language" = "fr", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Mikhail", "script" = "Latn", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Михаил", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Михась", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Міхал", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Міхась", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Michaël", "script" = "Latn", "language" = "fr", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Michaelis", "script" = "Latn", "language" = "la", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Михал", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "franciszek"
+kind = "given_name"
+canonical = "Franciszek"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Franciszek", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Franz", "script" = "Latn", "language" = "de", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Frank", "script" = "Latn", "language" = "en", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Francis", "script" = "Latn", "language" = "en", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Франц", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Францишек", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Франциск", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Франциш", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Франак", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Franciscus", "script" = "Latn", "language" = "la", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "kazimierz"
+kind = "given_name"
+canonical = "Kazimierz"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Kazimierz", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Kasimir", "script" = "Latn", "language" = "de", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Casimir", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Казимир", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Казімір", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Казюк", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Casimirus", "script" = "Latn", "language" = "la", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "antoni"
+kind = "given_name"
+canonical = "Antoni"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Antoni", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Anton", "script" = "Latn", "language" = "de", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Anthony", "script" = "Latn", "language" = "en", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Antonius", "script" = "Latn", "language" = "la", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Антон", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Антоний", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Антось", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Антоні", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "jozef"
+kind = "given_name"
+canonical = "Józef"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Józef", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Jozef", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Joseph", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Josef", "script" = "Latn", "language" = "de", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Иосиф", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Осип", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Юзеф", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Язэп", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Josephus", "script" = "Latn", "language" = "la", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "pawel"
+kind = "given_name"
+canonical = "Paweł"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Paweł", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Pawel", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Paul", "script" = "Latn", "language" = "en", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Павел", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Паўлюк", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Paulus", "script" = "Latn", "language" = "la", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "stanislaw"
+kind = "given_name"
+canonical = "Stanisław"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Stanisław", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Stanislaw", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Stanley", "script" = "Latn", "language" = "en", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Станислав", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Стась", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Станіслаў", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Stanislaus", "script" = "Latn", "language" = "la", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "wiktor"
+kind = "given_name"
+canonical = "Wiktor"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Wiktor", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Victor", "script" = "Latn", "language" = "en", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Виктор", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Віктар", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "piotr"
+kind = "given_name"
+canonical = "Piotr"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Piotr", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Peter", "script" = "Latn", "language" = "en", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Пётр", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Петр", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Пятро", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Petrus", "script" = "Latn", "language" = "la", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "adam"
+kind = "given_name"
+canonical = "Adam"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Adam", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Адам", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "tadeusz"
+kind = "given_name"
+canonical = "Tadeusz"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Tadeusz", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Тадеуш", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Фаддей", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Thaddaeus", "script" = "Latn", "language" = "la", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "wincenty"
+kind = "given_name"
+canonical = "Wincenty"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Wincenty", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Викентий", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Вінцэнт", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Vincent", "script" = "Latn", "language" = "en", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Vincentius", "script" = "Latn", "language" = "la", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "aleksander"
+kind = "given_name"
+canonical = "Aleksander"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Aleksander", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Alexander", "script" = "Latn", "language" = "en", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Александр", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Алесь", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Аляксандр", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "mikolaj"
+kind = "given_name"
+canonical = "Mikołaj"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Mikołaj", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Nikolai", "script" = "Latn", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Nicholas", "script" = "Latn", "language" = "en", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Николай", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Мікалай", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Nicolaus", "script" = "Latn", "language" = "la", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "bazyli"
+kind = "given_name"
+canonical = "Bazyli"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Bazyli", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Wasyl", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Wasil", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Василий", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Базыль", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Basilius", "script" = "Latn", "language" = "la", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "grzegorz"
+kind = "given_name"
+canonical = "Grzegorz"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Grzegorz", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Григорий", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Рыгор", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Gregorius", "script" = "Latn", "language" = "la", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "ignacy"
+kind = "given_name"
+canonical = "Ignacy"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Ignacy", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Игнатий", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Ігнат", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Ignatius", "script" = "Latn", "language" = "la", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Игнаций", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "andrzej"
+kind = "given_name"
+canonical = "Andrzej"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Andrzej", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Andreas", "script" = "Latn", "language" = "la", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Андрей", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Андрэй", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "wlodzimierz"
+kind = "given_name"
+canonical = "Włodzimierz"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Włodzimierz", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Владимир", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Уладзімір", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "stefan"
+kind = "given_name"
+canonical = "Stefan"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Stefan", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Stephan", "script" = "Latn", "language" = "de", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Степан", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Стефан", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Сцяпан", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Stephanus", "script" = "Latn", "language" = "la", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "marcin"
+kind = "given_name"
+canonical = "Marcin"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Marcin", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Martin", "script" = "Latn", "language" = "en", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Мартин", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Марцін", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Martinus", "script" = "Latn", "language" = "la", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "maciej"
+kind = "given_name"
+canonical = "Maciej"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Maciej", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Matthias", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Матвей", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Мацей", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "mateusz"
+kind = "given_name"
+canonical = "Mateusz"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Mateusz", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Matthew", "script" = "Latn", "language" = "en", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Матвей", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Матфей", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Matthaeus", "script" = "Latn", "language" = "la", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "sergiusz"
+kind = "given_name"
+canonical = "Sergiusz"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Sergiusz", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Siergiej", "script" = "Latn", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Сергей", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Сяргей", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "foma"
+kind = "given_name"
+canonical = "Tomasz"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Tomasz", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Thomas", "script" = "Latn", "language" = "la", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Фома", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Томаш", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Хама", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "anna"
+kind = "given_name"
+canonical = "Anna"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Anna", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Hanna", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Ганна", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Анна", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Ann", "script" = "Latn", "language" = "en", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "marianna"
+kind = "given_name"
+canonical = "Marianna"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Marianna", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Maria", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Maryja", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Marja", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Mary", "script" = "Latn", "language" = "en", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Мария", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Марыля", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Марьяна", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "salomea"
+kind = "given_name"
+canonical = "Salomea"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Salomea", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Соломея", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Саламея", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Salome", "script" = "Latn", "language" = "fr", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "petronela"
+kind = "given_name"
+canonical = "Petronela"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Petronela", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Петронеля", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Пятрунэля", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Petronilla", "script" = "Latn", "language" = "la", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "janina"
+kind = "given_name"
+canonical = "Janina"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Janina", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Янина", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Яніна", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "emilia"
+kind = "given_name"
+canonical = "Emilia"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Emilia", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Эмилия", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Emily", "script" = "Latn", "language" = "en", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "agata"
+kind = "given_name"
+canonical = "Agata"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Agata", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Агафья", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Агата", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Agatha", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "zofia"
+kind = "given_name"
+canonical = "Zofia"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Zofia", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Zofja", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Софья", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Софія", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Sophia", "script" = "Latn", "language" = "la", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Зофья", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "katarzyna"
+kind = "given_name"
+canonical = "Katarzyna"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Katarzyna", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Екатерина", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Катерина", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Кацярына", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Catharina", "script" = "Latn", "language" = "la", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Катажина", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "helena"
+kind = "given_name"
+canonical = "Helena"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Helena", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Елена", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Алена", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Гелена", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Хелена", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Helen", "script" = "Latn", "language" = "en", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Хелен", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "antonina"
+kind = "given_name"
+canonical = "Antonina"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Antonina", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Антонина", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Антаніна", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "krystyna"
+kind = "given_name"
+canonical = "Krystyna"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Krystyna", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Христина", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Хрысціна", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Christina", "script" = "Latn", "language" = "la", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "aniela"
+kind = "given_name"
+canonical = "Aniela"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Aniela", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Анеля", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Angela", "script" = "Latn", "language" = "en", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "albina"
+kind = "given_name"
+canonical = "Albina"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Albina", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Альбина", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "franciszka"
+kind = "given_name"
+canonical = "Franciszka"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Franciszka", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Франтишка", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Францишка", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "jadwiga"
+kind = "given_name"
+canonical = "Jadwiga"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Jadwiga", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Ядвига", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "bronislawa"
+kind = "given_name"
+canonical = "Bronisława"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Bronisława", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Бронислава", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "boleslaw"
+kind = "given_name"
+canonical = "Bolesław"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Bolesław", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Болеслав", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "dominik"
+kind = "given_name"
+canonical = "Dominik"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Dominik", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Доминик", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Dominick", "script" = "Latn", "language" = "en", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Dominic", "script" = "Latn", "language" = "en", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "konstancja"
+kind = "given_name"
+canonical = "Konstancja"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Konstancja", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Констанция", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "magdalena"
+kind = "given_name"
+canonical = "Magdalena"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Magdalena", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Магдалена", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "marian"
+kind = "given_name"
+canonical = "Marian"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Marian", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Мариан", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "ewa"
+kind = "given_name"
+canonical = "Ewa"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Ewa", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Ева", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "filip"
+kind = "given_name"
+canonical = "Filip"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Filip", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Филип", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "teodor"
+kind = "given_name"
+canonical = "Teodor"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Teodor", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Теодор", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "daniel"
+kind = "given_name"
+canonical = "Daniel"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Daniel", "script" = "Latn", "language" = "en", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Дэниел", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Даниэль", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "evgeniy"
+kind = "given_name"
+canonical = "Eugeniusz"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Евгений", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Яўген", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Eugeniusz", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Jewgienij", "script" = "Latn", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Evgeny", "script" = "Latn", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Evgeniy", "script" = "Latn", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Eugene", "script" = "Latn", "language" = "en", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Eugenius", "script" = "Latn", "language" = "la", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "vyacheslav"
+kind = "given_name"
+canonical = "Wiaczesław"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Вячеслав", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Вячаслаў", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Wiaczesław", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Wiaczeslaw", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Vyacheslav", "script" = "Latn", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "vitaliy"
+kind = "given_name"
+canonical = "Witalij"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Виталий", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Віталь", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Witalij", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Vitaly", "script" = "Latn", "language" = "en", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Vitaliy", "script" = "Latn", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Виталик", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "valentina"
+kind = "given_name"
+canonical = "Walentyna"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Валентина", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Валянціна", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Walentyna", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Valentina", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Valentyna", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "viktoria"
+kind = "given_name"
+canonical = "Wiktoria"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Виктория", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Вікторыя", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Wiktoria", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Victoria", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Viktoria", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "amelia"
+kind = "given_name"
+canonical = "Amelia"
+context = "кандидаты для поиска имени; перевод, уменьшительная форма и созвучие не устанавливают тождество человека"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Амелия", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Амэлiя", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Амелія", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Amelia", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Амалия", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Амалія", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Amalia", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Amalja", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "grodno"
+kind = "place"
+canonical = "Grodno"
+context = "город, областной и исторический уездный центр"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Grodno", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Гродно", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Горадня", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Hrodna", "script" = "Latn", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Grodna", "script" = "Latn", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Grodnie", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "sokolka"
+kind = "place"
+canonical = "Sokółka"
+context = "город и центр повета"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Sokółka", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Sokolka", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Сокулка", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "radoszkowicze"
+kind = "place"
+canonical = "Radoszkowicze"
+context = "историческое местечко; городской посёлок"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Radoszkowicze", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Радошковичи", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Радашковічы", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Radoshkovichi", "script" = "Latn", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "zaslaw"
+kind = "place"
+canonical = "Zasław"
+context = "город; различать одноимённые места по области"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Zasław", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Заславль", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Заслав", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Заслаўе", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Zaslawl", "script" = "Latn", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Zaslaw", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Zasłaŭje", "script" = "Latn", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "minsk"
+kind = "place"
+canonical = "Mińsk"
+context = "столица; польское уточнение отличает от одноимённого города в другом регионе"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Минск", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Minsk", "script" = "Latn", "language" = "und", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Mińsk", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Менск", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Мінск", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Минскъ", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "г. Минск", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Mińsk Litewski", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Minsk Litewski", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Minsk, Belarus", "script" = "Latn", "language" = "und", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "koydanovo"
+kind = "place"
+canonical = "Дзержинск"
+context = "город и районный центр; историческое и современное названия одного города"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Койданово", "script" = "Cyrl", "language" = "ru", "years" = [1600, 1932], "status" = "unverified", "basis" = "общее знание о переименовании в 1932 году; проверить официальную историю; поздняя цитата старого имени допустима" },
+  { "text" = "Койданов", "script" = "Cyrl", "language" = "ru", "years" = [1600, 1932], "status" = "unverified", "basis" = "общее знание о переименовании в 1932 году; проверить официальную историю; поздняя цитата старого имени допустима" },
+  { "text" = "Кайданово", "script" = "Cyrl", "language" = "ru", "years" = [1600, 1932], "status" = "unverified", "basis" = "общее знание о переименовании в 1932 году; проверить официальную историю; поздняя цитата старого имени допустима" },
+  { "text" = "Кайданава", "script" = "Cyrl", "language" = "ru", "years" = [1600, 1932], "status" = "unverified", "basis" = "общее знание о переименовании в 1932 году; проверить официальную историю; поздняя цитата старого имени допустима" },
+  { "text" = "Koidanow", "script" = "Latn", "language" = "pl", "years" = [1600, 1932], "status" = "unverified", "basis" = "общее знание о переименовании в 1932 году; проверить официальную историю; поздняя цитата старого имени допустима" },
+  { "text" = "Kojdanów", "script" = "Latn", "language" = "pl", "years" = [1600, 1932], "status" = "unverified", "basis" = "общее знание о переименовании в 1932 году; проверить официальную историю; поздняя цитата старого имени допустима" },
+  { "text" = "Kojdanowo", "script" = "Latn", "language" = "pl", "years" = [1600, 1932], "status" = "unverified", "basis" = "общее знание о переименовании в 1932 году; проверить официальную историю; поздняя цитата старого имени допустима" },
+  { "text" = "Дзержинск", "script" = "Cyrl", "language" = "ru", "years" = [1932, 2026], "status" = "unverified", "basis" = "общее знание о переименовании в 1932 году; проверить официальную историю; поздняя цитата старого имени допустима" },
+  { "text" = "Дзяржынск", "script" = "Cyrl", "language" = "be", "years" = [1932, 2026], "status" = "unverified", "basis" = "общее знание о переименовании в 1932 году; проверить официальную историю; поздняя цитата старого имени допустима" },
+  { "text" = "Dzierżyńsk", "script" = "Latn", "language" = "pl", "years" = [1932, 2026], "status" = "unverified", "basis" = "общее знание о переименовании в 1932 году; проверить официальную историю; поздняя цитата старого имени допустима" },
+  { "text" = "Dzerzhinsk", "script" = "Latn", "language" = "ru", "years" = [1932, 2026], "status" = "unverified", "basis" = "общее знание о переименовании в 1932 году; проверить официальную историю; поздняя цитата старого имени допустима" },
+]
+
+[[variant]]
+id = "svetlogorsk"
+kind = "place"
+canonical = "Светлогорск"
+context = "город и районный центр; относится к юго-востоку страны"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Светлогорск", "script" = "Cyrl", "language" = "ru", "years" = [1961, 2026], "status" = "unverified", "basis" = "общее знание о переименовании в 1961 году; проверить официальную историю" },
+  { "text" = "Светлагорск", "script" = "Cyrl", "language" = "be", "years" = [1961, 2026], "status" = "unverified", "basis" = "общее знание о переименовании в 1961 году; проверить официальную историю" },
+  { "text" = "Svietłahorsk", "script" = "Latn", "language" = "be", "years" = [1961, 2026], "status" = "unverified", "basis" = "общее знание о переименовании в 1961 году; проверить официальную историю" },
+  { "text" = "Svetlogorsk", "script" = "Latn", "language" = "ru", "years" = [1961, 2026], "status" = "unverified", "basis" = "общее знание о переименовании в 1961 году; проверить официальную историю" },
+  { "text" = "Świetłogorsk", "script" = "Latn", "language" = "pl", "years" = [1961, 2026], "status" = "unverified", "basis" = "общее знание о переименовании в 1961 году; проверить официальную историю" },
+]
+
+[[variant]]
+id = "kopatkevichi"
+kind = "place"
+canonical = "Копаткевичи"
+context = "городской посёлок; бывший районный центр, отдельный от современного районного центра"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Копаткевичи", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Капаткевічы", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Kopatkiewicze", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Kopatkevichi", "script" = "Latn", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+
+[[variant]]
+id = "pietrykau"
+kind = "place"
+canonical = "Петриков"
+context = "город и современный районный центр; не вариант названия другого населённого пункта"
+status = "reported"
+basis = "перенесено из рабочего словаря написаний; первичные источники форм здесь не перепроверены"
+forms = [
+  { "text" = "Петриков", "script" = "Cyrl", "language" = "ru", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Петрыкаў", "script" = "Cyrl", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Petrykaw", "script" = "Latn", "language" = "be", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+  { "text" = "Petryków", "script" = "Latn", "language" = "pl", "years" = [1600, 2026], "status" = "unverified", "basis" = "широкое окно поиска; время употребления формы не установлено" },
+]
+

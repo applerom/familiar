@@ -1,0 +1,67 @@
+/*
+START_MODULE_CONTRACT: MOD-DESK-TREE-ADD-STYLE
+PURPOSE: Keep ghost places, pending people and the short relationship sheet faithful to the approved tree mockup.
+PRD_REF: docs/PRD.md#FAMILY-DESK
+INVARIANTS:
+- narrator additions stay visually distinct from accepted reader cards [review: engine lead]
+CHANGES_WITH:
+- MOD-DESK-TREE-ADD (tree overlay classes)
+- MOD-DESK-STYLE (shared lower row and phone tabs)
+:END_MODULE_CONTRACT
+*/
+.desk-tree-add-layer{position:absolute;inset:0;pointer-events:none;z-index:5}
+.desk-ghost,.desk-pending-card{pointer-events:auto;position:absolute;min-height:54px;padding:9px 11px;border-radius:12px;border:1.5px dashed var(--ember,#c8741c);background:color-mix(in srgb,var(--sheet,#fffdf8) 92%,transparent);color:var(--ember-text,#9a5512);display:flex;align-items:center;gap:8px;text-align:left;font:italic 14px/1.3 Literata,Georgia,serif;box-sizing:border-box}
+.desk-ghost{cursor:pointer;box-shadow:0 0 0 4px color-mix(in srgb,var(--ember,#c8741c) 6%,transparent)}
+.desk-ghost:hover{background:var(--ember-soft,#f6e5cc);box-shadow:0 0 0 6px color-mix(in srgb,var(--ember,#c8741c) 12%,transparent)}
+.desk-plus{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--ember,#c8741c);color:white;font:700 18px Manrope,system-ui,sans-serif}
+.desk-pending-card{flex-direction:column;align-items:flex-start;color:var(--ink,#24322b);background:var(--sheet,#fffdf8);overflow-wrap:anywhere}
+.desk-pending-card b{font-weight:500}.desk-pending-card small{font:12px Manrope,system-ui,sans-serif;color:var(--ink-mute,#74766d)}
+.desk-pending-card>span{font:700 10px/1.3 Manrope,system-ui,sans-serif;color:var(--ember-text,#9a5512)}
+.desk-ghost-wire{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:-1}.desk-ghost-wire path{fill:none;stroke:color-mix(in srgb,var(--ember,#c8741c) 50%,transparent);stroke-width:1.5;stroke-dasharray:4 4}
+@media(max-width:599px){.desk-tree-add-layer .desk-ghost{flex-direction:column;align-items:flex-start;gap:5px;padding:7px;font-size:12px}.desk-tree-add-layer .desk-plus{width:20px;height:20px;font-size:15px}.desk-tree-add-layer .desk-pending-card{padding:7px;font-size:13px}}
+.desk-add-sheet{box-sizing:border-box;position:fixed;inset:auto 0 0;margin:0 auto;width:min(100%,560px);max-height:85dvh;overflow-y:auto;padding:22px 24px;border:0;border-radius:20px 20px 0 0;background:var(--sheet,#fffdf8);color:var(--ink,#24322b);box-shadow:0 18px 48px -18px #15291b60;font:15px/1.5 Manrope,system-ui,sans-serif}
+.desk-add-sheet::backdrop{background:#1b2c2855}.desk-add-sheet h2{margin:0 0 18px;font:500 23px/1.3 Literata,Georgia,serif}
+.desk-add-sheet .desk-beside{margin:-10px 0 16px;color:var(--ink-mute,#74766d);font:13px/1.4 Manrope,system-ui,sans-serif}
+.desk-rel{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:16px}
+.desk-rel button,.desk-sheet-row button{min-height:48px;padding:8px;border:1px solid var(--rule,#ded5c2);border-radius:12px;background:var(--paper,#f5f1e6);color:var(--ink-soft,#535c52);font:600 12px/1.3 Manrope,system-ui,sans-serif;cursor:pointer}
+.desk-rel button[aria-pressed=true]{background:var(--act-soft,#e3ece5);border:2px solid var(--act,#486b52);color:var(--act,#486b52)}
+.desk-add-sheet label{display:block;font-size:13px;color:var(--ink-mute,#74766d)}.desk-say{box-sizing:border-box;display:block;width:100%;min-height:80px;padding:12px;margin-top:8px;border:1px solid var(--rule,#ded5c2);border-radius:8px;background:var(--paper,#f5f1e6);font:17px/1.5 Literata,Georgia,serif;color:var(--ink,#24322b);resize:vertical}
+.desk-sheet-row{display:flex;gap:12px;justify-content:space-between;margin-top:12px}.desk-sheet-row .desk-primary{background:var(--act,#486b52);color:#fff;min-width:130px}
+.desk-add-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);max-width:90%;z-index:2147483647;background:var(--sheet,#fffdf8);border:1px solid var(--rule,#ded5c2);border-radius:30px;padding:12px 20px;box-shadow:0 8px 25px #203b2d30;font:14px Manrope,system-ui,sans-serif}
+.desk-builder-scene{position:absolute;inset:0;z-index:8;background:radial-gradient(ellipse at 50% 55%,var(--sheet,#fffdf8),var(--paper,#f5f1e6) 72%);min-height:320px}
+.desk-builder-scene>svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.desk-builder-scene path{fill:none;stroke:var(--rule,#ded5c2);stroke-width:.3;stroke-dasharray:1 1}
+.desk-builder-status{position:absolute;top:8px;left:0;right:0;text-align:center;font:600 16px Literata,Georgia,serif;color:var(--ember-text,#9a5512)}
+.desk-builder-scene .desk-ghost,.desk-builder-scene .desk-pending-card,.desk-builder-person{position:absolute;width:120px;min-height:60px;box-sizing:border-box}
+.desk-builder-person{padding:8px 10px;border:1px solid var(--rule,#ded5c2);border-left:4px solid var(--act,#486b52);border-radius:10px;background:var(--sheet,#fffdf8);font:15px Literata,Georgia,serif;color:var(--ink,#24322b)}
+.desk-builder-person small{display:block;font:12px Manrope,system-ui,sans-serif;color:var(--ink-mute,#74766d);margin-top:4px}
+@media(max-width:599px){.desk-builder-scene .desk-ghost,.desk-builder-scene .desk-pending-card,.desk-builder-person{width:80px;padding:6px;font-size:12px}.desk-builder-person b{font-size:13px}.desk-builder-scene .desk-plus{width:20px;height:20px;font-size:15px}.desk-builder-scene .desk-ghost{gap:4px}.desk-builder-person small{font-size:10px}}
+.stage .controls .desk-build{display:grid;place-items:center}.stage .controls .desk-build svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round}
+.stage .controls .desk-build[aria-pressed=true]{background:var(--ember,#c8741c);color:#fff;border-color:var(--ember,#c8741c)}
+.desk-build-hint{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);z-index:6;display:flex;width:max-content;box-sizing:border-box;align-items:center;gap:10px;max-width:calc(100% - 24px);padding:6px 6px 6px 14px;border:1px solid color-mix(in srgb,var(--ember,#c8741c) 40%,transparent);border-radius:999px;background:var(--sheet,#fffdf8);color:var(--ember-text,#9a5512);font:600 12px/1.3 Manrope,system-ui,sans-serif;box-shadow:0 6px 18px -10px #203b2d50}
+@media(max-width:800px){.desk-build-hint{bottom:66px;z-index:30;font-size:11px}}
+.desk-build-hint button{border:0;border-radius:999px;padding:6px 12px;background:var(--ember,#c8741c);color:#fff;font:inherit;cursor:pointer;white-space:nowrap}
+.desk-add-entry{position:absolute;right:16px;bottom:84px;z-index:6;display:flex;align-items:center;gap:8px;min-height:48px;padding:6px 16px 6px 8px;border:1.5px solid var(--ember,#c8741c);border-radius:999px;background:var(--sheet,#fffdf8);color:var(--ember-text,#9a5512);font:700 15px/1.2 Manrope,system-ui,sans-serif;box-shadow:0 6px 18px -10px #203b2d60;cursor:pointer}
+.desk-add-entry:hover{background:var(--ember-soft,#f6e5cc)}
+@media(max-width:800px){.desk-add-entry{bottom:76px;right:auto;left:12px;min-height:44px;font-size:14px}}
+.desk-add-kin h3{margin:0 0 8px}.desk-add-kin-row{display:flex;flex-wrap:wrap;gap:6px}
+.desk-add-kin-row button{min-height:40px;padding:6px 12px;border:1px dashed var(--ember,#c8741c);border-radius:999px;background:transparent;color:var(--ember-text,#9a5512);font:600 13px/1.2 Manrope,system-ui,sans-serif;cursor:pointer}
+.desk-add-kin-row button::before{content:"+ "}
+.desk-add-sheet .desk-rel,.desk-add-sheet .desk-choice{display:flex;flex-wrap:wrap;gap:6px;margin:0}
+.desk-add-sheet .desk-rel button,.desk-choice button{flex:1 1 30%;min-height:44px;padding:6px 8px;border:1px solid var(--rule,#ded5c2);border-radius:12px;background:var(--paper,#f5f1e6);color:var(--ink-soft,#535c52);font:600 13px/1.25 Manrope,system-ui,sans-serif;cursor:pointer}
+/* The sheet rule above sets every chip's look; the chosen chip must outrank it in both groups. */
+.desk-add-sheet .desk-rel button,.desk-choice button{-webkit-user-select:none;user-select:none}
+.desk-add-sheet .desk-rel button[aria-pressed=true],.desk-add-sheet .desk-choice button[aria-pressed=true]{background:var(--act-soft,#e3ece5);border:2px solid var(--act,#486b52);color:var(--act,#486b52)}
+.desk-part{margin:0 0 14px}.desk-part-title{margin:0 0 6px;font:600 13px/1.3 Manrope,system-ui,sans-serif;color:var(--ink-soft,#535c52)}
+.desk-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 14px}.desk-part .desk-fields{margin:8px 0 0}
+.desk-add-sheet .desk-field{display:block;font:600 13px/1.3 Manrope,system-ui,sans-serif;color:var(--ink-soft,#535c52)}
+.desk-field.wide{grid-column:1/-1;margin-top:8px}
+.desk-field input{box-sizing:border-box;display:block;width:100%;min-height:46px;margin-top:4px;padding:10px 12px;border:1px solid var(--rule,#ded5c2);border-radius:8px;background:var(--paper,#f5f1e6);color:var(--ink,#24322b);font:17px/1.3 Literata,Georgia,serif}
+.desk-field input::placeholder,.desk-say::placeholder{color:var(--ink-mute,#74766d);opacity:.7;font-style:italic}
+.desk-add-sheet [hidden]{display:none!important}
+.desk-add-status{min-height:1.2em;margin:8px 0 0;color:var(--ember-text,#9a5512)}
+.desk-many{margin:14px 0 0;font:13px/1.45 Manrope,system-ui,sans-serif;color:var(--ink-mute,#74766d)}
+.desk-add-done-text{white-space:pre-line;font:500 18px/1.45 Literata,Georgia,serif;margin:4px 0 16px}
+@media(max-width:420px){.desk-fields{grid-template-columns:1fr}.desk-add-sheet{padding:18px 16px}}
+.desk-add-kin{margin-top:14px}
+.desk-whose{box-sizing:border-box;display:block;width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--rule,#ded5c2);border-radius:8px;background:var(--paper,#f5f1e6);color:var(--ink,#24322b);font:17px/1.3 Literata,Georgia,serif}
+.desk-tree-add-layer .desk-ghost.compact{padding:0;display:flex;align-items:center;justify-content:center}

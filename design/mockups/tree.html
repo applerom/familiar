@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Дерево · Эмма Шмидт — макет Familiar</title>
+<link rel="stylesheet" href="familiar.css">
+<style>
+  /* Positions are data for this one mockup, not part of the system */
+  .pcard{left:var(--x);top:var(--y)}
+  .links.phone{display:none}
+  .pcard.me{--w:190px}
+  .ages-strip{display:none}
+  @media (max-width:899px){
+    .pcard,.pcard.me{left:var(--xp,var(--x));top:var(--yp,var(--y));--w:164px}
+    .ages-thumb{display:none}
+    .ages-strip{display:block;position:absolute;left:var(--gutter);right:var(--gutter);top:8px;height:48px;z-index:2;border-radius:var(--r-md);background:var(--sheet);box-shadow:var(--lift-1);padding:4px 10px}
+    .ages-strip svg{width:100%;height:100%}
+    .pcard b{font-size:15px}
+    .desk-only,.stage .desk-only{display:none}
+    .links.wide{display:none}.links.phone{display:block}
+  }
+</style>
+</head>
+<body>
+<div class="tree-page">
+  <header class="bar">
+    <a class="home" href="home.html"><span class="mark"><svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="11.2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="14" cy="14" r="4.4" fill="var(--ember)"/></svg></span><strong>Шмидты и Корнеевы</strong></a>
+    <nav aria-label="Разделы"><a href="home.html">Начало</a><a href="chapter.html">Рассказы</a><a href="tree.html" aria-current="page">Дерево</a><a href="desk-show.html">Расследование</a></nav>
+    <div class="tools">
+      <button class="ibtn" aria-label="Найти человека"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4-4"/></svg></button>
+      <button class="ibtn aa" aria-label="Язык, размер текста, вечерний вид">Аа</button>
+    </div>
+  </header>
+
+  <div class="tree-body">
+    <!-- Mini-graph of all generations: one tap on a dot goes straight to the person -->
+    <aside class="ages" aria-label="Все поколения">
+      <header><h2>Все поколения</h2><p>Нажмите на точку — сразу перейдёте к человеку.</p></header>
+      <div class="plot">
+        <svg viewBox="0 0 220 560" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Люди семьи по годам рождения">
+          <g font-family="Manrope" font-size="11" fill="var(--ink-mute)">
+            <text x="0" y="44">1850</text><text x="0" y="164">1900</text><text x="0" y="284">1950</text><text x="0" y="404">2000</text>
+          </g>
+          <g stroke="var(--rule)"><path d="M36 40H220M36 160H220M36 280H220M36 400H220"/></g>
+          <g stroke="var(--rule)" stroke-dasharray="2 4"><path d="M36 100H220M36 220H220M36 340H220"/></g>
+          <g stroke="var(--line-1)" stroke-width="1.6" fill="none" opacity=".7"><path d="M90 168 L112 236 L112 302 L120 362"/><path d="M60 92 L90 168"/></g>
+          <g stroke="var(--line-2)" stroke-width="1.6" fill="none" opacity=".7"><path d="M170 150 L150 232 L120 302"/></g>
+          <g>
+            <a href="#"><title>Иоганн Шмидт, ≈1868</title><circle cx="60" cy="92" r="4.5" fill="var(--line-1)"/></a>
+            <a href="#"><title>Катарина, ≈1872</title><circle cx="78" cy="102" r="3.5" fill="var(--line-1)" opacity=".5"/></a>
+            <a href="#"><title>Готлиб Шмидт, ≈1899</title><circle cx="90" cy="168" r="5" fill="var(--line-1)"/></a>
+            <a href="#"><title>Мария Шмидт, ≈1902</title><circle cx="112" cy="172" r="5" fill="var(--line-1)"/></a>
+            <a href="#"><title>Андрей Корнеев, 1928</title><circle cx="150" cy="232" r="5" fill="var(--line-2)"/></a>
+            <a href="#"><title>Корнеевы, ≈1900</title><circle cx="170" cy="150" r="4.5" fill="var(--line-2)"/></a>
+            <a href="#"><title>Фридрих Шмидт, 1935</title><circle cx="84" cy="244" r="3.5" fill="var(--line-1)" opacity=".5"/></a>
+            <a href="#" aria-current="true"><title>Эмма Шмидт, 1931 — вы здесь</title><circle cx="112" cy="236" r="12" fill="var(--ember-soft)"/><circle cx="112" cy="236" r="6.5" fill="var(--ember)"/></a>
+            <a href="#"><title>Людмила, 1957</title><circle cx="112" cy="302" r="5" fill="var(--line-1)"/></a>
+            <a href="#"><title>Нина, 1960</title><circle cx="134" cy="310" r="3.5" fill="var(--line-1)" opacity=".5"/></a>
+            <a href="#"><title>Ирина, внучка</title><circle cx="120" cy="362" r="5" fill="none" stroke="var(--ink)" stroke-width="2"/></a>
+            <a href="#"><title>Двоюродные, ≈1962</title><circle cx="66" cy="318" r="3" fill="var(--line-1)" opacity=".45"/></a>
+            <a href="#"><title>Двоюродные, ≈1966</title><circle cx="54" cy="328" r="3" fill="var(--line-1)" opacity=".45"/></a>
+            <a href="#"><title>Корнеевы, ≈1931</title><circle cx="186" cy="238" r="3" fill="var(--line-2)" opacity=".45"/></a>
+            <a href="#"><title>Корнеевы, ≈1934</title><circle cx="200" cy="246" r="3" fill="var(--line-2)" opacity=".45"/></a>
+          </g>
+          <g font-family="Literata" font-size="12" fill="var(--ink)"><text x="128" y="232">Эмма</text></g>
+        </svg>
+      </div>
+    </aside>
+
+    <section class="stage" aria-label="Семейное дерево">
+      <svg class="links wide" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <g fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round">
+          <path d="M41 16 H56" stroke="var(--line-1)" vector-effect="non-scaling-stroke"/>
+          <path d="M48.5 16 V28 C48.5 34 42 34 42 38" stroke="var(--line-1)" vector-effect="non-scaling-stroke"/>
+          <path d="M48.5 28 C48.5 34 20 32 20 38" stroke="var(--line-1)" stroke-dasharray="1 6" vector-effect="non-scaling-stroke"/>
+          <path d="M47 40 H62" stroke="var(--line-2)" vector-effect="non-scaling-stroke"/>
+          <path d="M54.5 40 V54 C54.5 58 42 58 42 62" stroke="var(--line-1)" vector-effect="non-scaling-stroke"/>
+          <path d="M54.5 54 C54.5 58 68 58 68 62" stroke="var(--line-1)" vector-effect="non-scaling-stroke"/>
+          <path d="M42 66 V82" stroke="var(--line-1)" vector-effect="non-scaling-stroke"/>
+        </g>
+      </svg>
+      <svg class="links phone" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <g fill="none" stroke-width="2" stroke-linecap="round">
+          <path d="M28 15 H72" stroke="var(--line-1)" vector-effect="non-scaling-stroke"/>
+          <path d="M50 15 V22 C50 26 28 25 28 28" stroke="var(--line-1)" vector-effect="non-scaling-stroke"/>
+          <path d="M28 30 H72" stroke="var(--line-2)" vector-effect="non-scaling-stroke"/>
+          <path d="M50 30 V37 C50 41 28 40 28 43" stroke="var(--line-1)" vector-effect="non-scaling-stroke"/>
+          <path d="M50 37 C50 41 72 40 72 43" stroke="var(--line-1)" vector-effect="non-scaling-stroke"/>
+        </g>
+      </svg>
+
+      <div class="gens desk-only"><span class="meta">Поколений</span><div class="seg" role="group" aria-label="Сколько поколений показать"><button aria-pressed="false">2</button><button aria-pressed="true">3</button><button aria-pressed="false">4</button><button aria-pressed="false">Все</button></div></div>
+      <div class="undo desk-only" role="status">Перешли к Эмме Шмидт <a href="#">← к Ирине</a></div>
+      <a class="btn quiet back-me desk-only" href="#" style="min-height:40px">К себе</a>
+
+      <a class="pcard" href="#" style="--x:41%;--y:16%;--xp:28%;--yp:15%;--c:var(--line-1)"><b>Готлиб Шмидт</b><small>≈1899 — ?</small></a>
+      <a class="pcard" href="#" style="--x:62%;--y:16%;--xp:72%;--yp:15%;--c:var(--line-1)"><b>Мария Шмидт</b><small>Гнаденфлюр</small></a>
+      <a class="pcard ver small desk-only" href="#" style="--x:20%;--y:40%;--c:var(--line-1)"><b>Фридрих</b><small>брат · 1935</small></a>
+      <a class="pcard me" href="#" aria-current="true" style="--x:42%;--y:40%;--xp:28%;--yp:30%;--c:var(--line-1)"><b>Эмма Шмидт</b><small>1931 — 2009</small></a>
+      <a class="pcard" href="#" style="--x:68%;--y:40%;--xp:72%;--yp:30%;--c:var(--line-2)"><b>Андрей Корнеев</b><small>1928 — 1990</small></a>
+      <a class="pcard" href="#" style="--x:42%;--y:64%;--xp:28%;--yp:45%;--c:var(--line-1)"><b>Людмила</b><small>дочь Эммы</small></a>
+      <a class="pcard" href="#" style="--x:68%;--y:64%;--xp:72%;--yp:45%;--c:var(--line-1)"><b>Нина</b><small>дочь Эммы</small></a>
+      <a class="pcard desk-only" href="#" style="--x:42%;--y:86%;--c:var(--line-1)"><b>Ирина</b><small>это вы</small></a>
+
+      <a class="ages-strip" href="#" aria-label="Все поколения: открыть, нажатие на точку сразу ведёт к человеку"><svg viewBox="0 0 320 40" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M8 24H312" stroke="var(--rule)" stroke-width="1.5"/>
+        <g font-family="Manrope" font-size="9" fill="var(--ink-mute)"><text x="8" y="38">1850</text><text x="88" y="38">1900</text><text x="168" y="38">1950</text><text x="248" y="38">2000</text></g>
+        <g fill="var(--line-1)"><circle cx="35" cy="24" r="3"/><circle cx="41" cy="18" r="2.5" opacity=".5"/><circle cx="86" cy="24" r="3.5"/><circle cx="91" cy="17" r="3.5"/><circle cx="141" cy="30" r="2.5" opacity=".5"/><circle cx="179" cy="24" r="3.5"/><circle cx="184" cy="16" r="2.5" opacity=".5"/><circle cx="228" cy="24" r="3"/></g>
+        <g fill="var(--line-2)"><circle cx="133" cy="17" r="3.5"/><circle cx="88" cy="31" r="3"/></g>
+        <circle cx="138" cy="24" r="8" fill="var(--ember-soft)"/><circle cx="138" cy="24" r="4.5" fill="var(--ember)"/>
+        <text x="312" y="12" text-anchor="end" font-family="Manrope" font-size="10" font-weight="700" fill="var(--act)">Все поколения ›</text>
+      </svg></a>
+      <a class="ages-thumb" href="#" aria-label="Все поколения — открыть"><svg viewBox="0 0 120 64" aria-hidden="true"><g stroke="var(--rule)"><path d="M0 12H120M0 32H120M0 52H120"/></g><g fill="var(--line-1)"><circle cx="30" cy="10" r="2.5"/><circle cx="44" cy="22" r="3"/><circle cx="56" cy="23" r="3"/><circle cx="60" cy="42" r="3"/><circle cx="72" cy="44" r="2.5"/></g><g fill="var(--line-2)"><circle cx="86" cy="20" r="2.5"/><circle cx="80" cy="31" r="3"/></g><circle cx="58" cy="31" r="7" fill="var(--ember-soft)"/><circle cx="58" cy="31" r="3.8" fill="var(--ember)"/><g font-family="Manrope" font-size="8" fill="var(--ink-mute)"><text x="2" y="10">1900</text><text x="2" y="50">2000</text></g></svg></a>
+    </section>
+
+    <aside class="person" aria-label="Эмма Шмидт">
+      <span class="grab" aria-hidden="true"></span>
+      <div class="inner">
+        <div class="kicker">Род Шмидт</div>
+        <h2>Эмма Шмидт</h2>
+        <div class="life">1931, Гнаденфлюр — 2009, Тольятти<br><span class="meta">в замужестве Корнеева</span></div>
+        <span class="rel">твоя бабушка</span>
+
+        <h3>Рассказы о ней</h3>
+        <a class="read-about" href="chapter.html"><span class="thumb"><img src="img/rails.svg" alt=""></span><span><b>Сутки на сборы</b><small>Глава 2 · 1941</small></span></a>
+        <a class="read-about" href="chapter.html"><span class="thumb"><img src="img/steppe.svg" alt="" style="height:100%;object-fit:cover"></span><span><b>Готлиб, он же Богдан</b><small>Глава 3 · 1942</small></span></a>
+
+        <h3>Родные</h3>
+        <div class="people">
+          <a class="who" href="#" style="--c:var(--line-1)"><i></i><b>Готлиб</b><small>отец</small></a>
+          <a class="who" href="#" style="--c:var(--line-1)"><i></i><b>Мария</b><small>мать</small></a>
+          <a class="who" href="#" style="--c:var(--line-2)"><i></i><b>Андрей</b><small>муж</small></a>
+          <a class="who" href="#" style="--c:var(--line-1)"><i></i><b>Фридрих</b><small>брат</small></a>
+          <a class="who" href="#" style="--c:var(--line-1)"><i></i><b>Людмила</b><small>дочь</small></a>
+          <a class="who" href="#" style="--c:var(--line-1)"><i></i><b>Нина</b><small>дочь</small></a>
+        </div>
+
+        <h3>Что известно</h3>
+        <ul class="facts">
+          <li><span>1931</span><div>Родилась в Гнаденфлюре, немецком селе на Волге<em>справка 1994 года</em></div></li>
+          <li><span>1941</span><div>С семьёй выселена в Лебяжье, Павлодарская область<em>справка 1994 года</em></div></li>
+          <li class="ver"><span>1956</span><div>Вышла замуж за Андрея Корнеева в Павлодаре<em>по памяти семьи, год — примерно</em></div></li>
+          <li><span>2009</span><div>Умерла в Тольятти<em>помнит внучка</em></div></li>
+        </ul>
+
+        <h3>Бумаги</h3>
+        <div class="docs">
+          <a href="#"><div class="pg"><i></i><i style="width:70%"></i><i></i><i style="width:55%"></i><i></i></div>Справка, 1994</a>
+          <a href="#"><div class="pg"><i style="width:60%"></i><i></i><i></i><i style="width:80%"></i></div>Свидетельство, 1957</a>
+        </div>
+
+        <p class="margin" style="margin-top:var(--s5)"><span class="who-says">На полях</span>В паспорте — Богдановна, в справке — Готлибовна. Одно лицо: совпадают год, село, родители и дочери.</p>
+      </div>
+    </aside>
+  </div>
+
+  <nav class="tabbar" aria-label="Разделы">
+    <a href="home.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-6 8 6v8H4z"/></svg>Начало</a>
+    <a href="chapter.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h6a2 2 0 012 2v12a2 2 0 00-2-2H4zM20 5h-6a2 2 0 00-2 2v12a2 2 0 012-2h6z"/></svg>Рассказы</a>
+    <a href="tree.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="19" r="2"/><path d="M12 7v5M12 12c-4 0-6 2-6 5M12 12c4 0 6 2 6 5"/></svg>Дерево</a>
+    <a href="desk.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/><path d="M11 8v3l2 2"/></svg>Поиски</a>
+  </nav>
+</div>
+<span class="mock">Макет · семья придумана</span>
+</body>
+</html>

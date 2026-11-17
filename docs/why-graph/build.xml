@@ -1,0 +1,130 @@
+<Why_Graph_Shard project="Familiar" CAPABILITY="CAP-BUILD">
+  <MODULE_FAMILY_EDITION ID="MOD-FAMILY-EDITION" FILE="src/familiar/instance/edition.py" STATE="IMPLEMENTED">
+    <!-- Unknown editorial fields are ignored by the whitelist; consent and life classification cannot be overridden. -->
+  </MODULE_FAMILY_EDITION>
+  <MODULE_READER_PROFILE ID="MOD-READER-PROFILE" FILE="docs/reader-profile.md" STATE="IMPLEMENTED"/>
+  <FEATURE_READER_EXPORT ID="FEAT-READER-EXPORT" STATE="STARTED">
+    <INVARIANT REVIEW="engine lead">Language-pack kinship words retain uncertain-link qualifications and explain their permitted tree path; offline glossary examples never consult withheld family inputs.</INVARIANT>
+    <PRD_REF>docs/PRD.md#KINSHIP-WORDS</PRD_REF>
+    <INVARIANT REVIEW="engine lead">A clean engine archive rebuilds the packaged shell without any family checkout, preserving its sealed delivery bytes.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">A host-provided placeholder is the full literal name in normal type across the reader; automatic kinship naming applies only when it is absent.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Tree cards answer who this is with given name, clan surname, known life years and birthplace; relationships, confidence and patronymics belong to the full card. The full card retains documentary spellings and explains a surname supplied from children.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Reader preview exposes permission-filtered review material without a generation or publication authority.</INVARIANT>
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_private_display_is_independent_of_unreferenced_drafts">Display export and consumption ignore unreferenced record/search edits; adopted input errors and changes still block, including references from saved versions.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">The local server verifies a generation and shell once, pins their bytes, and refuses requests after input metadata changes; stable URLs revalidate their ETags.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Local source links preserve the accumulated document subjects; neither reader mode restores a withheld document through a second route.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">An explicit local host-private reader retains living narrative details, excludes their documents and structured addresses, labels every HTML screen through language-pack strings, and cannot pass ordinary publication or clean release.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Every distributed reader shell and generated desk carries its engine licence and complete runtime and font notices sealed in the shell manifest.</INVARIANT>
+    <INTENT>A family selects titles, languages and authored cards, then reaches a checked offline reader or a print book from independently read chapters; both preserve privacy and local media without runtime dependencies.</INTENT>
+    <INVARIANT REVIEW="engine lead">Reader delivery preserves the canonical merged person's imported names and qualified claims instead of restoring a pre-merge snapshot.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Retired facts remain visibly retired with their explanation; public card explanations are withheld for people not known dead.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Publication media checks collect every failing reachable file with its URL and reason before blocking delivery.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Only declared asset references are copied as media; full names remain reader text.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Reader cards preserve unnamed relatives, death causes and family spelling variants; testimony and derived facts or unions remain distinct with their evidence status and permitted basis.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Paper provenance, nested literal fields, every selected fragment and local full-document navigation survive reader delivery; generated intake notices use the family language.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Document pages show the preserved title, local return navigation and the family-level fiction notice in the reader language.</INVARIANT>
+    <PRD_REF>docs/PRD.md#FORMS</PRD_REF>
+    <PRD_REF>docs/PRD.md#PRINT-BOOK</PRD_REF>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-READER-BOOK"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-BOOK-STYLE"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-FAMILY-EDITION"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-READER-PROFILE"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-READER-EXPORT"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-READER-ASSETS"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-READER-DOCUMENTS"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-READER-GRAPH"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-READER-EXPERIENCES"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-READER-CLI"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-READER-SERVER"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-READER-EXPORT-CONTRACT"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-READER-SHELL-BUILD"/>
+  </FEATURE_READER_EXPORT>
+  <MODULE_READER_EXPORT ID="MOD-READER-EXPORT" FILE="src/familiar/reader/export.py" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-READER-ASSETS"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-READER-DOCUMENTS"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-READER-GRAPH"/>
+  </MODULE_READER_EXPORT>
+  <MODULE_READER_ASSETS ID="MOD-READER-ASSETS" FILE="src/familiar/reader/assets.py" STATE="IMPLEMENTED"/>
+  <MODULE_READER_DOCUMENTS ID="MOD-READER-DOCUMENTS" FILE="src/familiar/reader/documents.py" STATE="IMPLEMENTED">
+    <PRD_REF>docs/PRD.md#FORMS</PRD_REF>
+    <!-- A canonical record keeps its literal local page even when several cut-outs share its source. -->
+  </MODULE_READER_DOCUMENTS>
+  <!-- Person adaptation and card serialization run in memory; feeds/documents/media keep checked caches. -->
+  <MODULE_READER_GRAPH ID="MOD-READER-GRAPH" FILE="src/familiar/reader/graph.py" STATE="IMPLEMENTED"/>
+  <MODULE_READER_CLI ID="MOD-READER-CLI" FILE="src/familiar/reader/cli.py" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-READER-EXPORT"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-READER-BOOK"/>
+  </MODULE_READER_CLI>
+  <MODULE_READER_EXPORT_CONTRACT ID="MOD-READER-EXPORT-CONTRACT" FILE="docs/reader-export.md" STATE="IMPLEMENTED"/>
+  <MODULE_READER_SHELL_BUILD ID="MOD-READER-SHELL-BUILD" FILE="reader-src/build.mjs" STATE="IMPLEMENTED"/>
+  <MODULE_READER_SERVER ID="MOD-READER-SERVER" FILE="src/familiar/reader/server.py" STATE="IMPLEMENTED"/>
+  <MODULE_READER_EXPERIENCES ID="MOD-READER-EXPERIENCES" FILE="src/familiar/reader/experiences.py" STATE="IMPLEMENTED"/>
+  <MODULE_READER_BOOK ID="MOD-READER-BOOK" FILE="src/familiar/reader/book.py" STATE="IMPLEMENTED">
+    <!-- Consume the factory's current seal; do not duplicate its family gate before flat delivery. -->
+    <!-- English prompt cues name UI objects/directions; ordinary tap/press prose stays printable. -->
+  </MODULE_READER_BOOK>
+  <MODULE_BOOK_STYLE ID="MOD-BOOK-STYLE" FILE="src/familiar/reader/book.css" STATE="IMPLEMENTED"/>
+  <FEATURE_FAMILY_DESK ID="FEAT-FAMILY-DESK" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="browser walk">The owner issues personal logins on Access, with a tree person, role and optional email; the temporary password is shown once. Readers cannot retrieve the page or API.</INVARIANT>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DESK-ACCESS"/>
+    <INVARIANT REVIEW="engine lead">Only the explicit sign-in action starts state/PKCE; anonymous resource redirects leave an in-flight login untouched. Person IDs remain in signed JSON without HTTP-header character restrictions.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Opt-in Cognito personal publication authenticates every cache hit with a signed expiring cookie and a revocable identity version; reader roles cannot retrieve owner research or other people's feedback. Local and default shared desks retain their behavior.</INVARIANT>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DESK-ACCOUNTS"/>
+    <INVARIANT REVIEW="browser walk">Reader and supplemental desk screens share one page-top component and control slots; work volume omits zero values.</INVARIANT>
+    <INVARIANT REVIEW="browser walk">One shared lower frame serves every desk screen; remarks open on first click without scrolling, never on hover, and dismiss into visible retained drafts. Alternative outcomes accompany work volume.</INVARIANT>
+    <INVARIANT REVIEW="browser walk">Interface changes require an executed action/expected/observed browser walk at desktop and phone widths, following method/interface-walk.md; screenshots alone are insufficient.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">The investigation derives ordered dateless pages, all recorded alternatives including ruled-out ones, weight shifts and cumulative coverage from research inputs; it is never a research source.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Every desk screen offers one feedback sender with literal text, stable page/person/feed/step context and a human where line; naming, additions, corrections and answers use the same inbox.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Browser-owned receipts show sent, read or addressed and an explicit reader reply; local marks appear immediately and hosted marks enter the next build. Closed drafts survive.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Every desk HTML labels its private version and engine before JavaScript in the same lower row as navigation and feedback; phone controls do not overlap.</INVARIANT>
+    <INVARIANT TEST="tests/journeys/test_installed_engine.py::test_installed_engine">Desk rebuilds retain literal person placeholders and withhold source assets after privacy changes; revoking the host decision prevents another build.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Warm builds and shell or language changes reuse a checked reader; cached media remain bound to its seal and person edits affect only their dependent projections.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Journal dates use family month names and the compact single-row navigation retains corrections and relative feedback.</INVARIANT>
+    <INTENT>A narrator privately follows their family and sends literal corrections locally, with optional AWS publication.</INTENT>
+    <INVARIANT TEST="tests/journeys/test_installed_engine.py::test_installed_engine">Without publication settings or AWS credentials a desk builds and answers on loopback; cloud commands refuse before subprocess, network or disk mutation.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Only none (default) and explicit aws select publication; local build/serve ignore that section, and incomplete cloud state gives a recovery step without exposing coordinates or credentials.</INVARIANT>
+    <PRD_REF>docs/PRD.md#FAMILY-DESK</PRD_REF>
+    <INVARIANT TEST="tests/gate/test_desk_guarantees.py::test_desk_requires_host_decision">A desk cannot deliver a family's accepted personal dataset without the recorded host decision for its narrator.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">The desk contains only reader delivery, declared narrator pages and trusted desk assets; input files and secrets are absent.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Local desks pin the checked build, cheaply guard its metadata and reverify a changed build record; both local servers use persistent conditional HTTP and same-origin localhost aliases. Consecutive local feedback has no cooldown.</INVARIANT>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DESK-MODEL"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DESK-BUILD"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DESK-CLI"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DESK-AWS"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DESK-AWS-TEMPLATE"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DESK-CLIENT"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DESK-STYLE"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DESK-PAGES"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DESK-SHOW"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DESK-SHOW-CLIENT"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DESK-SHOW-STYLE"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DESK-SERVER"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DESK-FEEDBACK"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DESK-TREE-ADD"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DESK-TREE-ADD-STYLE"/>
+  </FEATURE_FAMILY_DESK>
+  <MODULE_DESK_MODEL ID="MOD-DESK-MODEL" FILE="src/familiar/desk/model.py" STATE="IMPLEMENTED"/>
+  <MODULE_DESK_ACCOUNTS ID="MOD-DESK-ACCOUNTS" FILE="src/familiar/desk/accounts.py" STATE="IMPLEMENTED"/>
+  <MODULE_DESK_ACCESS ID="MOD-DESK-ACCESS" FILE="src/familiar/desk/aws/accounts-access.py" STATE="IMPLEMENTED"/>
+  <MODULE_DESK_BUILD ID="MOD-DESK-BUILD" FILE="src/familiar/desk/build.py" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-READER-EXPORT"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-DESK-MODEL"/>
+  </MODULE_DESK_BUILD>
+  <MODULE_DESK_CLI ID="MOD-DESK-CLI" FILE="src/familiar/desk/cli.py" STATE="IMPLEMENTED"/>
+  <MODULE_DESK_AWS ID="MOD-DESK-AWS" FILE="src/familiar/desk/aws.py" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-DESK-AWS-TEMPLATE"/>
+  </MODULE_DESK_AWS>
+  <MODULE_DESK_AWS_TEMPLATE ID="MOD-DESK-AWS-TEMPLATE" FILE="src/familiar/desk/aws/stack.yaml" STATE="IMPLEMENTED"/>
+  <MODULE_DESK_CLIENT ID="MOD-DESK-CLIENT" FILE="src/familiar/desk/assets/desk.js" STATE="IMPLEMENTED"/>
+  <MODULE_DESK_STYLE ID="MOD-DESK-STYLE" FILE="src/familiar/desk/assets/desk.css" STATE="IMPLEMENTED"/>
+  <MODULE_DESK_PAGES ID="MOD-DESK-PAGES" FILE="src/familiar/desk/pages.py" STATE="IMPLEMENTED"/>
+  <MODULE_DESK_SHOW ID="MOD-DESK-SHOW" FILE="src/familiar/desk/show.py" STATE="IMPLEMENTED">
+    <!-- Research progress skips incomplete collector rows; raw working files do not invalidate a checked desk. Adopted dependencies remain guarded by the reader. -->
+  </MODULE_DESK_SHOW>
+  <MODULE_DESK_SHOW_CLIENT ID="MOD-DESK-SHOW-CLIENT" FILE="src/familiar/desk/assets/show.js" STATE="IMPLEMENTED"/>
+  <MODULE_DESK_SHOW_STYLE ID="MOD-DESK-SHOW-STYLE" FILE="src/familiar/desk/assets/show.css" STATE="IMPLEMENTED"/>
+  <MODULE_DESK_SERVER ID="MOD-DESK-SERVER" FILE="src/familiar/desk/server.py" STATE="IMPLEMENTED"/>
+  <MODULE_DESK_FEEDBACK ID="MOD-DESK-FEEDBACK" FILE="src/familiar/desk/feedback.py" STATE="IMPLEMENTED"/>
+  <MODULE_DESK_TREE_ADD ID="MOD-DESK-TREE-ADD" FILE="src/familiar/desk/assets/tree-add.js" STATE="IMPLEMENTED"/>
+  <MODULE_DESK_TREE_ADD_STYLE ID="MOD-DESK-TREE-ADD-STYLE" FILE="src/familiar/desk/assets/tree-add.css" STATE="IMPLEMENTED"/>
+</Why_Graph_Shard>

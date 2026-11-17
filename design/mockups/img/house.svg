@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1200" role="img" aria-label="Рисунок-заглушка макета: дом в городе">
+<rect width="900" height="1200" fill="#e3e3dc"/>
+<g fill="#b9b6a8"><rect x="140" y="420" width="620" height="560"/></g>
+<g fill="#e9e6d9"><rect x="200" y="490" width="110" height="140"/><rect x="395" y="490" width="110" height="140"/><rect x="590" y="490" width="110" height="140"/><rect x="200" y="720" width="110" height="140"/><rect x="590" y="720" width="110" height="140"/><rect x="400" y="760" width="100" height="220" fill="#8f8a78"/></g>
+<path d="M110 425 L450 260 L790 425Z" fill="#8f8a78"/>
+<text x="870" y="1172" text-anchor="end" font-family="Manrope,sans-serif" font-size="26" fill="#66624f">рисунок-заглушка</text>
+</svg>

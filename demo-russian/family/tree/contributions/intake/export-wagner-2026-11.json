@@ -1,0 +1,316 @@
+{
+  "update": {
+    "person": "export-wagner-2026-11-I1",
+    "title": "Family intake",
+    "date": "unknown",
+    "text": "Attributed intake; identity remains to be researched",
+    "status": "hypothesis",
+    "sources": [
+      "export-wagner-2026-11"
+    ]
+  },
+  "schema": 1,
+  "author": "intake",
+  "facts": {
+    "export-wagner-2026-11-I1": [
+      {
+        "label": "names",
+        "text": "Recorded in another tree (unverified): {\"given\": \"Emma\", \"surname\": \"Schmidt\", \"type\": \"as-written\", \"source_text\": [], \"provenance\": [\"export-wagner-2026-11\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      },
+      {
+        "label": "names",
+        "text": "Recorded in another tree (unverified): {\"given\": \"Emma\", \"surname\": \"Korneeva\", \"type\": \"married\", \"source_text\": [], \"provenance\": [\"export-wagner-2026-11\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      },
+      {
+        "label": "names",
+        "text": "Recorded in another tree (unverified): {\"given\": \"Эмма Богдановна\", \"surname\": \"Корнеева\", \"type\": \"as-written\", \"source_text\": [], \"provenance\": [\"export-wagner-2026-11\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      },
+      {
+        "label": "events",
+        "text": "Recorded in another tree (unverified): {\"type\": \"birth\", \"tag\": \"BIRT\", \"date\": \"12 MAR 1931\", \"value\": \"\", \"provenance\": [\"export-wagner-2026-11\"], \"place\": \"Gnadenflur, Wolgadeutsche Republik, UdSSR\", \"source_text\": [\"@S2@; MyHeritage Smart Matches; MyHeritage; PAGE: Smart Match: Emma Schmidt in Familienstammbaum Becker-Schmidt; QUAY: 1\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      },
+      {
+        "label": "events",
+        "text": "Recorded in another tree (unverified): {\"type\": \"event\", \"tag\": \"EVEN\", \"date\": \"1941\", \"value\": \"Deportation\", \"provenance\": [\"export-wagner-2026-11\"], \"place\": \"Pawlodar, Kasachstan\", \"source_text\": []}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      },
+      {
+        "label": "events",
+        "text": "Recorded in another tree (unverified): {\"type\": \"death\", \"tag\": \"DEAT\", \"date\": \"2009\", \"value\": \"\", \"provenance\": [\"export-wagner-2026-11\"], \"place\": \"Toljatti, Russland\", \"source_text\": []}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      }
+    ],
+    "export-wagner-2026-11-I2": [
+      {
+        "label": "names",
+        "text": "Recorded in another tree (unverified): {\"given\": \"Gottlieb\", \"surname\": \"Schmidt\", \"type\": \"as-written\", \"source_text\": [], \"provenance\": [\"export-wagner-2026-11\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      },
+      {
+        "label": "events",
+        "text": "Recorded in another tree (unverified): {\"type\": \"birth\", \"tag\": \"BIRT\", \"date\": \"1899\", \"value\": \"\", \"provenance\": [\"export-wagner-2026-11\"], \"place\": \"Norka, Saratow, Russisches Reich\", \"source_text\": [\"@S2@; MyHeritage Smart Matches; MyHeritage; PAGE: Smart Match: Gottlieb Schmidt, geb. 1899 Norka (4 Stammbäume); QUAY: 0\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      },
+      {
+        "label": "events",
+        "text": "Recorded in another tree (unverified): {\"type\": \"death\", \"tag\": \"DEAT\", \"date\": \"14 FEB 1943\", \"value\": \"\", \"provenance\": [\"export-wagner-2026-11\"], \"place\": \"Krasnoturinsk, Bogoslowlag\", \"source_text\": [\"@S3@; Gedenkbuch Trudarmee (Teilindex, fremder Eintrag); PAGE: Gedenkbuch der Trudarmisten: Schmidt Gottlieb Johannes, 1899; QUAY: 1\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      },
+      {
+        "label": "notes",
+        "text": "Recorded in another tree (unverified): Vater laut Oma Nina (Tante): Bogdan. Geburtsort Norka nach Smart Match uebernommen.",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      }
+    ],
+    "export-wagner-2026-11-I3": [
+      {
+        "label": "names",
+        "text": "Recorded in another tree (unverified): {\"given\": \"Maria\", \"surname\": \"Schmidt\", \"type\": \"as-written\", \"source_text\": [], \"provenance\": [\"export-wagner-2026-11\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      },
+      {
+        "label": "events",
+        "text": "Recorded in another tree (unverified): {\"type\": \"birth\", \"tag\": \"BIRT\", \"date\": \"ABT 1908\", \"value\": \"\", \"provenance\": [\"export-wagner-2026-11\"], \"source_text\": []}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      },
+      {
+        "label": "events",
+        "text": "Recorded in another tree (unverified): {\"type\": \"death\", \"tag\": \"DEAT\", \"date\": \"1965\", \"value\": \"\", \"provenance\": [\"export-wagner-2026-11\"], \"place\": \"Pawlodar, Kasachstan\", \"source_text\": []}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      },
+      {
+        "label": "notes",
+        "text": "Recorded in another tree (unverified): geb. Keller",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      }
+    ],
+    "export-wagner-2026-11-I4": [
+      {
+        "label": "names",
+        "text": "Recorded in another tree (unverified): {\"given\": \"Friedrich\", \"surname\": \"Schmidt\", \"type\": \"as-written\", \"source_text\": [], \"provenance\": [\"export-wagner-2026-11\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      },
+      {
+        "label": "events",
+        "text": "Recorded in another tree (unverified): {\"type\": \"birth\", \"tag\": \"BIRT\", \"date\": \"1935\", \"value\": \"\", \"provenance\": [\"export-wagner-2026-11\"], \"place\": \"Gnadenflur\", \"source_text\": []}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      },
+      {
+        "label": "events",
+        "text": "Recorded in another tree (unverified): {\"type\": \"death\", \"tag\": \"DEAT\", \"date\": \"BEF 1945\", \"value\": \"\", \"provenance\": [\"export-wagner-2026-11\"], \"place\": \"Pawlodar, Kinderheim\", \"note\": \"Vermutung: im Kinderheim gestorben, niemand hat ihn wieder gesehen.\", \"source_text\": []}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      }
+    ],
+    "export-wagner-2026-11-I5": [
+      {
+        "label": "names",
+        "text": "Recorded in another tree (unverified): {\"given\": \"Andrej\", \"surname\": \"Korneev\", \"type\": \"as-written\", \"source_text\": [], \"provenance\": [\"export-wagner-2026-11\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      },
+      {
+        "label": "events",
+        "text": "Recorded in another tree (unverified): {\"type\": \"birth\", \"tag\": \"BIRT\", \"date\": \"1929\", \"value\": \"\", \"provenance\": [\"export-wagner-2026-11\"], \"place\": \"Kursk, Russland\", \"source_text\": []}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      },
+      {
+        "label": "events",
+        "text": "Recorded in another tree (unverified): {\"type\": \"death\", \"tag\": \"DEAT\", \"date\": \"1994\", \"value\": \"\", \"provenance\": [\"export-wagner-2026-11\"], \"place\": \"Toljatti, Russland\", \"source_text\": []}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      }
+    ],
+    "export-wagner-2026-11-I6": [
+      {
+        "label": "names",
+        "text": "Recorded in another tree (unverified): {\"given\": \"Ljudmila\", \"surname\": \"Korneeva\", \"type\": \"as-written\", \"source_text\": [], \"provenance\": [\"export-wagner-2026-11\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      },
+      {
+        "label": "names",
+        "text": "Recorded in another tree (unverified): {\"given\": \"Ljudmila\", \"surname\": \"Sokolova\", \"type\": \"married\", \"source_text\": [], \"provenance\": [\"export-wagner-2026-11\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      },
+      {
+        "label": "events",
+        "text": "Recorded in another tree (unverified): {\"type\": \"birth\", \"tag\": \"BIRT\", \"date\": \"1957\", \"value\": \"\", \"provenance\": [\"export-wagner-2026-11\"], \"place\": \"Pawlodar, Kasachstan\", \"source_text\": []}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      }
+    ],
+    "export-wagner-2026-11-I7": [
+      {
+        "label": "names",
+        "text": "Recorded in another tree (unverified): {\"given\": \"Nina\", \"surname\": \"Wagner\", \"type\": \"as-written\", \"source_text\": [], \"provenance\": [\"export-wagner-2026-11\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      },
+      {
+        "label": "events",
+        "text": "Recorded in another tree (unverified): {\"type\": \"birth\", \"tag\": \"BIRT\", \"date\": \"1960\", \"value\": \"\", \"provenance\": [\"export-wagner-2026-11\"], \"place\": \"Pawlodar, Kasachstan\", \"source_text\": []}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      },
+      {
+        "label": "events",
+        "text": "Recorded in another tree (unverified): {\"type\": \"event\", \"tag\": \"EVEN\", \"date\": \"1995\", \"value\": \"Aussiedlung nach Deutschland\", \"provenance\": [\"export-wagner-2026-11\"], \"source_text\": []}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      },
+      {
+        "label": "notes",
+        "text": "Recorded in another tree (unverified): geb. Korneeva",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      }
+    ],
+    "export-wagner-2026-11-I8": [
+      {
+        "label": "names",
+        "text": "Recorded in another tree (unverified): {\"given\": \"Alexander\", \"surname\": \"Wagner\", \"type\": \"as-written\", \"source_text\": [], \"provenance\": [\"export-wagner-2026-11\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      },
+      {
+        "label": "events",
+        "text": "Recorded in another tree (unverified): {\"type\": \"birth\", \"tag\": \"BIRT\", \"date\": \"1984\", \"value\": \"\", \"provenance\": [\"export-wagner-2026-11\"], \"place\": \"Pawlodar\", \"source_text\": []}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      }
+    ],
+    "export-wagner-2026-11-I9": [
+      {
+        "label": "names",
+        "text": "Recorded in another tree (unverified): {\"given\": \"Johann\", \"surname\": \"Schmidt\", \"type\": \"as-written\", \"source_text\": [], \"provenance\": [\"export-wagner-2026-11\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      },
+      {
+        "label": "events",
+        "text": "Recorded in another tree (unverified): {\"type\": \"birth\", \"tag\": \"BIRT\", \"date\": \"1868\", \"value\": \"\", \"provenance\": [\"export-wagner-2026-11\"], \"place\": \"Norka\", \"source_text\": [\"@S2@; MyHeritage Smart Matches; MyHeritage; PAGE: Smart Match: Familienstammbaum Becker-Schmidt; QUAY: 0\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      }
+    ],
+    "export-wagner-2026-11-I10": [
+      {
+        "label": "names",
+        "text": "Recorded in another tree (unverified): {\"given\": \"Katharina\", \"surname\": \"Becker\", \"type\": \"as-written\", \"source_text\": [], \"provenance\": [\"export-wagner-2026-11\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      },
+      {
+        "label": "events",
+        "text": "Recorded in another tree (unverified): {\"type\": \"birth\", \"tag\": \"BIRT\", \"date\": \"1872\", \"value\": \"\", \"provenance\": [\"export-wagner-2026-11\"], \"place\": \"Norka\", \"source_text\": [\"@S2@; MyHeritage Smart Matches; MyHeritage; PAGE: Smart Match: Familienstammbaum Becker-Schmidt; QUAY: 0\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      }
+    ],
+    "export-wagner-2026-11-I11": [
+      {
+        "label": "names",
+        "text": "Recorded in another tree (unverified): {\"given\": \"Viktor\", \"surname\": \"Wagner\", \"type\": \"as-written\", \"source_text\": [], \"provenance\": [\"export-wagner-2026-11\"]}",
+        "status": "hypothesis",
+        "sources": [
+          "export-wagner-2026-11"
+        ]
+      }
+    ]
+  },
+  "sources": {
+    "export-wagner-2026-11": {
+      "kind": "gedcom",
+      "intake": "export-wagner-2026-11"
+    }
+  }
+}

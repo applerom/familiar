@@ -1,0 +1,31 @@
+# START_MODULE_CONTRACT: MOD-DEMO-CONFIG
+# PURPOSE: Open the invented family through the same instance contract a real family uses, and declare in the family root itself that nothing here is real.
+# PRD_REF: docs/PRD.md#INSTANCE
+# INVARIANTS:
+# - the root loads under the versioned instance contract and the rules cascade [review: engine lead]
+# - the family declares itself fictional in metadata and title [review: engine lead]
+# - structural check finds nothing missing for a first chapter or a research cycle [review: engine lead]
+# CHANGES_WITH:
+# - docs/PRD.md#INSTANCE (contract 1.1 declares fictional)
+# - method/rules/settings.toml (the settings named below)
+# :END_MODULE_CONTRACT
+schema_version = 1
+region_packs = []
+language_packs = { en = "demo-english" }
+
+[family]
+id = "demo-ferrolho"
+title = "The Ferrolho family (invented for the demo)"
+source_language = "en"
+languages = ["en"]
+# Contract 1.1: a fictional family is shown with a demo banner and
+# its documents are never presented as scans of real papers.
+fictional = true
+
+[settings]
+"privacy.closed_topics_file" = "family/privacy.json"
+"drawing.enabled" = false
+
+[feed.ferrolho.settings]
+"story.anchor_ancestor" = "p-amaro"
+"kids.layer" = "block"

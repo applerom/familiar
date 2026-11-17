@@ -1,0 +1,32 @@
+{
+  "update": {
+    "person": "irina-2026-11-12-lyudmila",
+    "title": "Family intake",
+    "date": "unknown",
+    "text": "Attributed intake; identity remains to be researched",
+    "status": "export",
+    "sources": [
+      "svid-lyudmila-1957"
+    ]
+  },
+  "schema": 1,
+  "author": "intake",
+  "facts": {
+    "irina-2026-11-12-emma": [
+      {
+        "label": "names",
+        "text": "{\"given\": \"Эмма\", \"patronymic\": \"Богдановна\", \"surname\": \"Корнеева\", \"type\": \"as-written\", \"provenance\": [\"svid-lyudmila-1957\"]}",
+        "status": "export",
+        "sources": [
+          "svid-lyudmila-1957"
+        ]
+      }
+    ]
+  },
+  "sources": {
+    "svid-lyudmila-1957": {
+      "kind": "paper",
+      "intake": "svid-lyudmila-1957"
+    }
+  }
+}

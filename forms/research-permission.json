@@ -1,0 +1,14 @@
+{
+  "authorized_by": "Relative who gave permission",
+  "authorized_to": "Family research operator",
+  "date": "YYYY-MM-DD",
+  "conveyed_via": "in person / reported by operator",
+  "scope": [
+    "research",
+    "personal family showing"
+  ],
+  "excludes": [
+    "publication"
+  ],
+  "note": "Research permission only. Existing privacy consents and independent review remain required."
+}

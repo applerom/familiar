@@ -1,0 +1,507 @@
+{
+  "fictional": true,
+  "before_merge": 18,
+  "after_merge": 11,
+  "merge_undo_exact": true,
+  "candidates": [
+    {
+      "canonical": "irina-2026-11-12-emma",
+      "alias": "export-wagner-2026-11-I1",
+      "status": "candidate",
+      "sources": [
+        "export-wagner-2026-11"
+      ],
+      "evidence": "Name overlap only; identity unaccepted",
+      "next_test": "Compare a paper naming relatives and dates."
+    },
+    {
+      "canonical": "irina-2026-11-12-gottlieb",
+      "alias": "export-wagner-2026-11-I2",
+      "status": "candidate",
+      "sources": [
+        "export-wagner-2026-11"
+      ],
+      "evidence": {
+        "given": [
+          "Gottlieb",
+          "Готлиб"
+        ],
+        "surname": [
+          "Schmidt",
+          "Шмидт"
+        ],
+        "comparison": "all name forms; script transliteration and spelling similarity; not identity evidence"
+      },
+      "next_test": "Compare dated records and relatives; never merge by name alone."
+    },
+    {
+      "canonical": "irina-2026-11-12-maria",
+      "alias": "export-wagner-2026-11-I3",
+      "status": "candidate",
+      "sources": [
+        "export-wagner-2026-11"
+      ],
+      "evidence": {
+        "given": [
+          "Maria",
+          "Мария"
+        ],
+        "surname": [
+          "Schmidt",
+          "Шмидт"
+        ],
+        "comparison": "all name forms; script transliteration and spelling similarity; not identity evidence"
+      },
+      "next_test": "Compare dated records and relatives; never merge by name alone."
+    },
+    {
+      "canonical": "irina-2026-11-12-friedrich",
+      "alias": "export-wagner-2026-11-I4",
+      "status": "candidate",
+      "sources": [
+        "export-wagner-2026-11"
+      ],
+      "evidence": {
+        "given": [
+          "Friedrich",
+          "Фридрих"
+        ],
+        "surname": [
+          "Schmidt",
+          "Шмидт"
+        ],
+        "comparison": "all name forms; script transliteration and spelling similarity; not identity evidence"
+      },
+      "next_test": "Compare dated records and relatives; never merge by name alone."
+    },
+    {
+      "canonical": "irina-2026-11-12-andrey",
+      "alias": "export-wagner-2026-11-I5",
+      "status": "candidate",
+      "sources": [
+        "export-wagner-2026-11"
+      ],
+      "evidence": {
+        "given": [
+          "Andrej",
+          "Андрей"
+        ],
+        "surname": [
+          "Korneev",
+          "Корнеев"
+        ],
+        "comparison": "all name forms; script transliteration and spelling similarity; not identity evidence"
+      },
+      "next_test": "Compare dated records and relatives; never merge by name alone."
+    },
+    {
+      "canonical": "irina-2026-11-12-lyudmila",
+      "alias": "export-wagner-2026-11-I6",
+      "status": "candidate",
+      "sources": [
+        "export-wagner-2026-11"
+      ],
+      "evidence": {
+        "given": [
+          "Ljudmila",
+          "Людмила"
+        ],
+        "surname": [
+          "Korneeva",
+          "Корнеева"
+        ],
+        "comparison": "all name forms; script transliteration and spelling similarity; not identity evidence"
+      },
+      "next_test": "Compare dated records and relatives; never merge by name alone."
+    },
+    {
+      "canonical": "irina-2026-11-12-nina",
+      "alias": "export-wagner-2026-11-I7",
+      "status": "candidate",
+      "sources": [
+        "export-wagner-2026-11"
+      ],
+      "evidence": {
+        "given": [
+          "Nina",
+          "Нина"
+        ],
+        "surname": [
+          "Wagner",
+          "Вагнер"
+        ],
+        "comparison": "all name forms; script transliteration and spelling similarity; not identity evidence"
+      },
+      "next_test": "Compare dated records and relatives; never merge by name alone."
+    }
+  ],
+  "full_document_refused": "Family gate blocked: TRUST-06: Living person document cannot be shown: spravka-emma-1994; Справка о реабилитации Корнеевой (Шмидт) Эммы Готлибовны, УВД Павлодарской обл., 1994, с немецким переводом; protected subject: Фридрих Шмидт. Separate literal fields about deceased people; consent cannot release this full document.",
+  "life": {
+    "irina-2026-11-12-emma": {
+      "status": "dead",
+      "basis": "recorded death classification",
+      "birth_bounds": [
+        1931,
+        1931
+      ]
+    },
+    "irina-2026-11-12-gottlieb": {
+      "status": "dead",
+      "basis": "birth upper bound 1899 before 1916 (110 years)",
+      "birth_bounds": [
+        1899,
+        1899
+      ]
+    },
+    "irina-2026-11-12-maria": {
+      "status": "dead",
+      "basis": "birth upper bound 1913 before 1916 (110 years)",
+      "birth_bounds": [
+        1903,
+        1913
+      ]
+    },
+    "irina-2026-11-12-friedrich": {
+      "status": "unknown",
+      "basis": "unverified imported death; no established death decision",
+      "birth_bounds": [
+        1935,
+        1935
+      ]
+    },
+    "irina-2026-11-12-andrey": {
+      "status": "dead",
+      "basis": "recorded death classification",
+      "birth_bounds": [
+        1929,
+        1929
+      ]
+    },
+    "irina-2026-11-12-lyudmila": {
+      "status": "living",
+      "basis": "birth within living horizon; no established death",
+      "birth_bounds": [
+        1957,
+        1957
+      ]
+    },
+    "irina-2026-11-12-nina": {
+      "status": "living",
+      "basis": "birth within living horizon; no established death",
+      "birth_bounds": [
+        1960,
+        1960
+      ]
+    },
+    "export-wagner-2026-11-I8": {
+      "status": "living",
+      "basis": "birth within living horizon; no established death",
+      "birth_bounds": [
+        1984,
+        1984
+      ]
+    },
+    "export-wagner-2026-11-I9": {
+      "status": "dead",
+      "basis": "birth upper bound 1868 before 1916 (110 years)",
+      "birth_bounds": [
+        1868,
+        1868
+      ]
+    },
+    "export-wagner-2026-11-I10": {
+      "status": "dead",
+      "basis": "birth upper bound 1872 before 1916 (110 years)",
+      "birth_bounds": [
+        1872,
+        1872
+      ]
+    },
+    "export-wagner-2026-11-I11": {
+      "status": "unknown",
+      "basis": "birth unknown; generation does not establish age beyond horizon",
+      "birth_bounds": [
+        1860,
+        2060
+      ]
+    }
+  },
+  "reader": [
+    {
+      "id": "volga-1941",
+      "title": {
+        "ru": "Шмидты: Волга и степь"
+      },
+      "lead": {
+        "ru": "Девочка из немецкого села на Волге в десять лет едет в товарном вагоне в казахстанскую степь.\n\nЧасть текста скрыта от читателей: Людмила Корнеева. Нужно отделить сведения об этих людях или записать их разрешение на рассказ; если статус неизвестен, уточнить его. Адреса и документы живых всё равно не публикуются."
+      },
+      "cover": "",
+      "period": {
+        "ru": "1941-1957"
+      },
+      "line": {
+        "ru": "Шмидт"
+      },
+      "people": [
+        "irina-2026-11-12-emma",
+        "irina-2026-11-12-gottlieb",
+        "irina-2026-11-12-maria",
+        "irina-2026-11-12-friedrich"
+      ],
+      "chapters": [
+        {
+          "id": "gnadenflur-1941",
+          "year": "1941",
+          "title": {
+            "ru": "Сутки на сборы"
+          },
+          "text": {
+            "ru": "Эмме Шмидт было десять лет, когда в Гнаденфлюр пришла бумага, после которой село опустело за несколько дней. Немцев с Волги отправляли на восток, всех, от стариков до грудных детей. На сборы давали сутки.\n\nОтец, Готлиб, собирал то, что можно унести в руках.\n\nМать, Мария, зашивала в одежду то немногое, что было ценного.\n\nЧасть текста скрыта от читателей: Фридрих Шмидт. Нужно отделить сведения об этих людях или записать их разрешение на рассказ; если статус неизвестен, уточнить его. Адреса и документы живых всё равно не публикуются.\n\nПотом был товарный вагон. Бабушка Эмма рассказывала потом внучке, что ехали почти месяц. Куда, никто не говорил. Вагон остановился в степи, в Павлодарской области, в Лебяжинском районе. Там семья Шмидт прожила под надзором четырнадцать лет: так записано в справке, которую Эмма получила, когда ей было уже за шестьдесят."
+          },
+          "kind": "fate",
+          "more": {
+            "ru": "- Название села, год выселения, Лебяжинский район и годы спецпоселения, 1941–1955, записаны в справке о реабилитации 1994 года.\n\nЧасть текста скрыта от читателей: Фридрих Шмидт. Нужно отделить сведения об этих людях или записать их разрешение на рассказ; если статус неизвестен, уточнить его. Адреса и документы живых всё равно не публикуются.\n\n- Месяц в вагоне — память семьи: так рассказывала бабушка внучке.\n\n- Сутки на сборы и что брали с собой — обычная картина тех дней по рассказам выселенных, не запись о самой семье."
+          },
+          "people": [
+            "irina-2026-11-12-emma",
+            "irina-2026-11-12-gottlieb",
+            "irina-2026-11-12-maria",
+            "irina-2026-11-12-friedrich"
+          ],
+          "records": [
+            {
+              "asset": null,
+              "read": "с. Гнаденфлюр Палласовского кантона АССР Немцев Поволжья",
+              "field": "Место рождения",
+              "parts": [
+                {
+                  "asset": null,
+                  "field": "Куда выселена",
+                  "read": "Павлодарская область Казахской ССР, Лебяжинский район"
+                }
+              ],
+              "title": {
+                "ru": "Справка о реабилитации, 1994"
+              },
+              "source": "Домашняя бумага; фото прислала тётя Нина",
+              "where": "Семейный архив, Германия",
+              "record": "spravka-emma-1994",
+              "excerpt": [
+                "Место рождения",
+                "Куда выселена"
+              ]
+            }
+          ],
+          "flow": [
+            {
+              "after": 2,
+              "record": 0
+            }
+          ],
+          "ask": {
+            "ru": "Детям: если бы у тебя были сутки и одна сумка, что бы ты взял с собой?\n\nНайди в справке: в какой район привезли семью?"
+          }
+        }
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "command": [
+        "familiar",
+        "instance",
+        "init",
+        "demo-russian\\family",
+        "--language",
+        "ru",
+        "--address",
+        "informal",
+        "--title",
+        "Семья Корнеевых-Шмидт (вымышленная)"
+      ],
+      "exit": 0,
+      "stdout": "demo-russian\\family\\familiar.toml\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "familiar",
+        "--root",
+        "demo-russian\\family",
+        "intake",
+        "memory",
+        "demo-russian\\inputs\\day1-memory.toml"
+      ],
+      "exit": 0,
+      "stdout": "{\n  \"id\": \"irina-2026-11-12\",\n  \"kind\": \"memory\",\n  \"digest\": \"2232b6ff86bbef282f9fedae84f860b6eb6af2c32d5fb7365d8aaa39d669d673\",\n  \"people\": 7,\n  \"families\": 2,\n  \"candidates\": [],\n  \"losses\": {},\n  \"next_step\": \"researcher: memory-first; name one bridge paper before searching indexes\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "familiar",
+        "--root",
+        "demo-russian\\family",
+        "intake",
+        "paper",
+        "demo-russian\\inputs\\day1-paper-svidetelstvo.toml",
+        "--original",
+        "demo-russian\\results\\fictional-placeholder.png"
+      ],
+      "exit": 0,
+      "stdout": "{\n  \"id\": \"svid-lyudmila-1957\",\n  \"kind\": \"paper\",\n  \"digest\": \"ef538264d5b494309d9ecdb50be674b674a110b6eb481b17adcc36522769a298\",\n  \"people\": 3,\n  \"families\": 0,\n  \"candidates\": [],\n  \"losses\": {},\n  \"next_step\": \"researcher: memory-first; name one bridge paper before searching indexes\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "familiar",
+        "--root",
+        "demo-russian\\family",
+        "family",
+        "summary"
+      ],
+      "exit": 0,
+      "stdout": "Личный рабочий вид семьи. Здесь сохранены ваши слова и бумаги; это ещё не текст для читателей.\n\nЧто записано в бумагах — одна запись ещё не доказывает, кто этот человек и кем он приходится семье\nСвидетельство о рождении Корнеевой Людмилы Андреевны, Павлодар, 1957 (повторное? — см. сомнения)\nГражданин(ка): Корнеева Людмила Андреевна\nДата рождения: 14 апреля 1957 г.\nМесто рождения: гор. Павлодар, Павлодарской обл., Казахской ССР\nНомер записи: 7[...]\nОтец: Корнеев Андрей Петрович, русский\nМать: Корнеева Эмма Богдановна, немка\nВыдано: Павлодарское горбюро ЗАГС, 19 апреля 1957 г.\n\nЧто семья помнит твёрдо — это свидетельство, а не документ\nБабушка Эмма Богдановна Корнеева, в девичестве Шмидт, родилась в 1931 году на Волге, в немецком селе. Умерла в 2009 году в Тольятти, я была на похоронах.\nДед Андрей Петрович Корнеев приехал в Казахстан на целину из Курской области, там познакомился с бабушкой. Умер в 1994 году в Тольятти.\nМама, Людмила Андреевна, в девичестве Корнеева, по мужу Соколова, родилась в 1957 году в Павлодаре. В 1976 году семья переехала в Тольятти.\nТётя Нина, мамина младшая сестра, по мужу Вагнер, с 1995 года живёт в Германии. Для переезда она собирала бабушкины документы, и они, кажется, остались у неё.\n\nЧто известно понаслышке или под вопросом\nВ сентябре 1941 года всех немцев из их села выселили, бабушку с родителями и братом увезли в Казахстан, в Павлодарскую область. Ехали в товарном вагоне почти месяц.\nПрадеда звали Готлиб, по-русски Богдан, поэтому у бабушки в паспорте отчество Богдановна. Его забрали в трудармию, и он не вернулся. Где и когда умер, никто не знает.\nПрабабушку звали Мария. Девичья фамилия то ли Келлер, то ли Кёлер, мама точно не помнит. Умерла в Казахстане, когда мама была маленькой.\nУ бабушки был младший брат Фридрих, дома его звали Федей. Когда прабабушку тоже забрали в трудармию, его отдали в детский дом. В семье о нём не говорили. Один раз, году в 1985, бабушка сказала маме, что Федя нашёлся, но знаться не захотел, и больше об этом не говорила.\n\nОткрытые вопросы и бумаги, которые могут на них ответить\nЗдесь пока ничего не записано.\n\nЧто уже можно рассказать\nЗдесь пока ничего не записано.\n\nЧитателям о следующих людях доступны только имя и родство без их записанного разрешения: Фридрих Шмидт (статус жизни неизвестен); Готлиб Шмидт (статус жизни неизвестен); Людмила Андреевна Корнеева; Нина Андреевна Корнеева (статус жизни неизвестен). Их адреса и документы не передаются ни при каком разрешении. Текст о них нужно отделить или получить разрешение на конкретные сведения; неизвестный статус сначала уточнить. Общая фамилия сама по себе ничего не скрывает.\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "familiar",
+        "--root",
+        "demo-russian\\family",
+        "intake",
+        "gedcom",
+        "demo-russian\\inputs\\day2-export-myheritage.ged",
+        "--id",
+        "export-wagner-2026-11"
+      ],
+      "exit": 0,
+      "stdout": "{\n  \"id\": \"export-wagner-2026-11\",\n  \"kind\": \"gedcom\",\n  \"digest\": \"59b2219df69245e2a9be63e33334f604592e7b94b3b38f6e38f1adc3894e2452\",\n  \"people\": 11,\n  \"families\": 4,\n  \"candidates\": [\n    {\n      \"canonical\": \"irina-2026-11-12-emma\",\n      \"alias\": \"export-wagner-2026-11-I1\",\n      \"status\": \"candidate\",\n      \"sources\": [\n        \"export-wagner-2026-11\"\n      ],\n      \"evidence\": \"Name overlap only; identity unaccepted\",\n      \"next_test\": \"Compare a paper naming relatives and dates.\"\n    },\n    {\n      \"canonical\": \"irina-2026-11-12-gottlieb\",\n      \"alias\": \"export-wagner-2026-11-I2\",\n      \"status\": \"candidate\",\n      \"sources\": [\n        \"export-wagner-2026-11\"\n      ],\n      \"evidence\": {\n        \"given\": [\n          \"Gottlieb\",\n          \"Готлиб\"\n        ],\n        \"surname\": [\n          \"Schmidt\",\n          \"Шмидт\"\n        ],\n        \"comparison\": \"all name forms; script transliteration and spelling similarity; not identity evidence\"\n      },\n      \"next_test\": \"Compare dated records and relatives; never merge by name alone.\"\n    },\n    {\n      \"canonical\": \"irina-2026-11-12-maria\",\n      \"alias\": \"export-wagner-2026-11-I3\",\n      \"status\": \"candidate\",\n      \"sources\": [\n        \"export-wagner-2026-11\"\n      ],\n      \"evidence\": {\n        \"given\": [\n          \"Maria\",\n          \"Мария\"\n        ],\n        \"surname\": [\n          \"Schmidt\",\n          \"Шмидт\"\n        ],\n        \"comparison\": \"all name forms; script transliteration and spelling similarity; not identity evidence\"\n      },\n      \"next_test\": \"Compare dated records and relatives; never merge by name alone.\"\n    },\n    {\n      \"canonical\": \"irina-2026-11-12-friedrich\",\n      \"alias\": \"export-wagner-2026-11-I4\",\n      \"status\": \"candidate\",\n      \"sources\": [\n        \"export-wagner-2026-11\"\n      ],\n      \"evidence\": {\n        \"given\": [\n          \"Friedrich\",\n          \"Фридрих\"\n        ],\n        \"surname\": [\n          \"Schmidt\",\n          \"Шмидт\"\n        ],\n        \"comparison\": \"all name forms; script transliteration and spelling similarity; not identity evidence\"\n      },\n      \"next_test\": \"Compare dated records and relatives; never merge by name alone.\"\n    },\n    {\n      \"canonical\": \"irina-2026-11-12-andrey\",\n      \"alias\": \"export-wagner-2026-11-I5\",\n      \"status\": \"candidate\",\n      \"sources\": [\n        \"export-wagner-2026-11\"\n      ],\n      \"evidence\": {\n        \"given\": [\n          \"Andrej\",\n          \"Андрей\"\n        ],\n        \"surname\": [\n          \"Korneev\",\n          \"Корнеев\"\n        ],\n        \"comparison\": \"all name forms; script transliteration and spelling similarity; not identity evidence\"\n      },\n      \"next_test\": \"Compare dated records and relatives; never merge by name alone.\"\n    },\n    {\n      \"canonical\": \"irina-2026-11-12-lyudmila\",\n      \"alias\": \"export-wagner-2026-11-I6\",\n      \"status\": \"candidate\",\n      \"sources\": [\n        \"export-wagner-2026-11\"\n      ],\n      \"evidence\": {\n        \"given\": [\n          \"Ljudmila\",\n          \"Людмила\"\n        ],\n        \"surname\": [\n          \"Korneeva\",\n          \"Корнеева\"\n        ],\n        \"comparison\": \"all name forms; script transliteration and spelling similarity; not identity evidence\"\n      },\n      \"next_test\": \"Compare dated records and relatives; never merge by name alone.\"\n    },\n    {\n      \"canonical\": \"irina-2026-11-12-nina\",\n      \"alias\": \"export-wagner-2026-11-I7\",\n      \"status\": \"candidate\",\n      \"sources\": [\n        \"export-wagner-2026-11\"\n      ],\n      \"evidence\": {\n        \"given\": [\n          \"Nina\",\n          \"Нина\"\n        ],\n        \"surname\": [\n          \"Wagner\",\n          \"Вагнер\"\n        ],\n        \"comparison\": \"all name forms; script transliteration and spelling similarity; not identity evidence\"\n      },\n      \"next_test\": \"Compare dated records and relatives; never merge by name alone.\"\n    }\n  ],\n  \"losses\": {\n    \"CHAR\": 1,\n    \"DATE\": 1,\n    \"DEST\": 1,\n    \"FAMC\": 6,\n    \"FAMS\": 8,\n    \"FILE\": 1,\n    \"FORM\": 2,\n    \"GEDC\": 1,\n    \"GIVN\": 2,\n    \"LANG\": 1,\n    \"NAME\": 2,\n    \"OBJE\": 2,\n    \"RIN\": 11,\n    \"SOUR\": 1,\n    \"SUBM\": 2,\n    \"SURN\": 2,\n    \"TITL\": 1,\n    \"VERS\": 2,\n    \"_FREL\": 1,\n    \"_MREL\": 1,\n    \"_PROJECT_GUID\": 1,\n    \"_UID\": 1,\n    \"_UPD\": 2\n  },\n  \"next_step\": \"researcher: memory-first; name one bridge paper before searching indexes\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "familiar",
+        "--root",
+        "demo-russian\\family",
+        "family",
+        "requests",
+        "nina-spravka",
+        "--text"
+      ],
+      "exit": 0,
+      "stdout": "Личный рабочий вид семьи. Здесь сохранены ваши слова и бумаги; это ещё не текст для читателей.\n\nПривет, тётя Нина!\n\nСобираю историю нашей семьи, чтобы передать её детям.\n\nПомнишь ли ты, как называлось бабушкино село на Волге и что она рассказывала о выселении?\n\nНаша догадка: Мы думаем, что бабушка родилась в селе Гнаденфлюр, но это пока только догадка из чужого дерева на сайте. Если помнишь иначе, скажи, пожалуйста.\n\nПоищи, пожалуйста, одну бумагу: справку о реабилитации бабушки Эммы. в ней записано, где бабушка родилась и откуда и куда семью выселили в 1941 году\n\nЛист А4 или половина листа с печатью МВД, 1990-х годов; к ней мог быть приложен перевод на немецкий для переезда.\n\nВ папке с документами для переезда в Германию, рядом с Aufnahmebescheid.\n\nСфотографируй обе стороны целиком, при дневном свете, без вспышки; перевод тоже, если он есть.\n\nЕсли такой бумаги у тебя нет, так и напиши — это тоже ответ, и спасибо за него. Тогда поищем по-другому.\n\nСпасибо за помощь!\nИра\n\nЧитателям о следующих людях доступны только имя и родство без их записанного разрешения: Viktor Wagner (статус жизни неизвестен); Фридрих Шмидт (статус жизни неизвестен); Людмила Корнеева; Нина Вагнер; Alexander Wagner. Их адреса и документы не передаются ни при каком разрешении. Текст о них нужно отделить или получить разрешение на конкретные сведения; неизвестный статус сначала уточнить. Общая фамилия сама по себе ничего не скрывает.\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "familiar",
+        "--root",
+        "demo-russian\\family",
+        "family",
+        "next"
+      ],
+      "exit": 0,
+      "stdout": "Личный рабочий вид семьи. Здесь сохранены ваши слова и бумаги; это ещё не текст для читателей.\n\nНачни с семейных бумаг у тебя дома. Что ищем: письмо или ответ на розыск про Федю, около 1985 года. Сообщи помощнику, что нашлось или что бумаги нет.\nЖдём ответа. Что ищем: справку о реабилитации бабушки Эммы. Кто ищет: тётя Нина (0 дней). Нового пока нет, и это нормально: старую бумагу быстро не найдёшь. Повторять ту же просьбу не нужно.\n\nЧитателям о следующих людях доступны только имя и родство без их записанного разрешения: Viktor Wagner (статус жизни неизвестен); Фридрих Шмидт (статус жизни неизвестен); Людмила Корнеева; Нина Вагнер; Alexander Wagner. Их адреса и документы не передаются ни при каком разрешении. Текст о них нужно отделить или получить разрешение на конкретные сведения; неизвестный статус сначала уточнить. Общая фамилия сама по себе ничего не скрывает.\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "familiar",
+        "--root",
+        "demo-russian\\family",
+        "intake",
+        "paper",
+        "demo-russian\\inputs\\day5-paper-spravka.toml",
+        "--original",
+        "demo-russian\\results\\fictional-placeholder.png"
+      ],
+      "exit": 0,
+      "stdout": "{\n  \"id\": \"spravka-emma-1994\",\n  \"kind\": \"paper\",\n  \"digest\": \"d6b4b0d5ff4903d704479eb6a5ca57689efde5eb6662f07194cffa7401eb472e\",\n  \"people\": 4,\n  \"families\": 0,\n  \"candidates\": [\n    {\n      \"canonical\": \"export-wagner-2026-11-I1\",\n      \"alias\": \"irina-2026-11-12-emma\",\n      \"status\": \"candidate\",\n      \"sources\": [\n        \"spravka-emma-1994\"\n      ],\n      \"evidence\": \"Name overlap only; identity unaccepted\",\n      \"next_test\": \"Compare a paper naming relatives and dates.\"\n    },\n    {\n      \"canonical\": \"export-wagner-2026-11-I2\",\n      \"alias\": \"irina-2026-11-12-gottlieb\",\n      \"status\": \"candidate\",\n      \"sources\": [\n        \"spravka-emma-1994\"\n      ],\n      \"evidence\": {\n        \"given\": [\n          \"Готлиб\",\n          \"Gottlieb\"\n        ],\n        \"surname\": [\n          \"Шмидт\",\n          \"Schmidt\"\n        ],\n        \"comparison\": \"all name forms; script transliteration and spelling similarity; not identity evidence\"\n      },\n      \"next_test\": \"Compare dated records and relatives; never merge by name alone.\"\n    },\n    {\n      \"canonical\": \"export-wagner-2026-11-I3\",\n      \"alias\": \"irina-2026-11-12-maria\",\n      \"status\": \"candidate\",\n      \"sources\": [\n        \"spravka-emma-1994\"\n      ],\n      \"evidence\": {\n        \"given\": [\n          \"Мария\",\n          \"Maria\"\n        ],\n        \"surname\": [\n          \"Шмидт\",\n          \"Schmidt\"\n        ],\n        \"comparison\": \"all name forms; script transliteration and spelling similarity; not identity evidence\"\n      },\n      \"next_test\": \"Compare dated records and relatives; never merge by name alone.\"\n    },\n    {\n      \"canonical\": \"export-wagner-2026-11-I4\",\n      \"alias\": \"irina-2026-11-12-friedrich\",\n      \"status\": \"candidate\",\n      \"sources\": [\n        \"spravka-emma-1994\"\n      ],\n      \"evidence\": {\n        \"given\": [\n          \"Фридрих\",\n          \"Friedrich\"\n        ],\n        \"surname\": [\n          \"Шмидт\",\n          \"Schmidt\"\n        ],\n        \"comparison\": \"all name forms; script transliteration and spelling similarity; not identity evidence\"\n      },\n      \"next_test\": \"Compare dated records and relatives; never merge by name alone.\"\n    }\n  ],\n  \"losses\": {},\n  \"next_step\": \"researcher: memory-first; name one bridge paper before searching indexes\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "familiar",
+        "--root",
+        "demo-russian\\family",
+        "feed",
+        "new",
+        "volga-1941"
+      ],
+      "exit": 0,
+      "stdout": "Draft feed created; author the introduction, people and chapters before publication.\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "familiar",
+        "--root",
+        "demo-russian\\family",
+        "instance",
+        "check",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "{\n  \"research_ready\": true,\n  \"research_next\": \"researcher: memory-first; name one bridge paper before searching indexes\",\n  \"valid\": true,\n  \"errors\": [],\n  \"data_files\": {\n    \"family:privacy.closed_topics_file\": {\n      \"status\": \"empty\",\n      \"path\": null\n    },\n    \"family:privacy.present_day_politics_file\": {\n      \"status\": \"empty\",\n      \"path\": null\n    },\n    \"family:lang.lexicon\": {\n      \"status\": \"empty\",\n      \"path\": null\n    }\n  },\n  \"first_chapter_missing\": [],\n  \"full_cycle_missing\": [\n    \"evidence\",\n    \"searches\"\n  ],\n  \"unverified\": [\n    \"historical truth and editorial judgement\",\n    \"media bytes and feed presentation: use feed check\"\n  ]\n}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "familiar",
+        "--root",
+        "demo-russian\\family",
+        "feed",
+        "check",
+        "--all",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "{\n  \"findings\": [\n    {\n      \"certainty\": \"review\",\n      \"rule\": \"TASTE-NARRATOR-VOICE\",\n      \"check\": \"check:narrator-voice\",\n      \"scope\": \"feed:volga-1941/chapter:0/language:ru\",\n      \"chapter_id\": \"gnadenflur-1941\",\n      \"location\": \"text\",\n      \"mode\": \"advise\",\n      \"message\": \"слова сомнения и работы исследователя; самостоятельные слова в сцене могут быть уместны (language cue; review context).\",\n      \"exception\": null\n    },\n    {\n      \"certainty\": \"review\",\n      \"rule\": \"TRUST-06\",\n      \"check\": \"check:living-protected\",\n      \"scope\": \"feed:volga-1941/chapter:0\",\n      \"chapter_id\": \"gnadenflur-1941\",\n      \"location\": \"people.unknown\",\n      \"mode\": \"block\",\n      \"message\": \"Life status unknown; review dates or privacy classification.\",\n      \"exception\": null\n    },\n    {\n      \"certainty\": \"review\",\n      \"rule\": \"TASTE-NARRATOR-VOICE\",\n      \"check\": \"check:narrator-voice\",\n      \"scope\": \"feed:volga-1941/language:ru\",\n      \"chapter_id\": null,\n      \"location\": \"root.chapters[0].text.ru\",\n      \"mode\": \"advise\",\n      \"exception\": null,\n      \"message\": \"слова сомнения и работы исследователя; самостоятельные слова в сцене могут быть уместны (language cue; review context).\"\n    },\n    {\n      \"certainty\": \"review\",\n      \"rule\": \"TASTE-TITLES\",\n      \"check\": \"check:titles\",\n      \"scope\": \"feed:volga-1941/language:ru\",\n      \"chapter_id\": null,\n      \"location\": \"root.chapters[0].records[0].title.ru\",\n      \"mode\": \"advise\",\n      \"exception\": null,\n      \"message\": \"лексика времени для заголовков; допустимость задаёт настройка заголовков (language cue; review context).\"\n    },\n    {\n      \"certainty\": \"review\",\n      \"rule\": \"TASTE-NAMES\",\n      \"check\": \"check:name-forms\",\n      \"scope\": \"feed:volga-1941/language:ru\",\n      \"chapter_id\": null,\n      \"location\": \"root.chapters[0].kind\",\n      \"mode\": \"advise\",\n      \"exception\": null,\n      \"message\": \"Foreign name form outside a literal quotation; review reader-language form.\"\n    }\n  ],\n  \"coverage\": [\n    {\n      \"feed\": \"volga-1941\",\n      \"chapters\": 1,\n      \"people_resolved\": 5,\n      \"people_declared\": 23,\n      \"privacy_present\": false,\n      \"privacy_list_configured\": false,\n      \"checks_run\": 24,\n      \"checks_skipped\": {}\n    }\n  ],\n  \"blocked\": false,\n  \"valid\": true,\n  \"forms\": {\n    \"research_ready\": true,\n    \"research_next\": \"researcher: memory-first; name one bridge paper before searching indexes\",\n    \"valid\": true,\n    \"errors\": [],\n    \"data_files\": {\n      \"family:privacy.closed_topics_file\": {\n        \"status\": \"empty\",\n        \"path\": null\n      },\n      \"family:privacy.present_day_politics_file\": {\n        \"status\": \"empty\",\n        \"path\": null\n      },\n      \"family:lang.lexicon\": {\n        \"status\": \"empty\",\n        \"path\": null\n      }\n    },\n    \"first_chapter_missing\": [],\n    \"full_cycle_missing\": [\n      \"evidence\",\n      \"searches\"\n    ],\n    \"unverified\": [\n      \"historical truth and editorial judgement\",\n      \"media bytes and feed presentation: use feed check\"\n    ]\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "familiar",
+        "--root",
+        "demo-russian\\family",
+        "feed",
+        "pages",
+        "volga-1941",
+        "--text"
+      ],
+      "exit": 0,
+      "stdout": "Личный рабочий вид семьи. Здесь сохранены ваши слова и бумаги; это ещё не текст для читателей.\n\nЧерновик: после последних правок его не читал никто, кроме автора.\n\nСутки на сборы\n\nЭмме Шмидт было десять лет, когда в Гнаденфлюр пришла бумага, после которой село опустело за несколько дней. Немцев с Волги отправляли на восток, всех, от стариков до грудных детей. На сборы давали сутки.\n\nОтец, Готлиб, собирал то, что можно унести в руках.\n\nМать, Мария, зашивала в одежду то немногое, что было ценного.\n\nМладшему брату было шесть лет, и он, наверное, думал, что они едут в гости.\n\nПотом был товарный вагон. Бабушка Эмма рассказывала потом внучке, что ехали почти месяц. Куда, никто не говорил. Вагон остановился в степи, в Павлодарской области, в Лебяжинском районе. Там семья Шмидт прожила под надзором четырнадцать лет: так записано в справке, которую Эмма получила, когда ей было уже за шестьдесят.\n\nДетям\n\nДетям: если бы у тебя были сутки и одна сумка, что бы ты взял с собой?\n\nНайди в справке: в какой район привезли семью?\n\nНа чём держится рассказ\n\n- Название села, год выселения, Лебяжинский район и годы спецпоселения, 1941–1955, записаны в справке о реабилитации 1994 года.\n\n- Состав семьи — отец Готлиб, мать Мария, брат 1935 года рождения — тоже из справки; имя брата на русском листе стёрто, немецкий перевод даёт Friedrich.\n\n- Месяц в вагоне — память семьи: так рассказывала бабушка внучке.\n\n- Сутки на сборы и что брали с собой — обычная картина тех дней по рассказам выселенных, не запись о самой семье.\n\nСправка о реабилитации, 1994\n\nс. Гнаденфлюр Палласовского кантона АССР Немцев Поволжья\n\nПавлодарская область Казахской ССР, Лебяжинский район\n\nЧитателям о следующих людях доступны только имя и родство без их записанного разрешения: Viktor Wagner (статус жизни неизвестен); Фридрих Шмидт (статус жизни неизвестен); Людмила Корнеева; Нина Вагнер; Alexander Wagner. Их адреса и документы не передаются ни при каком разрешении. Текст о них нужно отделить или получить разрешение на конкретные сведения; неизвестный статус сначала уточнить. Общая фамилия сама по себе ничего не скрывает.\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "familiar",
+        "--root",
+        "demo-russian\\family",
+        "feed",
+        "review",
+        "volga-1941",
+        "--out",
+        "demo-russian\\results\\reading"
+      ],
+      "exit": 0,
+      "stdout": "demo-russian\\results\\reading\\review-ticket.json\nInspect every selected page, language and image in this directory; confirm this ticket with feed accept.\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "familiar",
+        "--root",
+        "demo-russian\\family",
+        "feed",
+        "build",
+        "volga-1941",
+        "--out",
+        "demo-russian\\results\\reader-feeds"
+      ],
+      "exit": 0,
+      "stdout": "preview: 1 feeds built; unreviewed: 2\n",
+      "stderr": ""
+    }
+  ]
+}

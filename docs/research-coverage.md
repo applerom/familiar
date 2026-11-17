@@ -1,0 +1,239 @@
+# Research coverage: who was looked for where
+
+The ledger answers "was this person looked for in this source, when, by whom
+and how hard" from existing journals and read records. Nothing is added to a
+researcher's work except naming three things on each row.
+
+## Writing a row (agents)
+
+`research form search` shows the row. Beyond the old fields:
+
+- `people`: tree ids of the people the search is for. Empty if it is about a
+  place or a surname and no person yet. The matrix can recover a surname-place
+  population from the actual query, family places and overlapping dates.
+- `source`: an id of the region source catalogue (`sources.toml` of the pack).
+  Anything else is advice from `instance check`, with the nearest id; web search
+  is `web-search`. The matrix groups uncatalogued sources by site, aside.
+- `by`: `{agent, model, effort}`, e.g. `{"agent": "collector-w23", "model":
+  "gpt-6.1-sol", "effort": "high"}`; a host or family member reading themselves
+  is model `human`.
+- A zero is worth most with `control` (a known person found by the same query)
+  and `coverage.forms` listing every spelling read.
+
+## Reading it (lead, host)
+
+- `familiar research coverage [--family]`: the matrix. Cells: R result rows, D read record, +F explicitly established identity, Z zero
+  with control, z zero without control, ? outcome not recorded, ! access gap, . not looked; the digit is
+  the strongest pass (1-4; 0 means no model was recorded, which counts as weak);
+  `?` means the person was inferred from the row's question only.
+  `~` means a surname search in place/period, not an individual search.
+- `--person ID`: one person, every source with passes, dates, executors,
+  forms read and surname/given-name dictionary forms not read; and what was never
+  looked at.
+- `--recheck [N]`: the N most useful cells to look at again: never looked,
+  access gap, only passes weaker than `research.recheck_strength`, zero without
+  control, spellings missing, and a source whose catalogue entry carries an
+  `updated` date later than the last pass. Open questions and sources that gave
+  finds for the family rank higher. Plan a stronger pass from the top of this list.
+  Catalogue `years`, `countries`, optional `regions`, `parishes` and `episodes` filter the queue and
+  "never looked". A life window uses birth/death dates; without death it allows
+  120 years, and a `birth_guess`/reader `birthGuess` has 30 years either side.
+  This is planning orientation, not evidence of a date or a new life-status bound.
+  Explicit birth/death statements in family notes also orient this window,
+  including uncertain memories; unrelated biography years do not. Conflicting
+  dates retain the union. No inferred event is saved and life status is unchanged.
+  Unknown dates/places remain eligible. Pack `coverage.places` aliases connect
+  written places to countries/regions; ambiguous borderlands can name several.
+  Excluded cells are counted as `not_applicable` (epoch/region), shown as `-`
+  when empty; recorded passes stay visible even outside the planning window.
+- `--json`; `--save` also writes `coverage.json` in the instance state
+  directory (`instance paths`, key `state`) for the desk and the display.
+
+Strength comes from `research.search_strength` (keys `model:effort`, either
+side `*`; region and family layers add or replace keys). Reading is local: no
+network, and a conclusion rests on what the journal says, not on what the site
+holds.
+
+## Scope, completeness and read records
+
+Analytical summaries use `record_role: "analysis"`; source maps/catalogues can
+use `record_role: "catalogue"`. They supply no personal record visit. Old comparison
+tables containing `target_ids`, `record` and `weights` are recognised without edits.
+
+A local review uses `query: {"mode": "review"}`, the usual row identifiers,
+`people`, `source`, `by`, `question`, `coverage` and `hits` (0 is allowed).
+Its `record_links` is an array of `{person, record, status}`; `record` is an
+exact record id or local record path; statuses are `same`, `other`, `mention`,
+`unestablished` or `conflict`. Save the reasoning in `meaning`/`saved`.
+A review supplies no search pass, strength, forms, yield, negative evidence or
+source availability. It resolves only the named record and person; unknown
+candidates stay open. Legacy `query.review` rows are also reviews; single-person
+saved comparison reports with exact record ids and explicit same/other conclusions
+remain usable. Multi-person prose is left unresolved. Review assessments never
+become accepted tree assertions or +F by themselves.
+
+Accepted person facts and accepted identity decisions resolve exact record or
+document references through the tree source registry. Generic site roots and
+verified searches do not establish identity. Other candidates of an already
+linked principal become `other`; a co-defendant or witness remains contextual.
+A contrary reading against an accepted identity stays a conflict.
+
+Surname-only queries apply to matching surname forms in the family's recorded
+place and overlapping period (`people_basis: "surname-place"`, `scope: ["surname"]`).
+An old question's people do not turn such a query into a personal search.
+Named queries and declared people retain their individual scope. These are
+coverage associations only, never identity or kinship decisions; journals remain unchanged.
+
+Explicit `people` always survive an incomplete name dictionary; cells list the
+affected search ids in `dictionary_mismatches` as advice to enrich it. A migrated
+question-only attribution remains refinable. Read records expose `record_links`
+with principal/mention status, original match confidence and direct birth/parent
+differences. An unresolved principal yields `action: link-record` before model
+strength or missing forms: establish the link from the document already read.
+An explicit `other`/`different` or incompatible birth/parents closes that candidate
+as another person, never a negative search. Context mentions are retained apart.
+Cells containing only contextual mentions use `identity: context-only`; the
+queue does not request another search to resolve a role the record did not give.
+
+`availability` independently carries the latest recorded source access, date,
+refusal kind and search id. It never replaces a previous best outcome. A stopped
+source yields `action: wait-for-access`, including for people not yet searched;
+local record-link work can continue. A later recorded accessible pass releases
+the stop. This is local journal knowledge, not a live host gate query.
+An accessible document page does not release a stopped search route.
+`latest_refusal` also preserves the cell's own last denial after other people's
+source visits. Day-only observations in different journals have no established
+same-day ordering: a success does not silently clear that day's stop. A later
+dated accessible search or an ordered same-journal recovery can release it.
+`query_issues` keeps composite surname fields, recorded syntax probes and
+substring/similar-result warnings visible as `query-dubious`; such a pass cannot
+supply a zero or read-form coverage. A clean earlier pass remains available.
+
+`records/**/*.json` and `research/team/**/corpus/records/*.json` contribute local
+source visits when an actual person/subject or read field names a tree person.
+Each visit retains its record path. References in versions, links alone, saved
+queries and speculative collector notes do not count. Identical record copies
+count once. A name match means a read record is available (`records`, D), not
+established identity. An explicit record `match.confidence: "same"` with a
+tree id, or an accepted tree assertion referring to that record/document,
+supplies `identified: true` (+F/✓). Positive `hits` stays `outcome: "found"`
+for JSON compatibility, but means result rows (R), never a found relative.
+Place-only catalogue checks also remain visible (`scope: ["place"]`), labelled
+as a place visit rather than a personal search. A surname with a parent's name
+selects that parent's descendants, not the parent whose name appeared in the query.
+
+`strength` is the strongest model/effort actually recorded, also per executor.
+`plan_complete` separately compares read forms against the dictionary and
+recorded `candidate_forms`/coverage forms, including forms attempted through an
+access gap. An incomplete plan stays in `--recheck` even with positive rows or
+a strong executor. Records alone do not close a search plan. Successful textual
+controls in `coverage.note` or `meaning` have `control_basis: ["text"]`; they do
+not repair missing years/forms/read scope on an incomplete zero.
+
+Source `search_languages`, `search_scripts` and optional `search_language_eras`
+filter applicable forms; full `forms` and `missing_forms` remain in JSON. Cards
+show at most four missing forms. Source `planning_requires = "parish"` or
+`"episode"` and `planning_terms` suppress blind new suggestions when relevant
+context is unestablished, without asserting that a source cannot contain the person.
+Recorded visits remain visible. Parish/country fit is not proof of indexed coverage.
+
+Variant forms accept `annotation`, `sex` (`M`/`F`), `people` (tree ids) and
+`episode` independently of `text`. Legacy spaced editorial brackets become
+annotations on read; an inline supplied letter remains part of the spelling.
+Unambiguous feminine surname endings and legacy emigration annotations supply
+planning metadata, preserving `as_written`. An explicitly recorded sex takes
+precedence. Episode forms apply to matching catalogue `search_episodes`/`episodes`
+or an emigration source for an emigration form. A successful unannotated spelling
+counts. Catalogue `search_match: prefix` additionally covers longer forms.
+When catalogue writing is unknown, only writing actually used in successful
+query name fields is required; `script_status: unverified` means "письменность
+не проверена", never established language coverage. Dated personal episodes,
+including uncertain attributed family memory, raise fitting sources; military
+sources covering only childhood rank lower. Estimated births over 100 years
+before source coverage suppress new work (`age-at-source-start`), keeping all
+recorded visits visible. These are planning assessments only.
+
+Version arguments may use `search:<id>` findings as before. On `against` only,
+`result_state: zero-with-control`, finite zero hits, nonempty years/forms,
+positive read coverage and a recorded positive control can supply a weak
+negative argument within that scope. Uncontrolled zeros, refusals and dubious
+queries cannot. A zero never becomes an identity or kinship fact.
+
+FamilySearch has independent `familysearch-tree`, `familysearch-records` and
+`familysearch-fulltext` cells. Existing URLs and preserved original labels select
+a channel. Bare ambiguous `familysearch` rows remain visible as "channel
+unrecorded", excluded from new suggestions; they never close any of the three.
+
+## Showing it
+
+- Host-private reader: the person panel gets "Where we looked" (folded line, then a row per source with outcome
+  mark, latest pass, strength dots and forms tried; "not looked in yet" lists only sources fitting the epoch and region).
+  The block is computed from the host's own journals when the private reader is built (the display snapshot holds
+  no journals), so rebuild with `reader export --host-private` to refresh it. Schema field `coverage` has the policy
+  `host-private`: it is absent from every public projection, and `scan` removes it from a public graph as a second guard.
+- Author desk (`/coverage`, host tool `reading_desk.py`): people by sources from `.state/coverage.json` (nearest to the
+  root first, hover for dates and executors) and the recheck queue. Refresh the file with
+  `research coverage --family --json --save`.
+
+## Old journals
+
+`familiar research migrate-searches` is a dry run that counts; `--apply` writes
+through the family writer, once. It only appends `people`, `people_basis`
+(`inferred` or `unresolved`), `people_from`, rewrites `source` to the catalogue
+id and `by` to the object, and keeps the written text in `source_as_written` and
+`by.as_written`. A person is placed from the names searched (surname and given
+name, with variants, against the tree) and from the people of the row's question;
+an unclear match is left empty and counted. Names use the tree's forms, given-name
+and surname variants and exact transliteration comparison, without fuzzy identity
+claims. Question-only rows are refined on repeat when a named person can be found;
+rows without names keep their question basis (`?`). Declared people are preserved.
+
+`--executors file.json` supplies a host-prepared map such as
+`{"collector-a": {"model": "gpt-6.1-sol", "effort": "high"}}`. Labels match exactly
+or as prefixes at a separator (`-`, `_`, `/`, space, `;`, `(`); the longest match
+wins. Thus `collector-a1` does not match `collector-a10`. Conflicting matches
+stay unknown. Only missing/generic executor details are enriched, also on rows
+already migrated, with `by_basis: "executor-map"`; the old text survives.
+The engine never finds or reads the host's run log itself. Keep evidence and
+uncertain mappings with the host, outside the engine repository.
+
+Migration also discovers `research/team/**/SEARCHES*.jsonl` (case insensitive),
+or accepts repeated `--legacy PATH` files/directories inside the family root.
+It copies recognised rows to `searches/legacy-<folder>-<path-hash>.jsonl`, leaving
+archives unchanged. Each copy has `origin: {path, line, sha256}`; content hashes
+skip identical rows across copied journals and repeated runs. Old `state`,
+`result`, single `results`, `read` and `rows_read` shapes are read conservatively:
+refusals remain access gaps, missing reading scope is never invented as a zero.
+Unparsed lines and duplicates have separate counters. Dry run changes no files;
+repeating an applied migration with the same map adds nothing.
+
+
+## Incomplete archival outcomes and search variants
+
+Archive copies receive `id = legacy-<origin.sha256>`; an original id and any
+normalized count, state or meaning survive in `*_as_written`. Explicit numeric
+strings (including grouped thousands), `count`, `result.count` and complete
+`results[].count` lists become finite counts. Missing counts remain `hits: null`,
+`result_state: unrecorded`, `meaning: unrecorded` ("итог не записан"). An access
+refusal remains an access gap even when no count was recorded.
+
+A recorded zero without years, forms or positive read coverage becomes
+`result_state: zero-uncontrolled`, `meaning: zero-uncontrolled` ("ноль без
+контроля"). It is accepted as an incomplete observation, never negative evidence;
+the original meaning remains available. A positive control cannot upgrade it.
+
+Missing forms include the pack's `variants.toml` and the family's configured
+`variant_overrides` (default `family/variants.json`, `{"variant": [...]}` with the
+same entries as the pack). Dictionaries supply search candidates, not identity.
+Query and coverage masks `*` and `?` cover matching forms. Family notes and
+uncertainty belong in the dictionary; automatic transliteration adds no new
+required spelling.
+
+The engine life assessment excludes every person other than `dead` from
+`--recheck`, without hiding their recorded searches. `totals.living_or_possibly_living`
+counts these people. Transport labels such as Host browser or host source_gate
+ledger resolve through a URL in the row; absent a source, they count in
+`totals.rows_without_source` and do not become source columns. Catalogue domains
+match URL paths and equivalent Unicode/punycode hosts. General forums own their
+domain; a transcription hosted there retains its own catalogue id when explicitly
+named. Unknown catalogue years (`[]`) never exclude a source from planning.

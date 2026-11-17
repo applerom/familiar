@@ -1,0 +1,96 @@
+{
+  "_about": "Invented for the Familiar demo. People in normalised form; every name and event says what it stands on: a memory item, a document, or a version that is still open.",
+  "fictional": true,
+  "people": [
+    {
+      "id": "p-amaro",
+      "sex": "m",
+      "living": false,
+      "names": [
+        {"given": "Amaro", "surname": "Ferrolho", "type": "birth", "provenance": ["rec-santa-ludovina-1921-14", "doc-helena-baptism"]}
+      ],
+      "events": [
+        {"type": "birth", "date": "about 1898", "place": "Lajedo do Vento, Ilha Vaqueira", "provenance": ["rec-santa-ludovina-1921-14", "doc-helena-baptism"], "note": "age 23 in March 1921; the family remembers 1899 (m-amaro-born-1899)"},
+        {"type": "emigration", "date": "1921-03-14", "place": "Quarry Bend", "provenance": ["rec-santa-ludovina-1921-14"]},
+        {"type": "occupation", "date": "about 1921-1961", "place": "Quarry Bend", "value": "cotton mill hand", "provenance": ["m-amaro-mill"]},
+        {"type": "death", "date": "1968", "place": "Quarry Bend", "provenance": ["m-amaro-death"]}
+      ],
+      "notes": []
+    },
+    {
+      "id": "p-rosa",
+      "sex": "f",
+      "living": false,
+      "names": [
+        {"given": "Rosa", "surname": "Calhau", "type": "birth", "provenance": ["doc-helena-baptism"]}
+      ],
+      "events": [
+        {"type": "birth", "date": "about 1902", "place": null, "provenance": ["m-rosa-came-to-marry"], "open_question": "rosa-birthplace", "note": "place is an open question with weighted versions; the year is a guess from hearsay"},
+        {"type": "death", "date": "1981", "place": "Quarry Bend", "provenance": ["m-rosa-death"]}
+      ],
+      "notes": [{"text": "Kept a garden of kale; could not read.", "provenance": ["m-rosa-garden"]}]
+    },
+    {
+      "id": "p-joaquina",
+      "sex": "f",
+      "living": false,
+      "names": [
+        {"given": "Joaquina", "surname": "Ferrolho", "type": "as-written", "provenance": ["rec-santa-ludovina-1921-14"]}
+      ],
+      "events": [
+        {"type": "residence", "date": "1921", "place": "Lajedo do Vento, Ilha Vaqueira", "provenance": ["rec-santa-ludovina-1921-14"]}
+      ],
+      "notes": [{"text": "Her birth surname is unknown; the list gives her son's surname.", "provenance": ["rec-santa-ludovina-1921-14"]}]
+    },
+    {
+      "id": "p-manuel",
+      "sex": "m",
+      "living": false,
+      "names": [
+        {"given": "Manuel", "surname": "Tavares", "type": "as-written", "provenance": ["rec-santa-ludovina-1921-14", "doc-helena-baptism"]}
+      ],
+      "events": [
+        {"type": "residence", "date": "1921", "place": "Quarry Bend", "provenance": ["rec-santa-ludovina-1921-14"]},
+        {"type": "godparent", "date": "1925-04-19", "place": "Quarry Bend", "provenance": ["doc-helena-baptism"]}
+      ],
+      "notes": [{"text": "Called Amaro's cousin in 1921; how they were related is not known.", "provenance": ["rec-santa-ludovina-1921-14"]}]
+    },
+    {
+      "id": "p-helena",
+      "sex": "f",
+      "living": false,
+      "names": [
+        {"given": "Helena", "surname": "Ferrolho", "type": "birth", "provenance": ["doc-helena-baptism"]},
+        {"given": "Helena", "surname": "Pike", "type": "married", "provenance": ["m-walter-death"]}
+      ],
+      "events": [
+        {"type": "birth", "date": "1925-04-02", "place": "Quarry Bend", "provenance": ["doc-helena-baptism", "m-helena-born-qb"]},
+        {"type": "baptism", "date": "1925-04-19", "place": "Church of the Holy Ghost, Quarry Bend", "provenance": ["doc-helena-baptism"]},
+        {"type": "death", "date": "1999", "place": null, "provenance": ["m-helena-death"]}
+      ],
+      "notes": []
+    },
+    {
+      "id": "p-walter",
+      "sex": "m",
+      "living": false,
+      "names": [
+        {"given": "Walter", "surname": "Pike", "type": "birth", "provenance": ["m-walter-death"]}
+      ],
+      "events": [
+        {"type": "death", "date": "1990", "place": null, "provenance": ["m-walter-death"]}
+      ],
+      "notes": []
+    },
+    {
+      "id": "p-daniel",
+      "sex": "m",
+      "living": true,
+      "names": [
+        {"given": "Daniel", "surname": "Pike", "type": "birth", "provenance": ["host"]}
+      ],
+      "events": [],
+      "notes": []
+    }
+  ]
+}

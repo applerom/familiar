@@ -1,0 +1,75 @@
+<Why_Graph_Shard project="Familiar" CAPABILITY="CAP-RESEARCH">
+  <!-- One capability. Edges to other capabilities live in docs/why-graph.xml. -->
+
+  <FEATURE_START_MEMORY ID="FEAT-START-MEMORY" STATE="STARTED">
+    <INTENT>Research that starts from living memory and home papers: line questions with weighted versions, one bridge paper asked of the family, a few bounded moves while waiting, and a declared case state at every stop.</INTENT>
+    <PRD_REF>docs/PRD.md#PIPELINE</PRD_REF>
+  </FEATURE_START_MEMORY>
+
+  <FEATURE_RESEARCH_SKILLS ID="FEAT-RESEARCH-SKILLS" STATE="STARTED">
+    <INTENT>Bounded version testing and informed independent checks share a portable method surface.</INTENT>
+    <PRD_REF>docs/PRD.md#PIPELINE</PRD_REF>
+  </FEATURE_RESEARCH_SKILLS>
+
+  <FEATURE_LINE_PACKET ID="FEAT-LINE-PACKET" STATE="IMPLEMENTED">
+    <INTENT>Researchers and checkers recover primary testimony and auditable case decisions from instance data; malformed data arguments report their file and field; editorial completeness is judged by a reader; positive saved searches may support a weak argument without new records. Unknown numeric metadata is allowed; nonfinite values and invalid probabilities are refused. Editorial completeness and drawing-layout domains are not publication requirements.</INTENT>
+    <PRD_REF>docs/PRD.md#FORMS</PRD_REF>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RESEARCH-PACKET"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RESEARCH-CLI"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RESEARCH-DELIVERY"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INSTANCE-RESEARCH-FORMS"/>
+  </FEATURE_LINE_PACKET>
+  <MODULE_RESEARCH_PACKET ID="MOD-RESEARCH-PACKET" FILE="src/familiar/research/packet.py" STATE="IMPLEMENTED"/>
+  <MODULE_RESEARCH_CLI ID="MOD-RESEARCH-CLI" FILE="src/familiar/research/cli.py" STATE="IMPLEMENTED"/>
+  <MODULE_RESEARCH_DELIVERY ID="MOD-RESEARCH-DELIVERY" FILE="src/familiar/research/delivery.py" STATE="IMPLEMENTED"/>
+  <MODULE_RESEARCH_FORMS ID="MOD-INSTANCE-RESEARCH-FORMS" FILE="src/familiar/instance/research_forms.py" STATE="IMPLEMENTED"/>
+  <FEATURE_PERSON_CARD ID="FEAT-PERSON-CARD" STATE="IMPLEMENTED">
+    <INTENT>A story author recovers a person's nearest family, competing readings, namesakes and local copies through instance-declared collections, including JSONL search coverage, without filtering contrary dates.</INTENT>
+    <PRD_REF>docs/PRD.md#PERSON-CARD</PRD_REF>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-PERSON-CARD"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-PERSON-CARD-SOURCES"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-PERSON-CARD-CONTEXT"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-PERSON-CARD-OVERVIEW"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-PERSON-CARD-RELATIONS"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RESEARCH-CLI"/>
+  </FEATURE_PERSON_CARD>
+  <MODULE_PERSON_CARD ID="MOD-PERSON-CARD" FILE="src/familiar/research/person_card.py" STATE="IMPLEMENTED">
+    <!-- Discovery invariants are reviewer-owned; the single installed journey stays on memory-to-reader delivery. -->
+  </MODULE_PERSON_CARD>
+  <MODULE_CARD_SOURCES ID="MOD-PERSON-CARD-SOURCES" FILE="src/familiar/research/card_sources.py" STATE="IMPLEMENTED"/>
+  <MODULE_CARD_CONTEXT ID="MOD-PERSON-CARD-CONTEXT" FILE="src/familiar/research/card_context.py" STATE="IMPLEMENTED"/>
+  <MODULE_CARD_OVERVIEW ID="MOD-PERSON-CARD-OVERVIEW" FILE="src/familiar/research/card_overview.py" STATE="IMPLEMENTED"/>
+  <MODULE_CARD_RELATIONS ID="MOD-PERSON-CARD-RELATIONS" FILE="src/familiar/research/card_relations.py" STATE="IMPLEMENTED"/>
+  <FEATURE_SOURCE_SEARCH ID="FEAT-SOURCE-SEARCH" STATE="IMPLEMENTED">
+    <INTENT>One host-authorized source query records actual index coverage and keeps unavailable answers distinct from zero. The main research replay command and complete request/capture forms expose the same offline path with actionable refusals.</INTENT>
+    <PRD_REF>docs/PRD.md#SOURCE-SEARCH</PRD_REF>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-SOURCE-SEARCH"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-SEARCH-READERS"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-SEARCH-HOST"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-SEARCH-VARIANTS"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RESEARCH-CLI"/>
+  </FEATURE_SOURCE_SEARCH>
+  <MODULE_SEARCH ID="MOD-SOURCE-SEARCH" FILE="src/familiar/research/source_search.py" STATE="IMPLEMENTED"/>
+  <MODULE_SEARCH ID="MOD-SEARCH-READERS" FILE="src/familiar/research/search_readers.py" STATE="IMPLEMENTED">
+    <!-- Only an explicit valid zero count and empty row list establish a loaded zero. -->
+  </MODULE_SEARCH>
+  <MODULE_SEARCH ID="MOD-SEARCH-HOST" FILE="src/familiar/research/search_host.py" STATE="IMPLEMENTED"/>
+  <MODULE_SEARCH ID="MOD-SEARCH-VARIANTS" FILE="src/familiar/research/search_variants.py" STATE="IMPLEMENTED"/>
+  <FEATURE_SEARCH_COVERAGE ID="FEAT-SEARCH-COVERAGE" STATE="IMPLEMENTED">
+    <INTENT>Existing journals and read records describe individual and surname-place visits, result rows and explicitly established identity separately. Explicit people survive dictionary mismatch; principal identity work precedes repeated searches, while contrary dates and other matches remain visible. Latest source refusal and dubious query semantics stay separate from best outcome. Form annotations, sex and episode, source writing and dated family memory orient planning without changing evidence or life status. Controlled zeros support only against arguments. Repeatable carry-over preserves archives and provenance; FamilySearch channels remain independent.</INTENT>
+    <PRD_REF>docs/PRD.md#SOURCE-SEARCH</PRD_REF>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-SEARCH-LEDGER"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RESEARCH-COVERAGE"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RESEARCH-COVERAGE-DISPLAY"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RESEARCH-COVERAGE-CONTEXT"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RESEARCH-COVERAGE-QUALITY"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RESEARCH-COVERAGE-EVIDENCE"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RESEARCH-CLI"/>
+  </FEATURE_SEARCH_COVERAGE>
+  <MODULE_SEARCH_LEDGER ID="MOD-SEARCH-LEDGER" FILE="src/familiar/research/search_ledger.py" STATE="IMPLEMENTED"/>
+  <MODULE_RESEARCH_COVERAGE ID="MOD-RESEARCH-COVERAGE" FILE="src/familiar/research/coverage.py" STATE="IMPLEMENTED"/>
+  <MODULE_RESEARCH_COVERAGE_DISPLAY ID="MOD-RESEARCH-COVERAGE-DISPLAY" FILE="src/familiar/research/coverage_display.py" STATE="IMPLEMENTED"/>
+  <MODULE_RESEARCH_COVERAGE_CONTEXT ID="MOD-RESEARCH-COVERAGE-CONTEXT" FILE="src/familiar/research/coverage_context.py" STATE="IMPLEMENTED"/>
+  <MODULE_RESEARCH_COVERAGE_QUALITY ID="MOD-RESEARCH-COVERAGE-QUALITY" FILE="src/familiar/research/coverage_quality.py" STATE="IMPLEMENTED"/>
+  <MODULE_RESEARCH_COVERAGE_EVIDENCE ID="MOD-RESEARCH-COVERAGE-EVIDENCE" FILE="src/familiar/research/coverage_evidence.py" STATE="IMPLEMENTED"/>
+</Why_Graph_Shard>

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Шмидты и Корнеевы — макет Familiar</title>
+<link rel="stylesheet" href="familiar.css">
+</head>
+<body class="has-tabbar">
+<header class="bar">
+  <a class="home" href="home.html"><span class="mark"><svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="11.2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="14" cy="14" r="4.4" fill="var(--ember)"/></svg></span><strong>Шмидты и Корнеевы</strong></a>
+  <nav aria-label="Разделы"><a href="home.html" aria-current="page">Начало</a><a href="chapter.html">Рассказы</a><a href="tree.html">Дерево</a><a href="desk-show.html">Расследование</a></nav>
+  <div class="tools">
+    <button class="ibtn" aria-label="Найти человека"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4-4"/></svg></button>
+    <button class="ibtn aa" aria-label="Язык, размер текста, вечерний вид">Аа</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="cover">
+    <div>
+      <div class="kicker">Живая история семьи · 1899–2026</div>
+      <h1>С Волги в степь&nbsp;— и&nbsp;дальше</h1>
+      <p class="lead">Девочка из немецкого села на Волге в десять лет едет в товарном вагоне в казахстанскую степь. Через восемьдесят лет её внучка находит справку, где записано, откуда всё началось.</p>
+      <a class="continue" href="chapter.html" style="--p:45%"><span class="bar-p" aria-hidden="true"></span><span><small>Продолжить · глава 3 из 6</small><b>Готлиб, он же Богдан</b></span></a>
+      <div class="actions">
+        <a class="btn primary" href="chapter.html">Читать с начала</a>
+        <a class="btn quiet" href="tree.html">Дерево семьи</a>
+      </div>
+    </div>
+    <figure class="plate">
+      <div class="mat"><img src="img/steppe.svg" alt="Рисунок-заглушка: степь, дом и колодец" width="1200" height="800"></div>
+      <figcaption><b>Лебяжье, Павлодарская область.</b> Рисунок к первой книге — в макете заглушка.</figcaption>
+    </figure>
+  </section>
+
+  <section class="section">
+    <h2>Книги семьи</h2>
+    <p class="sub">Каждая — одна судьба, рассказанная по главам. Читаются вслух, по вечерам.</p>
+    <div class="shelf">
+      <a class="book" href="chapter.html"><span class="face"><img src="img/rails.svg" alt=""></span><b>Шмидты: Волга и степь</b><span>1941–1957 · 6 глав</span></a>
+      <a class="book" href="#"><span class="face tone-3"><img src="img/volga.svg" alt=""></span><b>Село у Волги</b><span>1899–1941 · 4 главы</span></a>
+      <a class="book" href="#"><span class="face tone-2"><img src="img/house.svg" alt=""></span><b>Корнеевы из Павлодара</b><span>1928–1990 · 5 глав</span></a>
+      <div class="book soon"><span class="face"><em>Пишется:<br>трудармия, 1942</em></span><b>Где искать Готлиба</b><span>Фамильяр собирает бумаги</span></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Кто здесь</h2>
+    <p class="sub">Нажмите на имя — откроется человек в дереве.</p>
+    <div class="people">
+      <a class="who" href="tree.html" style="--c:var(--line-1)"><i></i><b>Готлиб Шмидт</b><small>≈1899</small></a>
+      <a class="who" href="tree.html" style="--c:var(--line-1)"><i></i><b>Мария Шмидт</b></a>
+      <a class="who" href="tree.html" style="--c:var(--line-1)"><i></i><b>Эмма Шмидт</b><small>1931–2009</small></a>
+      <a class="who" href="tree.html" style="--c:var(--line-2)"><i></i><b>Андрей Корнеев</b><small>1928–1990</small></a>
+      <a class="who" href="tree.html" style="--c:var(--line-1)"><i></i><b>Фридрих</b><small>1935</small></a>
+      <a class="who" href="tree.html" style="--c:var(--line-1)"><i></i><b>Людмила</b><small>дочь Эммы</small></a>
+      <a class="who" href="tree.html" style="--c:var(--line-1)"><i></i><b>Нина</b><small>дочь Эммы</small></a>
+      <a class="who" href="tree.html"><i style="background:var(--rule)"></i><b>ещё 14</b><small>в дереве</small></a>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Что Фамильяр ищет сейчас</h2>
+    <p class="sub">Расследование идёт само; новые главы появляются, когда находится бумага.</p>
+    <div class="seek">
+      <article><div class="state now">Ищет</div><p>Где работал Готлиб в 1942 году — списки трудармии.</p><small>Начато 10 ноября</small></article>
+      <article><div class="state">Сверяет</div><p>Год свадьбы Эммы и Андрея: память семьи говорит 1956, свидетельство дочери — 1957.</p><small>Две бумаги, одна память</small></article>
+      <article><div class="state done">Нашёл</div><p>Справку 1994 года с другим отчеством — из неё выросла глава «Готлиб, он же Богдан».</p><small>Глава 3</small></article>
+    </div>
+  </section>
+
+  <footer class="foot"><span class="mark"><svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="11.2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="14" cy="14" r="4.4" fill="var(--ember)"/></svg></span><span><b>Familiar</b> · живая история семьи</span></footer>
+</main>
+
+<nav class="tabbar" aria-label="Разделы">
+  <a href="home.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-6 8 6v8H4z"/></svg>Начало</a>
+  <a href="chapter.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h6a2 2 0 012 2v12a2 2 0 00-2-2H4zM20 5h-6a2 2 0 00-2 2v12a2 2 0 012-2h6z"/></svg>Рассказы</a>
+  <a href="tree.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="19" r="2"/><path d="M12 7v5M12 12c-4 0-6 2-6 5M12 12c4 0 6 2 6 5"/></svg>Дерево</a>
+  <a href="desk.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/><path d="M11 8v3l2 2"/></svg>Поиски</a>
+</nav>
+<span class="mock">Макет · семья придумана</span>
+</body>
+</html>

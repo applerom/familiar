@@ -1,0 +1,37 @@
+# START_MODULE_CONTRACT: MOD-REGION-BP-RECIPE-GENETEKA
+# PURPOSE: Describe the Geneteka search route, result and absence signals without any family query.
+# PRD_REF: docs/PRD.md#REGION-PACK
+# INVARIANTS:
+# CHANGES_WITH:
+# - regions/belarus-podlasie/data-contract.md
+# :END_MODULE_CONTRACT
+
+schema_version = 1
+
+[recipe]
+id = "geneteka"
+source = "geneteka"
+title = "Geneteka"
+seeks = "индексы крещений, браков и смертей; запись индекса не заменяет изображение акта"
+url = "https://geneteka.genealodzy.pl/index.php"
+parameters = { "op" = "gt", "lang" = "pol", "bdm" = "{bdm}", "w" = "{region}", "rid" = "{register}", "search_lastname" = "{surname}", "search_name" = "{given_name}", "from_date" = "{from}", "to_date" = "{to}", "exac" = "{exact}" }
+list_reader = "geneteka"
+list_ready = "ответ /api/getAct.php текущего запроса: recordsFiltered и строки data"
+list_fields = ["год", "номер акта", "имя и фамилия", "родители", "приход", "населённый пункт", "примечание", "ссылка на скан при наличии"]
+list_limits = "первая страница до 50 строк; сужать годами и приходом; идентификатор прихода зависит от вида акта; нестрогий режим фонетический, фамилия ищется также в родителях"
+card_reader = "страницы акта нет; открыть только фактическую ссылку скана из строки через шлюз соответствующего архива; скан и чтение акта отдельны от индекса"
+zero_signal = "recordsFiltered = 0 в ответе текущего запроса; оболочка без ответа не ноль"
+zero_status = "reported"
+access = "open"
+site_limits = "в карточке доступа сообщается о crawl-delay 120 в robots.txt; сегодня этот файл не читался; это правило роботов, не пользовательский часовой бюджет"
+control = { "surname" = "Kowalski", "exact" = "1", "w" = "10pl", "from" = "1900", "to" = "1900" }
+control_contains = "Kowalski"
+status = "verified"
+basis = "живая проба через общий шлюз: HTTP 200, 6 результатов и 6 строк, 2,4 с; сигнал нуля и переход к скану сегодня не проверялись"
+ready_pattern = "(?!)"
+empty_pattern = "(?!)"
+api_match = "/api/getAct.php"
+checked = 2026-11-12
+stop = "капча, вход, платная стена, HTTP 403 или 429: остановиться; секреты и проверки только у пользователя; отказ потолка шлюза не отказ сайта"
+not_ready = "нет явного признака готовой выдачи или нуля; отсутствие ответа и ошибка приложения не доказывают отсутствие записи"
+site_limits_status = "reported"

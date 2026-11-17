@@ -1,0 +1,25 @@
+{
+  "id": "first",
+  "title": "A city memory",
+  "text": "The family remembers Bea in the city. The invented paper names her.",
+  "people": [
+    "BEA"
+  ],
+  "published_fields": {
+    "BEA": [
+      "name"
+    ]
+  },
+  "records": [
+    {
+      "doc": "paper",
+      "title": "Invented certificate",
+      "kids": true,
+      "index_base": 0,
+      "pick": [
+        0
+      ]
+    }
+  ],
+  "more": "Family testimony and the locally saved invented certificate; no birthplace is established."
+}

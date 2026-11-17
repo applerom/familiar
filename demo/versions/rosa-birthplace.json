@@ -1,0 +1,329 @@
+{
+  "_about": "Invented for the Familiar demo. One open question with weighted versions; weights are an agent's judgement over the arguments, not computed probabilities.",
+  "fictional": true,
+  "id": "rosa-birthplace",
+  "title": "Where was Rosa Calhau born?",
+  "line": "Ferrolho",
+  "people": [
+    "p-rosa"
+  ],
+  "status": "open",
+  "updated": "2026-11-12",
+  "summary": "The baptism certificate of her daughter says Rosa was 'native of Ponta d' and the rest is torn off. Two places fit; the family remembers only 'near his village'.",
+  "unknown_weight": 0.2,
+  "versions": [
+    {
+      "id": "ponta-do-moinho",
+      "label": "Ponta do Moinho, Ilha Vaqueira",
+      "weight": 0.5,
+      "state": "leading",
+      "people": [
+        "p-rosa"
+      ],
+      "place": "Ponta do Moinho, Ilha Vaqueira",
+      "for": [
+        {
+          "kind": "document",
+          "text": "The certificate begins the word with 'Ponta d'.",
+          "sources": [
+            "doc-helena-baptism"
+          ],
+          "reading": {
+            "where": "line 'Mother'",
+            "original": "Rosa Calhau, nat. de Ponta d[...]",
+            "translation": "Rosa Calhau, native of Ponta d[...]"
+          },
+          "dependency_group": "origin:doc-helena-baptism"
+        },
+        {
+          "kind": "place",
+          "text": "It is the only parish beginning with 'Ponta d' on Amaro's island, an hour's walk from Lajedo do Vento.",
+          "sources": [
+            "host"
+          ],
+          "dependency_group": "origin:host"
+        },
+        {
+          "kind": "family",
+          "text": "The family remembers that Rosa came 'from somewhere near his village'.",
+          "sources": [
+            "m-rosa-came-to-marry"
+          ],
+          "dependency_group": "origin:m-rosa-came-to-marry"
+        }
+      ],
+      "against": [
+        {
+          "kind": "document",
+          "text": "'Ponta do Moinho' is four or five letters after 'Ponta d'; the tear looks wider, about six or seven.",
+          "sources": [
+            "doc-helena-baptism"
+          ],
+          "dependency_group": "origin:doc-helena-baptism"
+        }
+      ]
+    },
+    {
+      "id": "ponta-das-garcas",
+      "label": "Ponta das Garças, Ilha Alvarinha",
+      "weight": 0.3,
+      "state": "alternative",
+      "people": [
+        "p-rosa"
+      ],
+      "place": "Ponta das Garças, Ilha Alvarinha",
+      "for": [
+        {
+          "kind": "document",
+          "text": "'as Garças' fills the width of the tear better.",
+          "sources": [
+            "doc-helena-baptism"
+          ],
+          "dependency_group": "origin:doc-helena-baptism"
+        },
+        {
+          "kind": "names",
+          "text": "Calhau is a common surname on Ilha Alvarinha and rare on Ilha Vaqueira.",
+          "sources": [
+            "host"
+          ],
+          "dependency_group": "origin:host"
+        }
+      ],
+      "against": [
+        {
+          "kind": "family",
+          "text": "The family places her near Amaro's village, not on another island.",
+          "sources": [
+            "m-rosa-came-to-marry"
+          ],
+          "dependency_group": "origin:m-rosa-came-to-marry"
+        },
+        {
+          "kind": "place",
+          "text": "A bride from another island needs a reason to meet a man from Lajedo; none is known yet.",
+          "sources": [
+            "host"
+          ],
+          "dependency_group": "origin:host"
+        }
+      ]
+    }
+  ],
+  "tests": [
+    {
+      "text": "Rosa's death certificate, Quarry Bend, 1981: birthplace and parents",
+      "where": "town clerk of Quarry Bend; a living relative can request it",
+      "would": "names the parish outright and closes the question",
+      "outcomes": [
+        {
+          "kind": "positive",
+          "observation": "Discriminating field matches; compare namesakes before reweighting.",
+          "effects": [
+            {
+              "version": "ponta-do-moinho",
+              "change": "reconsider",
+              "reason": "Discriminating field matches; compare namesakes before reweighting."
+            },
+            {
+              "version": "ponta-das-garcas",
+              "change": "reconsider",
+              "reason": "Discriminating field matches; compare namesakes before reweighting."
+            }
+          ]
+        },
+        {
+          "kind": "contrary",
+          "observation": "Field conflicts within read coverage; test alternative explanation.",
+          "effects": [
+            {
+              "version": "ponta-do-moinho",
+              "change": "reconsider",
+              "reason": "Field conflicts within read coverage; test alternative explanation."
+            },
+            {
+              "version": "ponta-das-garcas",
+              "change": "reconsider",
+              "reason": "Field conflicts within read coverage; test alternative explanation."
+            }
+          ]
+        },
+        {
+          "kind": "unavailable",
+          "observation": "Source not accessible; no negative evidence.",
+          "effects": [
+            {
+              "version": "ponta-do-moinho",
+              "change": "unchanged",
+              "reason": "Source not accessible; no negative evidence."
+            },
+            {
+              "version": "ponta-das-garcas",
+              "change": "unchanged",
+              "reason": "Source not accessible; no negative evidence."
+            }
+          ]
+        },
+        {
+          "kind": "unreadable",
+          "observation": "Field cannot be read; preserve weights and seek better copy.",
+          "effects": [
+            {
+              "version": "ponta-do-moinho",
+              "change": "unchanged",
+              "reason": "Field cannot be read; preserve weights and seek better copy."
+            },
+            {
+              "version": "ponta-das-garcas",
+              "change": "unchanged",
+              "reason": "Field cannot be read; preserve weights and seek better copy."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Baptism registers of Ponta do Moinho, about 1898-1906: a Rosa, daughter of a Calhau",
+      "where": "parish books of Ilha Vaqueira (invented)",
+      "would": "a match makes the first version probable; a full year-by-year absence weakens it",
+      "outcomes": [
+        {
+          "kind": "positive",
+          "observation": "Discriminating field matches; compare namesakes before reweighting.",
+          "effects": [
+            {
+              "version": "ponta-do-moinho",
+              "change": "reconsider",
+              "reason": "Discriminating field matches; compare namesakes before reweighting."
+            },
+            {
+              "version": "ponta-das-garcas",
+              "change": "reconsider",
+              "reason": "Discriminating field matches; compare namesakes before reweighting."
+            }
+          ]
+        },
+        {
+          "kind": "contrary",
+          "observation": "Field conflicts within read coverage; test alternative explanation.",
+          "effects": [
+            {
+              "version": "ponta-do-moinho",
+              "change": "reconsider",
+              "reason": "Field conflicts within read coverage; test alternative explanation."
+            },
+            {
+              "version": "ponta-das-garcas",
+              "change": "reconsider",
+              "reason": "Field conflicts within read coverage; test alternative explanation."
+            }
+          ]
+        },
+        {
+          "kind": "unavailable",
+          "observation": "Source not accessible; no negative evidence.",
+          "effects": [
+            {
+              "version": "ponta-do-moinho",
+              "change": "unchanged",
+              "reason": "Source not accessible; no negative evidence."
+            },
+            {
+              "version": "ponta-das-garcas",
+              "change": "unchanged",
+              "reason": "Source not accessible; no negative evidence."
+            }
+          ]
+        },
+        {
+          "kind": "unreadable",
+          "observation": "Field cannot be read; preserve weights and seek better copy.",
+          "effects": [
+            {
+              "version": "ponta-do-moinho",
+              "change": "unchanged",
+              "reason": "Field cannot be read; preserve weights and seek better copy."
+            },
+            {
+              "version": "ponta-das-garcas",
+              "change": "unchanged",
+              "reason": "Field cannot be read; preserve weights and seek better copy."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "text": "The 108 ship lists of 1919-1926 the arrivals index skips, read page by page for Calhau and Ferrolho",
+      "where": "the same invented port volumes",
+      "would": "a line with her last residence answers the question and gives the date of her crossing",
+      "outcomes": [
+        {
+          "kind": "positive",
+          "observation": "Discriminating field matches; compare namesakes before reweighting.",
+          "effects": [
+            {
+              "version": "ponta-do-moinho",
+              "change": "reconsider",
+              "reason": "Discriminating field matches; compare namesakes before reweighting."
+            },
+            {
+              "version": "ponta-das-garcas",
+              "change": "reconsider",
+              "reason": "Discriminating field matches; compare namesakes before reweighting."
+            }
+          ]
+        },
+        {
+          "kind": "contrary",
+          "observation": "Field conflicts within read coverage; test alternative explanation.",
+          "effects": [
+            {
+              "version": "ponta-do-moinho",
+              "change": "reconsider",
+              "reason": "Field conflicts within read coverage; test alternative explanation."
+            },
+            {
+              "version": "ponta-das-garcas",
+              "change": "reconsider",
+              "reason": "Field conflicts within read coverage; test alternative explanation."
+            }
+          ]
+        },
+        {
+          "kind": "unavailable",
+          "observation": "Source not accessible; no negative evidence.",
+          "effects": [
+            {
+              "version": "ponta-do-moinho",
+              "change": "unchanged",
+              "reason": "Source not accessible; no negative evidence."
+            },
+            {
+              "version": "ponta-das-garcas",
+              "change": "unchanged",
+              "reason": "Source not accessible; no negative evidence."
+            }
+          ]
+        },
+        {
+          "kind": "unreadable",
+          "observation": "Field cannot be read; preserve weights and seek better copy.",
+          "effects": [
+            {
+              "version": "ponta-do-moinho",
+              "change": "unchanged",
+              "reason": "Field cannot be read; preserve weights and seek better copy."
+            },
+            {
+              "version": "ponta-das-garcas",
+              "change": "unchanged",
+              "reason": "Field cannot be read; preserve weights and seek better copy."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "advice": []
+}

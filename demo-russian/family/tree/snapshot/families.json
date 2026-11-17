@@ -1,0 +1,116 @@
+{
+  "families": [
+    {
+      "id": "irina-2026-11-12-shmidt",
+      "husband": "irina-2026-11-12-gottlieb",
+      "wife": "irina-2026-11-12-maria",
+      "children": [
+        "irina-2026-11-12-emma",
+        "irina-2026-11-12-friedrich"
+      ],
+      "events": [],
+      "provenance": [
+        "ir-deport",
+        "ir-friedrich",
+        "ir-gottlieb"
+      ],
+      "status": "hypothesis"
+    },
+    {
+      "id": "irina-2026-11-12-korneev",
+      "husband": "irina-2026-11-12-andrey",
+      "wife": "irina-2026-11-12-emma",
+      "children": [
+        "irina-2026-11-12-lyudmila",
+        "irina-2026-11-12-nina"
+      ],
+      "events": [],
+      "provenance": [
+        "ir-andrey",
+        "ir-mama",
+        "ir-nina"
+      ],
+      "status": "export"
+    },
+    {
+      "id": "export-wagner-2026-11-F1",
+      "husband": "export-wagner-2026-11-I2",
+      "wife": "export-wagner-2026-11-I3",
+      "children": [
+        "export-wagner-2026-11-I1",
+        "export-wagner-2026-11-I4"
+      ],
+      "events": [
+        {
+          "type": "marriage",
+          "tag": "MARR",
+          "date": "ABT 1929",
+          "value": "",
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "place": "Gnadenflur",
+          "source_text": [],
+          "status": "hypothesis"
+        }
+      ],
+      "provenance": [
+        "export-wagner-2026-11"
+      ],
+      "status": "hypothesis"
+    },
+    {
+      "id": "export-wagner-2026-11-F2",
+      "husband": "export-wagner-2026-11-I5",
+      "wife": "export-wagner-2026-11-I1",
+      "children": [
+        "export-wagner-2026-11-I6",
+        "export-wagner-2026-11-I7"
+      ],
+      "events": [
+        {
+          "type": "marriage",
+          "tag": "MARR",
+          "date": "1956",
+          "value": "",
+          "provenance": [
+            "export-wagner-2026-11"
+          ],
+          "place": "Pawlodar",
+          "source_text": [],
+          "status": "hypothesis"
+        }
+      ],
+      "provenance": [
+        "export-wagner-2026-11"
+      ],
+      "status": "hypothesis"
+    },
+    {
+      "id": "export-wagner-2026-11-F3",
+      "husband": "export-wagner-2026-11-I9",
+      "wife": "export-wagner-2026-11-I10",
+      "children": [
+        "export-wagner-2026-11-I2"
+      ],
+      "events": [],
+      "provenance": [
+        "export-wagner-2026-11"
+      ],
+      "status": "hypothesis"
+    },
+    {
+      "id": "export-wagner-2026-11-F4",
+      "husband": "export-wagner-2026-11-I11",
+      "wife": "export-wagner-2026-11-I7",
+      "children": [
+        "export-wagner-2026-11-I8"
+      ],
+      "events": [],
+      "provenance": [
+        "export-wagner-2026-11"
+      ],
+      "status": "hypothesis"
+    }
+  ]
+}

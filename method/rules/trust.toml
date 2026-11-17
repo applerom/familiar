@@ -1,0 +1,140 @@
+# START_MODULE_CONTRACT: MOD-RULES-TRUST-DATA
+# PURPOSE: The twelve trust invariants as data, so a check, a role sheet and `familiar rules explain` read the same words and no layer can weaken them.
+# PRD_REF: docs/PRD.md#TRUST
+# INVARIANTS:
+# - only trust rules live in this file and every one has mode block [review: cold reviewer]
+# - no family, region or feed layer can change a trust rule's mode [test: tests/gate/test_data_guarantees.py::test_f9_trust_mode_cannot_be_changed]
+# - exactly twelve records TRUST-01..TRUST-12 in PRD order, each with check:<id> or review:<role> [review: engine lead]
+# - the trust core names no person, place or choice of any real family [review: engine lead]
+# CHANGES_WITH:
+# - docs/PRD.md#TRUST
+# - docs/PRD.md#RULES-MODEL
+# - MOD-RULES-SETTINGS-DATA
+# :END_MODULE_CONTRACT
+#
+# Shape: an array of tables [[rule]] with the RULES-MODEL fields only:
+# id, kind, statement, roles, serves, check, mode, reads.
+# Role ids: lead, researcher, second-look, recipe-searcher, feed-author,
+# shot-director, artist, reviewer, translator.
+# Seven trust rules carry a mechanical check: these are the only checks that
+# block a feed by default. The other five are judged by a named role.
+
+[[rule]]
+id = "TRUST-01"
+kind = "trust"
+statement = "Never invent a document: no paper that does not exist, no reference to a record missing from the family's materials, no drawing made to look like a record. A record known only from an index is shown as an index entry, never as an invented image."
+roles = ["researcher", "feed-author", "shot-director", "artist", "reviewer"]
+serves = "UC-READ"
+check = "check:document-reference-resolves"
+mode = "block"
+reads = []
+
+[[rule]]
+id = "TRUST-02"
+kind = "trust"
+statement = "Cut-out, caption and text agree and name the same person; the reading is literal, in the language and spelling of the original, with doubt marked as [?] and illegible parts as [...]. The text never says more than the source, and no internal key, path or working note reaches the reader."
+roles = ["feed-author", "second-look", "reviewer", "translator"]
+serves = "UC-READ"
+check = "check:reader-surface"
+mode = "block"
+reads = []
+
+[[rule]]
+id = "TRUST-03"
+kind = "trust"
+statement = "A scene without a document names what it stands on and how strongly: a record of the person, a measured local norm with its count, or the leading weighted version, with its weight and strongest objection in 'More'. It never contradicts the person's documents, never borrows what is foreign to that place, faith and century, and never puts a person where their age or place rules it out."
+roles = ["researcher", "feed-author", "reviewer"]
+serves = "UC-STORY"
+check = "review:reviewer"
+mode = "block"
+reads = []
+
+[[rule]]
+id = "TRUST-04"
+kind = "trust"
+statement = "Identity and kinship are versions with weights; a weak version is never written into a card or an event as accepted, and a namesake is never hinted to be kin without evidence. Nationality is not inferred from a surname, language, faith or parish."
+roles = ["researcher", "second-look", "feed-author", "reviewer"]
+serves = "UC-RESEARCH"
+check = "check:identity-and-nationality"
+mode = "block"
+reads = []
+
+[[rule]]
+id = "TRUST-05"
+kind = "trust"
+statement = "\"Not found\" always states what was actually covered: which source, which years, which spellings, and whether the result page really loaded."
+roles = ["researcher", "recipe-searcher", "second-look"]
+serves = "UC-RESEARCH"
+check = "review:second-look"
+mode = "block"
+reads = []
+
+[[rule]]
+id = "TRUST-06"
+kind = "trust"
+statement = "Nothing is invented about people the living remember. About a living person only what that person allowed is told, and without a recorded permission that is name and kinship. Their modern documents and addresses are never shown, and photos of children or of the living never go to an image generator."
+roles = ["lead", "researcher", "feed-author", "shot-director", "artist", "reviewer", "recipe-searcher", "translator"]
+serves = "UC-READ"
+check = "check:living-protected"
+mode = "block"
+reads = []
+
+[[rule]]
+id = "TRUST-07"
+kind = "trust"
+statement = "Topics the family closed are told only as the fact and the common practice of the time, and present-day politics stays out of the text. The lists are family data; the mechanism is the engine's."
+roles = ["feed-author", "translator", "reviewer"]
+serves = "UC-READ"
+check = "check:closed-topics-and-politics"
+mode = "block"
+reads = ["privacy.closed_topics_file", "privacy.present_day_politics_file"]
+
+[[rule]]
+id = "TRUST-08"
+kind = "trust"
+statement = "A reconstruction is called a reconstruction: a drawing is never placed as a person's portrait or among their documents, and colourisation adds no detail that the original does not show. Records read under a cut-out keep the colour of paper and ink."
+roles = ["shot-director", "artist", "reviewer", "translator"]
+serves = "UC-READ"
+check = "check:generated-not-portrait"
+mode = "block"
+reads = ["drawing.disclosure"]
+
+[[rule]]
+id = "TRUST-09"
+kind = "trust"
+statement = "No person stands in a frame who was not there: who is alive, present and how old comes from the tree for the year of the scene. A visible unusual practice is drawn only when a source supports it; otherwise the simplest common solution."
+roles = ["shot-director", "artist", "reviewer"]
+serves = "UC-STORY"
+check = "review:reviewer"
+mode = "block"
+reads = []
+
+[[rule]]
+id = "TRUST-10"
+kind = "trust"
+statement = "Period images carry a source and an open licence; documents and images are stored locally and never hot-linked. The external address stays in research files for re-checking and never reaches the app."
+roles = ["researcher", "feed-author", "reviewer"]
+serves = "UC-READ"
+check = "check:local-and-licensed"
+mode = "block"
+reads = ["media.external_embeds"]
+
+[[rule]]
+id = "TRUST-11"
+kind = "trust"
+statement = "Only the host publishes; agents publish only at the host's explicit request. Anything shown to strangers is shown in demo mode."
+roles = ["lead"]
+serves = "UC-SHOW"
+check = "review:lead"
+mode = "block"
+reads = []
+
+[[rule]]
+id = "TRUST-12"
+kind = "trust"
+statement = "No people, faith or neighbourhood is blamed as a group. What a document attributes to an authority or to named persons is told as theirs, with that document; where branches of one tree meet from two sides, neither side is judged. Relatives of another faith read the same page."
+roles = ["feed-author", "translator", "reviewer"]
+serves = "UC-STORY"
+check = "review:reviewer"
+mode = "block"
+reads = []

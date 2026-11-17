@@ -1,0 +1,11 @@
+{
+  "_about": "Invented for the Familiar demo. Families in normalised form; a missing partner is null, not a placeholder person.",
+  "fictional": true,
+  "families": [
+    {"id": "f-joaquina", "husband": null, "wife": "p-joaquina", "children": ["p-amaro"], "events": [], "provenance": ["rec-santa-ludovina-1921-14"]},
+    {"id": "f-amaro-rosa", "husband": "p-amaro", "wife": "p-rosa", "children": ["p-helena"],
+     "events": [{"type": "marriage", "date": "between 1921 and 1925", "place": null, "provenance": ["rec-santa-ludovina-1921-14", "doc-helena-baptism"], "note": "single in March 1921; parents of Helena in 1925; where they married is part of the open question"}],
+     "provenance": ["doc-helena-baptism"]},
+    {"id": "f-helena-walter", "husband": "p-walter", "wife": "p-helena", "children": ["p-daniel"], "events": [], "provenance": ["host"]}
+  ]
+}

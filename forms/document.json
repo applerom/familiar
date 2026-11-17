@@ -1,0 +1,15 @@
+{
+  "record": "paper",
+  "caption": "Invented certificate",
+  "source": "Home holder",
+  "subjects": [
+    "BEA"
+  ],
+  "snippets": [
+    {
+      "read": "Name: Bea Example",
+      "field": "Name",
+      "asset": null
+    }
+  ]
+}

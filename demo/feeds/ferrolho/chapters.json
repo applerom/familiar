@@ -1,0 +1,155 @@
+[
+  {
+    "id": "amaro-1921",
+    "year": "1921",
+    "part": null,
+    "title": "One word in the column of who paid",
+    "kind": "fate",
+    "people": [
+      "AMARO",
+      "JOAQUINA",
+      "MANUEL"
+    ],
+    "text": "Amaro Ferrolho was twenty-three when he left Lajedo do Vento. He was a labourer, and he paid for the crossing himself. On the ship's list, in the column that asks who paid, the clerk wrote one word: Self.\n\nHis mother Joaquina stayed in the village. On the list she is the nearest relative, the person the officers would write to if anything happened to her son on the far side of the ocean.\n\nIn his pocket Amaro carried an address: cousin Manuel Tavares, 14 Rope Walk Street, Quarry Bend. A cousin and a street were all the map he had. The clerk copied them onto line fourteen, and Amaro walked off the pier into a town of brick mills.\n\nFor the next forty years the cotton mill was his day. The family remembers him walking there every morning, the man who had once paid his own way across an ocean.",
+    "more": "- The passenger list of the ship, 1921 (invented for the demo), gives his age, work, village, his mother, the cousin he was going to, and that he paid the passage himself.\n- By the list he was born about 1898; the family remembers 1899. An age said aloud to a clerk often differs by a year.\n- The forty years in the mill are family memory.\n- The pier and the brick mills are the setting of the port town, not a record about Amaro.\n- This family is invented: there is no such island, ship or town.",
+    "ask": "For children: Amaro paid for his own ticket across the ocean. If you could take only one small bag, what would you put in it?\n\nFind it: on the ship's list, which word tells who paid?\n\nGame: Amaro steps off the ship with an address in his pocket. Who does he go to: the captain, cousin Manuel, or a hotel? The list says: cousin Manuel.",
+    "picture": null,
+    "records": [
+      {
+        "doc": "rec-santa-ludovina-1921-14",
+        "title": "Invented record: line 14 of the ship's list",
+        "index_base": 0,
+        "pick": [
+          1,
+          0
+        ]
+      }
+    ],
+    "flow": [
+      {
+        "after": 0,
+        "record": 0
+      }
+    ],
+    "facts": [
+      "Sailed in March 1921, aged twenty-three",
+      "Paid his own passage",
+      "Went to his cousin Manuel Tavares in Quarry Bend"
+    ],
+    "variants": [],
+    "places": [
+      {
+        "name": "Lajedo do Vento",
+        "note": "Amaro's village on Ilha Vaqueira (invented)",
+        "map": null
+      },
+      {
+        "name": "Quarry Bend",
+        "note": "the mill town where he settled (invented)",
+        "map": null
+      }
+    ],
+    "published_fields": {
+      "AMARO": [
+        "name",
+        "kinship"
+      ],
+      "JOAQUINA": [
+        "name",
+        "kinship"
+      ],
+      "MANUEL": [
+        "name",
+        "kinship"
+      ]
+    }
+  },
+  {
+    "id": "rosa-1925",
+    "year": "1925",
+    "part": null,
+    "title": "A girl from the point",
+    "kind": "fate",
+    "people": [
+      "ROSA",
+      "HELENA",
+      "AMARO",
+      "MANUEL"
+    ],
+    "text": "In April a girl was born in Quarry Bend, and two weeks later she was carried to the Church of the Holy Ghost. Her name was Helena. Her father was Amaro Ferrolho, and her mother was Rosa Calhau.\n\nThe godfather held the baby over the font. It was Manuel Tavares, very likely the cousin whose address Amaro had carried across the ocean four years before. The same name appears on both papers; whether he met the ship is not recorded.\n\nThe clerk wrote where each parent came from. For Amaro: Lajedo do Vento. For Rosa: Ponta d... and there the paper is folded, and along the fold it tore. Two places on the islands begin that way.\n\nOne is Ponta do Moinho, an hour's walk from Amaro's village across the fields. If Rosa came from there, their families could have known each other for years, and the girl followed a boy she knew.\n\nThe other is Ponta das Garças, on the neighbouring island, where many families were called Calhau. If that version is right, Rosa may have crossed two waters, first the strait and then the ocean, to marry a man from another island.\n\nRosa never learned to read, so she never wrote down which it was. What she left is a garden of kale behind the house in Quarry Bend, grown the way it grew on the islands.",
+    "more": "- Helena's baptism certificate of 1925 (invented for the demo) names her parents, their home villages and the godparents.\n- Rosa's birthplace is torn off after \"Ponta d\". Ponta do Moinho is the more likely reading, about one chance in two; Ponta das Garças is the alternative, about one in three; the rest is left for a place nobody has thought of yet.\n- The godfather is very likely the cousin from the ship's list: the same name in the same town, four years apart.\n- The arrivals index of the port for 1919-1926 does not show Rosa under six spellings, her married name among them. About a fifth of the ship lists of those years are not in the index, so this absence decides nothing.\n- Rosa's death certificate would name her birthplace; a relative can ask the town for it.\n- The garden and that Rosa could not read are family memory.\n- This family is invented: there is no such parish, island or town.",
+    "ask": "For children: Rosa's home village is hidden in a torn fold. If one end of your name were torn off, could your friends still guess it?\n\nFind it: who is the godfather, and where did you meet him before?\n\nGame: Rosa came from a 'Ponta d...'. Choose: the village an hour's walk from Amaro's, or the island across the water. A paper from the town hall may help us find out.",
+    "picture": null,
+    "records": [
+      {
+        "doc": "doc-helena-baptism",
+        "title": "Invented paper: Helena's baptism certificate",
+        "index_base": 0,
+        "pick": [
+          0,
+          1
+        ]
+      }
+    ],
+    "flow": [
+      {
+        "after": 2,
+        "record": 0
+      }
+    ],
+    "facts": [
+      "Helena born in Quarry Bend in April 1925",
+      "Godfather: Manuel Tavares, very likely the cousin from the ship's list",
+      "Rosa's birthplace begins 'Ponta d', the rest is torn off"
+    ],
+    "variants": [
+      {
+        "title": "Ponta do Moinho",
+        "text": "An hour's walk from Lajedo do Vento; fits what the family remembers.",
+        "more": "Leading version, about one chance in two.",
+        "version": "rosa-birthplace/ponta-do-moinho"
+      },
+      {
+        "title": "Ponta das Garças",
+        "text": "On the neighbouring island, where the surname Calhau is common; fits the width of the tear.",
+        "more": "Alternative, about one in three.",
+        "version": "rosa-birthplace/ponta-das-garcas"
+      }
+    ],
+    "places": [
+      {
+        "name": "Church of the Holy Ghost, Quarry Bend",
+        "note": "where Helena was baptized (invented)",
+        "map": null
+      },
+      {
+        "name": "Ponta do Moinho",
+        "note": "Ilha Vaqueira, the leading version of Rosa's home (invented)",
+        "map": null
+      },
+      {
+        "name": "Ponta das Garças",
+        "note": "Ilha Alvarinha, the alternative (invented)",
+        "map": null
+      }
+    ],
+    "published_fields": {
+      "ROSA": [
+        "name",
+        "kinship"
+      ],
+      "HELENA": [
+        "name",
+        "kinship"
+      ],
+      "AMARO": [
+        "name",
+        "kinship"
+      ],
+      "MANUEL": [
+        "name",
+        "kinship"
+      ]
+    }
+  }
+]

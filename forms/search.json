@@ -1,0 +1,36 @@
+{
+  "_about": "Save as searches/<id>.json or one object per line in searches/<log>.jsonl (or paths.searches). Required: id, at, by, source, question (versions-file ID), query, hits (number, including 0). Name who it was for and where: people = tree ids of the people searched for (empty if none yet); source = an id of the region source catalogue (see sources.toml of the pack; anything else is advice with the nearest id); by = {agent, model, effort} of whoever ran it (model gpt-6.1-sol, effort high; host or family member reading themselves: model human). For zero hits, meaning is required; coverage.years and coverage.forms must be nonempty, coverage.read positive, coverage.note required; a positive control goes in control. For inaccessible sources use result_state=access-gap, meaning=access-gap, hits=0, read=0; never claim negative evidence. Check own files with instance check --path searches/your-log.jsonl; see who looked where with research coverage (docs/research-coverage.md). Old journals: research migrate-searches. Archival observations may use hits=null, result_state=unrecorded, meaning=unrecorded when no count was recorded; an incomplete recorded zero uses result_state=zero-uncontrolled and meaning=zero-uncontrolled, never a negative conclusion. Migration preserves original text in *_as_written. Local record review: query.mode=review; record_links=[{person: tree id, record: exact record id/path, status: same|other|mention|unestablished|conflict}]. Keep identifiers, source, people, by, question, coverage and hits (0 allowed); meaning/saved holds reasoning. Review assesses links only: no source search pass, strength, forms, access or negative coverage. Legacy query.review remains readable.",
+  "id": "index-query",
+  "at": "2026-11-13",
+  "by": {
+    "agent": "researcher",
+    "model": "gpt-6.1-sol",
+    "effort": "high"
+  },
+  "people": [
+    "p1"
+  ],
+  "source": "geneteka",
+  "question": "birthplace",
+  "query": {
+    "surname": "Example"
+  },
+  "hits": 1,
+  "coverage": {
+    "years": "1880-1890",
+    "forms": [
+      "Example"
+    ],
+    "read": 1,
+    "note": "One captured index row; original not read"
+  },
+  "result_state": "results",
+  "meaning": "One candidate found; identity remains to be checked against the original",
+  "saved": [
+    "captures/index-query.txt"
+  ],
+  "interest": {
+    "level": 0.5,
+    "tell": "The index points to a different village."
+  }
+}

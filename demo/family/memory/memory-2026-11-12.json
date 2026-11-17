@@ -1,0 +1,21 @@
+{
+  "_about": "Invented for the Familiar demo. What the host told at the start, one statement per item, before any research.",
+  "id": "memory-2026-11-12",
+  "fictional": true,
+  "kind": "memory",
+  "told_by": "host",
+  "date": "2026-11-12",
+  "items": [
+    {"id": "m-amaro-islands", "text": "Grandfather Amaro came from the islands and crossed the ocean as a young man.", "strength": "firm", "witness": "heard from his mother Helena many times"},
+    {"id": "m-amaro-mill", "text": "Amaro worked about forty years in the cotton mill in Quarry Bend.", "strength": "firm", "witness": "saw him walk to the mill as a child"},
+    {"id": "m-amaro-born-1899", "text": "Amaro was born in 1899.", "strength": "hearsay", "witness": "his mother said so; no paper seen"},
+    {"id": "m-amaro-death", "text": "Amaro died in Quarry Bend in 1968.", "strength": "firm", "witness": "was at the funeral"},
+    {"id": "m-rosa-garden", "text": "Grandmother Rosa kept a garden of kale behind the house and could not read.", "strength": "firm", "witness": "spent summers in that house"},
+    {"id": "m-rosa-came-to-marry", "text": "Rosa came over to marry Amaro, from somewhere near his village.", "strength": "hearsay", "witness": "his mother said so; Rosa never spoke of it to him"},
+    {"id": "m-rosa-death", "text": "Rosa died in Quarry Bend in 1981.", "strength": "firm", "witness": "was at the funeral"},
+    {"id": "m-helena-born-qb", "text": "Helena was born in Quarry Bend.", "strength": "firm", "witness": "his mother's own word; the certificate agrees"},
+    {"id": "m-helena-death", "text": "Helena died in 1999.", "strength": "firm", "witness": "his mother"},
+    {"id": "m-walter-death", "text": "Walter Pike died in 1990.", "strength": "firm", "witness": "his father"},
+    {"id": "m-certificate", "text": "There is a baptism certificate of Helena in a biscuit tin.", "strength": "firm", "witness": "holds the paper"}
+  ]
+}

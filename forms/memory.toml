@@ -1,0 +1,18 @@
+id="telling"
+told_by="host"
+date="2026-11-12"
+[[items]]
+id="memory-name"
+text="Bea Example lived in a city."
+strength="hearsay"
+witness="heard from her child"
+[[people]]
+id="bea"
+# Optional living: omit when unknown. Age horizon also applies; a reasoned family death decision is recorded in privacy.life_decisions.
+living=true
+[[people.names]]
+given="Bea"
+patronymic="" # Optional literal patronymic, included in display when present
+surname="Example"
+type="birth"
+provenance=["memory-name"]

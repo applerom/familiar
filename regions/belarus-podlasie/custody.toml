@@ -1,0 +1,236 @@
+# START_MODULE_CONTRACT: MOD-REGION-BP-CUSTODY
+# PURPOSE: Say where a record of a given class and year is kept now in this region, who may ask for it, how long it stays closed and which fields its form carried, so that a letter is drafted to the right keeper and a paper is not promised fields it never had.
+# PRD_REF: docs/PRD.md#LAYERS
+# INVARIANTS:
+# - every custody record names its keepers by source id, and every id resolves in the pack [review: pack keeper]
+# - a closure term or a statute stated as verified names the article it rests on [review: engine lead]
+# CHANGES_WITH:
+# - regions/CONTRACT.md (record shape)
+# - MOD-REGION-BP-SOURCES (keepers)
+# - MOD-SKILL-MEMORY-FIRST (RP-1, RP-4, RP-5)
+# :END_MODULE_CONTRACT
+
+# ---------- Belarus ----------
+
+[[custody]]
+id = "by-civil-term"
+country = "BY"
+classes = ["civil-register"]
+years = [1918, 2026]
+kept_by = ["zags-by"]
+then = "After the term the records pass to state archives for permanent storage (resolution 610, point 12). First copies are kept in the registry office of the place, second copies in the archives of the registry bodies of the regions and of Minsk."
+closed = "Kept for 100 years from the day the record was made (archives law 323-З, article 20, part 2: \"записей актов гражданского состояния – 100 лет\"); the term was raised from 75 to 100 years by law 163-З of 2022-04-18 (announced on the official archives portal on 2022-04-20). Copies of records are not issued to citizens at all (resolution 610, point 115); a citizen gets a repeat certificate or a certificate with data from the record."
+who_may_ask = "A certificate with data from a record: the person himself or herself; parents, adopters and guardians for the birth record of a child; relatives or family members for a death record (resolution 610, point 114). In exceptional cases heirs, close relatives and the spouse; any other person only with the approval of the justice department of the region or of Minsk. A representative needs a notarised power of attorney. The request goes in writing to the registry office of residence or to the office or archive that keeps the record (point 87) and is answered in seven days (point 117). When a repeat birth or death certificate is issued the office checks kinship (point 88)."
+statute = "Law 323-З on archives and records management of 2011-11-25, article 20, part 2, as amended by 163-З of 2022-04-18 (the list of amending laws on the legal portal also names 134-З of 2026-03-16); resolution 610 of the Council of Ministers of 2025-11-06, in force from 2026-01-01 (points 12, 85-93, 107-120)."
+status = "verified"
+checked = 2026-11-12
+basis = "Law text read on the legal portal (article 20, part 2); resolution 610 read on the legal portal: point 12 (100 years, first and second copies, transfer to state archives), points 87-88 and 114-117; the raise from 75 years read on the official archives portal. Not read: article 202 of the marriage and family code, to which point 86 refers for the circle of persons entitled to a repeat certificate. The earlier note of a resolution of 2005 on the order of transfer is out of date: resolution 610 of 2025 replaces the regulation of that year (the list of repealed acts was not read in full)."
+
+[[custody]]
+id = "by-personal-secret"
+country = "BY"
+classes = ["civil-register", "personnel-file", "repression", "archive-guide"]
+years = [1918, 2026]
+kept_by = ["archives-by"]
+then = ""
+closed = "Archival records holding a personal secret are restricted for 75 years from the day they were made (archives law 323-З, article 29, part 2). The restriction may be lifted earlier with the person's consent, and after the person's death with the consent of the heirs, formalised in the set order. The ministry sets the order of access. No separate closure term for civil records was found in the law."
+who_may_ask = "The person, and after death the heirs, can consent to earlier access; others reach such records after the term."
+statute = "Law 323-З, article 29, part 2."
+status = "verified"
+checked = 2026-11-12
+basis = "Text of the law read on the legal portal, article 29, part 2 (75 years, consent of the person or of the heirs). The access order set by the ministry was not read."
+
+[[custody]]
+id = "by-minsk-civil-fund"
+country = "BY"
+classes = ["civil-register"]
+years = [1944, 2013]
+kept_by = ["zags-by"]
+then = ""
+closed = "The records of the registry bodies from 1944 to 2013 are kept in the archives of the city of Minsk on paper only (the legal portal, news item of 2026-01); the term and the circle of persons are as in by-civil-term."
+who_may_ask = "As in by-civil-term."
+statute = ""
+status = "verified"
+checked = 2026-11-12
+basis = "News item of the legal portal of 2026-01 read: records from 1944 to 2013, in Minsk archives, on paper only. The item does not name the legal basis."
+
+[[custody]]
+id = "by-minsk-before-1944"
+country = "BY"
+classes = ["civil-register"]
+years = [1918, 1943]
+kept_by = ["zags-by"]
+then = ""
+closed = "The fund of the Minsk registry of 1918-1943 did not survive. For people born in the city before 1944 only records restored after the war are issued."
+who_may_ask = "As in by-civil-term."
+statute = ""
+status = "reported"
+checked = 2026-11-11
+basis = "Search snippets of the city justice department; the page did not open. The legal portal item of 2026-01 names only 1944-2013 and says nothing of earlier years, so the loss of 1918-1943 is not confirmed there. Check by letter."
+
+[[custody]]
+id = "by-liquidated-orgs"
+country = "BY"
+classes = ["personnel-file"]
+years = [1944, 2026]
+kept_by = ["minsk-city-archive", "mogilev-regional-archive"]
+then = "A reorganised organisation passes its records to the successor; a liquidated one to the territorial archive of the city or district."
+closed = "Third persons reach personnel files under the rules on personal secrets (by-personal-secret)."
+who_may_ask = "Anyone may apply to a state archive. Requests of a social and legal kind that do not touch property or inheritance rights (confirming service record and pay) are free; a request is biographical and paid when the information is for personal purposes, an exhibition, a publication or research (official archives portal, page on services)."
+statute = "Law 323-З, article 12, part 5 (territorial archives receive the records of reorganised and liquidated organisations, except those that must go to state archives)."
+status = "verified"
+checked = 2026-11-12
+basis = "Article 12 read on the legal portal; the page on services of archival institutions read on the official archives portal. Which archive holds a given enterprise is a separate question: find the organisation and its successor first. The Minsk city archive's own page was not obtained."
+
+[[custody]]
+id = "by-archives-by-period"
+country = "BY"
+classes = ["parish-register", "census-revision", "civil-register", "village-council"]
+years = [1500, 2026]
+kept_by = ["niab", "archives-by", "mogilev-regional-archive"]
+then = ""
+closed = "Up to about 1920: the national historical archive (Minsk, Grodno). After about 1920: regional and local state archives and the archives of the registry offices."
+who_may_ask = "Anyone, including foreign citizens; requests for personal purposes, publications or research are biographical and paid, social and legal certificates not touching property or inheritance are free."
+statute = ""
+status = "verified"
+checked = 2026-11-12
+basis = "Guide page on the state archives portal read on 2026-11-11; the page on services read again on 2026-11-12 for who may apply and free against paid requests; the national archive's page on genealogy says that genealogical requests go to the national historical archive: Minsk for the former Minsk, Mogilev, Vitebsk and part of the Grodno governorates, the Grodno branch for the former Grodno governorate and part of the Vilna one."
+
+[[custody]]
+id = "by-village-councils"
+country = "BY"
+classes = ["village-council"]
+years = [1917, 2026]
+kept_by = ["mogilev-regional-archive", "archives-by"]
+then = ""
+closed = "Records of village councils pass to the regional (zonal) state archive under the model nomenclature of the archives department of 2024-11; for household registers see by-household-books."
+who_may_ask = ""
+statute = ""
+status = "reported"
+checked = 2026-11-11
+basis = "Text of the model nomenclature seen in a search result only; not opened as a document."
+
+[[custody]]
+id = "by-household-books"
+country = "BY"
+classes = ["village-council"]
+years = [1917, 2026]
+kept_by = ["archives-by"]
+then = "Until they are handed to a state archive, the books stay on temporary storage in the body that made them."
+closed = "Household registers are kept for 75 years on temporary storage (archives law 323-З, article 20, part 2: \"нотариальных документов, похозяйственных книг – 75 лет\"). The law does not say that this term closes them to a researcher."
+who_may_ask = ""
+statute = "Law 323-З, article 20, part 2."
+status = "verified"
+checked = 2026-11-12
+basis = "Text of the law read on the legal portal: the list of terms of temporary storage names household registers with notarial documents, 75 years. Which archive takes them after the term was not read."
+
+[[custody]]
+id = "by-parish-before-1918"
+country = "BY"
+classes = ["parish-register"]
+years = [1600, 1917]
+kept_by = ["niab", "familysearch", "aab", "eais"]
+then = ""
+closed = "Open. The national historical archive holds the originals; microfilm catalogues of the region are on FamilySearch; second copies of some Catholic deaneries sit in Polish diocesan archives, and older church books in the Lithuanian historical archive."
+who_may_ask = "Условия доступа и приёма запросов проверять раздельно для Минска и Гродно по source niab. Внешнее чтение 05.11.2026 сообщает для Минска приостановку генеалогических/тематических заявок с 02.04.2026, биографических от физических лиц с 17.09.2026; чтение 11.11.2026 для Гродно — генеалогических с 01.02.2025. Это не запрет работы читального зала и не правило доступа ко всем книгам."
+statute = ""
+status = "reported"
+checked = 2026-11-11
+basis = "Archive pages and the pilot's use of the films and inventories; not a full list of where each parish sits. The national archive's page on genealogy (read 2026-11-12) confirms that the national historical archive serves copies of metric records of birth, marriage and death for its territories. The second copies in a Polish diocesan archive were not confirmed: its inventory list names parish fonds, none of the Grodno deanery. ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строки 250–251; даты чтения 05.11 и 11.11.2026 — чужие наблюдения, нами не проверены."
+
+# ---------- Poland ----------
+
+[[custody]]
+id = "pl-civil-term"
+country = "PL"
+classes = ["civil-register"]
+years = [1808, 2026]
+kept_by = ["szukajwarchiwach"]
+then = "Within 2 years after the term the records are handed to the competent state archive (article 28, part 4). Books kept before the act took force: births after 100 years, marriages and deaths after 80 years from the closing of the book, then into the state archive (articles 128-129)."
+closed = "In the registry office: birth records 100 years, marriage and death records 80 years, counted from the end of the calendar year in which the record was made (article 28, parts 1-2). A birth or marriage record of a person for whom no death record exists is kept longer (part 3). How a state archive opens the books after the handover is set by the law on the national archival resource, not read here."
+who_may_ask = "A copy or a certificate from the register is issued to the person, the spouse, ascendants, descendants, siblings, the statutory representative, the guardian, a person who shows a legal interest, courts, prosecutors, social organisations when it fits their statutory aim and the public interest, and public authorities for their statutory tasks (article 45, part 1)."
+statute = "Act of 2014-11-28 on civil status records (official gazette 2014, item 1741), consolidated text of 2026-03-31, articles 28, 45, 128, 129."
+status = "verified"
+checked = 2026-11-12
+basis = "Consolidated text of the act read from the official file of the parliament's legal database: article 28 (terms, handover within 2 years), article 45 part 1 (circle of persons), articles 128-129 (earlier books). The earlier entry gave the date 2014-09-28 and said the records pass after the term; both are corrected here."
+
+[[custody]]
+id = "pl-interwar-east"
+country = "PL"
+classes = ["parish-register", "civil-register"]
+years = [1919, 1939]
+kept_by = ["aab", "szukajwarchiwach"]
+then = "From 1946-01-01 civil registry offices took over; priests who kept the metric books kept them unless ordered to hand them to an office (decree of 1945, articles 12 and 25)."
+closed = "In the parts of the state where civil registration ran through registrars of each faith (the clergy keeping the metric books) it did so until the end of 1945; the introductory decree to the civil status law of 1945 names this system (article 11) and, for Podlasie and the Chełm land, the Orthodox books of before 1915 that stayed with the Catholic parish registrars (article 20)."
+who_may_ask = ""
+statute = "Decree of 1945-09-25, introductory provisions to the civil status law (official gazette 1945, no. 48, item 273), articles 11, 12, 20, 25 (the decree numbers its articles in capital letters)."
+status = "verified"
+checked = 2026-11-12
+basis = "Text of the decree read from the official scan (articles 11, 12, 20, 23 and 25). The decree speaks of the parts of the state with the confessional system; it does not list the eastern provinces one by one, and that the eastern provinces of interwar Poland belonged to them is general knowledge, not read in this text."
+
+[[custody]]
+id = "pl-second-copies-east"
+country = "PL"
+classes = ["parish-register"]
+years = [1865, 1937]
+kept_by = ["aab", "szukajwarchiwach"]
+then = ""
+closed = "Second copies of registers of the parishes of the eastern borderland may be in Polish diocesan or state archives while the originals stayed in Belarus."
+who_may_ask = ""
+statute = ""
+status = "unverified"
+basis = "General knowledge; consistent with second copies of 1919-1937 seen in a diocesan archive inventory in the pilot. Rechecked on 2026-11-12 without result: the diocesan archive's pages name registers from 1865 and the need to read Russian, and its inventory list names parish fonds, none of the Grodno deanery."
+
+# ---------- what a form carried (RP-1) ----------
+
+[[form]]
+id = "by-birth-certificate-1940s-1950s"
+country = "BY"
+document = "birth certificate issued to the family"
+years = [1940, 1959]
+carries = ["child's full name", "date and place of birth", "father's full name with patronymic", "mother's full name with patronymic"]
+not_guaranteed = ["parents' places of birth", "parents' ages", "record number on the certificate itself"]
+status = "reported"
+basis = "One photographed form of the period; the register entry itself (not the certificate) usually carries more: ask for the entry, not a repeat certificate, when places of birth are needed. Rechecked on 2026-11-12: no official specimen of the forms of the 1940s-1950s was found; the forms in force now (ministry of justice, 2025) are not those of the period."
+
+[[form]]
+id = "by-marriage-certificate-1940s-1950s"
+country = "BY"
+document = "marriage certificate issued to the couple"
+years = [1940, 1959]
+carries = ["both full names", "date of registration", "surname after marriage"]
+not_guaranteed = ["ages", "places of birth", "parents"]
+status = "unverified"
+basis = "Not seen; from the pattern of the birth certificate."
+
+
+# Хранение: поисковые ориентиры reported, без правового обещания доступа.
+# Конкретные дела и семейные селения не переносятся.
+
+[[custody]]
+id = "by-niab-consistory-copies"
+country = "BY"
+classes = ["parish-register"]
+years = [1802, 1834]
+kept_by = ["niab"]
+then = ""
+closed = ""
+who_may_ask = ""
+statute = ""
+status = "reported"
+checked = 2026-11-02
+basis = "ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строка 253. По сообщению участника, копии католических метрик части бывшей Витебской губернии и Латгалии следует искать в Минске, фонд 1781 Могилёвской римско-католической консистории, описи 35–36. Перечень не означает непрерывности по годам; ненахождение копий 1828–1834 не устанавливает утрату. Участник PR #145 сообщил 02.11.2026 о волонтёрском описании и пересказал сообщение другого исследователя около 2020 года; официальные ссылки на описи повторно прочитаны в том проекте 03.11.2026, содержание и полнота независимо не проверены. Нами не проверялось."
+
+[[custody]]
+id = "pl-aab-lunna-copies"
+country = "PL"
+classes = ["parish-register"]
+years = [1922, 1937]
+kept_by = ["aab"]
+then = ""
+closed = ""
+who_may_ask = "Условия доступа уточнить по странице архива; в прочитанном внешнем описании предусмотрен предварительный телефонный контакт. Право на получение определённой копии не установлено."
+statute = ""
+status = "reported"
+checked = 2026-11-05
+basis = "ex-ussr-kinship-research v1.44.0, references/seed-sources.md, строка 328. Внешний проект сообщает о хранении копий католических актов Лунненского деканата в метрическом отделе архиепархиального архива Белостока и описывает чтение страницы фондов https://arch.apogelion.pl/archiwum/zbiory-archiwum/ 05.11.2026. Это маршрут к инвентарю, без обещания книги каждого прихода и каждого года. Наша прежняя проверка другого перечня 12.11.2026 не подтвердила эти фонды; расхождение требует точечного просмотра, нами не устранено."

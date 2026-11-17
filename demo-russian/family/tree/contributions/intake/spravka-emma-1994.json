@@ -1,0 +1,70 @@
+{
+  "update": {
+    "person": "irina-2026-11-12-emma",
+    "title": "Family intake",
+    "date": "unknown",
+    "text": "Attributed intake; identity remains to be researched",
+    "status": "export",
+    "sources": [
+      "spravka-emma-1994"
+    ]
+  },
+  "schema": 1,
+  "author": "intake",
+  "facts": {
+    "irina-2026-11-12-emma": [
+      {
+        "label": "names",
+        "text": "{\"given\": \"Эмма\", \"patronymic\": \"Готлибовна\", \"surname\": \"Шмидт\", \"type\": \"as-written\", \"provenance\": [\"spravka-emma-1994\"]}",
+        "status": "export",
+        "sources": [
+          "spravka-emma-1994"
+        ]
+      },
+      {
+        "label": "events",
+        "text": "{\"type\": \"birth\", \"date\": \"1931\", \"place\": \"с. Гнаденфлюр Палласовского кантона АССР Немцев Поволжья\", \"provenance\": [\"spravka-emma-1994\"]}",
+        "status": "export",
+        "sources": [
+          "spravka-emma-1994"
+        ]
+      }
+    ],
+    "irina-2026-11-12-gottlieb": [
+      {
+        "label": "names",
+        "text": "{\"given\": \"Готлиб\", \"patronymic\": \"Иванович\", \"surname\": \"Шмидт\", \"type\": \"as-written\", \"provenance\": [\"spravka-emma-1994\"]}",
+        "status": "export",
+        "sources": [
+          "spravka-emma-1994"
+        ]
+      }
+    ],
+    "irina-2026-11-12-maria": [
+      {
+        "label": "names",
+        "text": "{\"given\": \"Мария\", \"patronymic\": \"Генриховна\", \"surname\": \"Шмидт\", \"type\": \"as-written\", \"provenance\": [\"spravka-emma-1994\"]}",
+        "status": "export",
+        "sources": [
+          "spravka-emma-1994"
+        ]
+      }
+    ],
+    "irina-2026-11-12-friedrich": [
+      {
+        "label": "names",
+        "text": "{\"given\": \"Фр[...]\", \"surname\": \"Шмидт\", \"type\": \"as-written\", \"provenance\": [\"spravka-emma-1994\"]}",
+        "status": "export",
+        "sources": [
+          "spravka-emma-1994"
+        ]
+      }
+    ]
+  },
+  "sources": {
+    "spravka-emma-1994": {
+      "kind": "paper",
+      "intake": "spravka-emma-1994"
+    }
+  }
+}

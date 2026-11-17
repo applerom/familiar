@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Дерево: добавить родного · Шмидты и Корнеевы — макет Familiar</title>
+<link rel="stylesheet" href="familiar.css">
+<link rel="stylesheet" href="show.css">
+<style>
+  .scene svg.links path{fill:none;stroke:var(--rule);stroke-width:1.6;vector-effect:non-scaling-stroke}
+  .scene svg.links path.g{stroke:color-mix(in srgb,var(--ember) 55%,var(--rule));stroke-dasharray:3 4}
+  .scene .pcard{--w:148px;padding:8px 10px 8px 12px}
+  .scene .pcard b{font-size:15px}
+  .scene .ghost{--w:150px}
+  .intro{padding:var(--s6) 0 0;max-width:46em}
+  .intro h1{font:500 30px/1.15 var(--font-story);margin:var(--s2) 0 var(--s3)}
+  .intro p{margin:0;color:var(--ink-soft);font:400 17px/1.55 var(--font-story)}
+  @media (min-width:768px){.intro h1{font-size:var(--t-2xl)}}
+  .builder h2{font:500 var(--t-lg)/1.2 var(--font-story);margin:0 0 var(--s2)}
+  .builder p.lead{margin:0 0 var(--s4);color:var(--ink-soft);font:400 17px/1.55 var(--font-story);max-width:36em}
+  .count{display:flex;align-items:center;gap:12px;margin:var(--s4) 0}
+  .count i{flex:1;max-width:240px;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--ember) 57%,var(--paper-deep) 0)}
+  .count b{font:500 20px/1 var(--font-story)}
+  .qs{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+  .qs li{display:grid;grid-template-columns:22px 1fr;gap:10px;align-items:start;padding:10px 12px;border-radius:var(--r-md);background:var(--sheet);box-shadow:inset 0 0 0 1px var(--rule);font:400 16px/1.4 var(--font-story)}
+  .qs li i{width:12px;height:12px;margin-top:5px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--rule)}
+  .qs li.ok i{background:var(--act);box-shadow:none}
+  .qs li.on{box-shadow:inset 0 0 0 1.5px var(--ember);background:var(--ember-soft)}
+  .qs li.on i{background:var(--ember);box-shadow:0 0 0 3px color-mix(in srgb,var(--ember) 25%,transparent)}
+  .qs small{display:block;font:400 var(--t-sm)/1.4 var(--font-ui);color:var(--ink-mute)}
+</style>
+</head>
+<body class="has-tabbar">
+<header class="bar">
+  <a class="home" href="home.html"><span class="mark"><svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="11.2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="14" cy="14" r="4.4" fill="var(--ember)"/></svg></span><strong>Шмидты и Корнеевы</strong></a>
+  <nav aria-label="Разделы"><a href="home.html">Начало</a><a href="chapter.html">Рассказы</a><a href="tree-add.html" aria-current="page">Дерево</a><a href="desk-show.html">Расследование</a></nav>
+  <div class="tools"><span class="private">Только для семьи</span><button class="ibtn aa" aria-label="Язык, размер текста, вечерний вид">Аа</button></div>
+</header>
+
+<main class="wrap">
+  <section class="intro">
+    <div class="kicker">Макет · добавить родного в дереве, три шага</div>
+    <h1>Пустые места в дереве светятся</h1>
+    <p>Человека добавляют там, где он стоит в семье: нажать на светящееся место или долго держать любого человека. Дерево само подсказывает, кого не хватает рядом с тобой.</p>
+  </section>
+
+  <div class="steps">
+    <!-- 1 -->
+    <section class="step">
+      <header><b>1</b><h2>Дерево зовёт</h2></header>
+      <p>Два-три светящихся места, не больше: самые близкие к тебе. Остальные появляются, когда нажмёшь на человека.</p>
+      <div class="scene">
+        <svg class="links" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <path class="g" d="M72 14V30"/>
+          <path d="M30 30H72M51 30V50M51 50V70"/>
+          <path class="g" d="M34 70H76"/>
+          <path class="g" d="M34 70V90"/>
+        </svg>
+        <a class="ghost quiet" href="#" style="--x:70%;--y:11%;--w:176px"><span class="plus">+</span>Как звали маму Андрея?</a>
+        <a class="pcard" href="#" style="--x:28%;--y:31%;--c:var(--line-1)"><b>Эмма Шмидт</b><small>1931 · Лебяжье</small></a>
+        <a class="pcard" href="#" style="--x:73%;--y:31%;--c:var(--line-2)"><b>Андрей Корнеев</b><small>1928</small></a>
+        <a class="pcard" href="#" style="--x:51%;--y:51%;--c:var(--line-1)"><b>Людмила</b><small>1957</small></a>
+        <a class="pcard me" href="#" style="--x:30%;--y:71%;--c:var(--line-1)"><b>Ирина</b><small>это ты</small></a>
+        <a class="ghost quiet" href="#" style="--x:76%;--y:71%;--w:130px"><span class="plus">+</span>Муж или жена</a>
+        <a class="ghost" href="#" style="--x:34%;--y:90%;--w:190px"><span class="plus">+</span>Здесь может быть твой сын или дочь</a>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section class="step">
+      <header><b>2</b><h2>Кто это — парой слов</h2></header>
+      <p>Выбрать, кем он приходится, и сказать своими словами. Без полей «дата», «место», «отчество»: разберёт исследователь.</p>
+      <div class="scene">
+        <svg class="links" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M51 10V26"/>
+          <path class="g" d="M34 28V42"/>
+        </svg>
+        <a class="pcard" href="#" style="--x:51%;--y:10%;--c:var(--line-1)"><b>Людмила</b><small>1957</small></a>
+        <a class="pcard me sel" href="#" style="--x:34%;--y:27%;--c:var(--line-1)"><b>Ирина</b><small>это ты</small></a>
+        <a class="ghost" href="#" style="--x:34%;--y:43%;--w:150px"><span class="plus">+</span><span>Сын</span></a>
+        <div class="sheet" role="dialog" aria-label="Добавить родного рядом с Ириной">
+          <span class="grab"></span>
+          <h3>Кто рядом с Ириной?</h3>
+          <div class="rel" role="group" aria-label="Кем приходится">
+            <button aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="6" r="2.5"/><path d="M12 9v5M12 14l-3 5M12 14l3 5"/></svg>Ребёнок</button>
+            <button aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="8" r="2.5"/><circle cx="16" cy="8" r="2.5"/><path d="M5 19c0-3 1.5-6 3-6s3 3 3 6M13 19c0-3 1.5-6 3-6s3 3 3 6"/></svg>Муж, жена</button>
+            <button aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="18" r="2.5"/><path d="M12 15v-4M12 11l-4-5M12 11l4-5"/></svg>Родитель</button>
+            <button aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="7" cy="12" r="2.5"/><circle cx="17" cy="12" r="2.5"/><path d="M7 5v4.5M17 5v4.5M7 5h10"/></svg>Брат, сестра</button>
+          </div>
+          <textarea class="say" rows="2" aria-label="Кто это">Миша, сын, 2016 года. Обожает поезда.</textarea>
+          <div class="row"><small>Слова уйдут исследователю. Имени хватит; «не помню» — тоже можно.</small><button class="btn primary">Добавить</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="step">
+      <header><b>3</b><h2>Он уже в дереве — пунктиром</h2></header>
+      <p>Карточка сразу стоит на своём месте. Пунктир и огонёк значат: слова получены, их разбирают.</p>
+      <div class="scene">
+        <svg class="links" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M51 24V40"/>
+          <path class="g" d="M38 40V60"/>
+        </svg>
+        <span class="toast-line"><span class="spark on"></span>Записано. Миша появится в следующей публикации</span>
+        <a class="pcard" href="#" style="--x:51%;--y:23%;--c:var(--line-1)"><b>Людмила</b><small>1957</small></a>
+        <a class="pcard me" href="#" style="--x:38%;--y:41%;--c:var(--line-1)"><b>Ирина</b><small>это ты</small></a>
+        <a class="pcard pending" href="#" style="--x:38%;--y:62%;--c:var(--line-1);--w:170px"><b>Миша</b><small>сын Ирины</small><span class="tag"><span class="spark on" style="width:8px;height:8px;box-shadow:0 0 0 3px var(--ember-soft)"></span>ждёт исследователя</span></a>
+        <a class="ghost quiet" href="#" style="--x:62%;--y:84%;--w:160px"><span class="plus">+</span>Ещё ребёнок?</a>
+      </div>
+      <ul class="after">
+        <li class="ok"><i></i>Слова получены — 20:41</li>
+        <li class="on"><i></i>Исследователь разберёт и сверит с тем, что уже известно</li>
+        <li><i></i>В следующей публикации Миша будет в дереве сплошной линией. Так и в «Расследовании» — строкой «Миша, сын Ирины: в дереве»</li>
+      </ul>
+    </section>
+  </div>
+
+  <!-- Empty family -->
+  <section class="builder">
+    <div class="two">
+      <div>
+        <div class="kicker">Семья без единой записи</div>
+        <h2 style="margin-top:var(--s2)">Собрать первые поколения самому</h2>
+        <p class="lead">Начало — ты. Над тобой светятся два места, над ними четыре. Каждое заполняется одной строкой; пустое место остаётся светиться, и Фамильяр начинает поиск с тех, кто уже назван.</p>
+        <div class="count"><b>4 из 7</b><i></i><span class="meta">мест названо</span></div>
+        <ol class="qs">
+          <li class="ok"><i></i><span>Как тебя зовут?<small>Ирина, 1984, Самара</small></span></li>
+          <li class="ok"><i></i><span>Как звали маму?<small>Людмила, 1957</small></span></li>
+          <li class="on"><i></i><span>А папу?<small>Хватит имени. «Не знаю» — тоже ответ, место подождёт</small></span></li>
+          <li><i></i><span>Мамины родители, папины родители<small>Можно позже — дерево напомнит само</small></span></li>
+        </ol>
+      </div>
+      <div class="scene" style="margin-top:var(--s5)">
+        <svg class="links" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M14 15H38M26 15V50"/>
+          <path class="g" d="M62 15H86M74 15V50"/>
+          <path d="M26 50H50"/><path class="g" d="M50 50H74"/><path d="M50 50V80"/>
+        </svg>
+        <a class="pcard" href="#" style="--x:14%;--y:15%;--w:112px;--c:var(--line-1)"><b>Эмма</b><small>бабушка</small></a>
+        <a class="pcard" href="#" style="--x:38%;--y:15%;--w:112px;--c:var(--line-2)"><b>Андрей</b><small>дедушка</small></a>
+        <a class="ghost quiet" href="#" style="--x:62%;--y:15%;--w:112px"><span class="plus">+</span>мама папы</a>
+        <a class="ghost quiet" href="#" style="--x:84%;--y:15%;--w:112px"><span class="plus">+</span>папа папы</a>
+        <a class="pcard" href="#" style="--x:26%;--y:50%;--w:140px;--c:var(--line-1)"><b>Людмила</b><small>мама · 1957</small></a>
+        <a class="ghost" href="#" style="--x:74%;--y:50%;--w:150px"><span class="plus">+</span>Как звали папу?</a>
+        <a class="pcard me" href="#" style="--x:50%;--y:81%;--w:160px;--c:var(--line-1)"><b>Ирина</b><small>это ты · 1984</small></a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<nav class="tabbar" aria-label="Разделы">
+  <a href="home.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-6 8 6v8H4z"/></svg>Начало</a>
+  <a href="chapter.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h6a2 2 0 012 2v12a2 2 0 00-2-2H4zM20 5h-6a2 2 0 00-2 2v12a2 2 0 012-2h6z"/></svg>Рассказы</a>
+  <a href="tree-add.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="19" r="2"/><path d="M12 7v5M12 12c-4 0-6 2-6 5M12 12c4 0 6 2 6 5"/></svg>Дерево</a>
+  <a href="desk-show.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>Поиски</a>
+</nav>
+<span class="mock">Макет · семья придумана</span>
+</body>
+</html>

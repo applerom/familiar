@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Расследование · Шмидты и Корнеевы — макет Familiar</title>
+<link rel="stylesheet" href="familiar.css">
+<link rel="stylesheet" href="show.css">
+<style>
+  /* Lane gutter for this mockup; the engine sends lane numbers, the page places them */
+  .log li{position:relative}
+  .log .g{position:absolute;left:0;top:0;bottom:0;width:66px}
+  .log .g svg{width:66px;height:100%;overflow:visible}
+  .log .g path{fill:none;stroke-width:2.2;vector-effect:non-scaling-stroke;stroke-linecap:round}
+  .log .node{position:absolute;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--sheet);box-shadow:inset 0 0 0 2.5px var(--h)}
+  .log .node.fill{background:var(--h);box-shadow:0 0 0 3px var(--paper)}
+  .log .node.now{background:var(--ember);box-shadow:0 0 0 4px var(--ember-soft)}
+  .log .node.gem{border-radius:2px;transform:rotate(45deg) scale(1.05);background:var(--act);box-shadow:0 0 0 3px var(--paper),0 0 0 5px color-mix(in srgb,var(--act) 25%,transparent)}
+  .log .node.start{background:var(--ink);box-shadow:0 0 0 3px var(--paper)}
+  .log .node.asknode{background:var(--ember-soft);box-shadow:inset 0 0 0 2.5px var(--ember)}
+  .log li.ask-row .node{top:26px}
+  .log li{padding-left:76px}
+  @media (prefers-reduced-motion:no-preference){.log .node.now{animation:glow 1.8s var(--ease) infinite}}
+  @media (max-width:599px){.log li{padding-left:70px}}
+  .log li.ask-row .t{margin-bottom:8px}
+  .log li.ask-row .askcard{margin-left:0}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin:var(--s3) 0 0;font-size:var(--t-xs);color:var(--ink-mute)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
+  .heatscale{display:inline-block;width:64px;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--version),var(--ember))}
+</style>
+</head>
+<body class="has-tabbar" data-state="day5">
+<header class="bar">
+  <a class="home" href="home.html"><span class="mark"><svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="11.2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="14" cy="14" r="4.4" fill="var(--ember)"/></svg></span><strong>Шмидты и Корнеевы</strong></a>
+  <nav aria-label="Разделы"><a href="home.html">Начало</a><a href="chapter.html">Рассказы</a><a href="tree-add.html">Дерево</a><a href="desk-show.html" aria-current="page">Расследование</a></nav>
+  <div class="tools"><span class="private">Только для семьи</span><button class="ibtn aa" aria-label="Язык, размер текста, Детям, вечерний вид">Аа</button></div>
+</header>
+
+<main class="wrap">
+  <!-- ===== Fifth visit ===== -->
+  <section class="since s5">
+    <div class="kicker"><span class="spark on"></span><b>Сейчас копают трое</b>&nbsp;· с твоего визита 11 ноября</div>
+    <h1>Две ветки потеплели, одна влилась в дерево</h1>
+    <div class="counts" role="list">
+      <div role="listitem"><b>1 284<sup>+812</sup></b><span>запроса в архивы и базы</span></div>
+      <div role="listitem"><b>23<sup>+9</sup></b><span>источника открыто</span></div>
+      <div role="listitem"><b>416<sup>+277</sup></b><span>листов прочитано</span></div>
+      <div role="listitem"><b>138<sup>+61</sup></b><span>крупиц собрано</span></div>
+      <div role="listitem"><b>4<sup>+2</sup></b><span><span class="gem-ico"></span>находки в дереве</span></div>
+    </div>
+  </section>
+
+  <!-- ===== First day ===== -->
+  <section class="since s1">
+    <div class="kicker"><span class="spark on"></span><b>Первый день</b>&nbsp;· огонёк начал копать в 19:40</div>
+    <h1>Твой рассказ разобран. Первые ветки уже растут</h1>
+    <div class="counts" role="list">
+      <div role="listitem"><b>46</b><span>запросов в архивы и базы</span></div>
+      <div role="listitem"><b>4</b><span>источника открыто</span></div>
+      <div role="listitem"><b>3</b><span>листа прочитано</span></div>
+      <div role="listitem"><b>7</b><span>крупиц собрано</span></div>
+      <div role="listitem"><b>9</b><span>сведений из твоего рассказа</span></div>
+    </div>
+  </section>
+
+  <section class="digs s5" aria-label="Кто копает сейчас">
+    <article><span class="spark on"></span><div><b>Список трудармейцев, 1942</b><small>Ивдельлаг · лист 118 из 260</small><i style="--p:45%"></i></div></article>
+    <article><span class="spark on"></span><div><b>Ревизия колонии Норка, 1857</b><small>сверяет имена детей · 6 семей Шмидт</small><i style="--p:70%"></i></div></article>
+    <article><span class="spark on"></span><div><b>Книга браков Лебяжьего, 1955–1958</b><small>ищет, где она хранится · 3 архива</small><i style="--p:20%"></i></div></article>
+  </section>
+  <section class="digs s1" aria-label="Кто копает сейчас">
+    <article><span class="spark on"></span><div><b>Паспорт 1957 и справки семьи</b><small>сравнивает отчества · лист 2 из 14</small><i style="--p:14%"></i></div></article>
+    <article><span class="spark on"></span><div><b>Списки жителей Лебяжьего, 1930-е</b><small>ищет, где они хранятся</small><i style="--p:8%"></i></div></article>
+  </section>
+  <div class="show">
+    <section aria-labelledby="h-log">
+      <h2 class="h2" id="h-log">Ход работы</h2>
+      <p class="sub s5">Каждая ветка — вопрос и его версии. Цвет — насколько версия держится: от холодной к тёплой; зелёное — уже в дереве.</p>
+      <p class="sub s1">Каждая ветка — вопрос, который огонёк проверяет. Заходи — ветки будут расти, теплеть или остывать.</p>
+      <div class="log"><ol id="log"></ol></div>
+      <div class="legend"><span><i style="background:var(--ember)"></i>копают сейчас</span><span><span class="heatscale"></span>холодно → тепло</span><span><span class="gem-ico"></span>документ в дереве</span><span><i style="background:var(--act)"></i>установлено</span></div>
+    </section>
+
+    <aside class="rail">
+      <!-- Version map -->
+      <section aria-labelledby="h-v" class="s5">
+        <h2 class="h2" id="h-v">Карта версий</h2>
+        <p class="sub">Выше половины — «скорее всего так». Линия справа — как версия менялась за неделю.</p>
+        <div class="vmap">
+          <article class="q"><h3><small>Где был Готлиб в 1942-м</small>Трудармия: какой лагерь</h3>
+            <div class="v heat" style="--w:41%"><div class="lw"><span class="lab">Ивдельлаг, Северный Урал</span><span class="word">возможно · 41 · копают</span></div><svg class="sl" viewBox="0 0 72 24"><polyline points="0,18 24,16 48,14 72,13" fill="none" stroke="var(--h)" stroke-width="2"/><circle cx="72" cy="13" r="3" fill="var(--ember)"/></svg><div class="bar"><i></i></div></div>
+            <div class="v heat" style="--w:18%"><div class="lw"><span class="lab">Богословлаг</span><span class="word">остыла · 18</span></div><svg class="sl" viewBox="0 0 72 24"><polyline points="0,13 24,14 48,18 72,20" fill="none" stroke="var(--h)" stroke-width="2"/></svg><div class="bar"><i></i></div></div>
+          </article>
+          <article class="q"><h3><small>Откуда Шмидты пришли в Лебяжье</small>Колония предков</h3>
+            <div class="v heat" style="--w:62%"><div class="lw"><span class="lab">Норка, Саратовская губ.</span><span class="word">скорее всего так · 62</span></div><svg class="sl" viewBox="0 0 72 24"><polyline points="0,16 24,15 48,13 72,8" fill="none" stroke="var(--h)" stroke-width="2"/></svg><div class="bar"><i></i></div></div>
+            <div class="v heat" style="--w:24%"><div class="lw"><span class="lab">Бальцер</span><span class="word">остывает · 24</span></div><svg class="sl" viewBox="0 0 72 24"><polyline points="0,14 24,13 48,15 72,18" fill="none" stroke="var(--h)" stroke-width="2"/></svg><div class="bar"><i></i></div></div>
+          </article>
+          <article class="q"><h3><small>Два отчества Эммы</small>Готлиб и Богдан</h3>
+            <div class="v firm" style="--w:100%"><div class="lw"><span class="lab">Один человек</span><span class="word">✓ установлено · в дереве</span></div><svg class="sl" viewBox="0 0 72 24"><polyline points="0,15 24,13 48,9 72,3" fill="none" stroke="var(--act)" stroke-width="2"/></svg><div class="bar"><i></i></div></div>
+          </article>
+        </div>
+      </section>
+      <section aria-labelledby="h-v1" class="s1">
+        <h2 class="h2" id="h-v1">Карта версий</h2>
+        <p class="sub">Пока все версии равны — огонёк только начал.</p>
+        <div class="vmap">
+          <article class="q"><h3><small>Два отчества Эммы</small>Готлиб и Богдан</h3>
+            <div class="v heat" style="--w:50%"><div class="lw"><span class="lab">Один человек</span><span class="word">проверяется</span></div><svg class="sl" viewBox="0 0 72 24"><circle cx="72" cy="12" r="3" fill="var(--ember)"/></svg><div class="bar"><i></i></div></div>
+            <div class="v heat" style="--w:50%"><div class="lw"><span class="lab">Два разных человека</span><span class="word">проверяется</span></div><svg class="sl" viewBox="0 0 72 24"></svg><div class="bar"><i></i></div></div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Teasers -->
+      <section aria-labelledby="h-t" class="s5" style="margin-top:var(--s6)">
+        <h2 class="h2" id="h-t">Из этого будут главы</h2>
+        <p class="sub">Только заголовки. Сама история — в «Рассказах», когда ветка дозреет.</p>
+        <div class="teasers">
+          <a class="teaser open" href="chapter.html" style="--w:100%;text-decoration:none;color:var(--ink)"><small>Глава готова</small><b>Готлиб, он же Богдан</b><span class="ripe">Читать →</span></a>
+          <div class="teaser" style="--w:62%"><small>Зреет</small><b>Две колонии и одна фамилия</b><span class="ripe"><i></i>скорее всего так</span></div>
+          <div class="teaser" style="--w:41%"><small>Зреет</small><b>Сорок второй, Северный Урал</b><span class="ripe"><i></i>копают сейчас</span></div>
+        </div>
+      </section>
+    </aside>
+  </div>
+  <p class="mockswitch">Макет, состояние: <a href="#day1" data-s="day1">первый день</a><a href="#day5" data-s="day5" aria-current="true">пятый визит</a></p>
+</main>
+
+<nav class="tabbar" aria-label="Разделы">
+  <a href="home.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-6 8 6v8H4z"/></svg>Начало</a>
+  <a href="chapter.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h6a2 2 0 012 2v12a2 2 0 00-2-2H4zM20 5h-6a2 2 0 00-2 2v12a2 2 0 012-2h6z"/></svg>Рассказы</a>
+  <a href="tree-add.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="19" r="2"/><path d="M12 7v5M12 12c-4 0-6 2-6 5M12 12c4 0 6 2 6 5"/></svg>Дерево</a>
+  <a href="desk-show.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>Поиски</a>
+</nav>
+<span class="mock">Макет · семья придумана</span>
+
+<script>
+// The engine sends rows like these (DESK.md, "Data contract"); the page only lays them out.
+// lane 0 = the tree; w = version weight 0..1; kind = node look.
+const X=[10,22,34,46,58];
+const C={tree:'var(--act)',firm:'var(--act)',cold:'var(--version)'};
+const heat=w=>`color-mix(in oklab,var(--ember) ${Math.round(w*100)}%,var(--version))`;
+const DAY5={lanes:{0:C.tree,1:heat(.5),2:heat(.62),3:heat(.24),4:heat(.41)},rows:[
+ {day:'Сегодня, 13 ноября'},
+ {t:'20:40',lane:4,node:'now',text:'Проверяется: <b>Готлиб в Ивдельлаге</b> — список 1942 года',meta:'лист 118 из 260 · 3 совпадения по фамилии, ни одного по имени'},
+ {t:'19:15',lane:2,node:'fill',w:.62,text:'<b>Норка теплеет</b>: в ревизии 1857 года семья Шмидт с теми же именами',meta:'<span class="w">48 → 62</span> · скорее всего так'},
+ {t:'19:15',lane:3,node:'fill',w:.24,text:'Бальцер остывает: Иоганна нужного возраста в списках нет',meta:'<span class="w">38 → 24</span> · проверено 4 списка колонии'},
+ {t:'18:05',lane:1,node:'asknode',ask:true,text:'Упёрлось: <b>год свадьбы Эммы и Андрея</b>'},
+ {t:'18:05',lane:1,fork:0,node:'ring',w:.5,text:'Новая ветка: когда поженились Эмма и Андрей',meta:'две версии: 1956 и 1957'},
+ {t:'17:02',lane:0,merge:1,node:'gem',text:'<b>В дерево: справка 1994 года</b>, отчество «Готлибовна»',meta:'Готлиб и Богдан — один человек · установлено'},
+ {t:'14:10',lane:4,node:'fill',w:.18,cool:true,text:'Богословлаг: три списка, фамилии нет — версия остыла',meta:'<span class="w">30 → 18</span> · 640 строк просмотрено'},
+ {day:'Вчера, 12 ноября'},
+ {t:'22:10',lane:4,fork:0,node:'ring',w:.41,text:'Новая ветка: <b>где был Готлиб в 1942-м</b>',meta:'две версии: Ивдельлаг и Богословлаг'},
+ {t:'15:30',lane:2,fork:0,also:3,node:'ring',w:.5,text:'Развилка: <b>откуда Шмидты пришли в Лебяжье</b>',meta:'Норка или Бальцер · обе по 50'},
+ {t:'11:00',lane:1,node:'fill',w:.41,text:'Проверяется: Готлиб и Богдан — один ли человек',meta:'<span class="w">возможно · 41</span> · паспорт 1957 и справка 1994 читаются'},
+ {visit:'здесь ты остановилась в прошлый раз'},
+ {day:'11 ноября'},
+ {t:'21:00',lane:1,fork:0,node:'ring',w:.5,text:'Новая ветка: <b>два отчества у Эммы</b>',meta:'Готлибовна в одной бумаге, Богдановна в другой'},
+ {t:'19:40',lane:0,start:true,node:'start',text:'<b>Рассказ Ирины</b>: 9 сведений, 3 человека, 2 места',meta:'начало дерева'}
+]};
+const DAY1={lanes:{0:C.tree,1:heat(.5),2:heat(.5)},rows:[
+ {day:'Сегодня, 11 ноября'},
+ {t:'21:20',lane:1,node:'now',text:'Проверяется: <b>два отчества у Эммы</b> — паспорт и справки',meta:'лист 2 из 14 · огонёк читает'},
+ {t:'21:05',lane:2,node:'asknode',ask:true,ask1:true,text:'Чтобы начать: <b>как звали маму Андрея?</b>'},
+ {t:'21:05',lane:2,fork:0,node:'ring',w:.5,text:'Новая ветка: <b>семья Корнеевых до войны</b>',meta:'известен один человек — Андрей, 1928'},
+ {t:'21:00',lane:1,fork:0,node:'ring',w:.5,text:'Новая ветка: <b>Готлиб и Богдан</b> — один ли человек',meta:'две версии, обе пока равны'},
+ {t:'19:40',lane:0,start:true,node:'start',text:'<b>Рассказ Ирины</b>: 9 сведений, 3 человека, 2 места',meta:'начало дерева'}
+]};
+const ASK5=`<div class="askcard"><span class="lbl">Нужна твоя подсказка · 1 из 2</span><p>Свадьба Эммы и Андрея — в 1956 или в 1957 году?</p><span class="why">От ответа зависит, какую книгу записей открывать дальше.</span><div class="chips"><button>1956</button><button>1957</button><button class="free">Спрошу у мамы</button><button class="free">Не знаю</button></div></div>`;
+const ASK1=`<div class="askcard"><span class="lbl">Нужна твоя подсказка</span><p>Как звали маму Андрея Корнеева? Хватит имени.</p><span class="why">С ним огонёк найдёт семью в списках 1930-х.</span><div class="chips"><button>Написать имя</button><button class="free">Спрошу у родных</button><button class="free">Не знаю</button></div></div>`;
+function render(D){
+  // walk bottom-up to know which lanes run through each row
+  const rows=D.rows, n=rows.length, below=new Array(n); let act=new Set();
+  for(let i=n-1;i>=0;i--){below[i]=new Set(act);const r=rows[i];
+    if(r.start)act.add(0); if(r.fork!==undefined){act.add(r.lane); if(r.also)act.add(r.also);} if(r.merge!==undefined)act.delete(r.merge);}
+  const top=act; // lanes alive at the top
+  return rows.map((r,i)=>{
+    const b=below[i]; let p='';
+    const line=(l,y1,y2,dash)=>`<path d="M${X[l]} ${y1}V${y2}" style="stroke:${D.lanes[l]}" ${dash?'stroke-dasharray="3 5"':''}/>`;
+    const above=new Set(b); if(r.start)above.add(0); if(r.fork!==undefined){above.add(r.lane); if(r.also)above.add(r.also);} if(r.merge!==undefined)above.delete(r.merge);
+    const first=i===0;
+    for(const l of above){
+      if(r.start&&l===0){p+=line(0,first?60:0,50);continue}
+      if(r.fork!==undefined&&(l===r.lane||l===r.also)){p+=`<path d="M${X[r.fork]} 100 C${X[r.fork]} 72,${X[l]} 78,${X[l]} 50 V${first?60:0}" style="stroke:${D.lanes[l]}"/>`;continue}
+      p+=line(l,first?60:0,100, r.node==='now'&&l===r.lane&&false);
+    }
+    if(r.merge!==undefined)p+=`<path d="M${X[r.merge]} 100 C${X[r.merge]} 72,${X[r.lane]} 78,${X[r.lane]} 50" style="stroke:var(--act)"/>`;
+    const g=`<span class="g"><svg viewBox="0 0 66 100" preserveAspectRatio="none" aria-hidden="true">${p}</svg>${r.node?`<span class="node ${r.node==='ring'?'':r.node}" style="left:${X[r.lane]}px;--h:${r.w!==undefined?heat(r.w):D.lanes[r.lane]}"></span>`:''}</span>`;
+    if(r.day)return `<li class="day">${g}${r.day}</li>`;
+    if(r.visit)return `<li class="mark-visit">${g}<span class="vt">${r.visit}</span></li>`;
+    const cls=[r.node==='now'?'now':'',r.node==='gem'?'gem':'',r.ask?'ask-row':''].join(' ');
+    const w=r.w!==undefined?`style="--h:${heat(r.w)}"`:'';
+    return `<li class="${cls}" ${w}>${g}<div class="t"><time>${r.t}</time><p>${r.text}</p></div>${r.ask?(r.ask1?ASK1:ASK5):`<small>${r.meta||''}</small>`}</li>`;
+  }).join('');
+}
+function show(){const s=location.hash==='#day1'?'day1':'day5';document.body.dataset.state=s;
+  document.getElementById('log').innerHTML=render(s==='day1'?DAY1:DAY5);
+  document.querySelectorAll('.mockswitch a').forEach(a=>a.toggleAttribute('aria-current',a.dataset.s===s));}
+addEventListener('hashchange',show);show();
+</script>
+</body>
+</html>

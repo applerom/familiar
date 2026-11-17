@@ -1,0 +1,190 @@
+﻿0 HEAD
+1 SOUR MYHERITAGE
+2 NAME MyHeritage Family Tree Builder
+2 VERS 5.5.1
+1 DEST MYHERITAGE
+1 DATE 03 NOV 2026
+1 GEDC
+2 VERS 5.5.1
+2 FORM LINEAGE-LINKED
+1 CHAR UTF-8
+1 LANG German
+1 SUBM @U1@
+1 _PROJECT_GUID B0A1E2F3-INVENTED
+0 @U1@ SUBM
+1 NAME Alexander Wagner
+0 @I1@ INDI
+1 _UPD 03 NOV 2026 10:12:44 GMT +0100
+1 NAME Emma /Schmidt/
+2 GIVN Emma
+2 SURN Schmidt
+2 _MARNM Korneeva
+1 NAME Эмма Богдановна /Корнеева/
+1 SEX F
+1 BIRT
+2 DATE 12 MAR 1931
+2 PLAC Gnadenflur, Wolgadeutsche Republik, UdSSR
+2 SOUR @S2@
+3 PAGE Smart Match: Emma Schmidt in Familienstammbaum Becker-Schmidt
+3 QUAY 1
+1 EVEN
+2 TYPE Deportation
+2 DATE 1941
+2 PLAC Pawlodar, Kasachstan
+1 DEAT
+2 DATE 2009
+2 PLAC Toljatti, Russland
+1 RIN MH:I1
+1 _UID 6A1F0E2C-INVENTED-0001
+1 FAMS @F2@
+1 FAMC @F1@
+1 OBJE @M1@
+0 @I2@ INDI
+1 _UPD 03 NOV 2026 10:12:44 GMT +0100
+1 NAME Gottlieb /Schmidt/
+2 GIVN Gottlieb
+2 SURN Schmidt
+1 SEX M
+1 BIRT
+2 DATE 1899
+2 PLAC Norka, Saratow, Russisches Reich
+2 SOUR @S2@
+3 PAGE Smart Match: Gottlieb Schmidt, geb. 1899 Norka (4 Stammbäume)
+3 QUAY 0
+1 DEAT
+2 DATE 14 FEB 1943
+2 PLAC Krasnoturinsk, Bogoslowlag
+2 SOUR @S3@
+3 PAGE Gedenkbuch der Trudarmisten: Schmidt Gottlieb Johannes, 1899
+3 QUAY 1
+1 NOTE Vater laut Oma Nina (Tante): Bogdan. Geburtsort Norka nach Smart Match uebernommen.
+1 RIN MH:I2
+1 FAMS @F1@
+1 FAMC @F3@
+0 @I3@ INDI
+1 NAME Maria /Schmidt/
+1 SEX F
+1 BIRT
+2 DATE ABT 1908
+1 DEAT
+2 DATE 1965
+2 PLAC Pawlodar, Kasachstan
+1 NOTE geb. Keller
+1 RIN MH:I3
+1 FAMS @F1@
+0 @I4@ INDI
+1 NAME Friedrich /Schmidt/
+1 SEX M
+1 BIRT
+2 DATE 1935
+2 PLAC Gnadenflur
+1 DEAT
+2 DATE BEF 1945
+2 PLAC Pawlodar, Kinderheim
+2 NOTE Vermutung: im Kinderheim gestorben, niemand hat ihn wieder gesehen.
+1 RIN MH:I4
+1 FAMC @F1@
+0 @I5@ INDI
+1 NAME Andrej /Korneev/
+1 SEX M
+1 BIRT
+2 DATE 1929
+2 PLAC Kursk, Russland
+1 DEAT
+2 DATE 1994
+2 PLAC Toljatti, Russland
+1 RIN MH:I5
+1 FAMS @F2@
+0 @I6@ INDI
+1 NAME Ljudmila /Korneeva/
+2 _MARNM Sokolova
+1 SEX F
+1 BIRT
+2 DATE 1957
+2 PLAC Pawlodar, Kasachstan
+1 RIN MH:I6
+1 FAMC @F2@
+0 @I7@ INDI
+1 NAME Nina /Wagner/
+1 SEX F
+1 BIRT
+2 DATE 1960
+2 PLAC Pawlodar, Kasachstan
+1 EVEN
+2 TYPE Aussiedlung nach Deutschland
+2 DATE 1995
+1 NOTE geb. Korneeva
+1 RIN MH:I7
+1 FAMC @F2@
+1 FAMS @F4@
+0 @I8@ INDI
+1 NAME Alexander /Wagner/
+1 SEX M
+1 BIRT
+2 DATE 1984
+2 PLAC Pawlodar
+1 RIN MH:I8
+1 FAMC @F4@
+0 @I9@ INDI
+1 NAME Johann /Schmidt/
+1 SEX M
+1 BIRT
+2 DATE 1868
+2 PLAC Norka
+2 SOUR @S2@
+3 PAGE Smart Match: Familienstammbaum Becker-Schmidt
+3 QUAY 0
+1 RIN MH:I9
+1 FAMS @F3@
+0 @I10@ INDI
+1 NAME Katharina /Becker/
+1 SEX F
+1 BIRT
+2 DATE 1872
+2 PLAC Norka
+2 SOUR @S2@
+3 PAGE Smart Match: Familienstammbaum Becker-Schmidt
+3 QUAY 0
+1 RIN MH:I10
+1 FAMS @F3@
+0 @I11@ INDI
+1 NAME Viktor /Wagner/
+1 SEX M
+1 RIN MH:I11
+1 FAMS @F4@
+0 @F1@ FAM
+1 HUSB @I2@
+1 WIFE @I3@
+1 CHIL @I1@
+1 CHIL @I4@
+1 MARR
+2 DATE ABT 1929
+2 PLAC Gnadenflur
+0 @F2@ FAM
+1 HUSB @I5@
+1 WIFE @I1@
+1 CHIL @I6@
+1 CHIL @I7@
+1 MARR
+2 DATE 1956
+2 PLAC Pawlodar
+0 @F3@ FAM
+1 HUSB @I9@
+1 WIFE @I10@
+1 CHIL @I2@
+1 _FREL Natural
+1 _MREL Natural
+0 @F4@ FAM
+1 HUSB @I11@
+1 WIFE @I7@
+1 CHIL @I8@
+0 @S2@ SOUR
+1 TITL MyHeritage Smart Matches
+1 AUTH MyHeritage
+0 @S3@ SOUR
+1 TITL Gedenkbuch Trudarmee (Teilindex, fremder Eintrag)
+0 @M1@ OBJE
+1 FILE https://example.invalid/emma-1952.jpg
+2 FORM jpg
+1 TITL Emma 1952
+0 TRLR

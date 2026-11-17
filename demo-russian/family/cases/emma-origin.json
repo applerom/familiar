@@ -1,0 +1,18 @@
+{
+  "id": "emma-origin-case",
+  "question": "emma-origin",
+  "state": "bridged",
+  "story_level": "story-page",
+  "basis": [
+    "ir-emma-life",
+    "ir-deport",
+    "svid-lyudmila-1957",
+    "spravka-emma-1994"
+  ],
+  "budget": {
+    "unit": "source moves",
+    "limit": 3,
+    "spent": 0,
+    "checkpoint": "Дождаться справки, затем один поиск по названному селу"
+  }
+}

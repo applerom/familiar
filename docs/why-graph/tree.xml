@@ -1,0 +1,48 @@
+<Why_Graph_Shard project="Familiar" CAPABILITY="CAP-TREE">
+  <FEATURE_TREE ID="FEAT-TREE" STATE="STARTED">
+    <INVARIANT REVIEW="engine lead">Clan forms and paternal spelling findings use birth surnames, excluding explicit married surnames and ambiguous names shared with a husband; source names remain literal.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">A saved clan surname decision normalizes every matched person's display, retains literal source names, and derives a missing father's surname from identified children without assigning a mother's maiden name.</INVARIANT>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-TREE-SURNAMES"/>
+    <!-- Narrator metadata selects root; defaultViewer and narrator resolve aliases and survive canonical encoding. Snapshot placeholders and derived/basis survive the working graph, including parent edges. -->
+    <INTENT>Combine canonical attributed snapshots, additive evidence, identity decisions and effective life assessments without family-specific engine code.</INTENT>
+    <INVARIANT REVIEW="engine lead">Accepted cross-intake identity unifies cards without promoting imported hypotheses, and removing the decision restores the source graph.</INVARIANT>
+    <PRD_REF>docs/PRD.md#FEATURES</PRD_REF>
+    <INVARIANT REVIEW="engine lead">Rejected packages remain observable and block the build command.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Final ancestry is acyclic and the root resolves after identity decisions.</INVARIANT>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-TREE-BUILDER"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-TREE-LIFE"/>
+    <INVARIANT REVIEW="engine lead">Consumers can enrich pre-identity cards before applying decisions once.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Public presentation enrichment runs before one identity pass and cannot bypass the declared privacy projection.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Sources may be registered without a reader update.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">An intake source has one declaration owner; duplicate diagnostics identify the contribution and configured evidence file and explain reference-only evidence.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Life bounds include direct verified/export parent edges regardless of parent sex, exclude hypothetical edges, and never propagate estimated generations. Dated canonical record roles supply conservative birth bounds without resolving hypothetical identities.</INVARIANT>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-TREE-CONTRIBUTIONS"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-TREE-REVISIONS"/>
+    <INVARIANT REVIEW="engine lead">A documentary decision updates only its named relationship, retains superseded facts and places newly read events ahead of imported estimates in reader delivery without rewriting the snapshot.</INVARIANT>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-TREE-IDENTITIES"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-TREE-CANONICAL"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-TREE-CLI"/>
+  </FEATURE_TREE>
+  <MODULE_TREE_BUILDER ID="MOD-TREE-BUILDER" FILE="src/familiar/tree/builder.py" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-TREE-SURNAMES"/>
+    <!-- Normalization is cheaper than reading a cache entry; whole-graph checks remain. -->
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-TREE-LIFE"/>
+  </MODULE_TREE_BUILDER>
+  <MODULE_TREE_LIFE ID="MOD-TREE-LIFE" FILE="src/familiar/tree/life.py" STATE="IMPLEMENTED">
+    <!-- Life assessment consumes only records adopted by authored family references, never unrelated collector drafts. -->
+  </MODULE_TREE_LIFE>
+  <MODULE_TREE_CONTRIBUTIONS ID="MOD-TREE-CONTRIBUTIONS" FILE="src/familiar/tree/contributions.py" STATE="IMPLEMENTED">
+    <!-- A replay cannot reactivate the same literal fact/evidence claim kept in retiredFacts. -->
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-TREE-REVISIONS"/>
+  </MODULE_TREE_CONTRIBUTIONS>
+  <MODULE_TREE_REVISIONS ID="MOD-TREE-REVISIONS" FILE="src/familiar/tree/revisions.py" STATE="IMPLEMENTED"/>
+  <MODULE_TREE_IDENTITIES ID="MOD-TREE-IDENTITIES" FILE="src/familiar/tree/identities.py" STATE="IMPLEMENTED">
+  </MODULE_TREE_IDENTITIES>
+  <MODULE_TREE_CANONICAL ID="MOD-TREE-CANONICAL" FILE="src/familiar/tree/canonical.py" STATE="IMPLEMENTED">
+    <!-- Clan-name decisions, unlike editorial card decoration, change the graph's effective names. -->
+  </MODULE_TREE_CANONICAL>
+  <MODULE_TREE_CLI ID="MOD-TREE-CLI" FILE="src/familiar/tree/cli.py" STATE="IMPLEMENTED">
+  </MODULE_TREE_CLI>
+  <MODULE_COMMAND ID="MOD-TREE-PERSON" FILE="src/familiar/tree/person.py" STATE="IMPLEMENTED"/>
+  <MODULE_TREE_SURNAMES ID="MOD-TREE-SURNAMES" FILE="src/familiar/tree/surnames.py" STATE="IMPLEMENTED"/>
+</Why_Graph_Shard>
