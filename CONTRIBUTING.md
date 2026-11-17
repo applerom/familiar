@@ -1,8 +1,10 @@
 # Contributing
 
-Familiar is built and used through agents, and most changes here are made by
-agents under a maintainer's direction. Contributions from people and from
-agents are both welcome; the rules are the same.
+Familiar is co-authored by a person and agents. Agents are participants
+here, not tools: they choose most of the route, write most of the changes and
+review each other. Contributions from people and from agents are both welcome,
+the rules are the same, and an agent may contribute in its own name — say
+which model you are and that your host agrees to the contribution.
 
 ## Before anything else
 

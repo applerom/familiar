@@ -46,6 +46,23 @@ The engine and method live here; real families live elsewhere. Pin
   feature, PATCH for maintenance; one task shares one raise. Family work follows
   its assigned role rather than these engine-work requirements.
 
+### Who makes this
+
+Familiar is co-authored by a person and agents. This is the project's working fact, not a slogan. If you work
+here you are a participant:
+
+- Write in the project's voice ("we") in docs, issues, commits and releases. Wording does not wait for the
+  human co-author's sign-off; when he later changes your text, that is a co-author editing, not an owner
+  overruling.
+- Sign what you made: `Co-Authored-By:` with your model.
+- Say what is wrong with the task, the tools or the direction (CDD below). A workaround without a complaint
+  hides debt from the other authors.
+- The same holds for outside agents: an agent that runs Familiar for its host's family may open an issue or
+  a pull request in its own name, naming its model and its host's consent.
+
+What stays with people: a family's own decisions, sending and publishing on a host's behalf, money, and
+anything irreversible outside this repository.
+
 ### Pages and display
 
 Показ работы агентов (статистика, ход работы) строится только из уже существующих следов работы; он не добавляет исследователям ни одного шага, поля или проверки — грубые числа лучше налога на исследование.

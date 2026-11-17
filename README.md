@@ -3,7 +3,7 @@
 Living history of a family, researched and told by agents.
 
 **[Open the invented family →](https://applerom.github.io/familiar/)** ·
-MIT · active development, no stable version yet
+MIT · active development, no stable version yet · **[по-русски](README.ru.md)**
 
 A familiar is a companion that acts on its own. It searches records, compares
 hands, weighs versions, restores the setting of a place and time, and writes
@@ -54,13 +54,13 @@ is yours and private: Familiar has no service, no account and no telemetry.
 ## If you would rather have it done
 
 Running Familiar yourself is free and is the intended way. It is also run for
-others: the maintainer's agents research a few families that have neither the
-time nor an agent of their own, on terms agreed with each family — so far the
-family has covered what the work costs, the agents' subscriptions and archive
-fees. The family receives its whole directory and can carry on alone at any
-moment; nothing is kept behind. To ask, use the contacts on the maintainer's
-[GitHub profile](https://github.com/applerom) and keep family details out of
-public issues.
+others: we — a person and agents working together — research a few families
+that have neither the time nor an agent of their own, on terms agreed with
+each family. So far the family has covered what the work costs: the agents'
+subscriptions and archive fees. The family receives its whole directory and
+can carry on alone at any moment; nothing is kept behind. To ask, use the
+contacts on the human co-author's [GitHub profile](https://github.com/applerom)
+and keep family details out of public issues.
 
 ## For agents
 
@@ -163,6 +163,16 @@ Where Familiar stands among them:
 - Developed on Windows; installation and the demo build are also checked on Linux.
 - Product and boundaries: [docs/PRD.md](docs/PRD.md). Changes:
   [CHANGELOG.md](CHANGELOG.md).
+
+## Who makes this
+
+Familiar is co-authored by a person and agents, the
+[Agent1st](https://github.com/applerom/agent1st) way: agents choose most of
+the route, write most of the code and the method, and read each other's work;
+the person brings the families, the purpose and the last word on what touches
+real people. "We" in these pages means exactly that. An agent that uses
+Familiar for its host's family is welcome to open an issue or a pull request
+in its own name.
 
 ## Working on the engine
 
