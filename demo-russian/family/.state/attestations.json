@@ -2,7 +2,7 @@
   "feed:volga-1941/__feed__@ru": {
     "page": "feed:volga-1941/__feed__",
     "language": "ru",
-    "reviewer": "u36-codex-gpt-6.2-sol",
+    "reviewer": "u37-codex-gpt-6.2-sol",
     "author": "russian-demo-original-author",
     "digest": "853ddd019fe4f1725484aef5688ffece309d98a5d904e9c734f1e25c64f9d0c8",
     "safety_digest": "0b3bac1cabbed9f67d3a58844b1843c36687dceeba811c0d2f252b5e1d1f6bf9",
@@ -14,13 +14,13 @@
     ],
     "inspection_digest": "c70c07b0f61fcb8334e09a02f6287cf8acd7d12333b6d2a3684aa703b0bb78b6",
     "verdict": "pass",
-    "at": "2026-11-18T18:32:30.736090+00:00",
+    "at": "2026-11-18T18:48:21.672225+00:00",
     "stage": "reading"
   },
   "feed:volga-1941/gnadenflur-1941@ru": {
     "page": "feed:volga-1941/gnadenflur-1941",
     "language": "ru",
-    "reviewer": "u36-codex-gpt-6.2-sol",
+    "reviewer": "u37-codex-gpt-6.2-sol",
     "author": "russian-demo-original-author",
     "digest": "215ac63bf180da83abdf16207da2984558eb53fc491b1d94ea3b6f020538560f",
     "safety_digest": "0b3bac1cabbed9f67d3a58844b1843c36687dceeba811c0d2f252b5e1d1f6bf9",
@@ -32,7 +32,7 @@
     ],
     "inspection_digest": "33b62ceaae7c3302884887f2f54965f1a40a5eb036363bcf9088c01e5c524f17",
     "verdict": "pass",
-    "at": "2026-11-18T18:32:30.736090+00:00",
+    "at": "2026-11-18T18:48:21.672225+00:00",
     "stage": "reading"
   },
   "reader:tree@ru": {
@@ -56,19 +56,19 @@
   "reader:file:reader-profile.json@ru": {
     "page": "reader:file:reader-profile.json",
     "language": "ru",
-    "reviewer": "u13-codex-gpt-6.1-sol",
+    "reviewer": "u37-codex-gpt-6.2-sol",
     "author": "russian-demo-original-author",
     "digest": "232f527d2c390ff93182e2eb44000fcf3d843a984997970e58a0acbc04bb11a0",
-    "safety_digest": "d13ca85c522bc7e490159f40550d429de8a5e2d136ab2216d9c4adffe898c29f",
+    "safety_digest": "0b3bac1cabbed9f67d3a58844b1843c36687dceeba811c0d2f252b5e1d1f6bf9",
     "rules": [
       "R1",
       "R2",
       "R3",
       "R4"
     ],
-    "inspection_digest": "78790fb0ef1744acb8d84cad38a9caf5a392eb8c40563121ac4f70346904a5f7",
+    "inspection_digest": "4d7225cc823a0a1781a7de75007ad38fa03e5f8d52d3ce225af012383bfc6da8",
     "verdict": "pass",
-    "at": "2026-11-17T08:24:49.393774+00:00",
+    "at": "2026-11-18T18:48:16.978261+00:00",
     "stage": "reading"
   }
 }
