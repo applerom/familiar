@@ -2,14 +2,14 @@ import type {Model} from './model';
 
 export type Tile = {
   id: string; x: number; y: number; w: number; h: number;
-  gen: number; status: string; scale: number; color?: string; stackLayers: number;
+  gen: number; status: string; scale: number; compact: boolean; fade: number; color?: string; stackLayers: number;
 };
 type Link = {key: string; d: string; gen: number; status: string; kind: 'parent' | 'union' | 'child' | 'more'; color?: string; ids: string[]};
 type Box = {x0: number; x1: number; y0: number; y1: number};
 export type Layout = {
   tiles: Tile[]; links: Link[]; width: number; height: number; box: Box; near: Box;
   axis: number; rootBottom: number; familyBottom: number; horizon: boolean; cut: boolean; linkOffset: number;
-  visible: Set<string>; peopleCount: number;
+  visible: Set<string>; peopleCount: number; tightest: number;
 };
 type Ancestor = {id: string; gen: number; status: string; x: number; weight: number; parents: Ancestor[]};
 const MAX_LEVEL = 9;
@@ -18,6 +18,7 @@ const HORIZON_Y = 14;
 const PAD = 14;
 const STACK_STEP = 4;
 const RING = 4.5;
+const BASE = 106; // The width a compact tile's scale is measured against.
 const PERSPECTIVE = [.8, .66, .55, .47, .41, .36, .32];
 const scaleFor = (gen: number) => gen < HISTORY_LEVEL ? 1 : PERSPECTIVE[gen - HISTORY_LEVEL];
 const curve = (x1: number, y1: number, x2: number, y2: number) =>
@@ -78,20 +79,23 @@ export function depthFor(m: Model, center: string) {
 /** How many generations of ancestors can be drawn, and how many the screen shows comfortably at first. */
 export function levelRange(m: Model, center: string, viewport: number, room: number) {
   const max = Math.max(1, depthFor(m, center) - 1);
-  const cap = Math.min(max, viewport < 560 ? 3 : viewport < 1000 ? 4 : 5);
-  let auto = Math.min(2, max);
-  for (let level = cap; level > 2; level--)
-    if (layoutTree(m, center, viewport, level).height * .84 <= room) { auto = level; break; }
-  return {max, auto};
+  // The first picture keeps every drawn row readable: names, not initials.
+  let auto = 1;
+  for (let level = Math.min(max, 5); level > 1; level--) {
+    const drawn = layoutTree(m, center, viewport, level, room);
+    if (drawn.tightest >= 44 && drawn.height * .7 <= room) { auto = level; break; }
+  }
+  return {max, auto: Math.max(auto, Math.min(2, max))};
 }
 
 /** Project older rows towards the horizon, then give overlapping tiles room horizontally. */
-export function layoutTree(m: Model, center: string, viewport: number, level = depthFor(m, center)): Layout {
+export function layoutTree(m: Model, center: string, viewport: number, level = depthFor(m, center), room = 0): Layout {
   const roots = rootsFor(m, center);
   const {rows, links: parentLinks} = ancestorRows(m, roots, level);
   const narrow = viewport < 560;
   const axis = viewport / 2;
-  const region = Math.min(viewport - PAD * 2, 900);
+  const budget = viewport - PAD * 2;
+  const region = Math.min(budget, 900);
   const lane = region / roots.length;
   for (const row of rows.slice().reverse())
     for (const node of row) node.weight = Math.max(1, node.parents.reduce((sum, p) => sum + p.weight, 0));
@@ -105,37 +109,63 @@ export function layoutTree(m: Model, center: string, viewport: number, level = d
 
   const tiles: Tile[] = [];
   const tileById = new Map<string, Tile>();
-  const card = (id: string, gen: number, status: string, w: number): Tile => {
-    const scale = scaleFor(gen);
+  // A tile is either a full card of a near generation or a compact one: a card drawn at `scale`,
+  // narrower when its row has to share the width of the screen with many others.
+  const card = (id: string, gen: number, status: string, w: number, compact = false): Tile => {
+    const scale = compact ? Math.min(1.15, w / BASE) : 1;
     const name = m.info[id].treeName;
     const font = gen === 0 ? 16 : gen === 1 ? 14 : 12.5;
     const base = gen === 0 ? 68 : 58;
-    const h = gen < HISTORY_LEVEL
-      ? Math.max(base, Math.ceil(name.length * font * .56 / (w - 25)) * font * 1.22 + 33)
-      : Math.max(30, Math.round(54 * scale));
-    const stackLayers = gen >= 0 ? m.siblingLayers(id) : 0;
-    return {id, gen, status, w, h, scale, x: 0, y: 0, stackLayers, color: m.tone(id)?.color};
+    const h = compact ? Math.max(8, Math.round(54 * scale))
+      : Math.max(base, Math.ceil(name.length * font * .56 / (w - 25)) * font * 1.22 + 33);
+    const stackLayers = gen >= 0 && w >= 40 ? m.siblingLayers(id) : 0;
+    return {id, gen, status, w, h, scale, compact, fade: gen < HISTORY_LEVEL ? 1 : .34 + scaleFor(gen) * .66,
+      x: 0, y: 0, stackLayers, color: m.tone(id)?.color};
   };
-  const widths = [narrow ? 152 : 188, narrow ? 126 : 144, narrow ? 104 : 106];
+  const widths = [narrow ? 152 : 188, narrow ? 126 : 144, narrow ? 104 : BASE];
+  let tightest = Infinity;
+  let nearer = Infinity;
+  let shared = false;
   const rowTiles = rows.map((row, gen) => {
-    const scale = scaleFor(gen);
-    const w = gen < HISTORY_LEVEL ? widths[gen] : Math.max(58, Math.round(widths[2] * scale));
+    const depth = scaleFor(gen);
+    const full = gen < HISTORY_LEVEL ? widths[gen] : Math.max(58, Math.round(widths[2] * depth));
     const ordered = [...row].sort((a, b) => a.x - b.x);
-    const cards = ordered.map(n => card(n.id, gen, n.status, w));
+    const fullGap = (i: number) => (i && partner.get(ordered[i - 1].id) === ordered[i].id ? 22 : 30) * (gen < HISTORY_LEVEL ? 1 : depth);
+    // Every row fits the width of the screen: a crowded row gets narrower tiles instead of running off the edge.
+    const need = ordered.reduce((sum, n, i) => sum + full + (i ? fullGap(i) : 0) + m.siblingLayers(n.id) * STACK_STEP, 0);
+    const share = gen === 0 ? 1 : Math.min(1, budget / need);
+    if (share < 1) shared = true;
+    // Farther is never larger: an older row does not outgrow the row below it.
+    const w = Math.max(9, Math.min(nearer, Math.floor(full * share)));
+    nearer = w;
+    const fit = w / full;
+    if (gen) tightest = Math.min(tightest, w);
+    const cards = ordered.map(n => card(n.id, gen, n.status, w, gen >= HISTORY_LEVEL || fit < 1));
     const desired = ordered.map((n, i) => gen === 0
       ? axis + (i - (ordered.length - 1) / 2) * (w + (narrow ? 35 : 72)) - w / 2
-      : axis + (n.x - axis) * scale - w / 2);
-    const gap = (i: number) => Math.round((i && partner.get(cards[i - 1].id) === cards[i].id ? 22 : 30) * (gen < HISTORY_LEVEL ? 1 : scale));
+      : axis + (n.x - axis) * depth - w / 2);
+    const gap = (i: number) => Math.max(2, Math.round(fullGap(i) * fit));
+    const wide = (tile: Tile) => tile.w + tile.stackLayers * STACK_STEP;
     let right = -Infinity;
     cards.forEach((tile, i) => {
       tile.x = Math.max(desired[i], right + gap(i));
-      right = tile.x + w + tile.stackLayers * STACK_STEP;
+      right = tile.x + wide(tile);
     });
     const shift = (cards[0].x - desired[0] + cards.at(-1)!.x - desired.at(-1)!) / 2;
-    for (const tile of cards) {
-      tile.x -= shift;
-      tileById.set(tile.id, tile);
+    for (const tile of cards) tile.x -= shift;
+    if (gen) {
+      let edge = axis + budget / 2;
+      for (let i = cards.length - 1; i >= 0; i--) {
+        cards[i].x = Math.min(cards[i].x, edge - wide(cards[i]));
+        edge = cards[i].x - gap(i);
+      }
+      edge = axis - budget / 2;
+      cards.forEach((tile, i) => {
+        tile.x = Math.max(tile.x, edge + (i ? gap(i) : 0));
+        edge = tile.x + wide(tile);
+      });
     }
+    for (const tile of cards) tileById.set(tile.id, tile);
     return cards;
   });
 
@@ -145,15 +175,20 @@ export function layoutTree(m: Model, center: string, viewport: number, level = d
     slot && !tileById.has(slot.id) && !(m.info[slot.id].connector && !m.parents(slot.id).slots.some(Boolean))));
   const horizon = last >= HISTORY_LEVEL || cut.length > 0;
   // Cut rows start lower: the haze covers the stubs that lead further up, not the people themselves.
-  let y = cut.length ? HORIZON_Y + PAD + 30 : horizon ? HORIZON_Y + PAD : PAD;
+  const top = cut.length ? HORIZON_Y + PAD + 30 : horizon ? HORIZON_Y + PAD : PAD;
+  const heights = rowTiles.map(row => Math.max(...row.map(tile => tile.h)));
+  const below = rowTiles.map((_, gen) => gen >= HISTORY_LEVEL ? Math.max(12, Math.round(scaleFor(gen) * (narrow ? 32 : 39))) : narrow ? 26 : 34);
+  // When the width of the screen sets the size, the rows spread to use its height as well.
+  const hasChildren = roots.some(id => m.children(id).length > 0);
+  const natural = top + heights.reduce((a, b) => a + b, 0) + below.slice(1).reduce((a, b) => a + b, 0) + (hasChildren ? 118 : 0) + PAD;
+  const spread = shared && last && room > natural ? Math.min(44, (room - natural) / last) : 0;
+  let y = top;
   for (let gen = last; gen >= 0; gen--) {
-    const row = rowTiles[gen];
-    const height = Math.max(...row.map(tile => tile.h));
-    for (const tile of row) {
-      tile.y = y + (height - tile.h) / 2;
+    for (const tile of rowTiles[gen]) {
+      tile.y = y + (heights[gen] - tile.h) / 2;
       tiles.push(tile);
     }
-    y += height + (gen >= HISTORY_LEVEL ? Math.max(12, Math.round(scaleFor(gen) * (narrow ? 32 : 39))) : narrow ? 26 : 34);
+    y += heights[gen] + below[gen] + spread;
   }
   const rootBottom = Math.max(...rowTiles[0].map(tile => tile.y + tile.h));
 
@@ -166,8 +201,9 @@ export function layoutTree(m: Model, center: string, viewport: number, level = d
   }
   // A couple is joined by a ring; their child hangs from the ring, not from each parent separately.
   const knot = (left: Tile, right: Tile) => {
-    const r = Math.max(2.5, RING * left.scale);
-    const x = (left.x + left.w + left.stackLayers * STACK_STEP + right.x) / 2;
+    const from = left.x + left.w + left.stackLayers * STACK_STEP;
+    const r = Math.max(1, Math.min(Math.max(2.5, RING * left.scale), (right.x - from) / 2 - .5));
+    const x = (from + right.x) / 2;
     const y = left.y + left.h / 2;
     return {x, y: y + r, bottom: Math.max(left.y + left.h, right.y + right.h),
       d: `M${left.x + left.w},${y} H${x - r} M${x + r},${y} H${right.x} M${x - r},${y} a${r},${r} 0 1,0 ${r * 2},0 a${r},${r} 0 1,0 ${-r * 2},0`};
@@ -277,7 +313,7 @@ export function layoutTree(m: Model, center: string, viewport: number, level = d
   const peopleCount = m.familyPeople.has(center) ? m.familyPeople.size : m.connectedFrom([center]).size;
   return {
     tiles, links, width: Math.max(viewport + offset, box.x1 + PAD), height: box.y1 + PAD,
-    box, near, axis: axis + offset, rootBottom, familyBottom, horizon, cut: cut.length > 0, linkOffset: offset, visible, peopleCount,
+    box, near, axis: axis + offset, rootBottom, familyBottom, horizon, cut: cut.length > 0, linkOffset: offset, visible, peopleCount, tightest,
   };
 }
 

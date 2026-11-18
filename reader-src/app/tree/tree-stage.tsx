@@ -1,6 +1,6 @@
 'use client';
 import {memo,useCallback,useEffect,useLayoutEffect,useMemo,useRef,useState,type CSSProperties,type ReactNode,type RefObject} from 'react';
-import {HISTORY_LEVEL,STACK_STEP,layoutTree,levelRange,type Layout} from './layout';
+import {STACK_STEP,layoutTree,levelRange,type Layout} from './layout';
 import {useZoomPan} from './use-zoom-pan';
 import {lifeLabel,type Model,type Row} from './model';
 import {growthWords} from './growth';
@@ -10,12 +10,13 @@ type TileActions = {
   hover: (id: string) => void;
 };
 const uncertain = (status: string) => status === 'hypothesis' || status === 'probable';
-// A distant tile shows the whole name once the zoom makes it this large on the screen.
-const READABLE = .82;
+// What a compact tile can carry at its size on the screen: the whole name with the years,
+// the given name with a year, an initial, or nothing but its colour.
+const WHOLE = .7, SHORT = 40, INITIAL = 13;
 
-const TreeTiles = memo(function TreeTiles({layout,model,center,hot,labels,actions,readable,drawn}: {
+const TreeTiles = memo(function TreeTiles({layout,model,center,hot,labels,actions,zoom,drawn}: {
   layout: Layout; model: Model; center: string; hot: string; labels: Row;
-  actions: RefObject<TileActions>; readable: number; drawn: string;
+  actions: RefObject<TileActions>; zoom: number; drawn: string;
 }) {
   const lang = labels.languageCode;
   const words = growthWords[lang] || growthWords.en;
@@ -29,11 +30,12 @@ const TreeTiles = memo(function TreeTiles({layout,model,center,hot,labels,action
     </svg>
     {layout.tiles.map(tile => {
       const {id, gen, stackLayers} = tile;
-      const distant = gen >= HISTORY_LEVEL;
-      const whole = !distant || tile.scale >= readable;
+      const distant = tile.compact;
+      const whole = !distant || tile.scale * zoom >= WHOLE;
+      const mini = !whole && tile.w * zoom < SHORT;
       const style = {
         transform: `translate(${tile.x}px,${tile.y}px)`, width: tile.w, height: tile.h, '--b': tile.color, '--s': tile.scale,
-        '--depth-opacity': distant ? .34 + tile.scale * .66 : 1,
+        '--c': Math.min(1.05, Math.max(.62, tile.w / 66)), '--w': tile.w, '--depth-opacity': tile.fade,
       } as CSSProperties;
       const person = model.info[id];
       const life = !person.connector && (person.birthText || person.deathText) ? lifeLabel(person, labels, lang) : '';
@@ -41,7 +43,7 @@ const TreeTiles = memo(function TreeTiles({layout,model,center,hot,labels,action
       const growth = person.growth;
       const confirmed = growth.confirmed.length > 0;
       const title = [person.fullName, life, confirmed ? words.confirmed : growth.treeMemory ? words.tree : growth.memory ? words.memory : growth.found ? words.found : ''].filter(Boolean).join(' · ');
-      return <div key={id} className={`tile-position${distant ? ' tile-distant' : ''}${distant && whole ? ' tile-whole' : ''}`} style={style} data-gen={gen}>
+      return <div key={id} className={`tile-position${distant ? ' tile-distant' : ''}${distant && whole ? ' tile-whole' : ''}${mini ? ' tile-mini' : ''}`} style={style} data-gen={gen}>
         {Array.from({length: stackLayers}, (_, i) => {
           const offset = (stackLayers - i) * STACK_STEP;
           return <span key={i} className="stack-back" aria-hidden="true" style={{translate: `${offset}px ${-offset}px`}}/>;
@@ -51,8 +53,9 @@ const TreeTiles = memo(function TreeTiles({layout,model,center,hot,labels,action
           onClick={() => actions.current.open(id)}
           onPointerEnter={event => { if (event.pointerType === 'mouse') actions.current.hover(id); }}
           onPointerLeave={() => actions.current.hover('')}>
-          <strong>{whole ? person.treeName : person.givenName || person.treeName}</strong>
-          {whole ? life && <small className={person.guess ? 'guess' : undefined}>{life}</small>
+          {mini ? tile.w * zoom >= INITIAL && <strong>{(person.givenName || person.treeName).slice(0, 1)}</strong>
+            : <strong>{whole ? person.treeName : person.givenName || person.treeName}</strong>}
+          {mini ? null : whole ? life && <small className={person.guess ? 'guess' : undefined}>{life}</small>
             : year && !person.connector && <small className={person.guess ? 'guess' : undefined}>{year}</small>}
           {!distant && (confirmed || growth.firmMemory) && <span className="tile-provenance" aria-hidden="true">
             <i className="growth-confirm">✓</i>
@@ -100,7 +103,7 @@ export default function TreeStage({model,id,go,labels,onVisible,children}: {
   const room = size.h - (size.w < 560 ? 72 : 90);
   const range = useMemo(() => size.w ? levelRange(model,id,size.w,room) : {max: 1, auto: 1}, [model,id,size.w,room]);
   const level = Math.min(range.max, Math.max(1, want ?? range.auto));
-  const layout = useMemo(() => size.w ? layoutTree(model,id,size.w,level) : null, [model,id,size.w,level]);
+  const layout = useMemo(() => size.w ? layoutTree(model,id,size.w,level,room) : null, [model,id,size.w,level,room]);
   content.current = layout ? {w: layout.width, h: layout.height} : {w: 0, h: 0};
   useEffect(() => {
     if (layout) onVisible(layout.visible);
@@ -116,11 +119,10 @@ export default function TreeStage({model,id,go,labels,onVisible,children}: {
     if (!layout || !size.h) return;
     const oldest = layout.horizon ? 0 : layout.box.y0;
     const height = layout.box.y1 - oldest;
-    const nearWidth = layout.near.x1 - layout.near.x0;
-    const nearFit = size.w >= 820 ? (size.w - 16) / nearWidth : 1;
-    const k = Math.min(size.w < 560 ? 1.25 : 1.45, Math.max(.62, Math.min((room - 12) / height, nearFit)));
-    const nearX = (layout.near.x0 + layout.near.x1) / 2;
-    const x = size.w / 2 - (size.w < 560 ? layout.axis : nearX) * k;
+    // The whole drawn tree fills the stage: neither a row nor a generation is left outside.
+    const width = layout.box.x1 - layout.box.x0;
+    const k = Math.min(size.w < 560 ? 1.25 : 1.45, Math.max(.5, Math.min((room - 12) / height, (size.w - 12) / width)));
+    const x = size.w / 2 - (layout.box.x0 + layout.box.x1) / 2 * k;
     const y = Math.min(Math.max(4, (room - height * k) / 2) - oldest * k, room - layout.familyBottom * k);
     setT({k,x,y});
   }, [layout,size,room,setT]);
@@ -146,13 +148,13 @@ export default function TreeStage({model,id,go,labels,onVisible,children}: {
   }, [model,id,go,step,fit]);
 
   // Only a few distinct values, so the tiles are redrawn when a row becomes readable, not on every pinch step.
-  const readable = Math.ceil(READABLE / t.k * 20) / 20;
+  const zoom = Math.round(t.k * 10) / 10;
   return <div className="tree-main">
     <div className="tree-canvas">
       <div ref={stage} className={`stage${moving ? ' moving' : ''}${resizing ? ' resizing' : ''}`}
         role="group" aria-label={labels.graph}>
         {layout && <div className="world" style={{width:layout.width, height:layout.height, transform:`translate(${t.x}px,${t.y}px) scale(${t.k})`}}>
-          <TreeTiles layout={layout} model={model} center={id} hot={hot} labels={labels} actions={actions} readable={readable}
+          <TreeTiles layout={layout} model={model} center={id} hot={hot} labels={labels} actions={actions} zoom={zoom}
             drawn={`${id}:${level}:${layout.width}`}/>
         </div>}
         <div className="controls" data-pan-ignore>
