@@ -287,20 +287,20 @@ export function buildModel(data:Row,labels:Row={}){
   return seen;
  }
  const siblings=(id:string)=>{const set=new Set(statedSiblings.get(id));parents(id).slots.forEach(s=>s&&(down.get(s.id)||[]).forEach(c=>set.add(c)));set.delete(id);return [...set].sort(byYear)};
- const deckCache = new Map<string, string[]>();
- function siblingDeck(id: string) {
-  const saved = deckCache.get(id);
-  if (saved) return saved;
+ const stackCache = new Map<string, number>();
+ function siblingLayers(id: string) {
+  const saved = stackCache.get(id);
+  if (saved !== undefined) return saved;
   const {slots} = parents(id);
-  const deck = [id, ...siblings(id).filter(child => {
+  const layers = Math.min(3, siblings(id).filter(child => {
    const other = parents(child);
    // A missing slot does not rule out a sibling. A different recorded parent does,
    // unless this family is itself one of the child's possible parent pairs.
    return slots.every((slot, i) => !slot || !other.slots[i] ||
     slot.id === other.slots[i]?.id || other.extra.some(candidate => candidate.id === slot.id));
-  })].sort(bySeniority);
-  deckCache.set(id, deck);
-  return deck;
+  }).length);
+  stackCache.set(id, layers);
+  return layers;
  }
  // the four lines running up from the two home people, used for colour only
  // the home couple is the root of the export and the root's first partner, so no person id is written into the code
@@ -384,5 +384,5 @@ export function buildModel(data:Row,labels:Row={}){
   Object.assign(info[pid],{name,short:name,fullName:name,alt:'',note:'',unnamed:true});
  }
  return {connectionLevel,connectionStatus,relationshipEvidence,info,parents,children,spouses,spouseConnection,siblings,
-  siblingDeck, bySeniority, connectedFrom, familyPeople: connectedFrom(homes), husbands,branch,kin,tone,lines,homes,kinship,relation,ancestorsOf};
+  siblingLayers, bySeniority, connectedFrom, familyPeople: connectedFrom(homes), husbands,branch,kin,tone,lines,homes,kinship,relation,ancestorsOf};
 }

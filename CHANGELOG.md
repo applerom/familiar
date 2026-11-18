@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.39.1 — 18 November 2026
+
+- We show one tree count, keep sibling stacks as a visual cue, and leave out
+  unknown parent tiles. The central couple and their children fit together.
+
 ## 0.39.0 — 18 November 2026
 
 - The family tree keeps every person on a tile. Sibling stacks open in birth

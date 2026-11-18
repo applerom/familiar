@@ -1,7 +1,7 @@
 'use client';
 import {memo,useCallback,useEffect,useLayoutEffect,useMemo,useRef,useState,type CSSProperties,type ReactNode,type RefObject} from 'react';
-import {HISTORY_LEVEL,HORIZON_Y,layoutTree,levelRange,type Layout,type Tile} from './layout';
-import {SiblingDeck,TreeCount,type OpenDeck} from './tree-details';
+import {HISTORY_LEVEL,HORIZON_Y,STACK_STEP,layoutTree,levelRange,type Layout} from './layout';
+import {plural} from '../i18n';
 import {useZoomPan} from './use-zoom-pan';
 import {lifeLabel,type Model,type Row} from './model';
 import {growthWords} from './growth';
@@ -9,14 +9,12 @@ import {growthWords} from './growth';
 type TileActions = {
   select: (id: string) => void;
   openFamily: (id: string) => void;
-  showDeck: (tile: Tile, button: HTMLButtonElement, pinned: boolean) => void;
-  leaveDeck: () => void;
 };
 const uncertain = (status: string) => status === 'hypothesis' || status === 'probable';
 
-const TreeTiles = memo(function TreeTiles({layout,model,center,selected,labels,actions,openKey}: {
+const TreeTiles = memo(function TreeTiles({layout,model,center,selected,labels,actions}: {
   layout: Layout; model: Model; center: string; selected: string; labels: Row;
-  actions: RefObject<TileActions>; openKey?: string;
+  actions: RefObject<TileActions>;
 }) {
   const lang = labels.languageCode;
   const words = growthWords[lang] || growthWords.en;
@@ -28,19 +26,17 @@ const TreeTiles = memo(function TreeTiles({layout,model,center,selected,labels,a
       })}</g>}
       <g transform={`translate(${layout.linkOffset} 0)`}>{layout.links.map(link =>
         <path key={link.key} d={link.d}
-          className={`lk ${link.kind} g${Math.min(link.gen, 4)}${uncertain(link.status) ? ' hyp' : ''}${link.status === 'unknown' ? ' missing' : ''}`}
+          className={`lk ${link.kind} g${Math.min(link.gen, 4)}${uncertain(link.status) ? ' hyp' : ''}`}
           style={link.color ? {stroke: `color-mix(in srgb, ${link.color} 58%, var(--tree-paper))`} : undefined}/>
       )}</g>
     </svg>
     {layout.tiles.map(tile => {
-      const {id, gen, siblings} = tile;
+      const {id, gen, stackLayers} = tile;
       const distant = gen >= HISTORY_LEVEL;
       const style = {
         left: tile.x, top: tile.y, width: tile.w, height: tile.h, '--b': tile.color,
         '--depth-opacity': distant ? .28 + tile.scale * .63 : 1,
       } as CSSProperties;
-      if (id === null) return <span key={tile.key} className="tree-tile unknown-parent" style={style} data-gen={gen}
-        role="img" title={labels.treeUnknownParent} aria-label={labels.treeUnknownParent}>?</span>;
       const person = model.info[id];
       const life = !person.connector && (person.birthText || person.deathText) ? lifeLabel(person, labels, lang) : '';
       const growth = person.growth;
@@ -48,9 +44,11 @@ const TreeTiles = memo(function TreeTiles({layout,model,center,selected,labels,a
       const document = growth.documents.length > 0 || growth.hasMedia;
       const title = [person.fullName, life, confirmed ? words.confirmed : growth.treeMemory ? words.tree : growth.memory ? words.memory : growth.found ? words.found : '',
         !confirmed && document ? words.unconfirmed : ''].filter(Boolean).join(' · ');
-      const count = siblings.length - 1;
-      return <div key={tile.key} className={`tile-position${distant ? ' tile-distant' : ''}`} style={style} data-gen={gen}>
-        {count > 0 && <span className="deck-backs" aria-hidden="true" data-layers={Math.min(count, 2)}/>}
+      return <div key={id} className={`tile-position${distant ? ' tile-distant' : ''}`} style={style} data-gen={gen}>
+        {Array.from({length: stackLayers}, (_, i) => {
+          const offset = (stackLayers - i) * STACK_STEP;
+          return <span key={i} className="stack-back" aria-hidden="true" style={{translate: `${offset}px ${-offset}px`}}/>;
+        })}
         <button data-person={id} className={`tree-tile${uncertain(tile.status) ? ' hyp' : ''}${id === center ? ' tree-centre' : ''}`}
           title={title} aria-label={title} aria-pressed={id === selected}
           onClick={() => actions.current.select(id)} onDoubleClick={() => actions.current.openFamily(id)}>
@@ -61,16 +59,9 @@ const TreeTiles = memo(function TreeTiles({layout,model,center,selected,labels,a
             {(confirmed || document) && <i className={confirmed ? undefined : 'doc-open'}>▤</i>}
           </span>}
         </button>
-        {count > 0 && <button type="button" className="deck-toggle" aria-label={`${person.treeName} · ${labels.siblings} +${count}`}
-          aria-expanded={openKey === tile.key} aria-controls={openKey === tile.key ? 'tree-sibling-deck' : undefined}
-          onPointerEnter={e => { if (e.pointerType === 'mouse') actions.current.showDeck(tile, e.currentTarget, false); }}
-          onPointerLeave={actions.current.leaveDeck}
-          onClick={e => actions.current.showDeck(tile, e.currentTarget, true)}><span>+{count}</span></button>}
       </div>;
     })}
-    {layout.horizon && <div className="history-fog" aria-hidden="true">
-      <span style={{left: layout.axis, top: HORIZON_Y}}>{labels.treeHorizon}</span>
-    </div>}
+    {layout.horizon && <div className="history-fog" aria-hidden="true"/>}
   </>;
 });
 
@@ -85,39 +76,8 @@ export default function TreeStage({model,id,selected,select,go,jump,labels,onVis
   const [size, setSize] = useState({w: 0, h: 0});
   const [bias, setBias] = useState(0);
   const [resizing, setResizing] = useState(false);
-  const [deck, setDeck] = useState<OpenDeck | null>(null);
-  const leaveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const clearLeave = () => clearTimeout(leaveTimer.current);
-  function leaveDeck() {
-    clearLeave();
-    leaveTimer.current = setTimeout(() => setDeck(old => old?.pinned ? old : null), 400);
-  }
-  function showDeck(tile: Tile, button: HTMLButtonElement, pinned: boolean) {
-    clearLeave();
-    setDeck(old => {
-      if (old?.tile.key === tile.key && old.pinned) return pinned ? null : old;
-      if (!pinned && old?.pinned) return old;
-      return {tile, button, pinned};
-    });
-  }
-  const actions = useRef<TileActions>({select, openFamily: jump, showDeck, leaveDeck});
-  actions.current = {select, openFamily: jump, showDeck, leaveDeck};
-  useEffect(() => () => clearTimeout(leaveTimer.current), []);
-  useEffect(() => {
-    if (!deck) return;
-    const outside = (event: PointerEvent) => {
-      if (!(event.target as Element).closest('.sibling-deck, .deck-toggle')) setDeck(null);
-    };
-    const escape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') { setDeck(null); if (deck.pinned) deck.button.focus(); }
-    };
-    document.addEventListener('pointerdown', outside);
-    document.addEventListener('keydown', escape);
-    return () => {
-      document.removeEventListener('pointerdown', outside);
-      document.removeEventListener('keydown', escape);
-    };
-  }, [deck]);
+  const actions = useRef<TileActions>({select, openFamily: jump});
+  actions.current = {select, openFamily: jump};
 
   useLayoutEffect(() => {
     const el = stage.current;
@@ -159,12 +119,11 @@ export default function TreeStage({model,id,selected,select,go,jump,labels,onVis
     const k = Math.min(1, Math.max(.84, Math.min((room - 12) / height, nearFit)));
     const nearX = (layout.near.x0 + layout.near.x1) / 2;
     const x = size.w / 2 - (size.w < 560 ? layout.axis : nearX) * k;
-    const centralBottom = Math.min(layout.box.y1, layout.rootBottom + (size.w < 560 ? 0 : 60));
-    const y = Math.min(Math.max(4, (room - height * k) / 2) - oldest * k, room - centralBottom * k);
+    const y = Math.min(Math.max(4, (room - height * k) / 2) - oldest * k, room - layout.familyBottom * k);
     baseScale.current = k;
     setT({k,x,y});
   }, [layout,size,setT]);
-  useLayoutEffect(() => { setDeck(null); fit(); }, [fit]);
+  useLayoutEffect(fit, [fit]);
 
   const moveTo = useCallback((pid: string, want: number) => {
     const next = levelRange(model,pid);
@@ -210,7 +169,7 @@ export default function TreeStage({model,id,selected,select,go,jump,labels,onVis
     if (ratio < .78) wider();
     if (ratio <= 1.32) return;
     const x = (focal.current.x - t.x) / t.k, y = (focal.current.y - t.y) / t.k;
-    const hit = layout.tiles.find(tile => tile.id !== null &&
+    const hit = layout.tiles.find(tile =>
       x >= tile.x && x <= tile.x + tile.w && y >= tile.y && y <= tile.y + tile.h);
     if (hit?.id && hit.gen !== 0) {
       const next = levelRange(model,hit.id);
@@ -223,8 +182,7 @@ export default function TreeStage({model,id,selected,select,go,jump,labels,onVis
     } else if (level > 1) closer();
   }, [t.k]); // Evaluate once for each change of the wheel or pinch scale.
   useEffect(() => {
-    if (moving) setDeck(null);
-    else if (spent.current) { spent.current = false; fit(); }
+    if (!moving && spent.current) { spent.current = false; fit(); }
   }, [moving,fit]);
   useEffect(() => {
     if (id === expected.current) { expected.current = ''; return; }
@@ -235,7 +193,7 @@ export default function TreeStage({model,id,selected,select,go,jump,labels,onVis
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
       const el = event.target as HTMLElement;
-      if (event.defaultPrevented || el.closest('input, textarea, select, dialog, .sibling-deck, .overview, .lightbox') ||
+      if (event.defaultPrevented || el.closest('input, textarea, select, dialog, .overview, .lightbox') ||
           event.metaKey || event.ctrlKey || event.altKey) return;
       const [father,mother] = model.parents(id).slots;
       const sibs = [...model.siblings(id),id].sort(model.bySeniority);
@@ -251,14 +209,15 @@ export default function TreeStage({model,id,selected,select,go,jump,labels,onVis
     return () => removeEventListener('keydown', key);
   }, [model,id,go,closer,wider,fit]);
 
+  const count = layout?.peopleCount ?? 0;
   return <div className="tree-main">
-    <TreeCount layout={layout} model={model} labels={labels} go={go}
-      overflow={!!layout && layout.box.x1 - layout.box.x0 > size.w}/>
+    <div className="tree-count">{layout && labels.treeCount.replace('{n}',
+      `${count} ${plural(count,labels.personsForms,labels.languageCode)}`)}</div>
     <div className="tree-canvas">
       <div ref={stage} className={`stage${moving ? ' moving' : ''}${resizing ? ' resizing' : ''}`}
         role="group" aria-label={labels.graph}>
         {layout && <div className="world" style={{width:layout.width, height:layout.height, transform:`translate(${t.x}px,${t.y}px) scale(${t.k})`}}>
-          <TreeTiles layout={layout} model={model} center={id} selected={selected} labels={labels} actions={actions} openKey={deck?.tile.key}/>
+          <TreeTiles layout={layout} model={model} center={id} selected={selected} labels={labels} actions={actions}/>
         </div>}
         <div className="controls" data-pan-ignore>
           <button aria-label={labels.farther} title={labels.farther} onClick={wider} disabled={!canWiden}>−</button>
@@ -268,10 +227,6 @@ export default function TreeStage({model,id,selected,select,go,jump,labels,onVis
         </div>
         {children}
       </div>
-      {deck && <SiblingDeck deck={deck} model={model} labels={labels}
-        onEnter={clearLeave} onLeave={leaveDeck}
-        onClose={() => { setDeck(null); deck.button.focus(); }}
-        go={pid => { setDeck(null); jump(pid); }}/>}
     </div>
   </div>;
 }
