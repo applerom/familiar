@@ -3,6 +3,7 @@
 # PRD_REF: docs/PRD.md#FORMS
 # INVARIANTS:
 # - photo treatments retain dead-only public permission uses for later withdrawal [review: engine lead]
+# - a gallery photo's current declaration and recognized subjects bind its review [review: engine lead]
 # - review uses the active life classification for merged references [review: engine lead]
 # - unrelated records preserve reading while changed display bytes lapse it [review: engine lead]
 # - namesakes are review cues, not canonical subject identities [review: engine lead]
@@ -67,6 +68,13 @@ def _safety_inputs(instance, ids, uses=()):
             # unrelated drafts/catalogues do not supply this generation's rights.
             photographs(load(instance.path('feeds') / name / 'pictures.json', {}))
         photographs(known)
+        from .gallery import KIND, photographs as gallery_photos
+        for asset, photo in gallery_photos(instance).items():
+            if '/' + asset in photo_assets:
+                subjects = {pid: life_status(known.get(pid, {'id': pid}), privacy) for pid in photo['subjects']}
+                photo_rights.setdefault('/' + asset, []).append({
+                    'declaration': photograph_rights(instance, {'kind': KIND}), 'subjects': subjects,
+                })
     return {'people': {pid: {'life': life_status(known.get(pid, {'id': pid}), privacy)} for pid in sorted(ids)},
             'closed_topics': privacy.get('closed_topics', []), 'lists': lists,
             'archive_rights': photo_rights,
@@ -77,6 +85,7 @@ def _output_uses(instance, kind, data, feed=None):
     from familiar.checks.engine import _known_people, life_status, load
     from familiar.feeds import service
 
+    from .gallery import photograph
     from .subjects import closure
     known, privacy = _known_people(instance), load(instance.path('privacy'), {})
     uses = []
@@ -86,7 +95,7 @@ def _output_uses(instance, kind, data, feed=None):
         if use not in uses:
             uses.append(use)
     def image_rights(item, pic):
-        if pic.get('kind') == 'family-photograph':
+        if pic.get('kind') == 'family-photograph' or photograph(instance, pic.get('asset')):
             uses.append({'item': item, 'person': None, 'field': 'archive-rights', 'asset': pic.get('asset')})
     def image_use(item, pic, people):
         from familiar.checks.engine import generated

@@ -81,7 +81,20 @@ unions.write_text(json.dumps(rows), encoding='utf-8')
 doc = json.loads(form('card-document.json')); doc.update(subjects=['table-p3', 'table-p4'], snippets=[])
 doc['record'].update(id='bea-marriage', fields={'Name': 'Bea Example', 'Birth': '1880'}, reading='Name: Bea Example')
 (tmp_path / 'doc.json').write_text(json.dumps(doc), encoding='utf-8'); cli('research', 'document', str(tmp_path / 'doc.json'), '--author', 'reader')
-archive = tmp_path / 'host-originals'; archive.mkdir()
+image = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aV1sAAAAASUVORK5CYII=')
+(tmp_path / 'dot.png').write_bytes(image)
+(family / 'family/archive-rights.json').write_text(json.dumps({'schema_version': 1, 'kind': 'family-photograph', 'holder': 'Invented family', 'declared_by': 'Host', 'declared_at': '2000-01-01', 'effective_from': '2000-01-01', 'permissions': {'family_app': True, 'processing': False, 'colourisation': False}, 'living_subject_consent': False}))
+carrier = tmp_path / 'archive.json'; carrier.write_bytes(b'{"status":"accepted","weight":0}')
+note = '{"text":"Bea &amp; family in the old archive"}'
+mapping = tmp_path / 'mapping.json'; mapping.write_text(json.dumps({'id': 'old-archive', 'date': '2026-11-14', 'told_by': 'Previous archive', 'items': [{'id': 'old-note', 'person': 'table-p3', 'role': 'note', 'text': note, 'status': 'possible', 'strength': 'firm'}]}))
+cli('intake', 'memory', str(mapping), '--original', str(carrier))
+assert (family / 'originals/old-archive/archive.json').read_bytes() == carrier.read_bytes()
+table = tmp_path / 'photos.csv'; table.write_text('file,people,caption,when,received_from\ndot.png,table-p1 table-p3,An old photo,1940s,Previous archive\n')
+photos = lambda: json.loads(cli('intake', 'photo', str(table), '--table').stdout)
+receipt = photos()['photos'][0]; asset = receipt['asset']
+assert (family / 'originals' / receipt['original']).read_bytes() == image and photos()['attached'] == 0
+assert asset not in cli('tree', 'build', '--view', 'reader').stdout
+archive = tmp_path / 'host-originals'; shutil.copytree(family / 'originals', archive)
 scan = archive / 'certificate.txt'; scan.write_text('Invented original', encoding='utf-8')
 evidence = family / 'tree/evidence.json'
 saved = json.loads(evidence.read_text(encoding='utf-8')) if evidence.exists() else {}
@@ -116,12 +129,6 @@ with patch('subprocess.run', side_effect=AssertionError('cloud subprocess')), pa
 assert fingerprint() == before_cloud
 access = family / 'family/desk-access.json'
 access.write_text(json.dumps({'schema_version': 1, 'family_id': Instance(family).id, 'projection': 'reader-private', 'host': 'Invented host', 'recipient': 'Invented narrator', 'decided_at': '2026-11-14', 'reason': 'Fictional check', 'dataset': 'accepted-family-reader', 'pages': ['reader', 'journal', 'stories', 'cases', 'plan', 'questions']}))
-media = family / 'media'; media.mkdir(exist_ok=True)
-image = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aV1sAAAAASUVORK5CYII=')
-(media / 'dot.png').write_bytes(image)
-(media / 'manifest.json').write_text(json.dumps({'schema_version': 1, 'assets': [{'id': 'dot', 'file': 'dot.png', 'export': 'dot.png', 'sha256': hashlib.sha256(image).hexdigest(), 'kind': 'family-photograph', 'origin': 'Fictional fixture'}]}))
-edition = family / 'edition/cards.json'; edition.parent.mkdir(exist_ok=True)
-edition.write_text(json.dumps({'people': {'table-p3': {'media': [{'asset': '/dot.png', 'photo': True, 'kind': 'family-photograph'}]}}}))
 desk.build(Instance(family))
 from familiar.desk.server import server
 with server(Instance(family), 0) as http:
@@ -148,6 +155,8 @@ with server(Instance(family), 0) as http:
         assert not worker.is_alive()
 from familiar.reader.server import CheckedReader
 private_graph = json.loads(CheckedReader(Instance(family), family / '.secrets/desk-reader-cache').resource('graph.json')[0]); private = private_graph['people']
+assert all(any(m['asset'] == asset and m['title'] == 'An old photo' and set(m['subjects']) == {'table-p1', 'table-p3'} for m in private[pid]['media']) for pid in ('table-p1', 'table-p3'))
+assert any(f['text'] == note and f['status'] == 'hypothesis' for f in private['table-p3']['facts'])
 assert private_graph['sources']['external-original']['asset'].endswith('.html')
 assert next(f for f in private_graph['families'] if f['id'] == union['id'])['status'] == 'verified' and all(e['status'] != 'verified' for e in private_graph['edges'] if (e['parent'], e['child']) == ('table-p4', 'table-p2'))
 assert any(f['text'] == old['text'] for f in private['table-p3']['retiredFacts']) and private['table-p3']['events'][0]['date'] == '1880'

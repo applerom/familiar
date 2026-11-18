@@ -5,6 +5,7 @@
 # - editorial input cannot override document, address or public-display exclusions [review: engine lead]
 # - every selected gallery file must resolve even when its owner is private [review: engine lead]
 # - canonical card decisions win over an alias without losing distinct alias facts [review: engine lead]
+# - imported photographs append to curated cards and follow active person identities [review: engine lead]
 # CHANGES_WITH:
 # - MOD-PUBLICATION (card schema and disclosure policies)
 # - MOD-INSTANCE-VALIDATION (editorial references are checked at intake)
@@ -102,4 +103,6 @@ def apply(instance, graph):
                 person[key] = value + [f for f in person.get(key, []) if f.get('card') and f.get('label') not in labels]
             else:
                 person[key] = value
+    from .gallery import attach
+    attach(instance, graph)
     return graph

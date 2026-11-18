@@ -8,6 +8,7 @@
 # - imported tree claims remain hypotheses with source text through merge and undo [review: engine lead]
 # - attributed union notes preserve unsupported GEDCOM phrases in the snapshot [review: engine lead]
 # - memory narrator references and per-component name inferences stay attached through canonical intake [review: engine lead]
+# - person-bound archive notes retain literal text, testimony and uncertainty without inventing events [review: engine lead]
 # CHANGES_WITH:
 # - MOD-FAMILY-GATE (the shared family boundary contract)
 # - docs/PRD.md#FORMS
@@ -58,9 +59,13 @@ def ingest(instance, data, kind, original=None, accepted_by=None):
         if isinstance(value, dict):
             return {decoded(k): decoded(v) for k, v in value.items()}
         return value
-    literal_items = data.get('items') if isinstance(data, dict) and kind == 'memory' else None
+    if not isinstance(data, dict) or any(not isinstance(data.get(k, []), list) for k in ('people', 'families', 'items')):
+        raise ValueError('intake must be an object with people, families and items arrays')
+    literal_items = [dict(item) for item in data.get('items', [])] if kind == 'memory' else None
     data = normalized(decoded(data))
-    if data.get('table_sha256') and (original is None or hashlib.sha256(original.read_bytes()).hexdigest() != data['table_sha256']):
+    original_bytes = original.read_bytes() if original is not None else None
+    original_digest = hashlib.sha256(original_bytes).hexdigest() if original_bytes is not None else None
+    if data.get('table_sha256') and original_digest != data['table_sha256']:
         raise ValueError('Table memory requires --original matching table_sha256')
     if literal_items is not None:
         data['items'] = literal_items
@@ -73,8 +78,6 @@ def ingest(instance, data, kind, original=None, accepted_by=None):
             next(p for p in data['people'] if p['id'] == pid).setdefault('notes', []).append(note)
     from familiar.instance.gate import require_assertions
     require_assertions(data)
-    if not isinstance(data, dict) or any(not isinstance(data.get(k, []), list) for k in ('people', 'families', 'items')):
-        raise ValueError('intake must be an object with people, families and items arrays')
     visibility = data.get('visibility', 'family')
     if kind == 'memory':
         from .feedback import ask_private
@@ -90,10 +93,8 @@ def ingest(instance, data, kind, original=None, accepted_by=None):
     tree_families = [] if search_only else data.get('families', [])
     ident = token(data["id"])
     digest = hashlib.sha256(json.dumps(data, sort_keys=True).encode()).hexdigest()
-    if original:
-        digest = hashlib.sha256(
-            (digest + hashlib.sha256(original.read_bytes()).hexdigest()).encode()
-        ).hexdigest()
+    if original_digest:
+        digest = hashlib.sha256((digest + original_digest).encode()).hexdigest()
     report_path = safe(instance, "state", f"intake/{ident}.json")
     prior = read(report_path, {})
     if prior:
@@ -106,9 +107,10 @@ def ingest(instance, data, kind, original=None, accepted_by=None):
     families = read(snapshot / "families.json", {"families": []})["families"] if changes_tree else []
     known = {p["id"]: p for p in people}
     from familiar.checks.engine import _known_people
-    working = _known_people(instance) if changes_tree else {}
     refs, candidates = {}, []
     items = data.get("items", [])
+    note_items = [item for item in items if item.get('role') == 'note'] if kind == 'memory' and not search_only else []
+    working = _known_people(instance) if changes_tree or note_items else {}
     grounds = {ident}
     if kind == "memory":
         used_items = set()
@@ -128,11 +130,14 @@ def ingest(instance, data, kind, original=None, accepted_by=None):
             token(item["id"])
             if item["id"] in grounds or item["id"] in used_items:
                 raise ValueError("memory item ids must be unique across tellings")
-            if not all(item.get(k) for k in ("text", "witness")) or item.get("strength") not in (
+            text = item.get('text')
+            if not isinstance(text, str) or not text.strip() or item.get("strength") not in (
                 "firm",
                 "hearsay",
             ):
-                raise ValueError("each memory item needs text, witness and firm/hearsay strength")
+                raise ValueError("each memory item needs text and firm/hearsay strength")
+            if 'witness' in item and (not isinstance(item['witness'], str) or not item['witness'].strip()):
+                raise ValueError('memory witness must be nonempty text')
             grounds.add(item["id"])
 
     def basis(row):
@@ -274,6 +279,7 @@ def ingest(instance, data, kind, original=None, accepted_by=None):
             families.append(family)
     files = {}
     binary = None
+    facts = {}
     if kind == "memory":
         memory = {k: data[k] for k in ("id", "told_by", "date", "items")}
         memory['visibility'] = visibility
@@ -282,12 +288,28 @@ def ingest(instance, data, kind, original=None, accepted_by=None):
         if data.get('narrator') in refs:
             memory['narrator'] = refs[data['narrator']]
         for item in memory["items"]:
-            if item.get("person") in refs:
-                item["person"] = refs[item["person"]]
+            item.setdefault('witness', data['told_by'])
+            pid = item.get('person')
+            if pid in refs:
+                item['person'] = refs[pid]
+            if item.get('role') == 'note' and not search_only:
+                pid = item.get('person')
+                if pid not in refs.values():
+                    if pid not in working:
+                        raise ValueError(f'memory note {item["id"]} needs a local or working-tree person ID')
+                    pid = working[pid]['id']
+                item['person'] = pid
+                if item.get('status', 'reported') not in {'reported', 'possible'}:
+                    raise ValueError(f'memory note {item["id"]} status must be reported or possible')
+                label = item.get('label', 'notes')
+                if not isinstance(label, str) or not label.strip():
+                    raise ValueError(f'memory note {item["id"]} label must be nonempty text')
+                facts.setdefault(pid, []).append({'label': label, 'text': item['text'], 'sources': [item['id']],
+                    'status': 'hypothesis' if item['strength'] == 'hearsay' or item.get('status') == 'possible' else 'export'})
         if original:
             binary = safe(instance, "originals", f"{ident}/{original.name}")
             memory['original'] = binary.relative_to(instance.root).as_posix()
-            memory['original_sha256'] = hashlib.sha256(original.read_bytes()).hexdigest()
+            memory['original_sha256'] = original_digest
         files[safe(instance, "memory", f"{ident}.json")] = memory
     elif kind == "paper":
         record = data["record"]
@@ -319,7 +341,6 @@ def ingest(instance, data, kind, original=None, accepted_by=None):
     # The current graph adapter reads sources/facts from contribution packages.
     # Keep provenance there as well as in the normalized snapshot.
     strengths = {item["id"]: item["strength"] for item in items}
-    facts = {}
     for row in tree_people:
         pid = refs[row["id"]]
         for field in ("names", "events", "notes"):
@@ -373,6 +394,7 @@ def ingest(instance, data, kind, original=None, accepted_by=None):
         "digest": digest,
         "people": len(refs),
         "families": len(data.get("families", [])),
+        **({'items': len(items), 'notes': len(note_items)} if kind == 'memory' else {}),
         "candidates": candidates,
         "losses": data.get("losses", {}),
         "next_step": "researcher: memory-first; name one bridge paper before searching indexes",
@@ -409,6 +431,6 @@ def ingest(instance, data, kind, original=None, accepted_by=None):
                 files[mark] = {"read_at": datetime.now(UTC).isoformat(), "intake": ident, "by": accepted_by or getuser()}
     files[report_path] = report
     if binary:
-        files[binary] = original.read_bytes()
+        files[binary] = original_bytes
     mutate(instance, files, exclusive=[p for p in files if p not in {snapshot / 'people.json', snapshot / 'families.json', safe(instance, 'tree_metadata')}])
     return report

@@ -123,6 +123,8 @@ def _intake_person(person, source_map, records, telling, wording, labels):
             fact['label'] = wording['placeEventUnknown']
             if all(i.get('strength') == 'firm' and i.get('status') != 'possible' for i in memory_items):
                 fact.update(status='export', testimony='firm')
+        if any(i.get('role') == 'note' and i['text'] == fact.get('text') for i in memory_items):
+            continue  # An archive note is literal, even if it looks like a JSON claim.
         if not (any(s.get('kind') in {'memory', 'home-paper', 'gedcom'} for s in sources)
                 or any(sid in records for sid in fact.get('sources', []))):
             continue

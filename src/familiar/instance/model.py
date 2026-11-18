@@ -8,6 +8,7 @@
 # - unsupported schemas and malformed metadata are rejected [review: engine lead]
 # - a declared engine pin is an exact 0.MINOR.PATCH release [review: engine lead]
 # - registered media resolve identically for feed checks and delivery [review: engine lead]
+# - family photo registrations coexist with legacy and manifest media [review: engine lead]
 # CHANGES_WITH:
 # - docs/PRD.md#INSTANCE
 # - docs/reader-export.md (permanent media manifest)
@@ -164,6 +165,9 @@ class Instance:
         rel = asset.removeprefix('/')
         if not rel or '\\' in rel or ':' in rel or any(p in ('', '.', '..') for p in rel.split('/')):
             return None
+        from .gallery import asset_file, permits_display, photograph
+        if photo := photograph(self, '/' + rel):
+            return asset_file(self, rel, photo) if permits_display(self) else None
         base = self.path('media')
         manifest = base / 'manifest.json'
         if manifest.is_file():

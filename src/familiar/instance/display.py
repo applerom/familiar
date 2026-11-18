@@ -10,6 +10,7 @@
 # - build-local reference indexes reuse unchanged JSON; each check resolves distinct local paths anew [review: engine lead]
 # - only explicitly adopted research records and search files enter output snapshots and watches [review: engine lead]
 # - correspondence reply originals bind literal bytes, not existence placeholders [review: engine lead]
+# - the gallery binds both archive pixels and any display derivative [review: engine lead]
 # CHANGES_WITH:
 # - MOD-FAMILY-WRITER
 # - MOD-READER-ASSETS
@@ -205,6 +206,12 @@ def dependencies(instance, *, public=False, research_only=False):
         if normalized(path.stem) in refs:
             files.add(path)
     files.add(manifest)  # Absence is also a dependency, including legacy media.
+    from .gallery import files as photo_files, photographs
+    try:
+        for asset, photo in photographs(instance).items():
+            files.update(photo_files(instance, asset, photo))
+    except (ValueError, OSError, TypeError):
+        pass  # The staged gallery check names invalid rows.
     if manifest.is_file():
         for row in rows:
             path = resolve(manifest.parent / row['file'])

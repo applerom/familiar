@@ -1,7 +1,12 @@
 <Why_Graph_Shard project="Familiar" CAPABILITY="CAP-BUILD">
   <MODULE_FAMILY_EDITION ID="MOD-FAMILY-EDITION" FILE="src/familiar/instance/edition.py" STATE="IMPLEMENTED">
     <!-- Unknown editorial fields are ignored by the whitelist; document, address and public-display exclusions cannot be overridden. -->
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-FAMILY-GALLERY"/>
   </MODULE_FAMILY_EDITION>
+  <MODULE_FAMILY_GALLERY ID="MOD-FAMILY-GALLERY" FILE="src/familiar/instance/gallery.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">The gallery supplies the same identified subjects in each use; living subjects' photos stay in the family display and original metadata stays in the archive.</INVARIANT>
+    <PRD_REF>docs/PRD.md#FORMS</PRD_REF>
+  </MODULE_FAMILY_GALLERY>
   <MODULE_READER_PROFILE ID="MOD-READER-PROFILE" FILE="docs/reader-profile.md" STATE="IMPLEMENTED"/>
   <FEATURE_READER_EXPORT ID="FEAT-READER-EXPORT" STATE="STARTED">
     <INVARIANT REVIEW="engine lead">Language-pack kinship words retain uncertain-link qualifications and explain their permitted tree path; offline glossary examples never consult withheld family inputs.</INVARIANT>

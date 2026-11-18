@@ -543,6 +543,27 @@ consent. It supplies rights to family photographs only. An image with `holder`,
 fingerprinted for both publication and chapter approvals and is never projected
 to the reader. Original archive bytes remain untouched.
 
+**Family photograph intake (`intake photo`)**
+
+Attach a local file to working-tree person IDs with `--person` (repeat for a
+group), `--caption`, `--received-from` and optional `--when` (literal date or
+era). `--table` reads UTF-8 CSV or TSV with columns `file`, `people`, `caption`,
+`received_from` and optional `when`. Relative files resolve beside the table;
+`people` is a space-separated list of working IDs. A batch is one writer
+transaction. Replaying the same bytes, subjects, caption, date and attribution
+keeps one attachment. The effective archive declaration supplies family-app rights.
+
+`paths.gallery` stores a `family_photographs` map keyed by the local asset
+path. Each entry binds every identified person, the caption, date or era,
+private receipt attribution, original path under `paths.originals`, and
+original and display SHA-256. The writer preserves the original byte for byte.
+If the original cannot safely travel as reader media, the `images` extra makes
+a metadata-free display image under `paths.media`. We append the same image to
+each identified person's card, following explicit identity merges. The family
+display includes living subjects' photographs. A public projection excludes
+frames that include anyone whose death is unestablished. The photo route
+does not grant permission to show documents or addresses.
+
 **Scenario (`feeds/<id>/scenario.json`)**
 
 An authored scenario holds `level` (card/page/feed), `basis` (case, version,
@@ -608,12 +629,17 @@ this qualified syntax identifies a pack source, not proof of its historical clai
 
 **Intake additions**
 
-`intake memory input.toml`: id, told_by, date, items (id, text, strength,
-witness), people (local id, optional existing person id, sex, living, names,
+`intake memory input.toml` or `input.json`: id, told_by, date, items (id,
+text, strength, witness defaulting to told_by), people (local id, optional existing person id, sex, living, names,
 events, notes), families (id, husband/wife local ids, children local ids,
 provenance). Each name/event/note and family cites memory item ids in
 provenance. An unnamed remembered person has names = []. Missing living
 status defaults true for privacy. No text inference is performed.
+An item with `role: note` and a local or working-tree `person` ID contributes
+its literal text as a card fact using the optional `label`. `status: possible`
+or `strength: hearsay` retains it as a hypothesis. Search-only memory does
+not contribute card facts. `--original` saves the source file byte for byte,
+including JSON archives whose fields do not follow Familiar's form.
 
 **Kin Sheet 1 — лист родных.** A table is a telling, never a tree import.
 `intake table relatives.xlsx --id relatives --told-by host --date YYYY-MM-DD

@@ -10,6 +10,7 @@
 # - a narrator reference on reported kinship resolves to a canonical family person [review: engine lead]
 # - declared cut-out subjects cannot replace corpus subjects; chapter context is only a fallback [review: engine lead]
 # - generated photo restorations bind real originals and deceased subjects before any privacy omission [review: engine lead]
+# - attaching an archival photograph elsewhere cannot subtract its identified subjects [review: engine lead]
 # CHANGES_WITH:
 # - MOD-PUBLICATION
 # - MOD-CHECKS-PRIVACY
@@ -135,6 +136,7 @@ def closure(instance, value, *, shape='chapter', documents=None, pictures=None, 
     from familiar.checks.engine import _known_people, load, record_path
 
     from .publication import SCHEMAS
+    from .gallery import photograph
     known = _known_people(instance) if people is None else people
     documents, pictures = documents or {}, pictures or {}
     result = Closure()
@@ -203,6 +205,9 @@ def closure(instance, value, *, shape='chapter', documents=None, pictures=None, 
             person(node['id'])
         if kind == 'image':
             photo_pair(instance, node)
+            if photo := photograph(instance, node.get('asset')):
+                for pid in photo['subjects']:
+                    person(pid)
             if node.get('kind') == 'photo-treatment' and not node.get('orig'):
                 raise ValueError('TRUST-08: photo treatment needs its original frame')
             result.images.append(node)

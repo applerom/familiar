@@ -6,6 +6,7 @@
 # - embedded metadata cannot cross an unrecognized binary format [review: engine lead]
 # - asset collection follows declared reference fields, never same-named prose [review: engine lead]
 # - a document's anchor to the reader root is navigation, never a media dependency [review: engine lead]
+# - an archival gallery photo resolves without replacing the existing media catalogue [review: engine lead]
 # CHANGES_WITH:
 # - MOD-PUBLICATION (all reachable asset text is scanned by the projection)
 # - docs/reader-export.md
@@ -92,11 +93,11 @@ def contained(root, value):
 
 
 def catalog(instance):
+    from familiar.instance.gallery import KIND, asset_file, permits_display, photographs
+
     root = instance.path('media')
     file = root / 'manifest.json'
-    if not file.is_file():
-        return {}
-    data = json.loads(file.read_text(encoding='utf-8'))
+    data = json.loads(file.read_text(encoding='utf-8')) if file.is_file() else {'schema_version': 1, 'assets': []}
     if data.get('schema_version') != 1 or type(data.get('schema_version')) is not int:
         raise ValueError('unsupported media manifest version')
     result, ids = {}, set()
@@ -113,6 +114,13 @@ def catalog(instance):
         if not source.is_file() or sha256(source) != row['sha256']:
             raise ValueError(f'media checksum mismatch: {row["id"]}')
         result[public] = (row, source)
+    photos = photographs(instance)
+    if photos and not permits_display(instance):
+        return result
+    for public, photo in photos.items():
+        if public in result or public in ids:
+            raise ValueError('duplicate family photograph output or media id: ' + public)
+        result[public] = ({'id': public, 'kind': KIND, 'sha256': photo['sha256']}, asset_file(instance, public, photo))
     return result
 
 

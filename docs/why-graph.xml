@@ -80,7 +80,7 @@
   </CAPABILITY_GOVERN>
 
   <CAPABILITY_INSTANCE ID="CAP-INSTANCE" SHARD="docs/why-graph/instance.xml" STATE="STARTED">
-    <INTENT>The family root: one config from which tree, feeds, media, export and port are found; intake of GEDCOM and papers.</INTENT>
+    <INTENT>The family root: one config from which tree, feeds, media, export and port are found; intake of GEDCOM, memory, photographs and papers.</INTENT>
     <PRD_REF>docs/PRD.md#ARCH</PRD_REF>
     <REL TYPE="IMPACTS" TARGET="CAP-RULES"/>
     <REL TYPE="DEPENDS_ON" TARGET="CAP-PIPELINE"/>

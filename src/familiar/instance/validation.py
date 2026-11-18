@@ -17,6 +17,7 @@
 # - whole and selected-file checks report rejected contributions with their claim and cause [review: engine lead]
 # - all person references use applied contributions and resolve merged ids to active people [review: engine lead]
 # - a correspondence aim resolves its people and linked research version [review: engine lead]
+# - galleries bind each preserved original and rendition; opaque originals are not family forms [review: engine lead]
 # CHANGES_WITH:
 # - MOD-FAMILY-GATE (the shared family boundary contract)
 # - docs/PRD.md#FORMS
@@ -46,6 +47,8 @@ def validate_changes(instance, paths):
     selected = set()
     for path in paths:
         selected.add(str(path))
+        if path.is_relative_to(instance.path('originals')):
+            continue  # A received JSON file remains opaque evidence, just like a scan.
         if path.parent == instance.path('tree_snapshot'):
             selected.add(str(path.parent))
         if path == instance.path('privacy'):
@@ -181,6 +184,20 @@ def _check(instance, selected=None):
     from .edition import errors as edition_errors
     for message in edition_errors(instance):
         fail(instance.path('edition'), message, 'instance.message')
+    gallery_path = instance.path('gallery')
+    if selected is None or str(gallery_path) in selected:
+        from .gallery import asset_file, photographs
+        try:
+            photos = photographs(instance)
+            if photos:
+                from familiar.checks.engine import _known_people
+                known = _known_people(instance)
+                for asset, photo in photos.items():
+                    if missing := set(photo['subjects']) - known.keys():
+                        fail(gallery_path, f'{asset}: unknown photo subjects: {", ".join(sorted(missing))}', 'instance.message')
+                    asset_file(instance, asset, photo)
+        except (ValueError, OSError, TypeError) as exc:
+            fail(gallery_path, str(exc), 'instance.message')
 
     def load(path, default):
         if not path.exists():

@@ -45,7 +45,7 @@
 
   <FEATURE_INTAKE ID="FEAT-INTAKE" STATE="STARTED">
     <INVARIANT REVIEW="engine lead">Table memories retain the narrator's literal kinship word independently of graph confidence; inferred name components carry their own explanation instead of weakening the whole name.</INVARIANT>
-    <INTENT>Attributed table drafts, memory, home papers with literal fields or reading, and GEDCOM enter a family with explicit losses and identity candidates.</INTENT>
+    <INTENT>Attributed table drafts, memory, home papers, photographs and GEDCOM enter a family with explicit losses and identity candidates.</INTENT>
     <INVARIANT REVIEW="engine lead">Memory and an imported tree retain distinct grounds, married names and source text after an explicit identity decision.</INVARIANT>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INTAKE-FEEDBACK"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INTAKE-TABLE"/>
@@ -56,6 +56,7 @@
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INTAKE-NAMES"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INTAKE-GEDCOM"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INTAKE-CLI"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INTAKE-PHOTO"/>
     <PRD_REF>docs/PRD.md#FEATURES</PRD_REF>
   </FEATURE_INTAKE>
 
@@ -83,6 +84,7 @@
   <MODULE_INTAKE_SHEET ID="MOD-INTAKE-SHEET" FILE="src/familiar/intake/sheet.py" STATE="IMPLEMENTED"/>
   <MODULE_INTAKE_CORE ID="MOD-INTAKE-CORE" FILE="src/familiar/intake/core.py" STATE="IMPLEMENTED">
     <INVARIANT REVIEW="engine lead">Existing intake anchors resolve working people and identity successors; research claims remain contributions.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">A person-bound memory note retains the original words, narrator and source uncertainty without creating a tree event.</INVARIANT>
     <!-- Literal union notes remain attributed snapshot input across repeat exchange. -->
     <REL TYPE="DEPENDS_ON" TARGET="MOD-INTAKE-GEDCOM"/>
   </MODULE_INTAKE_CORE>
@@ -92,6 +94,11 @@
          unsupported adoption/role semantics remain explicit import losses. -->
   </MODULE_INTAKE_GEDCOM>
   <MODULE_INTAKE_CLI ID="MOD-INTAKE-CLI" FILE="src/familiar/intake/cli.py" STATE="IMPLEMENTED"/>
+  <MODULE_INTAKE_PHOTO ID="MOD-INTAKE-PHOTO" FILE="src/familiar/intake/photo.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">One atomic intake binds every photo to the original bytes, safe display pixels and all identified subjects.</INVARIANT>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-FAMILY-GALLERY"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-FAMILY-WRITER"/>
+  </MODULE_INTAKE_PHOTO>
   <MODULE_FAMILY_GATE ID="MOD-FAMILY-GATE" FILE="src/familiar/instance/gate.py" STATE="IMPLEMENTED">
     <INVARIANT REVIEW="engine lead">Withheld chapter media advise separately for the host and readers without weakening exclusions.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-PUBLICATION"/>
