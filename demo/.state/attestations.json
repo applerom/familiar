@@ -2,127 +2,145 @@
   "feed:ferrolho/__feed__@en": {
     "page": "feed:ferrolho/__feed__",
     "language": "en",
-    "reviewer": "lead-claude-fable-5.2",
+    "reviewer": "u36-codex-gpt-6.2-sol",
     "author": "familiar-demo-original-authors",
     "digest": "26a47929088a324d91f56043ef0cecae0ed3f083351e48ac7ffb087c0192ac77",
-    "safety_digest": "f18f43e3458a795b2e0dc892b6948863cdad1b817ef6808fea056426a5029b57",
+    "safety_digest": "5ee13b9b7bb97e0e2de3d14d14f0f41364d2b85eee3cf32ea4280a120a52fdb5",
     "rules": [
       "R1",
       "R2",
       "R3",
       "R4"
     ],
-    "inspection_digest": "afcce38154619ae22d02e974954597d4a51aafcc4fa52ad09bd2b11a2be06572",
+    "inspection_digest": "c850c46b769bf5063741e693287c46e637fac8e339fb60920bb3a4b51db2b0c6",
     "verdict": "pass",
-    "at": "2026-11-17T07:09:51.121521+00:00",
+    "at": "2026-11-18T18:32:29.729905+00:00",
     "stage": "reading"
   },
   "feed:ferrolho/amaro-1921@en": {
     "page": "feed:ferrolho/amaro-1921",
     "language": "en",
-    "reviewer": "lead-claude-fable-5.2",
+    "reviewer": "u36-codex-gpt-6.2-sol",
     "author": "familiar-demo-original-authors",
-    "digest": "d7f115055e882efb80264284dfaac609c85098c43f1a0945dbbe4591561adb02",
-    "safety_digest": "f18f43e3458a795b2e0dc892b6948863cdad1b817ef6808fea056426a5029b57",
+    "digest": "9c7780475fcdcffc081faac31722a3064595c2c2c00dfa925fcb8ea6ee2dd7bc",
+    "safety_digest": "5ee13b9b7bb97e0e2de3d14d14f0f41364d2b85eee3cf32ea4280a120a52fdb5",
     "rules": [
       "R1",
       "R2",
       "R3",
       "R4"
     ],
-    "inspection_digest": "4aceb3ded657688f27b99e10785a1edc3de5c7744da067b90ab03ef64f936dc5",
+    "inspection_digest": "cf9dc89d8771ec6e15ed582d3ee0f12791c1d5b7e00676a4a23c2c2ecb8f974d",
     "verdict": "pass",
-    "at": "2026-11-17T07:09:51.121521+00:00",
+    "at": "2026-11-18T18:32:29.729905+00:00",
     "stage": "reading"
   },
   "feed:ferrolho/rosa-1925@en": {
     "page": "feed:ferrolho/rosa-1925",
     "language": "en",
-    "reviewer": "lead-claude-fable-5.2",
+    "reviewer": "u36-codex-gpt-6.2-sol",
     "author": "familiar-demo-original-authors",
-    "digest": "d65a5df6621afcec1b27e3b93e6bed9c25437126362d8e3367c0a310148552cb",
-    "safety_digest": "f18f43e3458a795b2e0dc892b6948863cdad1b817ef6808fea056426a5029b57",
+    "digest": "6c40166f16e0da207c074ab18e6236766b13d16520fd5027b87ba59c71ba5733",
+    "safety_digest": "5ee13b9b7bb97e0e2de3d14d14f0f41364d2b85eee3cf32ea4280a120a52fdb5",
     "rules": [
       "R1",
       "R2",
       "R3",
       "R4"
     ],
-    "inspection_digest": "2827f8f8e930ff9e3c86ce67293581af4639c83bf28a4b5d53ca206bf43a7a8b",
+    "inspection_digest": "2c052b0df18cdcad95ee2184a25e8a19122325ea1407fc3a2fecee06bfdf59c3",
     "verdict": "pass",
-    "at": "2026-11-17T07:09:51.121521+00:00",
+    "at": "2026-11-18T18:32:29.729905+00:00",
     "stage": "reading"
   },
   "reader:tree@en": {
     "page": "reader:tree",
     "language": "en",
-    "reviewer": "lead-claude-fable-5.2",
+    "reviewer": "u36-codex-gpt-6.2-sol",
     "author": "familiar-demo-original-authors",
-    "digest": "9e7b2df44499ecde8e53b4a00eb59ed1b45809538fe8bc97926b499b72c0b78f",
-    "safety_digest": "f18f43e3458a795b2e0dc892b6948863cdad1b817ef6808fea056426a5029b57",
+    "digest": "295aaa9672f79a59766396ac943b05e5f7fd2e086127850181c9205d7dadedca",
+    "safety_digest": "5ee13b9b7bb97e0e2de3d14d14f0f41364d2b85eee3cf32ea4280a120a52fdb5",
     "rules": [
       "R1",
       "R2",
       "R3",
       "R4"
     ],
-    "inspection_digest": "08439355f232807b929715155f1dcdcbad274476238ac7a9adff2c0b8952183f",
+    "inspection_digest": "05fa0666f2ed64d8f903d774bc6573dc6dd865ce027278bc377e50c3d6363c83",
     "verdict": "pass",
-    "at": "2026-11-17T07:09:51.121521+00:00",
+    "at": "2026-11-18T18:32:29.729905+00:00",
     "stage": "reading"
   },
   "reader:file:reader-profile.json@en": {
     "page": "reader:file:reader-profile.json",
     "language": "en",
-    "reviewer": "lead-claude-fable-5.2",
+    "reviewer": "u36-codex-gpt-6.2-sol",
     "author": "familiar-demo-original-authors",
     "digest": "3bc904fe88f65f85d583a9ca6934d00d6ce5c386c28af12c6c91758b950a2f68",
-    "safety_digest": "f18f43e3458a795b2e0dc892b6948863cdad1b817ef6808fea056426a5029b57",
+    "safety_digest": "5ee13b9b7bb97e0e2de3d14d14f0f41364d2b85eee3cf32ea4280a120a52fdb5",
     "rules": [
       "R1",
       "R2",
       "R3",
       "R4"
     ],
-    "inspection_digest": "18313068b648c0bb70deab973e8df0f3f9efb6bc7c66492d228d3ec58b2b3eed",
+    "inspection_digest": "9d0a506acca25a962a56e41f61d0868566b6d3150c420743d0115dda1895ad38",
     "verdict": "pass",
-    "at": "2026-11-17T07:09:51.121521+00:00",
+    "at": "2026-11-18T18:32:29.729905+00:00",
     "stage": "reading"
   },
   "reader:file:sources/accb322b9224a59dc54c.html@en": {
     "page": "reader:file:sources/accb322b9224a59dc54c.html",
     "language": "en",
-    "reviewer": "lead-claude-fable-5.2",
+    "reviewer": "u36-codex-gpt-6.2-sol",
     "author": "familiar-demo-original-authors",
-    "digest": "4e175aa76263a1afaa2676a02cfe5666403befcf8b4baccb4cb44962ee1e7c79",
-    "safety_digest": "f18f43e3458a795b2e0dc892b6948863cdad1b817ef6808fea056426a5029b57",
+    "digest": "73bdf23131046b68632df8b19765cdfa9bfb6768d5f7166f5f8bdff279e12920",
+    "safety_digest": "5ee13b9b7bb97e0e2de3d14d14f0f41364d2b85eee3cf32ea4280a120a52fdb5",
     "rules": [
       "R1",
       "R2",
       "R3",
       "R4"
     ],
-    "inspection_digest": "e7d28edef8c2bdf1492e1b3c626e7eb3c5a70b3b1bc349751ae464e80651b346",
+    "inspection_digest": "3293671a1aaaf1e4a652a849dbce81ada75437c6c4045d3d8c8a74e0dcdab0f6",
     "verdict": "pass",
-    "at": "2026-11-17T07:09:51.121521+00:00",
+    "at": "2026-11-18T18:32:29.729905+00:00",
     "stage": "reading"
   },
   "reader:file:sources/7cebdfd04b3813e08a8b.html@en": {
     "page": "reader:file:sources/7cebdfd04b3813e08a8b.html",
     "language": "en",
-    "reviewer": "lead-claude-fable-5.2",
+    "reviewer": "u36-codex-gpt-6.2-sol",
     "author": "familiar-demo-original-authors",
-    "digest": "b0cd2fb37c5caf7b0d43e8524f4cf48a8f6822603729d5fc00b012386dcb81c8",
-    "safety_digest": "f18f43e3458a795b2e0dc892b6948863cdad1b817ef6808fea056426a5029b57",
+    "digest": "a3906aa684f3d1a7984c5334cd393536b644fe50e43d803346708611c69c8d66",
+    "safety_digest": "5ee13b9b7bb97e0e2de3d14d14f0f41364d2b85eee3cf32ea4280a120a52fdb5",
     "rules": [
       "R1",
       "R2",
       "R3",
       "R4"
     ],
-    "inspection_digest": "eca27f95e68f8bfc7a824cac36fa6108fdc8b382605aecf496961beef8279816",
+    "inspection_digest": "584ea136a075500513c225743d191f65e13421660b099f3b969366bff1b27899",
     "verdict": "pass",
-    "at": "2026-11-17T07:09:51.121521+00:00",
+    "at": "2026-11-18T18:32:29.729905+00:00",
+    "stage": "reading"
+  },
+  "reader:file:sources/document-back.js@en": {
+    "page": "reader:file:sources/document-back.js",
+    "language": "en",
+    "reviewer": "u36-codex-gpt-6.2-sol",
+    "author": "familiar-demo-original-authors",
+    "digest": "ec7ef05df03eddbbcfd61232a09250e7fe0ea1a5a49f11ca034eae8415701155",
+    "safety_digest": "5ee13b9b7bb97e0e2de3d14d14f0f41364d2b85eee3cf32ea4280a120a52fdb5",
+    "rules": [
+      "R1",
+      "R2",
+      "R3",
+      "R4"
+    ],
+    "inspection_digest": "60b348b09e3a04bfc6ef49b9da89f8c17bdb415c82488bc3fc7e5784010963be",
+    "verdict": "pass",
+    "at": "2026-11-18T18:32:29.729905+00:00",
     "stage": "reading"
   }
 }
