@@ -1,98 +1,230 @@
 import type {Model} from './model';
-export type Size='xl'|'l'|'m'|'c'|'dot'|'tiny'|'pill'|'kids'|'up'|'ring';
-export type Node={id:string;key:string;x:number;y:number;w:number;h:number;size:Size;gen:number;status:string;branch:number;color:string;kin:boolean;center:boolean;count:number;other:string;label:string};
-export type Link={key:string;d:string;gen:number;status:string;kind:'parent'|'union'|'child';color?:string};
-export type Layout={nodes:Node[];links:Link[];width:number;height:number;box:{x0:number;x1:number;y0:number;y1:number};fogs:{x:number;y:number}[];couple:boolean;level:number;visible:Set<string>};
-const MAX_LEVEL=9;
-const curve=(x1:number,y1:number,x2:number,y2:number)=>`M${x1},${y1} C${x1},${(y1+y2)/2} ${x2},${(y1+y2)/2} ${x2},${y2}`;
-type T={id:string;status:string;gen:number;kids:T[];w:number;x:number;child?:T};
-/** Ancestor tree of `root`, `up` generations deep, never listing a person twice. */
-function ancestors(m:Model,root:string,up:number,seen:Set<string>){
- const build=(id:string,gen:number,status:string):T=>{const t:T={id,status,gen,kids:[],w:1,x:0};if(gen<up)m.parents(id).slots.forEach(s=>{if(s&&!seen.has(s.id)){seen.add(s.id);const k=build(s.id,gen+1,m.connectionStatus(s));k.child=t;t.kids.push(k)}});t.w=t.kids.length?t.kids.reduce((a,k)=>a+k.w,0):1;return t};
- return build(root,0,'export');
+
+export type Tile = {
+  id: string | null; key: string; x: number; y: number; w: number; h: number;
+  gen: number; status: string; scale: number; color?: string; siblings: string[];
+};
+type Link = {key: string; d: string; gen: number; status: string; kind: 'parent' | 'union' | 'child'; color?: string};
+type Box = {x0: number; x1: number; y0: number; y1: number};
+export type Layout = {
+  tiles: Tile[]; links: Link[]; width: number; height: number; box: Box; near: Box;
+  axis: number; rootBottom: number; horizon: boolean; linkOffset: number;
+  visible: Set<string>; collateral: string[]; beyond: string[];
+};
+type Ancestor = {id: string | null; key: string; gen: number; status: string; x: number; weight: number; parents: Ancestor[]};
+const MAX_LEVEL = 9;
+const HISTORY_LEVEL = 3; // The centre is generation one.
+const DEFAULT_LEVEL = 5;
+const HORIZON_Y = 18;
+const PAD = 14;
+const PERSPECTIVE = [.74, .56, .42, .38, .35, .32, .3];
+const scaleFor = (gen: number) => gen < HISTORY_LEVEL ? 1 : PERSPECTIVE[gen - HISTORY_LEVEL];
+const curve = (x1: number, y1: number, x2: number, y2: number) =>
+  `M${x1},${y1} C${x1},${(y1 + y2) / 2} ${x2},${(y1 + y2) / 2} ${x2},${y2}`;
+
+function rootsFor(m: Model, center: string) {
+  const mate = m.spouses(center).find(id => !m.info[id].placeholder);
+  if (!mate) return [center];
+  return m.husbands.has(mate) && !m.husbands.has(center) ? [mate, center] : [center, mate];
 }
-// parents of the person get equal room (so they stay readable); further up, wide branches get more
-function place(t:T,a:number,b:number){t.x=(a+b)/2;if(!t.kids.length)return;const weight=(k:T)=>t.gen===0?1:k.w+1;const total=t.kids.reduce((s,k)=>s+weight(k),0);let at=a;for(const k of t.kids){const share=(b-a)*weight(k)/total;place(k,at,at+share);at+=share}}
-const flat=(t:T,out:T[]=[])=>{out.push(t);t.kids.forEach(k=>flat(k,out));return out};
-/** How many generations can this person show on a stage of this width, and how many fit its height by default. */
-export function levelRange(m:Model,center:string,W:number,H:number){
- let max=1,auto=1;const mate=m.spouses(center)[0];
- for(let L=1;L<=MAX_LEVEL;L++){
-  const seen=new Set([center,mate].filter(Boolean) as string[]);
-  const trees=[ancestors(m,center,L,seen),...(mate?[ancestors(m,mate,L,seen)]:[])];
-  const rows=new Map<number,number>();trees.forEach(t=>flat(t).forEach(n=>rows.set(n.gen,(rows.get(n.gen)||0)+1)));
-  const deepest=Math.max(...rows.keys());if(deepest<L&&L>1)break;
-  const widest=Math.max(...[...rows].filter(([g])=>g>0).map(([,c])=>c),0);if(widest*10>W-24&&L>1)break;
-  max=L;const cap=W<560?3:W<1000?4:5;if(L<=cap&&(layoutTree(m,center,W,L).height<=H/.82||L<=2))auto=L;
- }
- return {max,auto:Math.min(auto,max)};
+
+/** Draw a shared ancestor once, at the closest generation; retain each child's link. */
+function ancestorRows(m: Model, roots: string[], level: number) {
+  const person = (id: string, gen: number, status: string): Ancestor =>
+    ({id, key: id, gen, status, x: 0, weight: 1, parents: []});
+  const rows = [roots.map(id => person(id, 0, 'export'))];
+  const people = new Map(rows[0].map(n => [n.id!, n]));
+  const links: {child: Ancestor; parent: Ancestor; status: string}[] = [];
+  for (let gen = 0; gen < rows.length && gen < level; gen++) {
+    const next: Ancestor[] = [];
+    for (const child of rows[gen]) {
+      if (child.id === null) continue;
+      m.parents(child.id).slots.forEach((slot, i) => {
+        const status = slot ? m.connectionStatus(slot) : 'unknown';
+        const existing = slot && people.get(slot.id);
+        const parent = existing || (slot ? person(slot.id, gen + 1, status) : {
+          id: null, key: JSON.stringify([child.id, i]), gen: gen + 1, status, x: 0, weight: 1, parents: [],
+        });
+        links.push({child, parent, status});
+        if (existing) return;
+        child.parents.push(parent);
+        next.push(parent);
+        if (slot) people.set(slot.id, parent);
+      });
+    }
+    if (next.length) rows.push(next);
+  }
+  return {rows, links};
 }
-/**
- * A window onto the tree. The person and partner sit side by side, ancestors rise above them and take the room they are
- * given (full cards, small cards, round avatars, dots), children hang below. `level` is how many generations go up.
- */
-export function layoutTree(m:Model,center:string,W:number,level:number):Layout{
- const cardHeight=(id:string,w:number,base:number,large=false)=>{
-  const textWidth=Math.max(30,w-28),font=large?16:13.5;
-  return Math.max(m.info[id].connector?48:base,Math.ceil(m.info[id].treeName.length*font*.63/textWidth)*font*1.25+(m.info[id].connector?20:42))};
- const pad=12;const mate=m.spouses(center)[0];const couple=!!mate;const narrow=W<560;
- let leftId=center,rightId=mate||'';if(couple&&!m.husbands.has(center)&&m.husbands.has(mate)){leftId=mate;rightId=center}
- const seen=new Set([center,mate].filter(Boolean) as string[]);
- const roots=couple?[ancestors(m,leftId,level,seen),ancestors(m,rightId,level,seen)]:[ancestors(m,center,level,seen)];
- const halves=couple?[[pad,W/2],[W/2,W-pad]]:[[pad,W-pad]];
- roots.forEach((r,i)=>place(r,halves[i][0],halves[i][1]));
- const all=roots.flatMap(r=>flat(r));const byGen=new Map<number,T[]>();all.forEach(t=>(byGen.get(t.gen)||byGen.set(t.gen,[]).get(t.gen)!).push(t));
- const maxGen=Math.max(...byGen.keys());
- // size every ancestor by the room its neighbours leave it
- type S={t:T;size:Size;w:number;h:number;label:string};const sized=new Map<string,S>();
- for(const [g,row] of byGen){if(g===0)continue;row.sort((a,b)=>a.x-b.x);
-  row.forEach((t,i)=>{const l=i?(t.x-row[i-1].x)/2:t.x-pad,r=i<row.length-1?(row[i+1].x-t.x)/2:W-pad-t.x;const aw=2*Math.min(l,r)*.94;const i2=m.info[t.id];
-   let size:Size,w:number,h:number;
-   if(aw>=150){size='l';w=Math.min(aw,230);h=76}
-   else if(aw>=84){size='m';w=aw;h=78}
-   else if(aw>=40){size='dot';w=h=Math.min(aw*.78,40)}
-   else{size='tiny';w=h=Math.max(8,Math.min(aw*.8,16))}
-   const sur=i2.providedName||i2.short.split(' ').filter(x=>/\p{L}/u.test(x)).slice(-1)[0]||'';
-   if(size==='l'||size==='m')h=cardHeight(t.id,w,h);
-   sized.set(t.id,{t,size,w,h:size==='dot'&&aw>=62?h+16:h,label:size==='dot'&&aw>=62?sur:''})})}
- const c0={w:couple?Math.min(W/2*.92,250):Math.min(W*.66,270),h:couple?(narrow?92:84):88};
- c0.h=Math.max(...[center,mate].filter(Boolean).map(id=>cardHeight(id,c0.w,c0.h,true)));
- // vertical rows, oldest on top
- const rowH=new Map<number,number>();rowH.set(0,c0.h);for(let g=1;g<=maxGen;g++)rowH.set(g,Math.max(...(byGen.get(g)||[]).map(t=>sized.get(t.id)!.h),0));
- const gap=(g:number)=>g<=1?50:rowH.get(g)!>=60&&rowH.get(g-1)!>=60?42:26;
- const topRow=byGen.get(maxGen)||[];const hasMoreTop=maxGen>0&&topRow.some(t=>m.hasParents(t.id));
- const rowY:number[]=[];let y=pad+(hasMoreTop?30:0);for(let g=maxGen;g>=0;g--){rowY[g]=y;y+=rowH.get(g)!+(g>0?gap(g):0)}
- const nodes:Node[]=[];const links:Link[]=[];const fogs:{x:number;y:number}[]=[];const visible=new Set<string>();
- const mk=(id:string,x:number,y:number,w:number,h:number,size:Size,gen:number,status:string,extra:Partial<Node>={})=>{if(size!=='ring'&&size!=='up')visible.add(id);const tone=m.tone(id);nodes.push({id,key:id+(['pill','kids','ring','up'].includes(size)?':'+size:''),x,y,w,h,size,gen,status,branch:m.branch.get(id)??-1,color:tone?.color||'',kin:!!tone?.kin,center:id===center,count:0,other:'',label:'',...extra})};
- const cx0=new Map<string,number>();
- // center row
- const cy=rowY[0];const xs=roots.map(r=>r.x);const ids=couple?[leftId,rightId]:[center];
- ids.forEach((id,i)=>{cx0.set(id,xs[i]);mk(id,xs[i]-c0.w/2,cy,c0.w,c0.h,'xl',0,'export')});
- const cxm=W/2;const cmid=cy+c0.h/2;
- if(couple){const status=m.connectionStatus(m.spouseConnection(center,mate));mk(center+':ring',cxm-13,cmid-13,26,26,'ring',0,status);links.push({key:'union',d:`M${xs[0]+c0.w/2},${cmid} L${xs[1]-c0.w/2},${cmid}`,gen:0,status,kind:'union'})}
- // ancestors
- for(const [g,row] of byGen){if(g===0)continue;for(const t of row){const s=sized.get(t.id)!;const yy=rowY[g]+(rowH.get(g)!-s.h)/2;
-  mk(t.id,t.x-s.w/2,yy,s.w,s.h,s.size,g,t.status,{label:s.label});
-  const ch=t.child!;const cs=ch.gen===0?{y:cy,h:c0.h,x:cx0.get(ch.id)!}:{y:rowY[ch.gen]+(rowH.get(ch.gen)!-sized.get(ch.id)!.h)/2,h:0,x:ch.x};
-  links.push({key:ch.id+'>'+t.id,d:curve(cs.x,cs.y,t.x,yy+(s.size==='dot'?s.w:s.h)),gen:g,status:t.status,kind:'parent',color:m.tone(t.id)?.color});
-  if(g===maxGen&&m.hasParents(t.id)){fogs.push({x:t.x,y:yy});const n=m.ancestorsCount(t.id);if(s.size!=='tiny')mk(t.id,t.x-18,yy-27,36,19,'up',g,'export',{count:n})}}}
- // other partners
- const extras=m.spouses(center).slice(couple?1:0).filter(x=>x!==mate);
- const cb=cy+c0.h;let originX=cxm,originY=couple?cmid+13:cb;
- const pw=(id:string)=>Math.max(84,Math.min(176,m.info[id].treeName.length*6.6+44));
- let px=cx0.get(center)!-8;
- extras.slice(0,3).forEach(id=>{const w=pw(id);mk(id,px,cb+6,w,44,'pill',0,m.connectionStatus(m.spouseConnection(center,id)));px+=w+6});
- // children
- const kids=m.children(center);
- if(kids.length){
-  const avail=W-pad*2,gp=10,minW=narrow?104:130;const cols=Math.max(1,Math.min(kids.length,Math.floor((avail+gp)/(minW+gp))));const cw=Math.min(narrow?160:176,(avail-(cols-1)*gp)/cols);const ch=Math.max(...kids.map(id=>cardHeight(id,cw,80))),stride=ch+30;
-  const top=cb+(extras.length?56:couple?44:50);
-  kids.forEach((id,i)=>{const r=Math.floor(i/cols),c=i%cols;const inRow=Math.min(cols,kids.length-r*cols);const x=cxm-(inRow*cw+(inRow-1)*gp)/2+c*(cw+gp);const yy=top+r*stride;
-   const slot=m.parents(id).slots.find(sl=>sl?.id===center);const other=extras.length?(m.parents(id).slots.map(sl=>sl?.id).find(pid=>pid&&pid!==center)||''):'';
-   mk(id,x,yy,cw,ch,'c',-1,slot?m.connectionStatus(slot):'export',{other:other?(m.info[other].providedName||m.info[other].short.split(' ')[0]):''});
-   links.push({key:center+'>'+id,d:curve(originX,originY,x+cw/2,yy),gen:1,status:slot?m.connectionStatus(slot):'export',kind:'child'});
-   const n=m.children(id).length;if(n)mk(id,x+cw/2-24,yy+ch-5,48,20,'kids',-1,'export',{count:n})});
- }
- const x0=Math.min(...nodes.map(n=>n.x)),x1=Math.max(...nodes.map(n=>n.x+n.w)),y0=Math.min(...nodes.map(n=>n.y)),y1=Math.max(...nodes.map(n=>n.y+n.h));
- return {nodes,links,width:W,height:y1+pad,box:{x0,x1,y0,y1},fogs,couple,level,visible};
+
+function place(node: Ancestor, a: number, b: number) {
+  node.x = (a + b) / 2;
+  const weight = (parent: Ancestor) => node.gen === 0 ? 1 : parent.weight + 1;
+  const total = node.parents.reduce((sum, parent) => sum + weight(parent), 0);
+  let left = a;
+  for (const parent of node.parents) {
+    const right = left + (b - a) * weight(parent) / total;
+    place(parent, left, right);
+    left = right;
+  }
 }
+
+export function levelRange(m: Model, center: string) {
+  const deepest = rootsFor(m, center).reduce((depth, id) =>
+    Math.max(depth, ...Array.from(m.ancestorsOf(id).values(), a => a.n)), 0);
+  const max = Math.min(MAX_LEVEL, deepest + 1);
+  return {max, auto: Math.min(DEFAULT_LEVEL, max)};
+}
+
+/** Project older rows towards the horizon, then give overlapping tiles room horizontally. */
+export function layoutTree(m: Model, center: string, viewport: number, level: number): Layout {
+  const roots = rootsFor(m, center);
+  const {rows, links: parentLinks} = ancestorRows(m, roots, level);
+  const narrow = viewport < 560;
+  const axis = viewport / 2;
+  const region = Math.min(viewport - PAD * 2, 900);
+  const lane = region / roots.length;
+  for (const row of rows.slice().reverse())
+    for (const node of row) node.weight = Math.max(1, node.parents.reduce((sum, p) => sum + p.weight, 0));
+  rows[0].forEach((node, i) => place(node, axis - region / 2 + i * lane, axis - region / 2 + (i + 1) * lane));
+
+  const tiles: Tile[] = [];
+  const tileByKey = new Map<string, Tile>();
+  const card = (id: string | null, key: string, gen: number, status: string, w: number): Tile => {
+    const scale = scaleFor(gen);
+    const name = id === null ? '' : m.info[id].treeName;
+    const font = gen === 0 ? 16 : gen === 1 ? 14 : 12.5;
+    const base = gen === 0 ? 68 : 58;
+    const h = gen < HISTORY_LEVEL
+      ? Math.max(base, Math.ceil(name.length * font * .56 / (w - 25)) * font * 1.22 + 33)
+      : Math.max(24, Math.round(52 * scale));
+    const siblings = id !== null && gen >= 0 ? m.siblingDeck(id) : [];
+    return {id, key, gen, status, w, h, scale, x: 0, y: 0, siblings, color: id === null ? undefined : m.tone(id)?.color};
+  };
+  const widths = [narrow ? 152 : 188, narrow ? 126 : 144, narrow ? 104 : 106];
+  const halo = (tile: Tile) => tile.siblings.length > 1 ? 16 : 0;
+  const rowTiles = rows.map((row, gen) => {
+    const scale = scaleFor(gen);
+    const w = gen < HISTORY_LEVEL ? widths[gen] : Math.max(44, Math.round(widths[2] * scale));
+    const ordered = [...row].sort((a, b) => a.x - b.x);
+    const cards = ordered.map(n => card(n.id, n.key, gen, n.status, w));
+    const desired = ordered.map((n, i) => gen === 0
+      ? axis + (i - (ordered.length - 1) / 2) * (w + (narrow ? 35 : 72)) - w / 2
+      : axis + (n.x - axis) * scale - w / 2);
+    const gap = gen < HISTORY_LEVEL ? 17 : Math.max(9, Math.round(18 * scale));
+    let right = -Infinity;
+    cards.forEach((tile, i) => {
+      tile.x = Math.max(desired[i], right + gap);
+      right = tile.x + w;
+    });
+    const shift = (cards[0].x - desired[0] + cards.at(-1)!.x - desired.at(-1)!) / 2;
+    for (const tile of cards) {
+      tile.x -= shift;
+      tileByKey.set(tile.key, tile);
+    }
+    return cards;
+  });
+
+  const last = rowTiles.length - 1;
+  const horizon = last >= HISTORY_LEVEL;
+  let y = horizon ? HORIZON_Y + 26 : PAD;
+  for (let gen = last; gen >= 0; gen--) {
+    const row = rowTiles[gen];
+    const height = Math.max(...row.map(tile => tile.h));
+    for (const tile of row) {
+      tile.y = y + (height - tile.h) / 2;
+      tiles.push(tile);
+    }
+    y += height + (gen >= HISTORY_LEVEL ? Math.max(12, Math.round(scaleFor(gen) * (narrow ? 32 : 39))) : narrow ? 26 : 34);
+  }
+  const rootBottom = Math.max(...rowTiles[0].map(tile => tile.y + tile.h));
+
+  const links: Link[] = [];
+  const midX = (tile: Tile) => tile.x + tile.w / 2;
+  const parentPath = (child: Tile, parent: Tile) => parent.gen > child.gen
+    ? curve(midX(child), child.y, midX(parent), parent.y + parent.h)
+    : curve(midX(child), child.y, midX(parent), parent.y);
+  for (const {child, parent, status} of parentLinks) {
+    const from = tileByKey.get(child.key)!;
+    const to = tileByKey.get(parent.key)!;
+    links.push({key: JSON.stringify([child.key, parent.key]), d: parentPath(from, to), gen: parent.gen,
+      status, kind: 'parent', color: to.color});
+  }
+  if (roots.length === 2) {
+    const [a, b] = rowTiles[0];
+    links.push({key: 'union', d: `M${a.x + a.w},${a.y + a.h / 2} L${b.x},${b.y + b.h / 2}`,
+      gen: 0, status: m.connectionStatus(m.spouseConnection(roots[0], roots[1])), kind: 'union'});
+  }
+
+  const visible = new Set(tiles.flatMap(tile => tile.id === null ? [] : [tile.id]));
+  const extras = m.spouses(center).filter(id => !visible.has(id) && !m.info[id].placeholder);
+  const children = m.children(center).filter(id => !visible.has(id));
+  let lower = rootBottom + 40;
+  // Keep the closer part of each row readable on a phone; wider families can pan to the remaining children.
+  for (const [ids, kind] of [[extras, 'union'], [children, 'child']] as const) {
+    const row = ids.filter(id => !visible.has(id)).sort(m.bySeniority);
+    const w = narrow ? 148 : 158;
+    const wideChildren = new Map<string, {x: number; y: number; status: string; stops: number[]}>();
+    row.forEach((id, i) => {
+      const parents = m.parents(id);
+      const slot = [...parents.slots, ...parents.extra].find(p => p?.id === center);
+      const status = m.connectionStatus(kind === 'union' ? m.spouseConnection(center, id) : slot || {status: 'export'});
+      const tile = card(id, id, -1, status, w);
+      tile.x = axis + (i - (row.length - 1) / 2) * (w + 18) - w / 2;
+      tile.y = lower;
+      const focus = tileByKey.get(center)!;
+      const shared = kind === 'child' && roots.length === 2 && roots.every(pid => parents.slots.some(p => p?.id === pid));
+      const x = shared ? axis : midX(focus);
+      const y = shared ? focus.y + focus.h / 2 : focus.y + focus.h;
+      if (kind === 'child' && row.length > 12) {
+        const key = JSON.stringify([x, status]);
+        if (!wideChildren.has(key)) wideChildren.set(key, {x, y, status, stops: []});
+        wideChildren.get(key)!.stops.push(midX(tile));
+      } else {
+        links.push({key: JSON.stringify([kind, center, id]), d: curve(x, y, midX(tile), lower), gen: 1, status, kind});
+      }
+      tiles.push(tile);
+      visible.add(id);
+    });
+    // Share the long horizontal part of a wide sibling row. Each parent anchor
+    // and level of certainty still gets its own path and one drop per child.
+    let joint = lower - 12;
+    for (const [key, {x, y, status, stops}] of wideChildren) {
+      const left = Math.min(x, stops[0]), right = Math.max(x, stops.at(-1)!);
+      const drops = stops.map(stop => `M${stop},${joint} V${lower}`).join(' ');
+      const d = stops.length === 1 ? curve(x, y, stops[0], lower) :
+        `M${x},${y} V${joint} M${left},${joint} H${right} ${drops}`;
+      links.push({key: 'children:' + key, d, gen: 1, status, kind: 'child'});
+      joint -= 3;
+    }
+    if (row.length) lower = Math.max(...tiles.map(tile => tile.y + tile.h)) + 26;
+  }
+
+  const bounds = (cards: Tile[]): Box => ({
+    x0: Math.min(...cards.map(tile => tile.x)),
+    x1: Math.max(...cards.map(tile => tile.x + tile.w + halo(tile))),
+    y0: Math.min(...cards.map(tile => tile.y - (tile.siblings.length > 1 ? 14 : 0))),
+    y1: Math.max(...cards.map(tile => tile.y + tile.h)),
+  });
+  const box = bounds(tiles);
+  const near = bounds(tiles.filter(tile => tile.gen >= 0 && tile.gen < HISTORY_LEVEL));
+  const offset = Math.max(0, PAD - box.x0);
+  if (offset) {
+    // Translate the whole figure once so the pan bounds also include the leftmost tile.
+    for (const tile of tiles) tile.x += offset;
+    for (const b of [box, near]) { b.x0 += offset; b.x1 += offset; }
+  }
+  const scope = m.familyPeople.has(center) ? m.familyPeople : m.connectedFrom([center]);
+  const farther = new Set(roots.flatMap(id => Array.from(m.ancestorsOf(id)).filter(([, a]) => a.n > level).map(([pid]) => pid)));
+  const collateral: string[] = [], beyond: string[] = [];
+  for (const id of scope) {
+    if (visible.has(id)) continue;
+    (farther.has(id) ? beyond : collateral).push(id);
+  }
+  return {
+    tiles, links, width: Math.max(viewport + offset, box.x1 + PAD), height: box.y1 + PAD,
+    box, near, axis: axis + offset, rootBottom, horizon, linkOffset: offset, visible, collateral, beyond,
+  };
+}
+
+export {HISTORY_LEVEL, HORIZON_Y};

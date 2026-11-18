@@ -1,93 +1,277 @@
 'use client';
-import {useCallback,useEffect,useLayoutEffect,useMemo,useRef,useState,type CSSProperties,type ReactNode} from 'react';
-import {layoutTree,levelRange,type Layout,type Node} from './layout';
+import {memo,useCallback,useEffect,useLayoutEffect,useMemo,useRef,useState,type CSSProperties,type ReactNode,type RefObject} from 'react';
+import {HISTORY_LEVEL,HORIZON_Y,layoutTree,levelRange,type Layout,type Tile} from './layout';
+import {SiblingDeck,TreeCount,type OpenDeck} from './tree-details';
 import {useZoomPan} from './use-zoom-pan';
-import {lifeLabel,type Model} from './model';
+import {lifeLabel,type Model,type Row} from './model';
 import {growthWords} from './growth';
-type Row=Record<string,any>;
-function Person({n,model,go,labels,lang}:{me?:string;n:Node;model:Model;go:(id:string)=>void;labels:Row;lang:string}){
- const p=model.info[n.id];const b=n.color||undefined;
- const style={transform:`translate(${n.x}px,${n.y}px)`,width:n.w,height:n.h,'--b':b} as CSSProperties;
- if(n.size==='ring')return <span className="n ring" style={style} aria-hidden="true">⚭</span>;
- const life=!p.connector&&(p.birthText||p.deathText)?lifeLabel(p,labels,lang):'';
- const place=!p.connector&&p.placeRole==='birth'?p.place:'';
- const w=growthWords[lang]||growthWords.en; const g=p.growth;const docMark=g.confirmed.length>0;
- const title=[p.treeName,life,place,docMark?w.confirmed:g.treeMemory?w.tree:g.memory?w.memory:g.found?w.found:'',!docMark&&(g.documents.length>0||g.hasMedia)?w.unconfirmed:''].filter(Boolean).join(' · ');
- if(n.size==='dot'||n.size==='tiny')return <button data-person={n.id} className={`n ${n.size} ${n.kin?'line-kin':''}`} style={style} title={title} aria-label={title} onClick={()=>go(n.id)}><span className="c" style={{width:n.w,height:n.w}}>{n.size==='dot'?p.treeName.slice(0,1):''}</span>{n.label&&<span className="dl" style={{maxWidth:Math.max(56,n.w*1.9)}}>{n.label}</span>}</button>;
- if(n.size==='kids'||n.size==='up')return <button data-person={n.id} className={'n '+n.size} style={style} aria-label={`${p.treeName}: ${n.count}`} title={title} onClick={()=>go(n.id)}>{n.size==='kids'?'▾':'▴'} {n.count}</button>;
- if(n.size==='pill')return <button data-person={n.id} className="n pill" style={style} title={title} onClick={()=>go(n.id)}>{p.treeName}</button>;
- return <button data-person={n.id} className={`n card ${n.size} ${n.kin?'line-kin':''} ${n.w<200?'tight':''} ${n.center?'center':''}`} style={style} title={title} aria-current={n.center?'true':undefined} onClick={()=>go(n.id)}>
-  <span className="growth-icons" aria-hidden="true">{(docMark||g.firmMemory)&&<i className="growth-confirm">✓</i>}{(docMark||g.documents.length>0||g.hasMedia)&&<i className={docMark?undefined:'doc-open'}>▤</i>}</span><span className="tx"><strong>{p.treeName}</strong>{life&&<small className={p.guess?'guess':undefined}>{life}</small>}{place&&<small className="pl">{place}</small>}</span>
- </button>
-}
-export default function TreeStage({model,id,go,jump,onUse,labels,onLayout,children,me}:{me?:string;model:Model;id:string;go:(id:string)=>void;jump?:(id:string)=>void;onUse?:()=>void;labels:Row;onLayout?:(l:Layout)=>void;children?:ReactNode}){
- const lang=labels.languageCode||'ru';
- const stage=useRef<HTMLDivElement>(null);const content=useRef({w:0,h:0});const baseK=useRef(1);const [size,setSize]=useState({w:0,h:0});const [bias,setBias]=useState(0);const [resizing,setResizing]=useState(false);
- // while the window is being resized the tree follows the new size at once; the glide animation would otherwise chase every intermediate size
- useLayoutEffect(()=>{const el=stage.current;if(!el)return;let timer:ReturnType<typeof setTimeout>|undefined;let first=true;
-  const measure=()=>{setSize(s=>s.w===el.clientWidth&&s.h===el.clientHeight?s:{w:el.clientWidth,h:el.clientHeight});if(first){first=false;return}setResizing(true);clearTimeout(timer);timer=setTimeout(()=>setResizing(false),260)};
-  measure();const o=new ResizeObserver(measure);o.observe(el);return()=>{o.disconnect();clearTimeout(timer)}},[]);
- const reserve=size.w<820?68:82;const room=size.h-reserve;
- // semantic zoom: "level" is how many generations of ancestors are drawn; zooming out pulls more of the tree in
- const range=useMemo(()=>size.w?levelRange(model,id,size.w,room):{max:1,auto:1},[model,id,size.w,room]);
- const level=Math.min(range.max,Math.max(1,range.auto+bias));
- const layout=useMemo(()=>size.w?layoutTree(model,id,size.w,level):null,[model,id,size.w,level]);
- content.current=layout?{w:layout.width,h:layout.height}:{w:0,h:0};
- useEffect(()=>{if(layout)onLayout?.(layout)},[layout]);// eslint-disable-line react-hooks/exhaustive-deps
- const {t,setT,moving,zoomBy,focal}=useZoomPan(stage,{min:.3,max:3.5,content});
- // fill the stage: scale the drawn part (not the empty page) up or down to fit
- const fit=useCallback(()=>{if(!layout||!size.h)return;const b=layout.box;const bw=b.x1-b.x0,bh=b.y1-b.y0;const kmax=size.w<560?1.25:1.45;
-  const k=Math.max(.42,Math.min(kmax,(size.w-16)/bw,(room-10)/bh));baseK.current=k;setT({k,x:(size.w-bw*k)/2-b.x0*k,y:Math.max(4,(room-bh*k)/2)-b.y0*k})},[layout,size.h,size.w,room,setT]);
- useEffect(()=>{fit()},[fit]);
- const farther=useCallback(()=>{if(level<range.max)setBias(level+1-range.auto)},[level,range]);
- const closer=useCallback(()=>{if(level>1)setBias(level-1-range.auto);else zoomBy(1.25)},[level,range,zoomBy]);
- // Zooming like a map, in people instead of pixels. While a wheel or pinch gesture runs, every step away from the fitted
- // scale changes what is drawn. Inwards over a person moves the tree to that person and keeps the branch that was
- // visible above them; inwards elsewhere drops a generation. Outwards adds a generation; once all are open it goes back
- // the way the wheel came in, and with no such way (a click, a #person= link) one step along the kinship path to the
- // family's home people, so the wheel always leads back to the wide tree. Clicks and the wheel never exclude each
- // other; the whole-family view opens from the corner miniature alone.
- const spent=useRef(false);
- // the way back for the wheel: each person a gesture zoomed away from, with the generations open there
- const trail=useRef<{id:string;bias:number}[]>([]);const expected=useRef('');
- const homeward=useMemo(()=>{const next=new Map<string,{id:string;kind:'down'|'up'|'mate'}>();const seen=new Set(model.homes);const q=[...model.homes];
-  for(let i=0;i<q.length;i++){const x=q[i];const step=(y:string,kind:'down'|'up'|'mate')=>{if(!seen.has(y)&&model.info[y]&&!model.info[y].placeholder){seen.add(y);next.set(y,{id:x,kind});q.push(y)}};
-   model.parents(x).slots.forEach(sl=>sl&&step(sl.id,'down'));model.children(x).forEach(c=>step(c,'up'));model.spouses(x).forEach(m=>step(m,'mate'))}
-  return next},[model]);
- const moveTo=useCallback((pid:string,want:number)=>{const next=levelRange(model,pid,size.w,room);expected.current=pid;setBias(Math.min(next.max,Math.max(1,want))-next.auto);go(pid)},[model,size.w,room,go]);
- const outward=useCallback(()=>{const back=trail.current.pop();if(back){expected.current=back.id;setBias(back.bias);go(back.id);return}
-  const nx=homeward.get(id);if(nx)moveTo(nx.id,nx.kind==='down'?level+1:nx.kind==='up'?level-1:level)},[homeward,id,level,go,moveTo]);
- const canWiden=level<range.max||trail.current.length>0||homeward.has(id);
- const wider=useCallback(()=>{if(level<range.max)farther();else outward()},[level,range,farther,outward]);
- const personAt=(p:{x:number;y:number}):Node|null=>{if(!layout)return null;const x=(p.x-t.x)/t.k,y=(p.y-t.y)/t.k;let best:Node|null=null,bd=24/t.k;
-  for(const n of layout.nodes){if(n.size==='ring')continue;const d=Math.hypot(Math.max(n.x-x,0,x-n.x-n.w),Math.max(n.y-y,0,y-n.y-n.h));if(d<bd){bd=d;best=n}}return best};
- useEffect(()=>{if(!moving||!focal.current||spent.current||!layout)return;const r=t.k/baseK.current;
-  if(r<.78)wider();
-  else if(r>1.32){const hit=personAt(focal.current);
-   if(hit&&hit.gen!==0){const next=levelRange(model,hit.id,size.w,room);const want=Math.min(next.max,Math.max(1,hit.gen>0?level-hit.gen:level));spent.current=true;trail.current.push({id,bias});expected.current=hit.id;setBias(want-next.auto);(jump||go)(hit.id)}
-   else if(level>1)closer()}},[t.k]);// eslint-disable-line react-hooks/exhaustive-deps
- // a gesture that already moved the tree elsewhere leaves the new picture fitted
- useEffect(()=>{if(moving)onUse?.();else if(spent.current){spent.current=false;fit()}},[moving]);// eslint-disable-line react-hooks/exhaustive-deps
- // a person reached by the wheel keeps the way back; the back button returns along it with the generations open
- // there; any other choice of a person (a click, a link, the search) starts a new way
- useEffect(()=>{if(id===expected.current){expected.current='';return}const top=trail.current[trail.current.length-1];
-  if(top&&top.id===id){trail.current.pop();setBias(top.bias)}else trail.current=[]},[id]);
- // keyboard: up = parents, down = children, left / right = brothers and sisters, then partner
- useEffect(()=>{const key=(e:KeyboardEvent)=>{const el=e.target as HTMLElement;if(/INPUT|TEXTAREA|SELECT/.test(el.tagName)||e.metaKey||e.ctrlKey||e.altKey)return;
-   const [f,mo]=model.parents(id).slots;const kids=model.children(id);const sibs=[...model.siblings(id),id].sort((a,b)=>(model.info[a].birth??9999)-(model.info[b].birth??9999));const i=sibs.indexOf(id);const mate=model.spouses(id)[0];
-   const to=e.key==='ArrowUp'?(f||mo)?.id:e.key==='ArrowDown'?kids[0]:e.key==='ArrowLeft'?(sibs[i-1]||mate):e.key==='ArrowRight'?(sibs[i+1]||mate):'';
-   if(to){e.preventDefault();go(to)}else if(e.key==='+'||e.key==='=')closer();else if(e.key==='-'||e.key==='_')wider();else if(e.key==='0'||e.key==='Home')fit()};
-  addEventListener('keydown',key);return()=>removeEventListener('keydown',key)},[model,id,go,closer,wider,fit]);
- return <div ref={stage} className={'stage'+(moving?' moving':'')+(resizing?' resizing':'')} role="group" aria-label={labels.graph}>
-  {layout&&<div className="world" style={{width:layout.width,height:layout.height,transform:`translate(${t.x}px,${t.y}px) scale(${t.k})`}}>
-   <svg className="links" width={layout.width} height={layout.height} key={id+':'+layout.width+':'+level} aria-hidden="true">
-    {layout.links.map(l=><path key={l.key} d={l.d} className={`lk ${l.kind} g${Math.min(l.gen,4)} ${['hypothesis','probable'].includes(l.status)?'hyp':''} ${l.color?'tone':''}`} style={l.color?{'--lb':l.color} as CSSProperties:undefined}/>)}
-    {layout.fogs.map((f,i)=><path key={'f'+i} d={`M${f.x},${f.y} L${f.x},${f.y-26}`} className="lk fog"/>)}
-   </svg>
-   {layout.nodes.map(n=><Person me={me} key={n.key} n={n} model={model} go={go} labels={labels} lang={lang}/>)}
-  </div>}
-  <div className="veil" aria-hidden="true"/>
-  <div className="controls"><button aria-label={labels.farther} title={labels.farther} onClick={wider} disabled={!canWiden}>−</button><span className="lvl" title={labels.levelTitle} aria-label={`${labels.levelTitle}: ${level}`}><b>{level}</b><i>↑</i></span><button aria-label={labels.closer} title={labels.closer} onClick={closer}>+</button><button aria-label={labels.recenter} title={labels.recenter} onClick={fit}>⌖</button></div>
-  {children}
- </div>
+
+type TileActions = {
+  select: (id: string) => void;
+  openFamily: (id: string) => void;
+  showDeck: (tile: Tile, button: HTMLButtonElement, pinned: boolean) => void;
+  leaveDeck: () => void;
+};
+const uncertain = (status: string) => status === 'hypothesis' || status === 'probable';
+
+const TreeTiles = memo(function TreeTiles({layout,model,center,selected,labels,actions,openKey}: {
+  layout: Layout; model: Model; center: string; selected: string; labels: Row;
+  actions: RefObject<TileActions>; openKey?: string;
+}) {
+  const lang = labels.languageCode;
+  const words = growthWords[lang] || growthWords.en;
+  return <>
+    <svg className="tree-links" width={layout.width} height={layout.height} aria-hidden="true">
+      {layout.horizon && <g className="history-rays">{Array.from({length: 11}, (_, i) => {
+        const x = (i - 5) * layout.width / 7;
+        return <line key={i} x1={layout.axis + x * .14} y1={HORIZON_Y} x2={layout.axis + x} y2={layout.rootBottom}/>;
+      })}</g>}
+      <g transform={`translate(${layout.linkOffset} 0)`}>{layout.links.map(link =>
+        <path key={link.key} d={link.d}
+          className={`lk ${link.kind} g${Math.min(link.gen, 4)}${uncertain(link.status) ? ' hyp' : ''}${link.status === 'unknown' ? ' missing' : ''}`}
+          style={link.color ? {stroke: `color-mix(in srgb, ${link.color} 58%, var(--tree-paper))`} : undefined}/>
+      )}</g>
+    </svg>
+    {layout.tiles.map(tile => {
+      const {id, gen, siblings} = tile;
+      const distant = gen >= HISTORY_LEVEL;
+      const style = {
+        left: tile.x, top: tile.y, width: tile.w, height: tile.h, '--b': tile.color,
+        '--depth-opacity': distant ? .28 + tile.scale * .63 : 1,
+      } as CSSProperties;
+      if (id === null) return <span key={tile.key} className="tree-tile unknown-parent" style={style} data-gen={gen}
+        role="img" title={labels.treeUnknownParent} aria-label={labels.treeUnknownParent}>?</span>;
+      const person = model.info[id];
+      const life = !person.connector && (person.birthText || person.deathText) ? lifeLabel(person, labels, lang) : '';
+      const growth = person.growth;
+      const confirmed = growth.confirmed.length > 0;
+      const document = growth.documents.length > 0 || growth.hasMedia;
+      const title = [person.fullName, life, confirmed ? words.confirmed : growth.treeMemory ? words.tree : growth.memory ? words.memory : growth.found ? words.found : '',
+        !confirmed && document ? words.unconfirmed : ''].filter(Boolean).join(' · ');
+      const count = siblings.length - 1;
+      return <div key={tile.key} className={`tile-position${distant ? ' tile-distant' : ''}`} style={style} data-gen={gen}>
+        {count > 0 && <span className="deck-backs" aria-hidden="true" data-layers={Math.min(count, 2)}/>}
+        <button data-person={id} className={`tree-tile${uncertain(tile.status) ? ' hyp' : ''}${id === center ? ' tree-centre' : ''}`}
+          title={title} aria-label={title} aria-pressed={id === selected}
+          onClick={() => actions.current.select(id)} onDoubleClick={() => actions.current.openFamily(id)}>
+          <strong>{distant ? person.givenName || person.treeName : person.treeName}</strong>
+          {!distant && life && <small className={person.guess ? 'guess' : undefined}>{life}</small>}
+          {!distant && (confirmed || growth.firmMemory || document) && <span className="tile-provenance" aria-hidden="true">
+            {(confirmed || growth.firmMemory) && <i className="growth-confirm">✓</i>}
+            {(confirmed || document) && <i className={confirmed ? undefined : 'doc-open'}>▤</i>}
+          </span>}
+        </button>
+        {count > 0 && <button type="button" className="deck-toggle" aria-label={`${person.treeName} · ${labels.siblings} +${count}`}
+          aria-expanded={openKey === tile.key} aria-controls={openKey === tile.key ? 'tree-sibling-deck' : undefined}
+          onPointerEnter={e => { if (e.pointerType === 'mouse') actions.current.showDeck(tile, e.currentTarget, false); }}
+          onPointerLeave={actions.current.leaveDeck}
+          onClick={e => actions.current.showDeck(tile, e.currentTarget, true)}><span>+{count}</span></button>}
+      </div>;
+    })}
+    {layout.horizon && <div className="history-fog" aria-hidden="true">
+      <span style={{left: layout.axis, top: HORIZON_Y}}>{labels.treeHorizon}</span>
+    </div>}
+  </>;
+});
+
+export default function TreeStage({model,id,selected,select,go,jump,labels,onVisible,children}: {
+  model: Model; id: string; selected: string; select: (id: string) => void;
+  go: (id: string) => void; jump: (id: string) => void; labels: Row;
+  onVisible: (visible: Set<string>) => void; children?: ReactNode;
+}) {
+  const stage = useRef<HTMLDivElement>(null);
+  const content = useRef({w: 0, h: 0});
+  const baseScale = useRef(1);
+  const [size, setSize] = useState({w: 0, h: 0});
+  const [bias, setBias] = useState(0);
+  const [resizing, setResizing] = useState(false);
+  const [deck, setDeck] = useState<OpenDeck | null>(null);
+  const leaveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const clearLeave = () => clearTimeout(leaveTimer.current);
+  function leaveDeck() {
+    clearLeave();
+    leaveTimer.current = setTimeout(() => setDeck(old => old?.pinned ? old : null), 400);
+  }
+  function showDeck(tile: Tile, button: HTMLButtonElement, pinned: boolean) {
+    clearLeave();
+    setDeck(old => {
+      if (old?.tile.key === tile.key && old.pinned) return pinned ? null : old;
+      if (!pinned && old?.pinned) return old;
+      return {tile, button, pinned};
+    });
+  }
+  const actions = useRef<TileActions>({select, openFamily: jump, showDeck, leaveDeck});
+  actions.current = {select, openFamily: jump, showDeck, leaveDeck};
+  useEffect(() => () => clearTimeout(leaveTimer.current), []);
+  useEffect(() => {
+    if (!deck) return;
+    const outside = (event: PointerEvent) => {
+      if (!(event.target as Element).closest('.sibling-deck, .deck-toggle')) setDeck(null);
+    };
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { setDeck(null); if (deck.pinned) deck.button.focus(); }
+    };
+    document.addEventListener('pointerdown', outside);
+    document.addEventListener('keydown', escape);
+    return () => {
+      document.removeEventListener('pointerdown', outside);
+      document.removeEventListener('keydown', escape);
+    };
+  }, [deck]);
+
+  useLayoutEffect(() => {
+    const el = stage.current;
+    if (!el) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let first = true;
+    const measure = () => {
+      setSize(s => s.w === el.clientWidth && s.h === el.clientHeight ? s : {w: el.clientWidth, h: el.clientHeight});
+      if (first) { first = false; return; }
+      setResizing(true);
+      clearTimeout(timer);
+      timer = setTimeout(() => setResizing(false), 260);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => { observer.disconnect(); clearTimeout(timer); };
+  }, []);
+
+  const trail = useRef<{id: string; bias: number}[]>([]);
+  const expected = useRef('');
+  const range = useMemo(() => levelRange(model,id), [model,id]);
+  const level = Math.min(range.max, Math.max(1, range.auto + bias));
+  const layout = useMemo(() => size.w ? layoutTree(model,id,size.w,level) : null, [model,id,size.w,level]);
+  content.current = layout ? {w: layout.width, h: layout.height} : {w: 0, h: 0};
+  useEffect(() => {
+    if (layout) onVisible(layout.visible);
+  }, [layout, onVisible]);
+
+  const {t,setT,moving,zoomBy,focal} = useZoomPan(stage, {min: .52, max: 3.5, content, horizontalWheel: true});
+  const fit = useCallback(() => {
+    if (!layout || !size.h) return;
+    const reserve = size.w < 560 ? 72 : 90;
+    const room = size.h - reserve;
+    const oldest = layout.horizon ? 0 : layout.box.y0;
+    const height = layout.box.y1 - oldest;
+    const nearWidth = layout.near.x1 - layout.near.x0;
+    const nearFit = size.w >= 820 ? (size.w - 16) / nearWidth : 1;
+    const k = Math.min(1, Math.max(.84, Math.min((room - 12) / height, nearFit)));
+    const nearX = (layout.near.x0 + layout.near.x1) / 2;
+    const x = size.w / 2 - (size.w < 560 ? layout.axis : nearX) * k;
+    const centralBottom = Math.min(layout.box.y1, layout.rootBottom + (size.w < 560 ? 0 : 60));
+    const y = Math.min(Math.max(4, (room - height * k) / 2) - oldest * k, room - centralBottom * k);
+    baseScale.current = k;
+    setT({k,x,y});
+  }, [layout,size,setT]);
+  useLayoutEffect(() => { setDeck(null); fit(); }, [fit]);
+
+  const moveTo = useCallback((pid: string, want: number) => {
+    const next = levelRange(model,pid);
+    expected.current = pid;
+    setBias(Math.min(next.max, Math.max(1,want)) - next.auto);
+    go(pid);
+  }, [model,go]);
+  const homeward = useMemo(() => {
+    const next = new Map<string,{id:string;kind:'down'|'up'|'mate'}>();
+    const seen = new Set(model.homes);
+    const queue = [...model.homes];
+    for (const id of queue) {
+      const step = (pid: string, kind: 'down' | 'up' | 'mate') => {
+        if (seen.has(pid) || !model.info[pid] || model.info[pid].placeholder) return;
+        seen.add(pid);
+        next.set(pid, {id,kind});
+        queue.push(pid);
+      };
+      for (const slot of model.parents(id).slots) if (slot) step(slot.id,'down');
+      for (const child of model.children(id)) step(child,'up');
+      for (const mate of model.spouses(id)) step(mate,'mate');
+    }
+    return next;
+  }, [model]);
+  const canWiden = level < range.max || trail.current.length > 0 || homeward.has(id);
+  const wider = useCallback(() => {
+    if (level < range.max) { setBias(level + 1 - range.auto); return; }
+    const back = trail.current.pop();
+    if (back) { expected.current = back.id; setBias(back.bias); go(back.id); return; }
+    const next = homeward.get(id);
+    if (next) moveTo(next.id, next.kind === 'down' ? level + 1 : next.kind === 'up' ? level - 1 : level);
+  }, [level,range,go,homeward,id,moveTo]);
+  const closer = useCallback(() => {
+    if (level > 1) setBias(level - 1 - range.auto);
+    else zoomBy(1.25);
+  }, [level,range,zoomBy]);
+
+  // Wheel and pinch keep the existing tree navigation. Horizontal scrolling only pans.
+  const spent = useRef(false);
+  useEffect(() => {
+    if (!moving || !focal.current || spent.current || !layout) return;
+    const ratio = t.k / baseScale.current;
+    if (ratio < .78) wider();
+    if (ratio <= 1.32) return;
+    const x = (focal.current.x - t.x) / t.k, y = (focal.current.y - t.y) / t.k;
+    const hit = layout.tiles.find(tile => tile.id !== null &&
+      x >= tile.x && x <= tile.x + tile.w && y >= tile.y && y <= tile.y + tile.h);
+    if (hit?.id && hit.gen !== 0) {
+      const next = levelRange(model,hit.id);
+      const want = Math.min(next.max, Math.max(1,level - Math.max(0,hit.gen)));
+      spent.current = true;
+      trail.current.push({id,bias});
+      expected.current = hit.id;
+      setBias(want - next.auto);
+      jump(hit.id);
+    } else if (level > 1) closer();
+  }, [t.k]); // Evaluate once for each change of the wheel or pinch scale.
+  useEffect(() => {
+    if (moving) setDeck(null);
+    else if (spent.current) { spent.current = false; fit(); }
+  }, [moving,fit]);
+  useEffect(() => {
+    if (id === expected.current) { expected.current = ''; return; }
+    const previous = trail.current.at(-1);
+    if (previous?.id === id) { trail.current.pop(); setBias(previous.bias); }
+    else { trail.current = []; setBias(0); }
+  }, [id]);
+  useEffect(() => {
+    const key = (event: KeyboardEvent) => {
+      const el = event.target as HTMLElement;
+      if (event.defaultPrevented || el.closest('input, textarea, select, dialog, .sibling-deck, .overview, .lightbox') ||
+          event.metaKey || event.ctrlKey || event.altKey) return;
+      const [father,mother] = model.parents(id).slots;
+      const sibs = [...model.siblings(id),id].sort(model.bySeniority);
+      const i = sibs.indexOf(id), mate = model.spouses(id)[0];
+      const to = event.key === 'ArrowUp' ? (father || mother)?.id : event.key === 'ArrowDown' ? model.children(id)[0] :
+        event.key === 'ArrowLeft' ? sibs[i-1] || mate : event.key === 'ArrowRight' ? sibs[i+1] || mate : '';
+      if (to) { event.preventDefault(); go(to); }
+      else if (event.key === '+' || event.key === '=') closer();
+      else if (event.key === '-' || event.key === '_') wider();
+      else if (event.key === '0' || event.key === 'Home') fit();
+    };
+    addEventListener('keydown', key);
+    return () => removeEventListener('keydown', key);
+  }, [model,id,go,closer,wider,fit]);
+
+  return <div className="tree-main">
+    <TreeCount layout={layout} model={model} labels={labels} go={go}
+      overflow={!!layout && layout.box.x1 - layout.box.x0 > size.w}/>
+    <div className="tree-canvas">
+      <div ref={stage} className={`stage${moving ? ' moving' : ''}${resizing ? ' resizing' : ''}`}
+        role="group" aria-label={labels.graph}>
+        {layout && <div className="world" style={{width:layout.width, height:layout.height, transform:`translate(${t.x}px,${t.y}px) scale(${t.k})`}}>
+          <TreeTiles layout={layout} model={model} center={id} selected={selected} labels={labels} actions={actions} openKey={deck?.tile.key}/>
+        </div>}
+        <div className="controls" data-pan-ignore>
+          <button aria-label={labels.farther} title={labels.farther} onClick={wider} disabled={!canWiden}>−</button>
+          <span className="lvl" title={labels.levelTitle} aria-label={`${labels.levelTitle}: ${level}`}><b>{level}</b><i>↑</i></span>
+          <button aria-label={labels.closer} title={labels.closer} onClick={closer}>+</button>
+          <button aria-label={labels.recenter} title={labels.recenter} onClick={fit}>⌖</button>
+        </div>
+        {children}
+      </div>
+      {deck && <SiblingDeck deck={deck} model={model} labels={labels}
+        onEnter={clearLeave} onLeave={leaveDeck}
+        onClose={() => { setDeck(null); deck.button.focus(); }}
+        go={pid => { setDeck(null); jump(pid); }}/>}
+    </div>
+  </div>;
 }

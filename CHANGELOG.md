@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.39.0 — 18 November 2026
+
+- The family tree keeps every person on a tile. Sibling stacks open in birth
+  order, older generations recede towards the horizon, and missing parents
+  have a place. The count opens family lists for people outside the canvas.
+  Select a tile to read the person's card, then choose when to centre their family.
+
 ## 0.38.0 — 18 November 2026
 
 - Relatives gathers conversation prompts by living witness, adds a mode for

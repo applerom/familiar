@@ -25,25 +25,14 @@ CHANGES_WITH:
     const person = people[id], name = person?.names?.[0];
     return name?.display || [name?.given, name?.patronymic, name?.surname].filter(Boolean).join(' ') || w.self;
   };
-  const names = new Map();
-  for (const id of Object.keys(people)) {
-    for (const name of people[id].names || []) {
-      const full = name.display || [name.given, name.patronymic, name.surname].filter(Boolean).join(' ');
-      if (!full) continue;
-      if (!names.has(full)) names.set(full, new Set()); names.get(full).add(id);
-    }
-  }
+  const tileSelector = 'button.tree-tile[data-person]';
   const current = () => {
+    const tile = document.querySelector('.world .tree-centre[data-person]');
+    if (tile) return tile.dataset.person;
     const id = new URLSearchParams(location.hash.slice(1)).get('person');
     return people[id] ? id : graph.defaultViewer || graph.narrator || graph.root || Object.keys(people)[0] || 'self';
   };
-  function cardPerson(card) {
-    // The tree card names its person; the title is only a fallback for older shells.
-    if (card.dataset.person && people[card.dataset.person]) return card.dataset.person;
-    if (card.matches('.center,[aria-current=true]')) return current();
-    const title = card.title.split(' · ')[0], matches = names.get(title);
-    return matches?.size === 1 ? [...matches][0] : null;
-  }
+  const cardPerson = card => card.dataset.person;
   let local = [];
   try { local = JSON.parse(localStorage.getItem(storage) || '[]'); } catch (_) { /* optional */ }
   const reviewed = new Set(show.reviewed_pending || []);
@@ -180,6 +169,8 @@ CHANGES_WITH:
   // The labelled entry beside the tree; the quiet builder toggle stays for ghost places.
   const addEntry = el('button', 'desk-add-entry');
   addEntry.type = 'button'; addEntry.append(el('span', 'desk-plus', '+'), el('span', '', w.add_person));
+  addEntry.setAttribute('aria-label', w.add_person); addEntry.title = w.add_person;
+  addEntry.setAttribute('data-pan-ignore', '');
   addEntry.onclick = () => open(current());
   const kin = el('section', 'group desk-add-kin'), kinRow = el('div', 'desk-add-kin-row');
   kin.append(el('h3', '', w.add_kin), kinRow);
@@ -187,14 +178,14 @@ CHANGES_WITH:
     const panel = document.querySelector('.panel[data-feedback-person]'), body = panel?.querySelector('.body');
     const id = panel?.dataset.feedbackPerson;
     if (!body || !people[id]) { kin.remove(); return; }
-    const row = (graph.families || []).find(f => f.children?.includes(id)) || {};
-    // Parents come from the families and from parent links (a researched father may have no family row).
-    const sexOf = pid => String(people[pid]?.sex || '').toLowerCase();
-    const ups = [...(graph.edges || []).filter(e => !['rejected', 'disproved'].includes(e.status) && (e.child || e.to) === id).map(e => e.parent || e.from), row.husband, row.wife].filter(Boolean);
-    const hasFather = ups.some(p => p === row.husband || sexOf(p) === 'm'), hasMother = ups.some(p => p === row.wife || sexOf(p) === 'f');
-    const wanted = [...(!hasFather ? ['father'] : []), ...(!hasMother ? ['mother'] : []), 'sibling', 'child', 'spouse'];
-    if (kin.dataset.person !== id || kin.dataset.wanted !== wanted.join()) {
-      kin.dataset.person = id; kin.dataset.wanted = wanted.join(); kinRow.replaceChildren();
+    if (kin.dataset.person !== id) {
+      const row = (graph.families || []).find(f => f.children?.includes(id)) || {};
+      const sexOf = pid => String(people[pid]?.sex || '').toLowerCase();
+      // A researched father may have a parent link without a family row.
+      const ups = [...(graph.edges || []).filter(e => !['rejected', 'disproved'].includes(e.status) && (e.child || e.to) === id).map(e => e.parent || e.from), row.husband, row.wife].filter(Boolean);
+      const hasFather = ups.some(p => p === row.husband || sexOf(p) === 'm'), hasMother = ups.some(p => p === row.wife || sexOf(p) === 'f');
+      const wanted = [...(!hasFather ? ['father'] : []), ...(!hasMother ? ['mother'] : []), 'sibling', 'child', 'spouse'];
+      kin.dataset.person = id; kinRow.replaceChildren();
       for (const rel of wanted) {
         const label = rel === 'spouse' && sexOf(id) === 'm' ? w.ghost_wife : rel === 'spouse' && sexOf(id) === 'f' ? w.ghost_husband : w['add_rel_' + rel];
         const button = el('button', '', label); button.type = 'button';
@@ -240,8 +231,8 @@ CHANGES_WITH:
     stage.append(scene);
   }
   function coords(card) {
-    const matrix = new DOMMatrix(card.style.transform);
-    return {x: matrix.m41, y: matrix.m42, width: card.offsetWidth, height: card.offsetHeight};
+    const tile = card.parentElement;
+    return {x: tile.offsetLeft, y: tile.offsetTop, width: tile.offsetWidth, height: tile.offsetHeight};
   }
   function refresh(force = false) {
     const world = document.querySelector('.stage .world');
@@ -253,9 +244,11 @@ CHANGES_WITH:
     }
     if (!world) return;
     controls();
-    const cards = [...world.querySelectorAll('button.n')], anchor = cards.find(c => cardPerson(c) === current());
+    const me = current(), pendingHere = pending.filter(p => p.anchor === me);
+    if (!building && !pendingHere.length) { layer?.remove(); layer = null; return; }
+    const cards = [...world.querySelectorAll(tileSelector)], anchor = cards.find(c => cardPerson(c) === me);
     const key = String(building) + world.style.transform + world.closest('.stage').clientHeight
-      + cards.map(c => c.title + c.style.transform).join('|') + current() + pending.map(p => p.id).join('|');
+      + cards.map(c => cardPerson(c) + c.parentElement.style.cssText).join('|') + me + pendingHere.map(p => p.id).join('|');
     if (!force && key === fingerprint && layer?.isConnected) return;
     fingerprint = key; layer?.remove(); layer = el('div', 'desk-tree-add-layer'); world.append(layer);
     const base = anchor ? coords(anchor) : {x: 240, y: 260, width: 150, height: 70};
@@ -263,7 +256,7 @@ CHANGES_WITH:
     const stage = world.closest('.stage'), camera = new DOMMatrix(world.style.transform), scale = camera.a || 1;
     const bounds = {left: -camera.e / scale + 8, top: -camera.f / scale + 24,
       right: (stage.clientWidth - camera.e) / scale - 8, bottom: (stage.clientHeight - camera.f - 65) / scale};
-    const occupied = cards.filter(c => c.matches('.card,.pill')).map(coords);
+    const occupied = cards.map(coords);
     const overlaps = rect => occupied.some(o => rect.x < o.x + o.width + 10 && rect.x + rect.width + 10 > o.x
       && rect.y < o.y + o.height + 10 && rect.y + rect.height + 10 > o.y);
     function place(anchorId, relationName, address, x, y, item = null, title = null, openAs = relationName, narrow = null) {
@@ -323,7 +316,7 @@ CHANGES_WITH:
       return side === 'right' ? row.every(o => r.x >= o.x + o.width) : row.every(o => r.x + r.width <= o.x);
     }
     if (anchor) {
-      const me = current(), live = e => !['rejected', 'disproved'].includes(e.status);
+      const live = e => !['rejected', 'disproved'].includes(e.status);
       const sexOf = id => String(people[id]?.sex || '').toLowerCase();
       // Reader edges carry parent/child without a type; the missing parent is named by the known one's sex.
       const ups = (graph.edges || []).filter(e => live(e) && (e.child || e.to) === me && (e.parent || e.from)).map(e => e.parent || e.from);
@@ -332,7 +325,7 @@ CHANGES_WITH:
       const spouseWord = sexOf(me) === 'm' ? w.ghost_wife : sexOf(me) === 'f' ? w.ghost_husband : null;
       // A new child joins the end of the row of children already drawn under the person.
       const kidIds = new Set((graph.edges || []).filter(e => live(e) && (e.parent || e.from) === me).map(e => e.child || e.to));
-      const kids = cards.filter(c => c.matches('.card') && kidIds.has(cardPerson(c))).map(coords).filter(r => r.y > base.y + base.height);
+      const kids = cards.filter(c => kidIds.has(cardPerson(c))).map(coords).filter(r => r.y > base.y + base.height);
       const kidRight = kids.length ? Math.max(...kids.map(r => r.x + r.width)) : 0, kidLeft = kids.length ? Math.min(...kids.map(r => r.x)) : 0;
       // A full row still takes the place at its freer end: the place narrows rather than drops below the row.
       const wide = stage.clientWidth < 600 ? 80 : 150, roomy = bounds.right - kidRight - 25 >= wide, gap = roomy ? 25 : 12;
@@ -345,11 +338,11 @@ CHANGES_WITH:
         ['sibling', beside(sides.sibling), 0, null, 'sibling'],
         ...(parentAs ? [['parent', -55, -135, w['add_rel_' + parentAs], parentAs]] : [])];
       for (const [rel, dx, dy, title, openAs] of slots) {
-        const existing = pending.filter(p => p.anchor === me && (rel === 'parent' ? ['father', 'mother', 'parent'].includes(p.relation) : p.relation === rel));
-        if (building && !existing.length) place(me, rel, rel, base.x + dx, base.y + dy, null, title, openAs, rel === 'child' ? kidW : null);
+        const existing = pendingHere.some(p => rel === 'parent' ? ['father', 'mother', 'parent'].includes(p.relation) : p.relation === rel);
+        if (building && !existing) place(me, rel, rel, base.x + dx, base.y + dy, null, title, openAs, rel === 'child' ? kidW : null);
       }
       let n = 0;
-      for (const item of pending.filter(p => p.anchor === me)) {
+      for (const item of pendingHere) {
         const rel = ['father', 'mother', 'parent'].includes(item.relation) ? 'parent' : ['spouse', 'sibling'].includes(item.relation) ? item.relation : 'child';
         const x = sides[rel] ? base.x + (sides[rel] === 'right' ? base.width + 45 : -205) : rel === 'parent' ? base.x - 55 : kidX + n++ * 165;
         const y = rel === 'parent' ? base.y - 135 : ['spouse', 'sibling'].includes(rel) ? base.y : kidY;
@@ -359,18 +352,18 @@ CHANGES_WITH:
   }
   let timer = null;
   document.addEventListener('contextmenu', event => {
-    const card = event.target.closest('.world button.n'); if (!card) return;
+    const card = event.target.closest('.world ' + tileSelector); if (!card) return;
     const id = cardPerson(card); if (!id) return; event.preventDefault(); open(id);
   });
   document.addEventListener('pointerdown', event => {
     // A second finger makes it a pinch, never a long press.
     clearTimeout(timer); if (!event.isPrimary) return;
-    const card = event.target.closest('.world button.n'); if (!card || event.pointerType === 'mouse') return;
+    const card = event.target.closest('.world ' + tileSelector); if (!card || event.pointerType === 'mouse') return;
     const id = cardPerson(card); if (id) timer = setTimeout(() => open(id), 550);
   });
   for (const type of ['pointerup', 'pointercancel', 'pointermove']) document.addEventListener(type, () => clearTimeout(timer));
   const observer = new MutationObserver(() => refresh());
-  observer.observe(document.querySelector('#root'), {subtree: true, childList: true, attributes: true, attributeFilter: ['style']});
+  observer.observe(document.querySelector('#root'), {subtree: true, childList: true, attributes: true, attributeFilter: ['style', 'data-feedback-person']});
   window.addEventListener('hashchange', () => refresh(true)); refresh();
   window.addEventListener('resize', () => refresh(true));
   document.addEventListener('transitionend', event => { if (event.target.matches('.world')) refresh(true); });

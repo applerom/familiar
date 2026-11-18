@@ -7,7 +7,7 @@ export function profile(){if(!active)throw Error('Reader profile is not loaded')
 export function privateNotice(){return typeof document==='undefined'?'':document.getElementById('host-private-notice')?.textContent||''}
 export function feedbackEnabled(){const p=profile();return !document.querySelector('meta[name="familiar-static-demo"]')&&(!!document.getElementById('desk-footer')||!p.family.fictional&&(p.host?.feedback==='api'||(p.host?.feedback===undefined&&p.legacy_storage===true)))}
 export function siteURL(path:string){return new URL(path,new URL('../',import.meta.url)).href}
-const keys=['family-me','family-language','tree-hint-seen','reader-feed-mode','reader-play-mute','reader-chest'];
+const keys=['family-me','family-language','reader-feed-mode','reader-play-mute','reader-chest'];
 export function storageKey(key:string){const p=profile();return `familiar:${encodeURIComponent(p.family.id)}:${p.family.fictional?'fictional':'private'}:${account?account+':':''}${key}`}
 export const readerStorage={getItem:(key:string)=>localStorage.getItem(storageKey(key)),setItem:(key:string,value:string)=>localStorage.setItem(storageKey(key),value),removeItem:(key:string)=>localStorage.removeItem(storageKey(key))};
 export async function loadReader(url=siteURL('reader-profile.json')){

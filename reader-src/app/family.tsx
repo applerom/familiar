@@ -13,7 +13,6 @@ import LanguagePicker from './language-picker';
 import PageTop,{familyHeading} from './page-top';
 import {SearchSheet,SearchButton} from './search';
 import {MiniMap,OverviewDialog,buildOverview} from './tree/overview';
-import {growthWords} from './tree/growth';
 import {buildModel,kinPhrase,lifeLabel,placeLabel,relationPhrase} from './tree/model';
 
 import {translations,type Language} from './i18n';
@@ -24,33 +23,31 @@ ICONS.world=<><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry=
 const Icon=({name}:{name:string})=><svg viewBox="0 0 24 24" aria-hidden="true">{ICONS[name]}</svg>;
 const GRAVE=/памятник|могил|надгроб|grave|nagrob|· документ$/i;
 export default function Family({initialData}:{initialData:Row}){
- const data=initialData;const [id,select]=useState('');const [view,V]=useState('tree');const [language,L]=useState<Language>(profile().family.source_language);const [expanded,Expand]=useState(false);const [map,Map_]=useState(false);const [visible,setVisible]=useState<Set<string>>(new Set());const [hint,setHint]=useState(false);const [fine,setFine]=useState(false);const [me,setMeState]=useState(initialData.defaultViewer||initialData.narrator||'');const [feed,setFeed]=useState<{id:string;step:number}|null>(null);const [finding,Find]=useState(false);const base=translations[language];const title=profile().family.title;const t={...base,...(language===profile().family.source_language?data.readerLabels:{}),title:typeof title==='string'?title:title[language]||base.title,homeGenitive:profile().reader_names?.[language]||{}};
+ const data=initialData;const [id,select]=useState('');const [picked,setPicked]=useState('');const [view,V]=useState('tree');const [language,L]=useState<Language>(profile().family.source_language);const [expanded,Expand]=useState(false);const [map,Map_]=useState(false);const [visible,setVisible]=useState<Set<string>>(new Set());const [me,setMeState]=useState(initialData.defaultViewer||initialData.narrator||'');const [feed,setFeed]=useState<{id:string;step:number}|null>(null);const [finding,Find]=useState(false);const base=translations[language];const title=profile().family.title;const t={...base,...(language===profile().family.source_language?data.readerLabels:{}),title:typeof title==='string'?title:title[language]||base.title,homeGenitive:profile().reader_names?.[language]||{}};
  // "me" is who is looking at the tree: from a personal link (#person=…&me=…) or chosen in the panel, remembered in this browser
  const setMe=(pid:string)=>{setMeState(pid);try{readerStorage.setItem('family-me',pid)}catch{}};
  const [undo,setUndo]=useState<{name:string}|null>(null);
  useEffect(()=>{if(!undo)return;const timer=setTimeout(()=>setUndo(null),6000);return()=>clearTimeout(timer)},[undo]);
- useEffect(()=>{try{const saved=readerStorage.getItem('family-language');if(saved&&profile().family.languages.includes(saved as Language))L(saved as Language);if(!readerStorage.getItem('tree-hint-seen'))setHint(true);setFine(matchMedia('(pointer: fine)').matches);const m=readerStorage.getItem('family-me');if(m!==null)setMeState(m)}catch{}const change=()=>{const q=new URLSearchParams(location.hash.slice(1));const p=q.get('person');const m=q.get('me');const v=q.get('view');const f=q.get('feed');if(m)setMe(m);if(f){V('stories');setFeed({id:f,step:Math.max(0,(parseInt(q.get('step')||'1',10)||1)-1)});return}setFeed(null);if(p){select(p);V('tree');Map_(false);Expand(q.get('details')==='1')}else if(v&&['tree','stories','world','families','photos','kinship'].includes(v))V(v);else{select('');V('tree');Expand(false)}};change();addEventListener('hashchange',change);return()=>removeEventListener('hashchange',change)},[]);// eslint-disable-line react-hooks/exhaustive-deps
+ useEffect(()=>{try{const saved=readerStorage.getItem('family-language');if(saved&&profile().family.languages.includes(saved as Language))L(saved as Language);const m=readerStorage.getItem('family-me');if(m!==null)setMeState(m)}catch{}const change=()=>{const q=new URLSearchParams(location.hash.slice(1));const p=q.get('person');const m=q.get('me');const v=q.get('view');const f=q.get('feed');if(m)setMe(m);if(f){V('stories');setFeed({id:f,step:Math.max(0,(parseInt(q.get('step')||'1',10)||1)-1)});return}setFeed(null);if(p){select(p);setPicked('');V('tree');Map_(false);Expand(q.get('details')==='1')}else if(v&&['tree','stories','world','families','photos','kinship'].includes(v))V(v);else{select('');setPicked('');V('tree');Expand(false)}};change();addEventListener('hashchange',change);return()=>removeEventListener('hashchange',change)},[]);// eslint-disable-line react-hooks/exhaustive-deps
  useEffect(()=>{const key=(e:KeyboardEvent)=>{const el=e.target as HTMLElement;if(/INPUT|TEXTAREA|SELECT/.test(el.tagName))return;if(e.key==='/'||((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k')){e.preventDefault();Find(true)}};addEventListener('keydown',key);return()=>removeEventListener('keydown',key)},[]);
  useEffect(()=>{if(view!=='kinship')return;const q=new URLSearchParams(location.hash.slice(1));const word=q.get('word'),group=q.get('group');if(word||group)requestAnimationFrame(()=>document.getElementById(word?'word-'+word:'kin-group-'+group)?.scrollIntoView())},[view,language]);
  useEffect(()=>{document.documentElement.lang=language;document.title=view==='world'?worldText[language].title+' · '+t.title:t.title},[language,t.title,view]);
  const model=useMemo(()=>data?buildModel(data,t):null,[data,language]);
  const overview=useMemo(()=>model&&map?buildOverview(model):null,[model,map]);
  const mini=useMemo(()=>model&&view==='tree'?buildOverview(model):null,[model,view]);
- // everyone reachable from the two home people through parents, children, partners and sibling links
- const connected=useMemo(()=>{const set=new Set<string>();if(!data||!model)return set;const adjacent:Record<string,string[]>={};function join(a:string,b:string){if(!a||!b)return;(adjacent[a]??=[]).push(b);(adjacent[b]??=[]).push(a)}
-  data.edges.filter((e:Row)=>!['rejected','disproved'].includes(e.status)).forEach((e:Row)=>join(e.child,e.parent));(data.families||[]).forEach((f:Row)=>join(f.husband,f.wife));(data.associations||[]).filter((a:Row)=>a.type==='sibling'||a.type==='possible_parent'||a.type==='spouse').forEach((a:Row)=>join(a.from,a.to));
-  const todo=[...model.homes];while(todo.length){const x=todo.pop()!;if(set.has(x)||!model.info[x]||model.info[x].placeholder)continue;set.add(x);todo.push(...(adjacent[x]||[]).filter((y:string)=>!set.has(y)))}return set},[data,model]);
  function changeLanguage(value:Language){L(value);try{readerStorage.setItem('family-language',value)}catch{}}
  // open a person in the tree; `details` opens the card itself (the story) on a phone, where the card starts folded
- function go(pid:string,details=false){Find(false);V('tree');select(pid);location.hash='person='+encodeURIComponent(pid)+(details?'&details=1':'');Expand(details);seenHint()}
- function seenHint(){if(hint){setHint(false);try{readerStorage.setItem('tree-hint-seen','1')}catch{}}}
+ function go(pid:string,details=false){Find(false);V('tree');select(pid);setPicked('');location.hash='person='+encodeURIComponent(pid)+(details?'&details=1':'');Expand(details)}
  function show(v:string){Find(false);V(v);Map_(false);if(location.hash&&!location.hash.includes('person='))history.replaceState(null,'','#view='+v);else if(v!=='tree')history.pushState(null,'','#view='+v)}
  // a historical feed opens over the Stories page; the chapter lives in the hash so a link can point at it
  function openFeed(fid:string,step=0){setFeed({id:fid,step});V('stories');history.pushState(null,'','#feed='+encodeURIComponent(fid)+'&step='+(step+1))}
  function closeFeed(){setFeed(null);history.replaceState(null,'','#view=stories')}
  if(!data||!model)return <main className="loading">{t.opening}</main>;
  const labels:Row={...t,status:{verified:t.document,export:t.family,hypothesis:t.familyUncertain,conflict:t.conflict}};
- const people=data.people;const resolvedId=data.identityAliases?.[id]||data.presentationAliases?.[id]||id;const home=data.root||model.homes[0];const personId=people[resolvedId]?resolvedId:home;
+ const connected=model.familyPeople;
+ const people=data.people;const resolvedId=data.identityAliases?.[id]||data.presentationAliases?.[id]||id;const home=data.root||model.homes[0];const personId=model.info[resolvedId]&&!model.info[resolvedId].placeholder?resolvedId:home;
+ const panelId=picked||personId;
+ const openFamily=(pid:string)=>{if(pid!==personId)setUndo({name:model.info[personId].short});go(pid)};
  const group=(pid:string)=>connected.has(pid)?'family':['refuted_relationship','withdrawn_relationship','split_identity'].includes(data.cardStatuses[pid]?.review?.kind)?'archive':'context';
  const row=(pid:string,kin?:string)=>{const i=model.info[pid];if(!i||i.placeholder)return null;const tone=model.tone(pid);const line=[kin,data.people[pid]?.disambiguator?.[language],lifeLabel(i,t,language)||i.note,placeLabel(i,t)].filter(Boolean).join(' · ');return <button key={pid} className="person-row" onClick={()=>go(pid)}><span className={'av'+(tone?.kin?' line-kin':'')} style={tone?{background:tone.color}:undefined}>{i.name.slice(0,1)}</span><span><strong>{i.short}{i.maidenShown&&<small className="maiden" title={t.maidenLabel+': '+i.maidenShown}> ({i.maidenShown})</small>}{i.story&&<i className="st-dot" title={t.hasStory} aria-label={t.hasStory}/>}</strong>{line&&<small>{line}</small>}</span></button>};
  // who this person is: from the viewer when chosen, otherwise from the two home people
@@ -63,19 +60,15 @@ export default function Family({initialData}:{initialData:Row}){
  const hasPhotos=album.length>0||period.length>0;
  const currentView=(view==='stories'&&!hasStories||view==='photos'&&!hasPhotos||view==='kinship'&&!kinshipLexicon(language))?'tree':view;
  const tabs:[string,string][]=[['tree',t.tree],...(hasStories?[['stories',t.stories] as [string,string]]:[]),...(data.worldMap?[['world',worldText[language].nav] as [string,string]]:[]),['families',t.families],...(kinshipLexicon(language)?[['kinship',kinshipLexicon(language)!.title] as [string,string]]:[]),...(hasPhotos?[['photos',t.photos] as [string,string]]:[])];
- const gw=growthWords[language]||growthWords.en;const growthRows=Object.values(model.info).map(i=>i.growth);
- const growthSummary=growthRows.length?`${gw.people} ${growthRows.length} ${gw.peopleUnit}`:'';
  const familyTitle=familyHeading(t.title,model.homes.map(h=>model.info[h]?.surnameKey));
  return <div className={'shell v-'+currentView} data-feedback-screen={finding?'search':currentView}>
   <PageTop title={familyTitle} home={siteURL('#view=tree')} onHome={()=>go(home)} notice={profile().family.fictional?t.fictionalDemo:undefined} navigation={<nav className="tabs-top" aria-label={t.title}>{tabs.map(([k,l])=><button className={currentView===k?'active':''} key={k} onClick={()=>show(k)}>{l}</button>)}</nav>} search={<SearchButton open={finding} label={t.find} onClick={()=>Find(!finding)}/>} language={<LanguagePicker languages={profile().family.languages} language={language} label={t.language} onChange={changeLanguage}/>}/>
   {finding&&<SearchSheet data={data} model={model} group={group} row={id=>row(id,kinOf(id))} labels={labels} onClose={()=>Find(false)}/>}
   {currentView==='tree'&&<div className="tree-body">
-   <div className="growth-summary">{growthSummary}</div>
-   <TreeStage model={model} me={me} id={personId} go={go} jump={pid=>{setUndo({name:model.info[personId].short});go(pid)}} onUse={seenHint} labels={labels} onLayout={l=>setVisible(l.visible)}>
+   <TreeStage model={model} id={personId} selected={panelId} select={setPicked} go={go} jump={openFamily} labels={labels} onVisible={setVisible}>
     {mini&&<MiniMap ov={mini} model={model} visible={visible} center={personId} onOpen={()=>Map_(true)} label={t.map}/>}
-    {hint&&<p className="hint" role="note">{<><span className="hint-wide">{fine?t.hintDesktop:t.hint}</span><span className="hint-narrow">{t.hint}</span></>}</p>}
    </TreeStage>
-   <PersonPanel data={data} model={model} id={personId} go={go} labels={labels} language={language} expanded={expanded} setExpanded={Expand} me={me} setMe={setMe} openFeed={openFeed}/>
+   <PersonPanel data={data} model={model} id={panelId} go={go} showFamily={panelId!==personId?()=>openFamily(panelId):undefined} labels={labels} language={language} expanded={expanded} setExpanded={Expand} me={me} setMe={setMe} openFeed={openFeed}/>
   </div>}
   {map&&overview&&<OverviewDialog ov={overview} model={model} visible={visible} center={personId} go={pid=>{if(pid!==personId)setUndo({name:model.info[personId].short});go(pid,true)}} onClose={()=>Map_(false)} labels={labels} language={language} me={me}/>}
   {undo&&<button className="person-undo" onClick={()=>{history.back();setUndo(null)}}>← {t.backToPerson.replace('{name}',undo.name)}</button>}

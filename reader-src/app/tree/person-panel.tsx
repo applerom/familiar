@@ -48,7 +48,7 @@ function Coverage({c,labels,language}:{c:Row;labels:Row;language:Language}){
  * documents and documentary findings, then family memory, life dates and relatives. Historical grounds and
  * retired claims stay in the folded details.
  */
-export default function PersonPanel({data,model,id,go,labels,language,expanded,setExpanded,me,setMe,openFeed}:{data:Row;model:Model;id:string;go:(id:string)=>void;labels:Row;language:Language;expanded:boolean;setExpanded:(v:boolean)=>void;me:string;setMe:(id:string)=>void;openFeed?:(id:string,step?:number)=>void}){
+export default function PersonPanel({data,model,id,go,showFamily,labels,language,expanded,setExpanded,me,setMe,openFeed}:{data:Row;model:Model;id:string;go:(id:string)=>void;showFamily?:()=>void;labels:Row;language:Language;expanded:boolean;setExpanded:(v:boolean)=>void;me:string;setMe:(id:string)=>void;openFeed?:(id:string,step?:number)=>void}){
  const p=data.people[id];const info=model.info[id];const growth=info.growth;const gw=growthWords[language]||growthWords.en;const [all,setAll]=useState(false);const [lb,setLb]=useState<number|null>(null);const [pick,setPick]=useState(false);const [meQuery,setMeQuery]=useState('');
  const root=useRef<HTMLElement>(null);
  // a new person starts at the top of the card, on the desktop column and in the phone sheet alike
@@ -101,17 +101,18 @@ export default function PersonPanel({data,model,id,go,labels,language,expanded,s
  const hasEvidence=!!(confirmation||evidenceSids.length||connection||dateBasis||birthGuess);
  const incompleteName=!(p.names||[]).some((n:Row)=>n.given&&n.surname);
  return <aside ref={root} data-feedback-person={id} data-feedback-person-label={info.short} className={'panel'+(expanded?' open':'')} aria-live="polite">
-  <button className="peek" onClick={()=>setExpanded(!expanded)} aria-expanded={expanded}>
+  <div className="panel-peek"><button className="peek" onClick={()=>setExpanded(!expanded)} aria-expanded={expanded}>
    <span className="grab" aria-hidden="true"/>
    <span className={'av'+(tone?.kin?' line-kin':'')} style={tone?{background:tone.color}:undefined}>{info.short.slice(0,1)}</span>
    <span className="who"><strong className={info.unnamed?'unnamed':undefined}>{info.short}<ConfirmationMark value={info.confirmation} language={language}/></strong>{p.disambiguator?.[language]&&<small className="disambiguator">{p.disambiguator[language]}</small>}{(line||info.note)&&<small>{line||info.note}</small>}</span>
    {(simple||docs.length>0)&&<span className="peek-docs" aria-label={[simple?labels.story:'',docs.length?labels.docs+' '+docs.length:''].filter(Boolean).join(', ')}>{simple&&<i className="st-dot"/>}{docs.length>0&&<>▣ {docs.length}</>}</span>}
    <span className="chev" aria-hidden="true">{expanded?'▾':'▴'}</span>
-  </button>
+  </button>{showFamily&&<button className="show-person-family" onClick={showFamily}>{labels.treeShowFamily}</button>}</div>
   <div className="body">
    {incompleteName&&feedbackEnabled()&&<section className="group ask"><Feedback subject={id} language={language} kind="name_person"/></section>}
    <header><h2 className={info.unnamed?'unnamed':undefined}>{info.short}<ConfirmationMark value={info.confirmation} language={language}/></h2>{p.disambiguator?.[language]&&<p className="note">{p.disambiguator[language]}</p>}{info.showMaiden&&(info.maidenShown||!info.maidenSurname)&&<p className="note maiden">{info.maidenShown?labels.maidenLabel+': '+info.maidenShown:labels.maidenUnknownLong}</p>}{info.fullName!==info.short&&<p className="note">{labels.fullName}: {info.fullName}</p>}{info.alt&&<p className="note">{labels.variants}: {info.alt}</p>}{info.note&&line&&<p className="note">{info.note}</p>}{line&&<p className="life">{line}</p>}{married.filter((m:string)=>!info.short.includes(m)).map((m:string,i:number)=><p className="note" key={i}>{labels.married}: {m}</p>)}</header>
    {info.connector&&translated(info.connectorBasis,language)&&<p className="note connector-explanation">{translated(info.connectorBasis,language)}</p>}
+   {showFamily&&<button className="show-person-family panel-family-action" onClick={showFamily}>{labels.treeShowFamily}</button>}
    {(growth.confirmed.length>0||growth.firmMemory)&&<p className="note growth-explanation">{growth.confirmed.length>0?`${gw.confirmed}: ${growth.confirmed.map(s=>data.sources[s]?.title||labels.source).join(' · ')}`:growth.treeMemory?gw.tree:gw.memory}</p>}{growth.confirmed.length===0&&(growth.documents.length>0||growth.hasMedia)&&<p className="note growth-explanation docs-only">{gw.unconfirmed}</p>}
    {p.surnameDisplay?.written?.length>0&&<p className="note surname-written">{labels.writtenSurname}: {p.surnameDisplay.written.join(' · ')}</p>}
    {p.surnameDisplay?.origin==='derived-from-children'&&<p className="note surname-derived">{labels.surnameFromChildren} {(p.surnameDisplay.children||[]).map((pid:string)=>model.info[pid]?.short).filter(Boolean).join(', ')}.</p>}

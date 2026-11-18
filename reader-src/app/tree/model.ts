@@ -2,7 +2,7 @@ import {termPhrase,kinshipLexicon,kinshipTerm} from './kinship';
 import {growth} from './growth';
 import type {Confirmation} from './confirmation';
 export type Row=Record<string,any>;
-export type Info={connector?:boolean;connectorNote?:string;connectorBasis?:Row;growth:ReturnType<typeof growth>;confirmation?:Confirmation;id:string;name:string;short:string;treeName:string;clanSurname?:string;alt:string;note:string;fullName:string;providedName?:string;maidenSurname?:string;maidenShown:string;showMaiden:boolean;unknownSurname:boolean;isWoman:boolean;placeholder:boolean;unnamed?:boolean;story:boolean;surnameKey:string;birth?:number;death?:number;approx:boolean;guess?:BirthGuess;sex:'m'|'f'|'';place:string;life:string;placeRole:string;birthText:string;deathText:string;birthKind:string;deathKind:string;connectionNote:Row;connectionShort:Row;dateBasis:Row;dateReference:Row};
+export type Info={connector?:boolean;connectorNote?:string;connectorBasis?:Row;growth:ReturnType<typeof growth>;confirmation?:Confirmation;id:string;name:string;short:string;treeName:string;givenName?:string;clanSurname?:string;alt:string;note:string;fullName:string;providedName?:string;maidenSurname?:string;maidenShown:string;showMaiden:boolean;unknownSurname:boolean;isWoman:boolean;placeholder:boolean;unnamed?:boolean;story:boolean;surnameKey:string;birth?:number;death?:number;approx:boolean;guess?:BirthGuess;sex:'m'|'f'|'';place:string;life:string;placeRole:string;birthText:string;deathText:string;birthKind:string;deathKind:string;connectionNote:Row;connectionShort:Row;dateBasis:Row;dateReference:Row};
 /** An orientation year the engine gives a person nobody recorded a birth for (setting tree.first_child_age); never a fact. */
 export type BirthGuess={year:number;exact:number;relation:'child'|'parent'|'spouse'|'sibling';anchors:{id:string;year:number;guessed:boolean;age:number;offset:number}[]};
 export type Kin={home:string;homeId:string;kind:'ancestor'|'spouse'|'child';n:number;g:'m'|'f'|'';sure:boolean};
@@ -218,6 +218,7 @@ export function buildModel(data:Row,labels:Row={}){
   const story=typeof p.story==='string'?p.story.trim():!!(p.story?.ru||p.story?.pl||p.story?.en||p.story?.sv);
   const g=growth(data,id,connector);if(connector&&!g.documents.length&&!g.hasMedia){g.found=false;g.confirmed=[]}const basis=g.confirmed.map(s=>data.sources[s]?.title).filter(Boolean).join(' · ');
   info[id]={connector,connectorNote:connector?ownerLabel:undefined,growth:g,confirmation:g.confirmed.length?{level:'document',basis:{ru:basis,en:basis,pl:basis,sv:basis},sources:g.confirmed}:p.confirmation,id,name:full,treeName:ownerLabel||p.treeName||short,clanSurname:p.surnameDisplay?.form,providedName:ownerLabel||undefined,story:!!story,fullName:full,maidenSurname:np.maidenSurname||undefined,maidenShown,showMaiden:!ownerLabel&&!!(np.isWoman&&(np.isWife||np.maidenSurname)),unknownSurname:!!np.surnameUnknown,isWoman:!!np.isWoman,placeholder,surnameKey:p.surnameDisplay?.form|| (ownerLabel?(SURNAME.test(ownerSurname)?ownerSurname:''):main?surnameKey(np,short):''),short,alt,note:ownerLabel?'':note,birth,death,approx:approx||!!guess,guess,sex:/^m$/i.test(p.sex||'')?'m':/^f$/i.test(p.sex||'')||np.isWoman?'f':(data.families||[]).some((f:Row)=>f.husband===id)?'m':'',place:shortPlace(cp.place??b?.place),life,placeRole:cp.placeRole||'birth',birthText,deathText,birthKind:cp.birthKind||'source',deathKind:cp.deathKind||'source',connectionNote:cp.connectionNote||{},connectionShort:cp.connectionShort||{},dateBasis:cp.dateBasis||{},dateReference:cp.dateReference||{}}
+  if (!ownerLabel) info[id].givenName = p.names?.[0]?.given?.trim() || undefined;
  }
  // An unnamed connector is shown by the placeholder the family data carries, literally; the engine never builds
  // a replacement (no child's surname, no transliteration, no feminine form).
@@ -235,6 +236,9 @@ export function buildModel(data:Row,labels:Row={}){
  const push=<T,>(m:Map<string,T[]>,k:string,v:T)=>{const a=m.get(k);a?a.push(v):m.set(k,[v])};
  (data.edges||[]).filter((e:Row)=>!REJECTED.includes(e.status)&&info[e.child]&&info[e.parent]&&e.child!==e.parent&&!info[e.child].placeholder&&!info[e.parent].placeholder).sort((a:Row,b:Row)=>connectionLevel({...a,status:firmStatus(a)})-connectionLevel({...b,status:firmStatus(b)})||rank(a.status)-rank(b.status)).forEach((e:Row)=>{push(up,e.child,e);const kids=down.get(e.parent);if(!kids?.includes(e.child))push(down,e.parent,e.child)});
  const byYear=(a:string,b:string)=>(info[a].birth??9999)-(info[b].birth??9999)||info[a].name.localeCompare(info[b].name,'ru');
+ const treeOrder = new Map(Object.keys(info).map((id, index) => [id, index]));
+ const bySeniority = (a: string, b: string) =>
+  (info[a].birth ?? Infinity) - (info[b].birth ?? Infinity) || treeOrder.get(a)! - treeOrder.get(b)!;
  const roleOf=(pid:string)=>{const s=String(data.people[pid]?.sex||'').toLowerCase();return s==='m'||(s!=='f'&&!info[pid]?.isWoman&&(data.families||[]).some((f:Row)=>f.husband===pid))?'отец':s==='f'||info[pid]?.isWoman?'мать':''};
  const parentCache=new Map<string,{slots:[Slot|null,Slot|null];extra:Slot[]}>();
  function parents(id:string){
@@ -248,7 +252,6 @@ export function buildModel(data:Row,labels:Row={}){
  }
  const relationshipEvidence=(id:string)=>[...new Set((data.edges||[]).filter((e:Row)=>(e.child===id||e.parent===id)&&connectionLevel(e)===2).flatMap((e:Row)=>e.sources||[]))] as string[];
  const children=(id:string)=>[...(down.get(id)||[])].sort(byYear);
- const hasParents=(id:string)=>!!(parents(id).slots[0]||parents(id).slots[1]);
  // Keep the union's qualification alongside navigation. Shared children alone do not establish a marriage.
  const partners=new Map<string,Map<string,{kids:number;family:boolean}>>();
  const unionLinks=new Map<string,Row>();const unionKey=(a:string,b:string)=>JSON.stringify([a,b].sort());
@@ -262,7 +265,43 @@ export function buildModel(data:Row,labels:Row={}){
  const spouseConnection=(a:string,b:string):Row=>unionLinks.get(unionKey(a,b))||{status:'hypothesis'};
  const husbands=new Set<string>((data.families||[]).map((f:Row)=>f.husband));
  const spouses=(id:string)=>[...(partners.get(id)||new Map()).entries()].sort((a,b)=>b[1].kids-a[1].kids||Number(b[1].family)-Number(a[1].family)||byYear(a[0],b[0])).map(([pid])=>pid);
- const siblings=(id:string)=>{const set=new Set<string>();const {slots}=parents(id);slots.forEach(s=>s&&children(s.id).forEach(c=>c!==id&&set.add(c)));(data.associations||[]).filter((a:Row)=>a.type==='sibling'&&!REJECTED.includes(a.status)).forEach((a:Row)=>{if(a.from===id&&info[a.to])set.add(a.to);if(a.to===id&&info[a.from])set.add(a.from)});return [...set].sort(byYear)};
+ const adjacent = new Map<string, Set<string>>();
+ const statedSiblings = new Map<string, Set<string>>();
+ function join(index: Map<string, Set<string>>, a: string, b: string) {
+  if (a === b || !info[a] || !info[b] || info[a].placeholder || info[b].placeholder) return;
+  for (const [from, to] of [[a, b], [b, a]]) {
+   if (!index.has(from)) index.set(from, new Set());
+   index.get(from)!.add(to);
+  }
+ }
+ for (const [child, edges] of up) for (const edge of edges) join(adjacent, child, edge.parent);
+ for (const [id, mates] of partners) for (const mate of mates.keys()) join(adjacent, id, mate);
+ for (const a of data.associations || []) {
+  if (REJECTED.includes(a.status)) continue;
+  if (a.type === 'sibling') join(statedSiblings, a.from, a.to);
+  if (a.type === 'sibling' || a.type === 'possible_parent') join(adjacent, a.from, a.to);
+ }
+ function connectedFrom(roots: string[]) {
+  const seen = new Set(roots.filter(id => info[id] && !info[id].placeholder));
+  for (const id of seen) for (const next of adjacent.get(id) || []) seen.add(next);
+  return seen;
+ }
+ const siblings=(id:string)=>{const set=new Set(statedSiblings.get(id));parents(id).slots.forEach(s=>s&&(down.get(s.id)||[]).forEach(c=>set.add(c)));set.delete(id);return [...set].sort(byYear)};
+ const deckCache = new Map<string, string[]>();
+ function siblingDeck(id: string) {
+  const saved = deckCache.get(id);
+  if (saved) return saved;
+  const {slots} = parents(id);
+  const deck = [id, ...siblings(id).filter(child => {
+   const other = parents(child);
+   // A missing slot does not rule out a sibling. A different recorded parent does,
+   // unless this family is itself one of the child's possible parent pairs.
+   return slots.every((slot, i) => !slot || !other.slots[i] ||
+    slot.id === other.slots[i]?.id || other.extra.some(candidate => candidate.id === slot.id));
+  })].sort(bySeniority);
+  deckCache.set(id, deck);
+  return deck;
+ }
  // the four lines running up from the two home people, used for colour only
  // the home couple is the root of the export and the root's first partner, so no person id is written into the code
  const branch=new Map<string,number>();const homes:string[]=[data.root,spouses(data.root)[0]].filter((x,i,a)=>x&&info[x]&&a.indexOf(x)===i);const lines:{id:string;color:string;home:string;role:string;status:string}[]=[];
@@ -276,7 +315,6 @@ export function buildModel(data:Row,labels:Row={}){
    if(spouses(h)[0]===id)out.push({home:hn,homeId:h,kind:'spouse',n:0,g,sure:true});
    else if(children(h).includes(id))out.push({home:hn,homeId:h,kind:'child',n:0,g,sure:connectionLevel(parents(id).slots.find(s=>s?.id===h)||{})<3})}
   return out};
- const ancestorsCount=(id:string)=>{const seen=new Set<string>();const todo=[id];while(todo.length){const x=todo.pop()!;parents(x).slots.forEach(p=>{if(p&&!seen.has(p.id)){seen.add(p.id);todo.push(p.id)}})}return seen.size};
  // all ancestors of one person with the distance, the sex of the ancestor and whether every link on the way is firm
  const ancCache=new Map<string,Map<string,{n:number;g:'m'|'f'|'';sure:boolean;path?:string[]}>>();
  const ancestorsOf=(id:string)=>{let m=ancCache.get(id);if(m)return m;m=new Map();const q=[id];m.set(id,{n:0,g:'',sure:true,path:[id]});for(let i=0;i<q.length;i++){const x=q[i];const cur=m.get(x)!;parents(x).slots.forEach(s=>{if(s&&!m!.has(s.id)){m!.set(s.id,{n:cur.n+1,g:s.role==='отец'?'m':s.role==='мать'?'f':'',sure:cur.sure&&connectionLevel(s)<3,path:[...(cur.path||[]),s.id]});q.push(s.id)}})}ancCache.set(id,m);return m};
@@ -345,5 +383,6 @@ export function buildModel(data:Row,labels:Row={}){
   const name=n?.surname?`${n.surname} (${kin})`:kin;
   Object.assign(info[pid],{name,short:name,fullName:name,alt:'',note:'',unnamed:true});
  }
- return {connectionLevel,connectionStatus,relationshipEvidence,info,parents,children,hasParents,spouses,spouseConnection,siblings,husbands,branch,kin,tone,lines,ancestorsCount,homes,kinship,relation,ancestorsOf};
+ return {connectionLevel,connectionStatus,relationshipEvidence,info,parents,children,spouses,spouseConnection,siblings,
+  siblingDeck, bySeniority, connectedFrom, familyPeople: connectedFrom(homes), husbands,branch,kin,tone,lines,homes,kinship,relation,ancestorsOf};
 }

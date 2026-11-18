@@ -42,7 +42,10 @@ CHANGES_WITH:
 .desk-build-hint button{border:0;border-radius:999px;padding:6px 12px;background:var(--ember,#c8741c);color:#fff;font:inherit;cursor:pointer;white-space:nowrap}
 .desk-add-entry{position:absolute;right:16px;bottom:84px;z-index:6;display:flex;align-items:center;gap:8px;min-height:48px;padding:6px 16px 6px 8px;border:1.5px solid var(--ember,#c8741c);border-radius:999px;background:var(--sheet,#fffdf8);color:var(--ember-text,#9a5512);font:700 15px/1.2 Manrope,system-ui,sans-serif;box-shadow:0 6px 18px -10px #203b2d60;cursor:pointer}
 .desk-add-entry:hover{background:var(--ember-soft,#f6e5cc)}
-@media(max-width:800px){.desk-add-entry{bottom:76px;right:auto;left:12px;min-height:44px;font-size:14px}}
+@media(max-width:800px){
+  .desk-add-entry{bottom:76px;right:auto;left:12px;width:44px;min-height:44px;padding:0;justify-content:center}
+  .desk-add-entry>span:last-child{display:none}
+}
 .desk-add-kin h3{margin:0 0 8px}.desk-add-kin-row{display:flex;flex-wrap:wrap;gap:6px}
 .desk-add-kin-row button{min-height:40px;padding:6px 12px;border:1px dashed var(--ember,#c8741c);border-radius:999px;background:transparent;color:var(--ember-text,#9a5512);font:600 13px/1.2 Manrope,system-ui,sans-serif;cursor:pointer}
 .desk-add-kin-row button::before{content:"+ "}
