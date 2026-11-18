@@ -100,7 +100,10 @@ export function clanGenitive(s:string){if(!/^[А-ЯЁ][а-яё-]+$/.test(s))retu
  if(/(ич|ш|ж|щ|ч)$/.test(s))return s+'ей';return s}
 export function lineTitle(l:{id:string},model:Model,labels:Row){const i=model.info[l.id];const s=i?.surnameKey||i?.short?.split(' ').pop()||'';const t=String(labels.lineOf||'{s}');return t.replace('{s}',t.startsWith('Род ')?clanGenitive(s):s)}
 // English and Swedish mark the possessor on the name itself: Amaro's wife, Amaros fru.
-const possessive=(home:string,lang:string)=>lang==='en'?home+(/s$/i.test(home)?"'":"'s"):lang==='sv'?home+(/[sxz]$/i.test(home)?'':'s'):home;
+// A Russian given name in the genitive: жена Андрея, дочь Марии, сын Игоря.
+const nameGenitive=(s:string)=>!/^[А-ЯЁ][а-яё]+$/.test(s)?s:/ия$/.test(s)?s.slice(0,-1)+'и':/[гкхжчшщ]а$/.test(s)?s.slice(0,-1)+'и':/а$/.test(s)?s.slice(0,-1)+'ы':
+ /я$/.test(s)?s.slice(0,-1)+'и':/вь$/.test(s)?s.slice(0,-1)+'и':/[йь]$/.test(s)?s.slice(0,-1)+'я':/[бвгджзклмнпрстфхцчшщ]$/.test(s)?s+'а':s;
+const possessive=(home:string,lang:string)=>lang==='en'?home+(/s$/i.test(home)?"'":"'s"):lang==='sv'?home+(/[sxz]$/i.test(home)?'':'s'):lang==='ru'?nameGenitive(home):home;
 export function withHome(word:string,home:string,labels:Row){const gen=labels.homeGenitive?.[home]||possessive(home,labels.languageCode);return labels.genitiveFirst?`${gen} ${word}`:`${word} ${gen}`}
 /** Genitive of a relation word: "прадеда", "бабушки", "двоюродного брата"; Polish from a table, English with 's. */
 export function genitive(word:string,lang:string){return genitive0(word,lang)}
@@ -162,7 +165,7 @@ export function describeRelation(r:Relation,labels:Row,lang0:string){
 }
 /** One kinship entry as words. */
 export function kinPhrase(k:Kin,labels:Row,lang:string){
- const gen=labels.homeGenitive?.[k.home]||k.home;
+ const gen=labels.homeGenitive?.[k.home]||possessive(k.home,lang);
  const word=k.kind==='ancestor'?relWord(k.n,k.g,lang):k.kind==='spouse'?(k.g==='f'?labels.wifeOf:labels.husbandOf):(k.g==='f'?labels.daughterOf:k.g==='m'?labels.sonOf:labels.childOf);
  const text=labels.genitiveFirst?`${gen} ${word}`:`${word} ${gen}`;
  return (k.sure?'':(MAYBE[lang]||MAYBE.ru))+text;
@@ -196,6 +199,7 @@ export function humanText(text:string,lang:string){
   .replace(/\b(?:FROM|BET) (\d{4}) (?:TO|AND) (\d{4})\b/g,'$1–$2')
   .replace(/\b(\d{4})(?:\s*[–—]\s*|\s+-\s+)(\d{4})\b|\b(\d{4})-(\d{4})\b(?![-./]\d)/g,(_,a,b,c,d)=>`${a||c}–${b||d}`)
   .replace(/\b(?:about|circa|EST|CAL)\s+(?=\d)/gi,w.abt)
+  .replace(/\b(after|before)\s+(?=\d{4}\b)/gi,(_,k)=>(k.toLowerCase()==='after'?w.aft:w.bef)+' ')
   .replace(/\b(ABT|BEF|AFT) /g,(_,k)=>(k==='ABT'?w.abt:k==='BEF'?w.bef+' ':w.aft+' ').replace('≈','≈'))
   .replace(/\b(\d{1,2}) ([A-Z]{3}) (\d{4})\b/g,(s,d,mo,y)=>MONTHS.includes(mo)?fmt({day:'numeric',month:'long',year:'numeric'},new Date(Date.UTC(+y,MONTHS.indexOf(mo),+d))):s)
   .replace(/\b([A-Z]{3}) (\d{4})\b/g,(s,mo,y)=>MONTHS.includes(mo)?fmt({month:'long',year:'numeric'},new Date(Date.UTC(+y,MONTHS.indexOf(mo),1))):s)

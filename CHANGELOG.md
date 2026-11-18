@@ -7,8 +7,9 @@
   word "unverified"; the dotted status and the source say whose claim it is.
 - What only another tree says about a person (a name, a date, a remark) stays
   in the fold of details as a version, not on the card.
-- English and Swedish kin phrases mark the possessor ("Amaro's wife"), and the
-  Russian kinship words count generations in the right form.
+- Kin phrases decline the name they lean on ("Amaro's wife", "жена Андрея"),
+  "after 1941" reads in the reader's language, and the Russian kinship words
+  count generations in the right form.
 - The confirmed mark names only papers that name the person: a record listing
   its subjects without them no longer stands behind their card.
 - The kinship words page opens without a caution about proof, and the reader
