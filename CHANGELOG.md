@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.37.1 — 18 November 2026
+
+- A letter whose question has only a weak leading answer now ranks as fully
+  open: we know little there, so the letter can tell us most.
+
 ## 0.37.0 — 18 November 2026
 
 - We show Documents by family line and person, rank ready letters by what they

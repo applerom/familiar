@@ -57,7 +57,8 @@ def rank(instance, data, entries, versions, w):
                    and type(v.get('weight')) in (int, float) and 0 <= v['weight'] <= 1]
         leader = max(options, key=lambda v: v['weight'], default={})
         leading = leader.get('weight', .5)
-        uncertainty = 1 - abs(2 * leading - 1)
+        # A weak leader means we know little: full uncertainty up to 0.5, then falling to zero at 1.
+        uncertainty = min(1, 2 * (1 - leading))
         decided = any(v.get('status', v.get('state')) in SETTLED for v in (question, option))
         settled = decided or leading > .9
         if settled and not item['relevance']:
