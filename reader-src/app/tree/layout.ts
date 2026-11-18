@@ -4,11 +4,11 @@ export type Tile = {
   id: string; x: number; y: number; w: number; h: number;
   gen: number; status: string; scale: number; color?: string; stackLayers: number;
 };
-type Link = {key: string; d: string; gen: number; status: string; kind: 'parent' | 'union' | 'child'; color?: string; ids: string[]};
+type Link = {key: string; d: string; gen: number; status: string; kind: 'parent' | 'union' | 'child' | 'more'; color?: string; ids: string[]};
 type Box = {x0: number; x1: number; y0: number; y1: number};
 export type Layout = {
   tiles: Tile[]; links: Link[]; width: number; height: number; box: Box; near: Box;
-  axis: number; rootBottom: number; familyBottom: number; horizon: boolean; linkOffset: number;
+  axis: number; rootBottom: number; familyBottom: number; horizon: boolean; cut: boolean; linkOffset: number;
   visible: Set<string>; peopleCount: number;
 };
 type Ancestor = {id: string; gen: number; status: string; x: number; weight: number; parents: Ancestor[]};
@@ -75,6 +75,16 @@ export function depthFor(m: Model, center: string) {
   return Math.min(MAX_LEVEL, deepest + 1);
 }
 
+/** How many generations of ancestors can be drawn, and how many the screen shows comfortably at first. */
+export function levelRange(m: Model, center: string, viewport: number, room: number) {
+  const max = Math.max(1, depthFor(m, center) - 1);
+  const cap = Math.min(max, viewport < 560 ? 3 : viewport < 1000 ? 4 : 5);
+  let auto = Math.min(2, max);
+  for (let level = cap; level > 2; level--)
+    if (layoutTree(m, center, viewport, level).height * .84 <= room) { auto = level; break; }
+  return {max, auto};
+}
+
 /** Project older rows towards the horizon, then give overlapping tiles room horizontally. */
 export function layoutTree(m: Model, center: string, viewport: number, level = depthFor(m, center)): Layout {
   const roots = rootsFor(m, center);
@@ -130,8 +140,12 @@ export function layoutTree(m: Model, center: string, viewport: number, level = d
   });
 
   const last = rowTiles.length - 1;
-  const horizon = last >= HISTORY_LEVEL;
-  let y = horizon ? HORIZON_Y + PAD : PAD;
+  // People whose parents wait above the drawn generations: a short dotted stub leads into the fog.
+  const cut = rowTiles.flat().filter(tile => m.parents(tile.id).slots.some(slot =>
+    slot && !tileById.has(slot.id) && !(m.info[slot.id].connector && !m.parents(slot.id).slots.some(Boolean))));
+  const horizon = last >= HISTORY_LEVEL || cut.length > 0;
+  // Cut rows start lower: the haze covers the stubs that lead further up, not the people themselves.
+  let y = cut.length ? HORIZON_Y + PAD + 30 : horizon ? HORIZON_Y + PAD : PAD;
   for (let gen = last; gen >= 0; gen--) {
     const row = rowTiles[gen];
     const height = Math.max(...row.map(tile => tile.h));
@@ -145,6 +159,11 @@ export function layoutTree(m: Model, center: string, viewport: number, level = d
 
   const links: Link[] = [];
   const midX = (tile: Tile) => tile.x + tile.w / 2;
+  for (const tile of cut) {
+    const rise = Math.max(10, Math.round(22 * tile.scale));
+    links.push({key: 'more:' + tile.id, d: `M${midX(tile)},${tile.y} v${-rise}`, gen: tile.gen, status: 'hypothesis',
+      kind: 'more', color: tile.color, ids: [tile.id]});
+  }
   // A couple is joined by a ring; their child hangs from the ring, not from each parent separately.
   const knot = (left: Tile, right: Tile) => {
     const r = Math.max(2.5, RING * left.scale);
@@ -258,7 +277,7 @@ export function layoutTree(m: Model, center: string, viewport: number, level = d
   const peopleCount = m.familyPeople.has(center) ? m.familyPeople.size : m.connectedFrom([center]).size;
   return {
     tiles, links, width: Math.max(viewport + offset, box.x1 + PAD), height: box.y1 + PAD,
-    box, near, axis: axis + offset, rootBottom, familyBottom, horizon, linkOffset: offset, visible, peopleCount,
+    box, near, axis: axis + offset, rootBottom, familyBottom, horizon, cut: cut.length > 0, linkOffset: offset, visible, peopleCount,
   };
 }
 

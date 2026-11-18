@@ -65,7 +65,7 @@ export default function Family({initialData}:{initialData:Row}){
   <PageTop title={familyTitle} home={siteURL('#view=tree')} onHome={()=>go(home)} notice={profile().family.fictional?t.fictionalDemo:undefined} navigation={<nav className="tabs-top" aria-label={t.title}>{tabs.map(([k,l])=><button className={currentView===k?'active':''} key={k} onClick={()=>show(k)}>{l}</button>)}</nav>} search={<SearchButton open={finding} label={t.find} onClick={()=>Find(!finding)}/>} language={<LanguagePicker languages={profile().family.languages} language={language} label={t.language} onChange={changeLanguage}/>}/>
   {finding&&<SearchSheet data={data} model={model} group={group} row={id=>row(id,kinOf(id))} labels={labels} onClose={()=>Find(false)}/>}
   {currentView==='tree'&&<div className="tree-body">
-   <TreeStage model={model} id={personId} selected={panelId} select={setPicked} go={go} jump={openFamily} labels={labels} onVisible={setVisible}>
+   <TreeStage model={model} id={personId} go={go} labels={labels} onVisible={setVisible}>
     {mini&&<MiniMap ov={mini} model={model} visible={visible} center={personId} onOpen={()=>Map_(true)} label={t.map} caption={`${model.familyPeople.size} ${plural(model.familyPeople.size,labels.personsForms,language)}`}/>}
    </TreeStage>
    <PersonPanel data={data} model={model} id={panelId} go={go} showFamily={panelId!==personId?()=>openFamily(panelId):undefined} labels={labels} language={language} expanded={expanded} setExpanded={Expand} me={me} setMe={setMe} openFeed={openFeed}/>

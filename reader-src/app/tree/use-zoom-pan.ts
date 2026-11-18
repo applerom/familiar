@@ -1,12 +1,13 @@
 import {useCallback,useEffect,useRef,useState,type RefObject} from 'react';
 export type T={k:number;x:number;y:number};
-type Opts={min:number;max:number;margin?:number;content:RefObject<{w:number;h:number}>;horizontalWheel?:boolean};
+type Opts={min:number;max:number;margin?:number;content:RefObject<{w:number;h:number}>;horizontalWheel?:boolean;onStep?:(direction:number)=>void};
 /**
  * Mouse drag, wheel, touch drag and two-finger pinch for one stage. Clicks that end a drag are swallowed.
  * `focal` is where the current wheel or pinch gesture points (null while dragging). A transform set from outside
  * in the middle of a gesture is taken as the new starting point at once, so the gesture goes on from it.
  */
-export function useZoomPan(stage:RefObject<HTMLElement|null>,{min,max,margin=70,content,horizontalWheel=false}:Opts){
+export function useZoomPan(stage:RefObject<HTMLElement|null>,{min,max,margin=70,content,horizontalWheel=false,onStep}:Opts){
+ const step=useRef(onStep);step.current=onStep;
  const [t,setState]=useState<T>({k:1,x:0,y:0});const [moving,setMoving]=useState(false);const tRef=useRef(t);tRef.current=t;const focal=useRef<{x:number;y:number}|null>(null);const placed=useRef<T|null>(null);
  const apply=useCallback((n:T)=>{tRef.current=n;setState(n)},[]);
  const setT=useCallback((n:T)=>{placed.current=n;apply(n)},[apply]);
@@ -16,7 +17,7 @@ export function useZoomPan(stage:RefObject<HTMLElement|null>,{min,max,margin=70,
  const zoomBy=useCallback((factor:number)=>{const el=stage.current;if(el)zoomAt(factor,el.clientWidth/2,el.clientHeight/2)},[stage,zoomAt]);
  useEffect(()=>{
   const el=stage.current;if(!el)return;
-  const pts=new Map<number,{x:number;y:number}>();let start:{x:number;y:number;t:T}|null=null;let pinch:{d:number;t:T;mx:number;my:number}|null=null;let dragged=false;let swallow=false;let wheelTimer:ReturnType<typeof setTimeout>|undefined;
+  const pts=new Map<number,{x:number;y:number}>();let start:{x:number;y:number;t:T}|null=null;let pinch:{d:number;t:T;mx:number;my:number}|null=null;let dragged=false;let swallow=false;let wheelTimer:ReturnType<typeof setTimeout>|undefined;let turned=0,locked=0;
   const rel=(e:{clientX:number;clientY:number})=>{const r=el.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top}};
   const dist=()=>{const [a,b]=[...pts.values()];return {d:Math.hypot(a.x-b.x,a.y-b.y),mx:(a.x+b.x)/2,my:(a.y+b.y)/2}};
   const down=(e:PointerEvent)=>{if((e.target as Element).closest('[data-pan-ignore]')||e.pointerType==='mouse'&&e.button!==0)return;if(e.isPrimary){pts.clear();pinch=null}pts.set(e.pointerId,rel(e));if(pts.size===1){start={...rel(e),t:{...tRef.current}};dragged=false;focal.current=null}else if(pts.size===2){const {d,mx,my}=dist();pinch={d,t:{...tRef.current},mx,my};placed.current=null;focal.current={x:mx,y:my};dragged=true;setMoving(true);
@@ -33,8 +34,13 @@ export function useZoomPan(stage:RefObject<HTMLElement|null>,{min,max,margin=70,
   const click=(e:MouseEvent)=>{if(swallow){e.stopPropagation();e.preventDefault()}};
   const wheel=(e:WheelEvent)=>{
    e.preventDefault();const p=rel(e);const units=e.deltaMode===1?16:e.deltaMode===2?el.clientHeight:1;
+   const sideways=horizontalWheel&&!e.ctrlKey&&(e.shiftKey||Math.abs(e.deltaX)>Math.abs(e.deltaY));
+   // With a step handler the plain wheel never scales pixels: one turn of the wheel is one step. A long spin
+   // or a trackpad swipe stays one step until the wheel rests.
+   if(step.current&&!sideways&&!e.ctrlKey){const now=performance.now();if(now<locked){turned=0;locked=Math.max(locked,now+160);return}
+    turned+=e.deltaY*units;if(Math.abs(turned)>=40){step.current(turned>0?1:-1);turned=0;locked=now+260}return}
    setMoving(true);clearTimeout(wheelTimer);wheelTimer=setTimeout(()=>setMoving(false),140);
-   if(horizontalWheel&&!e.ctrlKey&&(e.shiftKey||Math.abs(e.deltaX)>Math.abs(e.deltaY))){
+   if(sideways){
     focal.current=null;apply(clamp({...tRef.current,x:tRef.current.x-(e.deltaX||e.deltaY)*units}));
    }else{focal.current=p;zoomAt(Math.exp(-e.deltaY*units*(e.ctrlKey?.01:.0016)),p.x,p.y)}
   };

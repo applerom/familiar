@@ -67,6 +67,13 @@ anything irreversible outside this repository.
 
 ### Pages and display
 
+A family opens these pages at home, not in court. Interface text, tooltips, statuses and check messages that a
+relative can see never warn, disclaim or pass a verdict on the family's own tree ("documents exist but do not
+confirm the facts", "unverified", "not proven"). We research and suppose; the card tells the leading version,
+doubt is drawn by form (dotted line, approximate year) and reasoned one tap away, and where nothing is known the
+page stays silent. A caution an engineer finds prudent is a reason to fix the data or the display, not a line for
+the family. Rule `CRAFT-HOME-NOT-COURT` says the same to every role that writes for the family.
+
 Показ работы агентов (статистика, ход работы) строится только из уже существующих следов работы; он не добавляет исследователям ни одного шага, поля или проверки — грубые числа лучше налога на исследование.
 
 ---

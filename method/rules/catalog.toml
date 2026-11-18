@@ -85,6 +85,16 @@ mode = "advise"
 reads = ["research.witness_horizon_years"]
 
 [[rule]]
+id = "CRAFT-HOME-NOT-COURT"
+kind = "craft"
+statement = "A family reads these pages at home; nobody is on trial. We research and suppose about people who died a hundred, two hundred, three hundred years ago: tell what is known and what was found as the leading version, in a warm plain voice. Do not write warnings, disclaimers or verdicts for the family to read (documents exist but do not confirm the facts, unverified, not proven, insufficient evidence): where nothing is known, write nothing; where a version is weak, it waits in the investigation. Doubt is shown by form (a dotted line, an approximate year) and explained one tap away, never by a notice that undermines trust in the whole telling."
+roles = ["researcher", "second-look", "feed-author", "reviewer", "translator", "lead"]
+serves = "UC-STORY"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
 id = "CRAFT-FAMILY-WORD-WEIGHT"
 kind = "craft"
 statement = "Firm family memory is firm testimony: it is not asked again and stands until a document contradicts it; a hearsay impression is a lead that research verifies before it reaches a feed. The host's views on regional history, custom and faith are doubts to check; the last word there belongs to research."
