@@ -357,7 +357,7 @@ scopes = ["family"]
 [setting."tree.first_child_age"]
 type = "table"
 default = {"1700" = {father = 27, mother = 22}, "1950" = {father = 26, mother = 23}, "1990" = {father = 29, mother = 26}}
-help = "Orientation for a birth year nobody recorded: how old a father and a mother usually were at their first child, keyed by the year from which the row applies (the child's birth year). A person without a year is guessed from the first known child (minus this age), else a spouse, brothers and sisters, then parents (plus it); a real date always beats a chain of guesses. The reader shows the guess rounded to five years as 'about', with its grounds; it is never an event, a research bound or life-status evidence, and a recorded year replaces it. A person of unknown sex takes the middle."
+help = "Orientation for a birth year nobody recorded: how old a father and a mother usually were at their first child, keyed by the year from which the row applies (the child's birth year). A person without a year is guessed from the first known child (minus this age), else a spouse, brothers and sisters, then parents (plus it); a real date always beats a chain of guesses. The reader shows the guess rounded to five years as 'about', with its grounds. It may inform the family display age horizon; a recorded year replaces the guess. A person of unknown sex takes the middle."
 serves = "UC-READ"
 scopes = ["region", "family"]
 
@@ -369,6 +369,15 @@ minimum = 100
 maximum = 150
 default = 110
 help = "Birth before this age horizon is treated as deceased for privacy, equally for memory and imports; unknown stays protected."
+serves = "UC-READ"
+scopes = ["family"]
+
+[setting."privacy.family_years"]
+type = "integer"
+minimum = 75
+maximum = 100
+default = 75
+help = "Age at which someone with no established life status is treated as deceased in the family reader and signed-in desk. Uses a recorded birth date or the reader's estimated birth year. An explicit living decision always protects the person's documents."
 serves = "UC-READ"
 scopes = ["family"]
 

@@ -56,6 +56,11 @@ ordinary publication refuses its seal. Local consumption checks current display
 input fingerprints and payload hashes. Every served HTML screen carries a language-pack
 private notice. This is local delivery, not authorization to upload its files.
 
+The local family reader and signed-in desk use `privacy.family_years` (75 by default)
+for a person whose life status is uncertain. A recorded birth date or the reader's
+estimated birth year can reach that horizon. Explicit living decisions and unresolved
+life conflicts retain their protection. The public reader still uses `privacy.living_years`.
+
 Private display snapshots include only explicitly referenced corpus records and
 their captures, with record form checks. Unreferenced records and all search logs
 stay outside the snapshot, fingerprint and HTTP input watch; collectors can keep

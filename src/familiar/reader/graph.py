@@ -193,7 +193,7 @@ def _card_dates(pid, person, evidence):
 
 
 def _assemble(instance, *, for_review=False, host_private=False):
-    graph = _build(instance)
+    graph = _build(instance, family_display=host_private)
     errors = graph.get('research', {}).get('contributions', {}).get('errors', [])
     if errors:
         raise ValueError('contribution errors prevent reader export')

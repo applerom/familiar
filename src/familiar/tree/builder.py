@@ -103,7 +103,7 @@ def _build_pre_identity(instance):
     return graph
 
 
-def _build(instance, *, enrich=None):
+def _build(instance, *, enrich=None, family_display=False):
     data = _build_pre_identity(instance)
     if enrich is not None:
         # In-place presentation enrichment is inside the publication snapshot;
@@ -116,7 +116,7 @@ def _build(instance, *, enrich=None):
         data['root'] = metadata['root']
     from .life import _assess
     result = _assess(instance, _apply_identities(_assess(instance, data), read_json(instance.path("identity_decisions"), {}),
-                            labels=metadata.get("labels", {})))
+                            labels=metadata.get("labels", {})), family_display=family_display)
     if metadata.get('narrator'):
         narrator = result.get('identityAliases', {}).get(metadata['narrator'], metadata['narrator'])
         if narrator in result['people']:

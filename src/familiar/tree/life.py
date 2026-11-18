@@ -9,12 +9,14 @@
 # - direct verified/export parent links bound either endpoint regardless of sex; hypotheses do not [review: engine lead]
 # - only adopted canonical records bound birth; collector drafts and hypothetical attributions never do [review: engine lead]
 # - generation bounds are estimates, never invented birth events [review: engine lead]
+# - the family age horizon can permit documents for age-only or unknown cases; explicit living and life conflicts stay protected [review: engine lead]
 # CHANGES_WITH:
-# - MOD-RULES-SETTINGS-DATA (privacy.living_years)
+# - MOD-RULES-SETTINGS-DATA (privacy.living_years and privacy.family_years)
 # - MOD-INSTANCE-VALIDATION (privacy.life_decisions)
 # - MOD-CHECKS-ENGINE (life_status)
 # - MOD-PUBLICATION (reader flags reflect the effective assessment)
 # :END_MODULE_CONTRACT
+import copy
 import re
 from datetime import date
 
@@ -109,16 +111,55 @@ def _participants(person):
         p for step in history for p in _participants(step['priorAlias'])]
 
 
-def _assess(instance, graph):
+def _family_births(instance, graph, registry):
+    from familiar.instance.edition import apply
+    from familiar.reader.graph import card_dates
+
+    from .birth_guess import birth_date, guesses
+    cards = copy.deepcopy(graph)
+    card_dates(cards['people'], graph['people'])
+    apply(instance, cards)
+    estimates = guesses(cards, registry.resolve_setting('tree.first_child_age').value)
+    return {pid: (birth_date(person), estimates.get(pid, {}).get('exact'))
+            for pid, person in cards['people'].items()}
+
+
+def _birth_reaches_horizon(raw, today, horizon):
+    bounds = _birth_bounds(raw)
+    if not bounds:
+        return None
+    year = bounds[1]
+    if year != today.year - horizon:
+        return year < today.year - horizon
+    text = str(raw)
+    try:
+        born = date.fromisoformat(text)
+    except ValueError:
+        parts = text.upper().split()
+        months = 'JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC'.split()
+        if len(parts) != 3 or parts[1] not in months:
+            return True  # The best available precision is the year.
+        try:
+            born = date(int(parts[2]), months.index(parts[1]) + 1, int(parts[0]))
+        except ValueError:
+            return True
+    return (born.month, born.day) <= (today.month, today.day)
+
+
+def _assess(instance, graph, *, family_display=False):
     from familiar.checks.engine import load
     from familiar.rules.cascade import Registry
     from familiar.rules.roles import method_root
 
     privacy = load(instance.path('privacy'), {})
+    registry = Registry(method_root() / 'rules', instance)
     if not hasattr(instance, '_life_horizon'):
-        instance._life_horizon = Registry(method_root() / 'rules', instance).resolve_setting('privacy.living_years').value
+        instance._life_horizon = registry.resolve_setting('privacy.living_years').value
     horizon = instance._life_horizon
-    cutoff = date.today().year - horizon
+    today = date.today()
+    cutoff = today.year - horizon
+    family_horizon = registry.resolve_setting('privacy.family_years').value if family_display else None
+    family_births = _family_births(instance, graph, registry) if family_display else {}
     people = graph['people']
     bounds = {}
     for pid, person in people.items():
@@ -170,8 +211,13 @@ def _assess(instance, graph):
     declared_living = {aliases.get(p if isinstance(p, str) else p['id'], p if isinstance(p, str) else p['id'])
                        for p in privacy.get('living', [])}
     for pid, person in people.items():
+        birth_only = False
         decision = next((d for d in reversed(decisions) if aliases.get(d['person'], d['person']) == pid and not d.get('revoked')), None)
-        if pid in declared_living:
+        participants = _participants(person)
+        explicit_living = (pid in declared_living or (decision and decision['status'] == 'living') or
+                           (family_display and not decision and any(
+                               p.get('living') is True and p.get('life_origin') != 'gedcom' for p in participants)))
+        if pid in declared_living or (family_display and explicit_living):
             status, basis = 'living', 'explicit living privacy declaration'
         elif decision:
             status, basis = decision['status'], decision['basis']
@@ -187,16 +233,17 @@ def _assess(instance, graph):
             status, basis = 'unknown', 'unverified imported death; no established death decision'
         elif pid in bounds and bounds[pid][2] == 'birth':
             status, basis = 'living', 'birth within living horizon; no established death'
+            birth_only = True
         else:
             status, basis = 'unknown', 'birth unknown; generation does not establish age beyond horizon'
         conflicts = []
         death_dates = [_birth_bounds(e.get('date', '')) for e in person.get('events', [])
                        if e.get('type') == 'death' and e.get('status') != 'hypothesis'] + deaths.get(pid, [])
         # Only the person's own dated birth contradicts a death; a loose generation bound does not.
-        births = [_birth_bounds(e.get('date', '')) for e in person.get('events', [])
-                  if e.get('type') == 'birth' and e.get('status') != 'hypothesis']
+        birth_dates = [e.get('date', '') for e in person.get('events', [])
+                       if e.get('type') == 'birth' and e.get('status') != 'hypothesis']
+        births = [_birth_bounds(value) for value in birth_dates]
         early_death = any(d and b and d[1] < b[0] for d in death_dates for b in births)
-        participants = _participants(person)
         merged_aliases = [alias for alias, target in aliases.items() if target == pid]
         merged = bool(merged_aliases)
         protected = [p['id'] for p in participants if p.get('life_assessment', {}).get('status') != 'dead'] if merged else []
@@ -208,7 +255,7 @@ def _assess(instance, graph):
         if early_death or protected:
             if not resolved:
                 status, basis = 'unknown', 'conflicting life evidence; protection retained'
-                if pid in declared_living or any(p.get('life_assessment', {}).get('status') == 'living' for p in participants if merged):
+                if pid in declared_living or (family_display and explicit_living) or any(p.get('life_assessment', {}).get('status') == 'living' for p in participants if merged):
                     status = 'living'
             owners = []
             for participant in participants:
@@ -223,6 +270,13 @@ def _assess(instance, graph):
                     f"{'; '.join(owners)}; protected participants: {', '.join(protected) or 'none'}; "
                     f"death before own birth: {early_death}. "
                     f"Record privacy.life_decisions for canonical {pid} with a death basis, or undo the merge; correct conflicting dates.")
+        if family_display and not (explicit_living or conflicts) and (status == 'unknown' or birth_only):
+            raw, estimated = family_births[pid]
+            dated = [reached for value in [raw, *birth_dates]
+                     if (reached := _birth_reaches_horizon(value, today, family_horizon)) is not None]
+            reached = all(dated) if dated else estimated is not None and estimated <= today.year - family_horizon
+            if reached:
+                status, basis = 'dead', f'beyond family display horizon ({family_horizon} years)'
         person['life_assessment'] = {'status': status, 'basis': basis,
                                      **({'conflicts': conflicts} if conflicts else {}),
                                      **({'birth_bounds': list(bounds[pid][:2])} if pid in bounds else {})}

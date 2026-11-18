@@ -1,6 +1,6 @@
 # PURPOSE: Give every person without a recorded birth year an orientation year from the nearest dated relatives.
-# A guess is reader presentation only: never an event, a research bound or life-status evidence (MOD-TREE-LIFE
-# keeps its own conservative bounds). A recorded year replaces it on the next build; nothing is stored.
+# A guess is never an event or a research bound. The family reader may use it for its age horizon
+# (MOD-TREE-LIFE). A recorded year replaces it on the next build; nothing is stored.
 import re
 from datetime import date
 
@@ -21,11 +21,16 @@ def _is(event, tag, kind):
     return event.get('tag') == tag or (event.get('type') == kind and event.get('status') not in REJECTED | {'hypothesis'})
 
 
-def _birth(person):
+def birth_date(person):
     card = person.get('cardPresentation') or {}
     if 'birth' in card:  # as the reader: a card decision wins over the event
-        return _year(card['birth'])
-    return next((y for e in person.get('events', []) if _is(e, 'BIRT', 'birth') if (y := _year(e.get('date')))), None)
+        return card['birth']
+    return next((e['date'] for e in person.get('events', [])
+                 if _is(e, 'BIRT', 'birth') and _year(e.get('date'))), '')
+
+
+def _birth(person):
+    return _year(birth_date(person))
 
 
 def _death(person):

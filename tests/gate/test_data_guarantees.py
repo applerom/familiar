@@ -101,7 +101,7 @@ def test_photo_treatment_stays_local_for_living_subject(family, monkeypatch):
     known = _known_people(family)
     for subject, status in (('p-daniel', 'living'), ('p-amaro', 'unknown')):
         original['subjects'] = [subject]; known[subject]['life_assessment'] = {'status': status}
-        monkeypatch.setattr('familiar.checks.engine._known_people', lambda _: known)
+        monkeypatch.setattr('familiar.checks.engine._known_people', lambda _, **kwargs: known)
         for private in (False, True):
             with pytest.raises(ValueError, match='deceased'): restrict_graph(family, copy.deepcopy(graph), host_private=private)
 
@@ -127,6 +127,16 @@ def test_f3_public_name_and_kinship_and_private_address_exclusion(family):
     assert not any((r.get('record') == 'doc-helena-baptism' for r in graph['feeds'][0]['chapters'][0]['records']))
     with pytest.raises(ValueError, match='not for publication or clean release'):
         publish(family, family.root / 'rejected', private)
+    from datetime import date
+    birth_year = str(date.today().year - 75)
+    edit(family, 'tree/snapshot/people.json', lambda p: p['people'][-1].update(
+        living=None, events=[{'type': 'birth', 'date': birth_year, 'provenance': ['host']}]))
+    def document_shown(kind):
+        graph = json.loads(publication(family, kind, for_review=kind == 'reader').files()['graph.json'])
+        return any(s.get('record') == 'doc-helena-baptism' and s.get('asset') for s in graph['sources'].values())
+    assert not document_shown('reader-private')  # Explicitly living at the family cutoff.
+    edit(family, 'family/privacy.json', lambda p: p.update(living=[]))
+    assert document_shown('reader-private') and not document_shown('reader')
     for target, alias, flag in [('p-modern', 'p-amaro', {}), ('p-amaro', 'p-modern', {}), ('p-modern', 'p-amaro', {'living': True}), ('p-amaro', 'p-modern', {'living': True})]:
         edit(family, 'tree/snapshot/people.json', lambda p: p.update(people=[r for r in p['people'] if r['id'] != 'p-modern'] + [dict(id='p-modern', name='Invented', events=[{'type': 'birth', 'date': '1990'}], **flag)]))
         family.path('identity_decisions').write_text(json.dumps({'merges': [dict(canonical=target, alias=alias, status='accepted_family_confirmation', sources=['doc-helena-baptism'], name='Invented', summary='Duplicate', birth='1990')]}), encoding='utf-8')

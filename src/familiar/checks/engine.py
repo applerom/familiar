@@ -89,17 +89,20 @@ def life_status(person, privacy):
     return 'unknown'
 
 
-def _known_people(instance):
+def _known_people(instance, *, family_display=False):
     # Only a writer-owned immutable snapshot permits this in-memory index.
     from familiar.tree.builder import _build, people_index
-    if getattr(instance, '_immutable_snapshot', False) and hasattr(instance, '_known_cache'):
-        return instance._known_cache
-    graph = _build(instance)
+    immutable = getattr(instance, '_immutable_snapshot', False)
+    cached = getattr(instance, '_known_cache', {}) if immutable else {}
+    if family_display in cached:
+        return cached[family_display]
+    graph = _build(instance, family_display=family_display)
     # References in immutable imported records remain usable after an explicit
     # merge; every lookup resolves to the active card's canonical id.
     result = people_index(graph)
-    if getattr(instance, '_immutable_snapshot', False):
-        instance._known_cache = result
+    if immutable:
+        cached[family_display] = result
+        instance._known_cache = cached
     return result
 
 

@@ -34,6 +34,7 @@
   <MODULE_TREE_LIFE ID="MOD-TREE-LIFE" FILE="src/familiar/tree/life.py" STATE="IMPLEMENTED">
     <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_f3_public_name_and_kinship_and_private_address_exclusion">A merge preserves each participant's independent protection in either direction, including explicit living flags; only a canonical life decision can resolve it. Contradictory death dates remain visible conflicts.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Privacy life declarations on merged ids follow their active successors.</INVARIANT>
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_f3_public_name_and_kinship_and_private_address_exclusion">The family age horizon permits documents without changing public disclosure or overriding explicit living decisions.</INVARIANT>
     <!-- Life assessment consumes only records adopted by authored family references, never unrelated collector drafts. -->
   </MODULE_TREE_LIFE>
   <MODULE_TREE_CONTRIBUTIONS ID="MOD-TREE-CONTRIBUTIONS" FILE="src/familiar/tree/contributions.py" STATE="IMPLEMENTED">

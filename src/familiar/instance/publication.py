@@ -380,8 +380,14 @@ def private_graph(instance, graph, *, host_private=True):
     from familiar.checks.engine import _known_people, life_status, load
 
     from .subjects import closure
-    known, privacy = _known_people(instance), load(instance.path('privacy'), {})
+    known = _known_people(instance, family_display=host_private)
+    privacy = load(instance.path('privacy'), {})
     addresses = set()
+
+    if host_private:
+        for pid, person in graph.get('people', {}).items():
+            if life_status(known.get(pid, {'id': pid}), privacy) == 'dead':
+                person['living'] = False
 
     def unsafe_document(node, shape):
         if node.get('_document_private'):

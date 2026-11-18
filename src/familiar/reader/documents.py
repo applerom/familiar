@@ -61,7 +61,7 @@ def _local_sources(instance, graph, media, *, host_private=False):
     from familiar.instance.subjects import closure
     from familiar.tree.builder import read_json
     privacy = read_json(instance.path('privacy'), {})
-    known = _known_people(instance)
+    known = _known_people(instance, family_display=host_private)
     attached = {}
     for person in graph.get('people', {}).values():
         for image in person.get('media', []) + person.get('illustrations', []):
