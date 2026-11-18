@@ -9,7 +9,7 @@
 # - direct verified/export parent links bound either endpoint regardless of sex; hypotheses do not [review: engine lead]
 # - only adopted canonical records bound birth; collector drafts and hypothetical attributions never do [review: engine lead]
 # - generation bounds are estimates, never invented birth events [review: engine lead]
-# - the family age horizon can permit documents for age-only or unknown cases; explicit living and life conflicts stay protected [review: engine lead]
+# - the family age horizon applies to inferred status; explicit living or unknown decisions and life conflicts stay protected [review: engine lead]
 # CHANGES_WITH:
 # - MOD-RULES-SETTINGS-DATA (privacy.living_years and privacy.family_years)
 # - MOD-INSTANCE-VALIDATION (privacy.life_decisions)
@@ -270,7 +270,7 @@ def _assess(instance, graph, *, family_display=False):
                     f"{'; '.join(owners)}; protected participants: {', '.join(protected) or 'none'}; "
                     f"death before own birth: {early_death}. "
                     f"Record privacy.life_decisions for canonical {pid} with a death basis, or undo the merge; correct conflicting dates.")
-        if family_display and not (explicit_living or conflicts) and (status == 'unknown' or birth_only):
+        if family_display and not (decision or explicit_living or conflicts) and (status == 'unknown' or birth_only):
             raw, estimated = family_births[pid]
             dated = [reached for value in [raw, *birth_dates]
                      if (reached := _birth_reaches_horizon(value, today, family_horizon)) is not None]
