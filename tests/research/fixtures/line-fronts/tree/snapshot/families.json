@@ -1,7 +1,7 @@
 {"families": [
   {"id": "0", "husband": "root", "wife": "spouse", "children": []},
   {"id": "1", "husband": "father", "wife": "mother", "children": ["root"]},
-  {"id": "2", "husband": "elder", "wife": null, "children": ["father", "sibling"]},
+  {"id": "2", "husband": "elder", "wife": null, "children": ["sibling"]},
   {"id": "3", "husband": "sibling", "wife": null, "children": ["cousin"]},
   {"id": "4", "husband": "cousin", "wife": "inlaw", "children": ["grandchild", "living", "unknown"]}
 ]}

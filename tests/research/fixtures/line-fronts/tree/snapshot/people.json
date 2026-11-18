@@ -1,8 +1,8 @@
 {"people": [
-  {"id": "root", "name": "Root", "living": false},
-  {"id": "spouse", "name": "Spouse", "living": false},
+  {"id": "root", "sex": "m", "names": [{"given": "Root", "surname": "Лунографов"}], "living": false},
+  {"id": "spouse", "sex": "f", "names": [{"given": "Spouse", "surname": "Морецкая"}], "living": false},
   {"id": "father", "name": "Father", "living": false},
-  {"id": "mother", "name": "Mother", "living": false},
+  {"id": "mother", "sex": "f", "names": [{"given": "Mother", "surname": "Стеклова"}], "living": false},
   {"id": "elder", "name": "Elder", "living": false},
   {"id": "sibling", "name": "Sibling", "living": false},
   {"id": "cousin", "name": "Cousin", "living": false},
@@ -10,5 +10,6 @@
   {"id": "grandchild", "name": "Grandchild", "living": false},
   {"id": "living", "name": "Living", "living": true},
   {"id": "unknown", "name": "Unknown"},
-  {"id": "spouse-father", "name": "Spouse-Father", "living": false}
+  {"id": "spouse-father", "name": "Spouse-Father", "living": false},
+  {"id": "distant", "name": "Distant", "living": false}
 ]}

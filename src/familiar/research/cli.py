@@ -64,7 +64,7 @@ def register(commands):
     cover.add_argument('--person', help='One person: every source with dates and executors')
     cover.add_argument('--family', action='store_true', help='The whole person-by-source matrix (the default)')
     cover.add_argument('--recheck', nargs='?', type=int, const=15, metavar='N', help='The N most useful cells to look at again (default 15)')
-    cover.add_argument('--lines', action='store_true', help='The farthest known person, open parent versions and coverage gaps on each family line')
+    cover.add_argument('--lines', action='store_true', help='Ancestral chains, open questions and coverage gaps by surname line')
     cover.add_argument('--json', action='store_true', help='JSON instead of markdown')
     cover.add_argument('--save', action='store_true', help='Also store the matrix and full queue in coverage.json in the instance state directory')
     parser.set_defaults(run=run)

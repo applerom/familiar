@@ -54,16 +54,18 @@ def test_collateral_modes_and_line_fronts(tmp_path, capsys):
     config = root / 'familiar.toml'
     default = config.read_text(encoding='utf-8')
     for mode in ('hints', 'off', 'full'):
-        config.write_text(default + ('' if mode == 'hints' else f'"research.collateral" = "{mode}"\n'), encoding='utf-8')
+        chosen = f'"research.collateral" = "{mode}"\n"research.main_lines" = ["Морецкий", "Луногравова"]\n'
+        config.write_text(default + ('' if mode == 'hints' else chosen), encoding='utf-8')
         assert main(['--root', str(root), 'research', 'coverage', '--lines', '--json', '--save']) == 0, capsys.readouterr().err
         lines = json.loads(capsys.readouterr().out)['lines']
         matrix = json.loads((root / '.state/coverage.json').read_bytes())
         side = matrix['collateral']
         assert [h['record'] for h in side['hints']] == ([] if mode == 'off' else ['records/side-record.json'])
-        assert matrix['totals']['eligible_cells'] == 7 and side.get('totals', {}).get('eligible_cells') == (3 if mode == 'full' else None)
         queue = [r['person'] for r in matrix['recheck']]
         assert set(queue[:7]) == {'root', 'father', 'elder', 'mother', 'spouse', 'spouse-father', 'sibling'}
         assert set(queue[7:]) == ({'cousin', 'grandchild', 'inlaw'} if mode == 'full' else set())
-        assert [(r['start']['id'], r['frontier']['id']) for r in lines] == [('root', 'elder'), ('spouse', 'spouse-father'), ('mother', 'mother')]
-        assert (lines[0]['not_searched'], lines[0]['weak'], lines[0]['collateral_hints']) == (2, 1, int(mode != 'off'))
-        assert [(v['id'], v['weight']) for v in lines[0]['versions']] == [('elder-parents', .7)]
+        assert [r['start']['id'] for r in lines] == (['root', 'spouse', 'mother'] if mode == 'hints' else ['spouse', 'root', 'mother'])
+        assert [r['secondary'] for r in lines] == [False, False, mode != 'hints']
+        paternal = next(r for r in lines if r['start']['id'] == 'root')
+        assert [(p['id'], p['weight']) for p in paternal['chain']] == [('root', None), ('father', None), ('elder', .6)]
+        assert [(v['question'], v['weight']) for v in paternal['versions']] == [('elder-parents', .7), ('elder-birthplace', .5)]

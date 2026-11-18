@@ -297,7 +297,7 @@ def project(active, graph, w):
 
 
 def line_section(active, graph, w):
-    from familiar.research.coverage import collect, line_front, planning_people
+    from familiar.research.coverage import collect, format_line_chain, line_front, planning_people
 
     try:
         data = collect(active)
@@ -309,17 +309,19 @@ def line_section(active, graph, w):
     mode = front['collateral_mode']
     rows = []
     for line in front['lines']:
-        start, end = line['start']['id'], line['frontier']['id']
-        if start not in people or end not in people:
+        if not people.keys() >= set(line['people']):
             continue
-        name = people[start].get('name') or ''
-        if start != end:
-            name += ' → ' + (people[end].get('name') or '')
+        name = line['surname'] or '—'
+        if line['secondary']:
+            name += f" ({w['lines_secondary']})"
+        chain = [step | {'name': people[step['id']].get('name') or ''} for step in line['chain']]
+        chain_label = format_line_chain(chain, w['lines_decimal'])
         counts = w['lines_counts'].format(**line)
         versions = [f"{public_line(v['label'], w['branch'].format(n=n))} ({v['weight'] * 100:g}%)"
                     for n, v in enumerate(line['versions'], 1) if historical.issuperset(v['people'])]
         details = ' · '.join(versions) or ('—' if line['versions'] else w['lines_no_versions'])
-        rows.append(f'<li><strong>{esc(name)}</strong><span>{esc(details)}</span><small>{esc(counts)}</small></li>')
+        rows.append(f'<li><div><strong>{esc(name)}</strong><div>{esc(chain_label)}</div></div>'
+                    f'<span>{esc(details)}</span><small>{esc(counts)}</small></li>')
     return ('<section class="line-front" aria-labelledby="line-front-title"><h3 id="line-front-title" class="h2">'
             + esc(w['lines_title']) + '</h3><p class="sub">' + esc(w['collateral_' + mode])
             + ' <code>familiar.toml</code> · <code>[settings]</code> · '

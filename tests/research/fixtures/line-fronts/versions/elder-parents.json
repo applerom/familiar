@@ -1,14 +1,21 @@
 {
   "id": "elder-parents",
+  "title": "Кто был отцом старшего?",
+  "line": "Луногравова",
   "status": "open",
   "people": [
-    "elder"
+    "father"
   ],
   "versions": [
     {
       "id": "elder-parents",
       "label": "elder-parents",
       "weight": 0.7
+    },
+    {
+      "id": "another-answer",
+      "label": "Another answer",
+      "weight": 0.3
     }
   ]
 }

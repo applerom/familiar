@@ -421,6 +421,13 @@ help = "Descendants of ancestors' siblings and their spouses: off skips them, hi
 serves = "UC-RESEARCH"
 scopes = ["family"]
 
+[setting."research.main_lines"]
+type = "array"
+default = []
+help = "Surname lines in the family's preferred order; other lines appear below as secondary."
+serves = "UC-RESEARCH"
+scopes = ["family"]
+
 [setting."research.scope"]
 type = "string"
 choices = ["known_lines_first", "all"]

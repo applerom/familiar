@@ -3,6 +3,6 @@ schema_version = 1
 id = "invented-lines"
 title = "Invented Lines"
 fictional = true
-source_language = "en"
-languages = ["en"]
+source_language = "ru"
+languages = ["ru"]
 [settings]

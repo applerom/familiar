@@ -50,12 +50,16 @@ researcher's work except naming three things on each row.
   the catalogue sources the ledger knows about. `totals.cells` counts recorded
   person-by-source cells.
 - `--lines`: one row for each father's line from the tree root, each spouse,
-  and each maternal branch. The row shows the farthest known person, open
-  versions about their parents, eligible cells never searched or searched
-  weakly, and the number of collateral hints. We recognize parent questions
-  from their existing titles or IDs (for example, `parents`, `родители`,
-  `rodzice`) and their named tree people. We rank lines by the sum of these gaps
-  multiplied by one plus the strongest open parent weight.
+  and each maternal branch. Rows show the surname, the chain to its farthest
+  ancestor, and the weight of each hypothesized parent link followed (minimum
+  0.30). They include up to three open question titles with the weight of each
+  leading answer. A question's `line` surname matches declared
+  `tree/metadata.json` surname forms and regular gender forms. A question
+  without `line` matches by a person anywhere in the chain. The default order
+  multiplies the number of unsearched and weak cells by one plus the highest
+  open answer weight. Set `"research.main_lines" = ["Surname A", "Surname B"]`
+  under `[settings]` in `familiar.toml` to pin these lines in order and mark the
+  remaining lines as secondary in the CLI and the desk.
 - `--json`; `--save` also writes `coverage.json` in the instance state
   directory (`instance paths`, key `state`) with the matrix and full queue.
 

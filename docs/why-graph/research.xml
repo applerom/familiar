@@ -72,7 +72,7 @@
   </FEATURE_SEARCH_COVERAGE>
   <MODULE_SEARCH_LEDGER ID="MOD-SEARCH-LEDGER" FILE="src/familiar/research/search_ledger.py" STATE="IMPLEMENTED"/>
   <MODULE_RESEARCH_COVERAGE ID="MOD-RESEARCH-COVERAGE" FILE="src/familiar/research/coverage.py" STATE="IMPLEMENTED">
-    <INVARIANT TEST="tests/research/test_coverage_ledger.py::test_collateral_modes_and_line_fronts">Collateral descendants, except main-line siblings, have separate planning totals and follow the main queue. Line fronts derive from the existing tree, versions and ledger.</INVARIANT>
+    <INVARIANT TEST="tests/research/test_coverage_ledger.py::test_collateral_modes_and_line_fronts">Collateral descendants, except main-line siblings, have separate planning totals and follow the main queue. Line fronts follow weighted parent hypotheses from 0.30, match questions by surname or explicit people, and honor the family's preferred line order.</INVARIANT>
   </MODULE_RESEARCH_COVERAGE>
   <MODULE_RESEARCH_COVERAGE_DISPLAY ID="MOD-RESEARCH-COVERAGE-DISPLAY" FILE="src/familiar/research/coverage_display.py" STATE="IMPLEMENTED"/>
   <MODULE_RESEARCH_COVERAGE_CONTEXT ID="MOD-RESEARCH-COVERAGE-CONTEXT" FILE="src/familiar/research/coverage_context.py" STATE="IMPLEMENTED"/>

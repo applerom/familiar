@@ -9,6 +9,7 @@
 # - catalogue epoch/place mismatches leave the queue, never erase recorded searches; unknown geography remains eligible [review: engine lead]
 # - the life assessment excludes living and possibly living people from the recheck queue, counted separately [review: engine lead]
 # - collateral descendants stay outside the main planning denominator and queue; the line front derives from tree, versions and existing cells [review: engine lead]
+# - line fronts follow parent hypotheses from 0.30 and match questions by surname or explicit people [test: tests/research/test_coverage_ledger.py::test_collateral_modes_and_line_fronts]
 # - explicit people survive dictionary mismatch; local identity work precedes repeat searches and stopped sources wait [review: engine lead]
 # - local reviews assess record links only; no search strength, forms, yield or availability comes from them [review: engine lead]
 # CHANGES_WITH:
@@ -22,6 +23,7 @@ from datetime import UTC, datetime
 
 from familiar.desk.search_volume import domain, name_key
 from familiar.instance.gate import boundary
+from familiar.tree.surnames import birth_names, decisions, gender_form
 
 from .search_ledger import METHOD, Resolver, Tree, in_ledger_form, is_review, read_rows, read_versions, row_tokens, search_files
 from .coverage_evidence import references, review_links
@@ -37,9 +39,6 @@ MARK = {'found': 'R', 'read': 'D', 'zero-controlled': 'Z', 'zero-uncontrolled': 
 REASON = {'identity-unestablished': 15, 'identity-conflict': 16, 'source-stopped': 0, 'query-dubious': 4, 'not-searched': 5, 'access-gap': 4, 'outcome-unrecorded': 4, 'weak-only': 4, 'zero-without-control': 3, 'forms-missing': 2, 'forms-unassessed': 2, 'source-grown': 1}
 OPEN_EXCLUSIONS = {'accepted', 'closed', 'resolved', 'settled', 'rejected', 'superseded'}
 CLOSED_OPTIONS = OPEN_EXCLUSIONS | {'accepted_evidence', 'firm', 'refuted', 'discarded', 'dropped', 'ruled-out'}
-PARENT_QUESTION = re.compile(
-    r'\b(?:parents?|parentage|father|mother|paternity|maternity|родител\w*|отец|отца|матери|мать|'
-    r'отцовств\w*|материнств\w*|rodzic\w*|ojciec|ojca|matka|matki)\b', re.I)
 
 
 def control_basis(row):
@@ -71,7 +70,8 @@ def settings(instance):
     table = dict(registry.settings['research.search_strength']['default'])
     table.update(registry.resolve_setting('research.search_strength').value)
     return (table, registry.resolve_setting('research.recheck_strength').value,
-            registry.resolve_setting('research.collateral').value)
+            registry.resolve_setting('research.collateral').value,
+            registry.resolve_setting('research.main_lines').value)
 
 
 def strength(by, table):
@@ -115,7 +115,7 @@ def collect(instance):
     tree, resolver, versions = Tree(instance), Resolver(instance), read_versions(instance)
     from familiar.tree.birth_guess import apply as birth_guess
     birth_guess(instance, tree.graph, host_private=True)
-    table, threshold, mode = settings(instance)
+    table, threshold, mode, main_lines = settings(instance)
     cells, sources, legacy, no_people, unknown, titles, no_source = {}, {}, 0, 0, set(), {}, 0
     found_by_source, planning_events, source_access, access_journals = {}, {}, {}, {}
     reviews = {}
@@ -244,18 +244,20 @@ def collect(instance):
     named = {pid for pid, _ in cells} | {p['id'] for v in versions.values() for ident in v['people']
                                        if (p := tree.person(ident))}
     from familiar.tree.builder import read_json
-    root = (read_json(instance.path('tree_metadata'), {}).get('root') or tree.graph.get('root')
+    metadata = read_json(instance.path('tree_metadata'), {})
+    root = (metadata.get('root') or tree.graph.get('root')
             or next(iter(tree.people), None))
     root = tree.aliases.get(root, root)
     distance = distances(tree.graph, root)
-    lines, collateral = family_lines(tree.graph, root)
+    lines, collateral, line_weights = family_lines(tree.graph, root)
     main = {pid for line in lines for pid in line}
     focus = (main | named) - collateral.keys()
     side = sorted(collateral) if mode == 'full' else []
     data = {'tree': tree, 'resolver': resolver, 'versions': versions, 'table': table, 'threshold': threshold,
             'cells': cells, 'sources': sources, 'legacy': legacy, 'no_people': no_people, 'no_source': no_source, 'unknown': sorted(unknown),
             'focus': sorted(focus), 'side': side, 'named': named, 'lines': lines,
-            'collateral': collateral, 'collateral_mode': mode,
+            'collateral': collateral, 'collateral_mode': mode, 'line_weights': line_weights,
+            'main_lines': main_lines, 'surname_forms': decisions(metadata), 'language': instance.source_language,
             'yield': found_by_source, 'titles': titles, 'distance': distance,
             'form_metadata': form_metadata(instance), 'planning_events': planning_events, 'source_access': source_access}
     # Each FamilySearch channel is independently eligible even if only one has a recorded visit.
@@ -302,10 +304,13 @@ def family_lines(graph, root):
     """Father chains split at mothers; collateral people retain their ancestor anchors."""
     people = graph['people']
     children, spouses, siblings = (defaultdict(set) for _ in range(3))
-    fathers, mothers = defaultdict(set), defaultdict(set)
-    unsettled = {'hypothesis', 'conflict', 'rejected', 'disproved'}
+    fathers, mothers = defaultdict(dict), defaultdict(dict)
+    excluded = {'conflict', 'rejected', 'disproved'}
+    edges = graph.get('edges', [])
+    explicit = {(e.get('child'), e.get('parent')) for e in edges}
+    family_roles = {}
     for family in graph.get('families', []):
-        if family.get('status') in unsettled:
+        if family.get('status') in excluded | {'hypothesis'}:
             continue
         father, mother = family.get('husband'), family.get('wife')
         kids = set(family.get('children', [])) & people.keys()
@@ -316,39 +321,56 @@ def family_lines(graph, root):
             siblings[child].update(kids)
             for parent, role in ((father, fathers), (mother, mothers)):
                 if parent in people and parent != child:
-                    role[child].add(parent)
-                    children[parent].add(child)
+                    pair = child, parent
+                    family_roles[pair] = role
+                    if pair not in explicit:
+                        role[child][parent] = None
+                        children[parent].add(child)
 
-    # The working tree can have an accepted parent edge without a family group.
-    for edge in graph.get('edges', []):
+    # Parent edges can stand on their own. A probable edge retains its weight.
+    for edge in edges:
         parent, child = edge.get('parent'), edge.get('child')
-        if parent not in people or child not in people or parent == child or edge.get('status') in unsettled:
+        status = edge.get('status')
+        if parent not in people or child not in people or parent == child or status in excluded:
             continue
-        if parent not in fathers[child] and parent not in mothers[child]:
+        weight = edge.get('weight') if status == 'hypothesis' else None
+        if status == 'hypothesis' and (type(weight) not in (int, float) or not .30 <= weight <= 1):
+            continue
+        roles = family_roles.get((child, parent))
+        if roles is None:
             role = edge.get('role')
             is_father = role in {'father', 'отец', 'ojciec'} or (
                 role not in {'mother', 'мать', 'matka'} and str(people[parent].get('sex')).lower() == 'm')
-            (fathers if is_father else mothers)[child].add(parent)
+            roles = fathers if is_father else mothers
+        parents = roles[child]
+        if parent not in parents or (parents[parent] is not None and (weight is None or weight > parents[parent])):
+            parents[parent] = weight
         children[parent].add(child)
 
-    starts = [root, *sorted(spouses[root] - {root})] if root in people else []
-    lines, ancestors, started = [], set(), set()
-    for start in starts:
+    def ranked(parents):
+        return sorted(parents, key=lambda pid: (parents[pid] is not None, -(parents[pid] or 0), pid))
+
+    starts = [(p, None) for p in [root, *sorted(spouses[root] - {root})]] if root in people else []
+    lines, line_weights, ancestors, started = [], {}, set(), set()
+    for start, weight in starts:
         if start in started:
             continue
         started.add(start)
-        chain, pid = [], start
+        chain, weights, pid = [], [], start
         while pid and pid not in chain:
             chain.append(pid)
-            paternal, maternal = sorted(fathers[pid]), sorted(mothers[pid])
-            starts.extend([*maternal, *paternal[1:]])
+            weights.append(weight)
+            paternal, maternal = ranked(fathers[pid]), sorted(mothers[pid])
+            starts.extend((mother, mothers[pid][mother]) for mother in maternal)
+            starts.extend((father, fathers[pid][father]) for father in paternal[1:])
             ancestors.update([*paternal, *maternal])
-            pid = next(iter(paternal), None)
+            pid, weight = (paternal[0], fathers[pid][paternal[0]]) if paternal else (None, None)
         lines.append(chain)
+        line_weights[start] = weights
 
     main = {pid for chain in lines for pid in chain}
     for pid in main:
-        for parent in fathers[pid] | mothers[pid]:
+        for parent in fathers[pid].keys() | mothers[pid].keys():
             siblings[pid].update(children[parent])
     collateral = defaultdict(set)
     for ancestor in sorted(ancestors):
@@ -363,7 +385,7 @@ def family_lines(graph, root):
                     collateral[relative].add(ancestor)
                 pending.extend(sorted(children[pid]))
     primary_siblings = set().union(*(siblings[pid] for pid in main))
-    return lines, {pid: anchors for pid, anchors in collateral.items() if pid not in primary_siblings}
+    return lines, {pid: anchors for pid, anchors in collateral.items() if pid not in primary_siblings}, line_weights
 
 
 def planning_context(data, pid):
@@ -571,26 +593,42 @@ def matrix(data):
             'sources': sources, 'people': main['people'], 'collateral': collateral}
 
 
+def line_surname(surname, language):
+    """Use the regular Russian family plural where the ending determines it."""
+    masculine = gender_form(surname, 'm', language)
+    if language == 'ru':
+        if masculine.endswith(('ский', 'цкий', 'ской', 'цкой')):
+            return masculine[:-2] + 'ие'
+        if masculine.endswith(('ов', 'ев', 'ёв', 'ин', 'ын')):
+            return masculine + 'ы'
+    return masculine
+
+
+def surname_keys(surname, language):
+    if not isinstance(surname, str) or not (key := surname.strip().casefold()):
+        return set()
+    return {key, gender_form(key, 'm', language), gender_form(key, 'f', language), line_surname(key, language)}
+
+
 def line_front(data):
     """Derive frontier questions and planning gaps without adding ledger rows."""
-    tree = data['tree']
-    by_person = defaultdict(list)
+    tree, language = data['tree'], data['language']
+    own_names = birth_names(tree.graph, language)
+    clans = {row['id']: row for row in data['surname_forms']}
+    main_lines = [keys for name in data['main_lines'] if (keys := surname_keys(name, language))]
+    questions = []
     for ident, question in data['versions'].items():
         if question.get('status', question.get('state')) in OPEN_EXCLUSIONS:
             continue
-        if not PARENT_QUESTION.search(ident.replace('_', ' ') + ' ' + str(question.get('title', ''))):
-            continue
         subjects = sorted({tree.aliases.get(pid, pid) for pid in question['people']})
-        for option in question.get('versions') or []:
-            if not isinstance(option, dict) or option.get('status', option.get('state')) in CLOSED_OPTIONS:
-                continue
-            weight = option.get('weight')
-            if type(weight) not in (int, float) or not 0 <= weight <= 1:
-                continue
-            version = {'question': ident, 'id': option.get('id'), 'label': option.get('label') or option.get('id'),
-                       'weight': weight, 'people': subjects}
-            for pid in subjects:
-                by_person[pid].append(version)
+        weights = [weight for option in question.get('versions') or []
+                   if isinstance(option, dict) and option.get('status', option.get('state')) not in CLOSED_OPTIONS
+                   and type(weight := option.get('weight')) in (int, float) and 0 <= weight <= 1]
+        if weights:
+            line = question.get('line')
+            questions.append((line, surname_keys(line, language),
+                              {'question': ident, 'label': question.get('title') or ident,
+                               'weight': max(weights), 'people': subjects}))
     hints = collateral_hints(data)
     lines = []
     for chain in data['lines']:
@@ -603,15 +641,34 @@ def line_front(data):
                 gaps['weak'] += 1
         start, end = chain[0], chain[-1]
         members = set(chain)
-        versions = sorted(by_person[end], key=lambda v: -v['weight'])
-        lines.append({'start': {'id': start, 'name': tree.people[start]['name']},
-                      'frontier': {'id': end, 'name': tree.people[end]['name']}, 'people': chain,
-                      'versions': versions, 'not_searched': gaps['not_searched'], 'weak': gaps['weak'],
-                      'collateral_hints': sum(not members.isdisjoint(h['ancestors']) for h in hints)})
-    def priority(line):
-        weight = max((v['weight'] for v in line['versions']), default=0)
-        return (-(line['not_searched'] + line['weak']) * (1 + weight), -weight, line['start']['id'])
-    return {'schema': 1, 'collateral_mode': data['collateral_mode'], 'lines': sorted(lines, key=priority)}
+        surname, forms = '', set()
+        for pid in chain:
+            display = tree.graph['people'][pid].get('surnameDisplay', {})
+            clan = clans.get(display.get('clan'))
+            surname = clan['form'] if clan else next((n['surname'] for n in own_names[pid] if n.get('surname')), '')
+            if surname:
+                for form in [surname, *(clan['variants'] if clan else [])]:
+                    forms.update(surname_keys(form, language))
+                break
+        order = next((i for i, keys in enumerate(main_lines) if keys & forms), len(main_lines))
+        versions = [v for line, keys, v in questions if (bool(keys & forms) if line else
+                                                          not members.isdisjoint(v['people']))]
+        versions.sort(key=lambda v: -v['weight'])
+        steps = [{'id': pid, 'name': tree.people[pid]['name'], 'weight': weight}
+                 for pid, weight in zip(chain, data['line_weights'][start], strict=True)]
+        lines.append((order, {'start': {'id': start, 'name': tree.people[start]['name']},
+                      'frontier': {'id': end, 'name': tree.people[end]['name']}, 'people': chain, 'chain': steps,
+                      'surname': line_surname(surname, language), 'secondary': bool(main_lines) and order == len(main_lines),
+                      'versions': versions[:3], 'not_searched': gaps['not_searched'], 'weak': gaps['weak'],
+                      'collateral_hints': sum(not members.isdisjoint(h['ancestors']) for h in hints)}))
+
+    def priority(entry):
+        order, line = entry
+        weight = line['versions'][0]['weight'] if line['versions'] else 0
+        return (order, -(line['not_searched'] + line['weak']) * (1 + weight), -weight, line['start']['id'])
+
+    return {'schema': 1, 'collateral_mode': data['collateral_mode'],
+            'lines': [line for _, line in sorted(lines, key=priority)]}
 
 
 def person_card(data, pid):
@@ -714,16 +771,26 @@ def matrix_table(people, sources):
     return out
 
 
-def markdown_lines(view):
+def format_line_chain(chain, decimal='.'):
+    return ' → '.join(step['name'] + (' ≈' + format(step['weight'], 'g').replace('.', decimal)
+                                      if step['weight'] is not None else '') for step in chain)
+
+
+def markdown_lines(view, language='en'):
     def column(value):
         return str(value).replace('|', r'\|').replace('\n', ' ')
 
+    secondary = {'ru': 'второй план', 'pl': 'drugi plan'}.get(language, 'secondary')
+    decimal = ',' if language in {'ru', 'pl'} else '.'
     out = ['# Family line fronts', '', f"Collateral research: `{view['collateral_mode']}`.", '',
-           '| Line starts at | Farthest known ancestor | Open parent versions (weight) | Not searched | Weak | Collateral hints |',
+           '| Line | Chain to farthest ancestor | Open questions (weight) | Not searched | Weak | Collateral hints |',
            '|---|---|---|---:|---:|---:|']
     for line in view['lines']:
         versions = ', '.join(f"{v['label']} ({v['weight']:g})" for v in line['versions']) or '—'
-        out.append('| ' + ' | '.join(map(column, [line['start']['name'], line['frontier']['name'], versions,
+        surname = line['surname'] or '—'
+        if line['secondary']:
+            surname += f' ({secondary})'
+        out.append('| ' + ' | '.join(map(column, [surname, format_line_chain(line['chain'], decimal), versions,
                    line['not_searched'], line['weak'], line['collateral_hints']])) + ' |')
     return '\n'.join(out)
 
@@ -739,7 +806,7 @@ def coverage(instance, *, person=None, queue=None, lines=False, save=False):
         mutate(instance, {instance.path('state') / 'coverage.json': json.dumps(saved, ensure_ascii=False, indent=1).encode('utf-8')})
     if lines:
         front = line_front(data)
-        return front, markdown_lines(front)
+        return front, markdown_lines(front, data['language'])
     if person:
         card = person_card(data, person)
         return card, markdown_card(card)

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.36.1 — 18 November 2026
+
+- We follow weighted parent links from 0.30, show the ancestry chain by
+  surname, match open questions to their line, and show the family's chosen
+  main lines first in coverage and the desk.
+
 ## 0.36.0 — 18 November 2026
 
 - We see each family line's farthest known ancestor, open parent versions and

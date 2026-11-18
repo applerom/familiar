@@ -1,0 +1,7 @@
+{
+  "id": "cousin-parents",
+  "title": "Чья дочь двоюродная сестра?",
+  "line": "Далёкая",
+  "people": ["elder", "cousin"],
+  "versions": [{"id": "answer", "weight": 0.9}]
+}
