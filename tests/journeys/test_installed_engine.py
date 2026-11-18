@@ -108,7 +108,7 @@ os.environ['FAMILIAR_HOST_PATHS'] = json.dumps({str(family): {'originals': str(a
 from familiar.instance.model import Instance
 from familiar.tree.builder import build
 before = build(Instance(family), view='working'); union = next(f for f in before['families'] if f['id'] == 'invented-union')
-old = before['people']['table-p3']['facts'][0]
+old = next(f for f in before['people']['table-p3']['facts'] if any(s.startswith('table-') for s in f['sources']))
 decision = {'id': 'settled', 'author': 'reader', 'schema': 1, 'relationship_decisions': [{'family': union['id'], 'previous_status': union['status'], 'status': 'verified', 'text': 'The entry establishes the union.', 'basis': 'Both people are named.', 'sources': ['bea-marriage']}], 'fact_replacements': [{'person': 'table-p3', 'prior': {'text': old['text'], 'sources': old['sources']}, 'reason': 'Read the certificate.', 'fact': {'label': 'document', 'text': 'Born in 1880.', 'status': 'verified', 'sources': ['bea-marriage']}}], 'events': {'table-p3': [{'type': 'birth', 'date': '1880', 'provenance': ['bea-marriage']}], 'table-p4': [{'type': 'birth', 'date': '1878', 'provenance': ['bea-marriage']}]}}
 (tmp_path / 'decision.json').write_text(json.dumps(decision), encoding='utf-8'); cli('research', 'contribute', str(tmp_path / 'decision.json'))
 review = tmp_path / 'review'

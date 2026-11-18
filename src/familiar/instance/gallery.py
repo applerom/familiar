@@ -12,7 +12,7 @@
 import json
 import re
 
-from .archive import declaration
+from .archive import photograph_rights
 
 KIND = 'family-photograph'
 KEY = 'family_photographs'
@@ -56,10 +56,8 @@ def photograph(instance, asset):
 
 
 def permits_display(instance):
-    from datetime import date
-    rights = declaration(instance)
-    return bool(rights and rights['permissions']['family_app'] and
-                date.fromisoformat(rights['effective_from']) <= date.today())
+    rights = photograph_rights(instance, {'kind': KIND})
+    return bool(rights and rights['permissions']['family_app'])
 
 
 def files(instance, asset, row):
