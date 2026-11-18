@@ -135,9 +135,11 @@
       if (!button.matches('.ask-hint')) return;
       // A hint is our guess put into the field; the person corrects or adds to it.
       const card = button.closest('.ask-card'), field = card.querySelector('textarea');
-      const hints = [...card.querySelectorAll('.ask-hint')].map(hint => hint.dataset.hint);
+      // An open hint ends in an ellipsis on the button; in the field it is a sentence to continue.
+      const start = text => text.replace(/\s*(…|\.\.\.)$/, ' ');
+      const hints = [...card.querySelectorAll('.ask-hint')].map(hint => start(hint.dataset.hint).trim());
       const current = field.value.trim();
-      field.value = !current || hints.includes(current) ? button.dataset.hint : current + '\n' + button.dataset.hint;
+      field.value = !current || hints.includes(current) ? start(button.dataset.hint) : current + '\n' + start(button.dataset.hint);
       for (const hint of card.querySelectorAll('.ask-hint')) hint.setAttribute('aria-pressed', String(hint === button));
       field.focus();
       field.setSelectionRange(field.value.length, field.value.length);
