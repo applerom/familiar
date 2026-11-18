@@ -59,7 +59,11 @@ researcher's work except naming three things on each row.
   multiplies the number of unsearched and weak cells by one plus the highest
   open answer weight. Set `"research.main_lines" = ["Surname A", "Surname B"]`
   under `[settings]` in `familiar.toml` to pin these lines in order and mark the
-  remaining lines as secondary in the CLI and the desk.
+  remaining lines as secondary in the CLI and the desk. With this setting,
+  line fronts count living people and those of unknown status outside the
+  queue. The recheck queue labels rows by line where known and puts cells for
+  the chosen chains and their ancestors' siblings before other people,
+  retaining the usual score order within each group.
 - `--json`; `--save` also writes `coverage.json` in the instance state
   directory (`instance paths`, key `state`) with the matrix and full queue.
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.36.2 — 18 November 2026
+
+- We recheck the chosen main lines and ancestors' siblings first, label the
+  queue by line, and count living people and those of unknown status separately
+  in the line fronts.
+
 ## 0.36.1 — 18 November 2026
 
 - We follow weighted parent links from 0.30, show the ancestry chain by

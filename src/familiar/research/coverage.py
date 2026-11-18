@@ -9,7 +9,7 @@
 # - catalogue epoch/place mismatches leave the queue, never erase recorded searches; unknown geography remains eligible [review: engine lead]
 # - the life assessment excludes living and possibly living people from the recheck queue, counted separately [review: engine lead]
 # - collateral descendants stay outside the main planning denominator and queue; the line front derives from tree, versions and existing cells [review: engine lead]
-# - line fronts follow parent hypotheses from 0.30 and match questions by surname or explicit people [test: tests/research/test_coverage_ledger.py::test_collateral_modes_and_line_fronts]
+# - line fronts follow parent hypotheses from 0.30 and match questions by surname or explicit people; designated lines and ancestors' siblings lead the recheck queue [test: tests/research/test_coverage_ledger.py::test_collateral_modes_and_line_fronts]
 # - explicit people survive dictionary mismatch; local identity work precedes repeat searches and stopped sources wait [review: engine lead]
 # - local reviews assess record links only; no search strength, forms, yield or availability comes from them [review: engine lead]
 # CHANGES_WITH:
@@ -115,7 +115,8 @@ def collect(instance):
     tree, resolver, versions = Tree(instance), Resolver(instance), read_versions(instance)
     from familiar.tree.birth_guess import apply as birth_guess
     birth_guess(instance, tree.graph, host_private=True)
-    table, threshold, mode, main_lines = settings(instance)
+    table, threshold, mode, configured_lines = settings(instance)
+    main_lines = [keys for name in configured_lines if (keys := surname_keys(name, instance.source_language))]
     cells, sources, legacy, no_people, unknown, titles, no_source = {}, {}, 0, 0, set(), {}, 0
     found_by_source, planning_events, source_access, access_journals = {}, {}, {}, {}
     reviews = {}
@@ -249,17 +250,25 @@ def collect(instance):
             or next(iter(tree.people), None))
     root = tree.aliases.get(root, root)
     distance = distances(tree.graph, root)
-    lines, collateral, line_weights = family_lines(tree.graph, root)
+    lines, collateral, line_weights, ancestor_siblings = family_lines(tree.graph, root)
     main = {pid for line in lines for pid in line}
-    focus = (main | named) - collateral.keys()
     side = sorted(collateral) if mode == 'full' else []
     data = {'tree': tree, 'resolver': resolver, 'versions': versions, 'table': table, 'threshold': threshold,
             'cells': cells, 'sources': sources, 'legacy': legacy, 'no_people': no_people, 'no_source': no_source, 'unknown': sorted(unknown),
-            'focus': sorted(focus), 'side': side, 'named': named, 'lines': lines,
+            'side': side, 'named': named, 'lines': lines,
             'collateral': collateral, 'collateral_mode': mode, 'line_weights': line_weights,
             'main_lines': main_lines, 'surname_forms': decisions(metadata), 'language': instance.source_language,
             'yield': found_by_source, 'titles': titles, 'distance': distance,
             'form_metadata': form_metadata(instance), 'planning_events': planning_events, 'source_access': source_access}
+    queue_lines = {}
+    if main_lines:
+        for chain, surname, _, _, secondary in sorted(line_names(data), key=lambda line: line[3]):
+            siblings = set().union(*(ancestor_siblings.get(pid, set()) for pid in chain))
+            for pid in set(chain) | siblings:
+                queue_lines.setdefault(pid, (secondary, surname))
+        main.update(pid for pid, (secondary, _) in queue_lines.items() if not secondary)
+    focus = (main | named) - collateral.keys()
+    data.update(focus=sorted(focus), queue_lines=queue_lines)
     # Each FamilySearch channel is independently eligible even if only one has a recorded visit.
     if any(s.startswith('familysearch') for s in sources):
         for sid in ('familysearch-tree', 'familysearch-records', 'familysearch-fulltext'):
@@ -385,7 +394,8 @@ def family_lines(graph, root):
                     collateral[relative].add(ancestor)
                 pending.extend(sorted(children[pid]))
     primary_siblings = set().union(*(siblings[pid] for pid in main))
-    return lines, {pid: anchors for pid, anchors in collateral.items() if pid not in primary_siblings}, line_weights
+    return (lines, {pid: anchors for pid, anchors in collateral.items() if pid not in primary_siblings},
+            line_weights, {pid: siblings[pid] for pid in ancestors})
 
 
 def planning_context(data, pid):
@@ -543,7 +553,14 @@ def recheck(data, limit=None):
                       'availability': view['availability'], 'record_links': view['record_links'],
                       'latest_refusal': view['latest_refusal'],
                       'query_issues': view['query_issues']})
-    queue.sort(key=lambda q: (q['person'] in data['collateral'], -q['score'], q['person'], q['source']))
+    queue_lines = data['queue_lines']
+    queue.sort(key=lambda q: (q['person'] in data['collateral'], queue_lines.get(q['person'], (True, ''))[0],
+                              -q['score'], q['person'], q['source']))
+    for item in queue:
+        if item['person'] in queue_lines:
+            _, surname = queue_lines[item['person']]
+            if surname:
+                item['line'] = surname
     return queue[:limit] if limit else queue
 
 
@@ -610,12 +627,29 @@ def surname_keys(surname, language):
     return {key, gender_form(key, 'm', language), gender_form(key, 'f', language), line_surname(key, language)}
 
 
-def line_front(data):
-    """Derive frontier questions and planning gaps without adding ledger rows."""
+def line_names(data):
+    """Resolve chain surnames and their position in the configured main lines."""
     tree, language = data['tree'], data['language']
     own_names = birth_names(tree.graph, language)
     clans = {row['id']: row for row in data['surname_forms']}
-    main_lines = [keys for name in data['main_lines'] if (keys := surname_keys(name, language))]
+    main_lines = data['main_lines']
+    for chain in data['lines']:
+        surname, forms = '', set()
+        for pid in chain:
+            display = tree.graph['people'][pid].get('surnameDisplay', {})
+            clan = clans.get(display.get('clan'))
+            surname = clan['form'] if clan else next((n['surname'] for n in own_names[pid] if n.get('surname')), '')
+            if surname:
+                for form in [surname, *(clan['variants'] if clan else [])]:
+                    forms.update(surname_keys(form, language))
+                break
+        order = next((i for i, keys in enumerate(main_lines) if keys & forms), len(main_lines))
+        yield chain, line_surname(surname, language), forms, order, bool(main_lines) and order == len(main_lines)
+
+
+def line_front(data):
+    """Derive frontier questions and planning gaps without adding ledger rows."""
+    tree, language = data['tree'], data['language']
     questions = []
     for ident, question in data['versions'].items():
         if question.get('status', question.get('state')) in OPEN_EXCLUSIONS:
@@ -631,7 +665,7 @@ def line_front(data):
                                'weight': max(weights), 'people': subjects}))
     hints = collateral_hints(data)
     lines = []
-    for chain in data['lines']:
+    for chain, surname, forms, order, secondary in line_names(data):
         gaps = Counter()
         for key in eligible_cells(data, chain):
             cell = data['cells'].get(key)
@@ -641,26 +675,19 @@ def line_front(data):
                 gaps['weak'] += 1
         start, end = chain[0], chain[-1]
         members = set(chain)
-        surname, forms = '', set()
-        for pid in chain:
-            display = tree.graph['people'][pid].get('surnameDisplay', {})
-            clan = clans.get(display.get('clan'))
-            surname = clan['form'] if clan else next((n['surname'] for n in own_names[pid] if n.get('surname')), '')
-            if surname:
-                for form in [surname, *(clan['variants'] if clan else [])]:
-                    forms.update(surname_keys(form, language))
-                break
-        order = next((i for i, keys in enumerate(main_lines) if keys & forms), len(main_lines))
         versions = [v for line, keys, v in questions if (bool(keys & forms) if line else
                                                           not members.isdisjoint(v['people']))]
         versions.sort(key=lambda v: -v['weight'])
         steps = [{'id': pid, 'name': tree.people[pid]['name'], 'weight': weight}
                  for pid, weight in zip(chain, data['line_weights'][start], strict=True)]
-        lines.append((order, {'start': {'id': start, 'name': tree.people[start]['name']},
-                      'frontier': {'id': end, 'name': tree.people[end]['name']}, 'people': chain, 'chain': steps,
-                      'surname': line_surname(surname, language), 'secondary': bool(main_lines) and order == len(main_lines),
-                      'versions': versions[:3], 'not_searched': gaps['not_searched'], 'weak': gaps['weak'],
-                      'collateral_hints': sum(not members.isdisjoint(h['ancestors']) for h in hints)}))
+        line = {'start': {'id': start, 'name': tree.people[start]['name']},
+                'frontier': {'id': end, 'name': tree.people[end]['name']}, 'people': chain, 'chain': steps,
+                'surname': surname, 'secondary': secondary,
+                'versions': versions[:3], 'not_searched': gaps['not_searched'], 'weak': gaps['weak'],
+                'collateral_hints': sum(not members.isdisjoint(h['ancestors']) for h in hints)}
+        if data['main_lines']:
+            line['living_or_possibly_living'] = len(chain) - sum(1 for _ in planning_people(data, chain))
+        lines.append((order, line))
 
     def priority(entry):
         order, line = entry
@@ -726,7 +753,11 @@ def markdown_queue(queue, heading):
         access = q.get('latest_refusal') or q.get('availability') or {}
         if access.get('state') == 'stopped':
             now += f"; ! {access['at']} {access['kind']}"
-        out.append(f"| {n} | {q['name']} ({q['person']}) | {q['source']} | {q.get('action', 'search')}: {', '.join(q['reasons'])} | {now} |")
+        person = f"{q['name']} ({q['person']})"
+        if line := q.get('line'):
+            label = line.replace('|', r'\|').replace('\n', ' ')
+            person += f' · {label}'
+        out.append(f"| {n} | {person} | {q['source']} | {q.get('action', 'search')}: {', '.join(q['reasons'])} | {now} |")
     return out if queue else [f'## {heading}', '', 'Nothing to recheck.']
 
 
@@ -785,13 +816,21 @@ def markdown_lines(view, language='en'):
     out = ['# Family line fronts', '', f"Collateral research: `{view['collateral_mode']}`.", '',
            '| Line | Chain to farthest ancestor | Open questions (weight) | Not searched | Weak | Collateral hints |',
            '|---|---|---|---:|---:|---:|']
+    if view['lines'] and 'living_or_possibly_living' in view['lines'][0]:
+        excluded = {'ru': 'Вне очереди: живые или статус неизвестен',
+                    'pl': 'Poza kolejką: żyjący lub o nieznanym statusie'}
+        out[-2] += f" {excluded.get(language, 'Outside queue: living or unknown status')} |"
+        out[-1] += '---:|'
     for line in view['lines']:
         versions = ', '.join(f"{v['label']} ({v['weight']:g})" for v in line['versions']) or '—'
         surname = line['surname'] or '—'
         if line['secondary']:
             surname += f' ({secondary})'
-        out.append('| ' + ' | '.join(map(column, [surname, format_line_chain(line['chain'], decimal), versions,
-                   line['not_searched'], line['weak'], line['collateral_hints']])) + ' |')
+        cells = [surname, format_line_chain(line['chain'], decimal), versions,
+                 line['not_searched'], line['weak'], line['collateral_hints']]
+        if 'living_or_possibly_living' in line:
+            cells.append(line['living_or_possibly_living'])
+        out.append('| ' + ' | '.join(map(column, cells)) + ' |')
     return '\n'.join(out)
 
 

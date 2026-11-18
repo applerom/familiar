@@ -317,6 +317,8 @@ def line_section(active, graph, w):
         chain = [step | {'name': people[step['id']].get('name') or ''} for step in line['chain']]
         chain_label = format_line_chain(chain, w['lines_decimal'])
         counts = w['lines_counts'].format(**line)
+        if 'living_or_possibly_living' in line:
+            counts += ' · ' + w['lines_outside_queue'].format(**line)
         versions = [f"{public_line(v['label'], w['branch'].format(n=n))} ({v['weight'] * 100:g}%)"
                     for n, v in enumerate(line['versions'], 1) if historical.issuperset(v['people'])]
         details = ' · '.join(versions) or ('—' if line['versions'] else w['lines_no_versions'])
