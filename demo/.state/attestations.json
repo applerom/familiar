@@ -2,7 +2,7 @@
   "feed:ferrolho/__feed__@en": {
     "page": "feed:ferrolho/__feed__",
     "language": "en",
-    "reviewer": "u37-codex-gpt-6.2-sol",
+    "reviewer": "u38-codex-gpt-6.2-sol",
     "author": "familiar-demo-original-authors",
     "digest": "26a47929088a324d91f56043ef0cecae0ed3f083351e48ac7ffb087c0192ac77",
     "safety_digest": "5ee13b9b7bb97e0e2de3d14d14f0f41364d2b85eee3cf32ea4280a120a52fdb5",
@@ -14,13 +14,13 @@
     ],
     "inspection_digest": "c850c46b769bf5063741e693287c46e637fac8e339fb60920bb3a4b51db2b0c6",
     "verdict": "pass",
-    "at": "2026-11-18T18:48:25.806333+00:00",
+    "at": "2026-11-18T19:04:25.148623+00:00",
     "stage": "reading"
   },
   "feed:ferrolho/amaro-1921@en": {
     "page": "feed:ferrolho/amaro-1921",
     "language": "en",
-    "reviewer": "u37-codex-gpt-6.2-sol",
+    "reviewer": "u38-codex-gpt-6.2-sol",
     "author": "familiar-demo-original-authors",
     "digest": "9c7780475fcdcffc081faac31722a3064595c2c2c00dfa925fcb8ea6ee2dd7bc",
     "safety_digest": "5ee13b9b7bb97e0e2de3d14d14f0f41364d2b85eee3cf32ea4280a120a52fdb5",
@@ -32,49 +32,13 @@
     ],
     "inspection_digest": "cf9dc89d8771ec6e15ed582d3ee0f12791c1d5b7e00676a4a23c2c2ecb8f974d",
     "verdict": "pass",
-    "at": "2026-11-18T18:48:25.806333+00:00",
-    "stage": "reading"
-  },
-  "feed:ferrolho/rosa-1925@en": {
-    "page": "feed:ferrolho/rosa-1925",
-    "language": "en",
-    "reviewer": "u36-codex-gpt-6.2-sol",
-    "author": "familiar-demo-original-authors",
-    "digest": "6c40166f16e0da207c074ab18e6236766b13d16520fd5027b87ba59c71ba5733",
-    "safety_digest": "5ee13b9b7bb97e0e2de3d14d14f0f41364d2b85eee3cf32ea4280a120a52fdb5",
-    "rules": [
-      "R1",
-      "R2",
-      "R3",
-      "R4"
-    ],
-    "inspection_digest": "2c052b0df18cdcad95ee2184a25e8a19122325ea1407fc3a2fecee06bfdf59c3",
-    "verdict": "pass",
-    "at": "2026-11-18T18:32:29.729905+00:00",
-    "stage": "reading"
-  },
-  "reader:tree@en": {
-    "page": "reader:tree",
-    "language": "en",
-    "reviewer": "u36-codex-gpt-6.2-sol",
-    "author": "familiar-demo-original-authors",
-    "digest": "295aaa9672f79a59766396ac943b05e5f7fd2e086127850181c9205d7dadedca",
-    "safety_digest": "5ee13b9b7bb97e0e2de3d14d14f0f41364d2b85eee3cf32ea4280a120a52fdb5",
-    "rules": [
-      "R1",
-      "R2",
-      "R3",
-      "R4"
-    ],
-    "inspection_digest": "05fa0666f2ed64d8f903d774bc6573dc6dd865ce027278bc377e50c3d6363c83",
-    "verdict": "pass",
-    "at": "2026-11-18T18:32:29.729905+00:00",
+    "at": "2026-11-18T19:04:25.148623+00:00",
     "stage": "reading"
   },
   "reader:file:reader-profile.json@en": {
     "page": "reader:file:reader-profile.json",
     "language": "en",
-    "reviewer": "u37-codex-gpt-6.2-sol",
+    "reviewer": "u38-codex-gpt-6.2-sol",
     "author": "familiar-demo-original-authors",
     "digest": "3bc904fe88f65f85d583a9ca6934d00d6ce5c386c28af12c6c91758b950a2f68",
     "safety_digest": "5ee13b9b7bb97e0e2de3d14d14f0f41364d2b85eee3cf32ea4280a120a52fdb5",
@@ -86,13 +50,13 @@
     ],
     "inspection_digest": "9d0a506acca25a962a56e41f61d0868566b6d3150c420743d0115dda1895ad38",
     "verdict": "pass",
-    "at": "2026-11-18T18:48:25.807333+00:00",
+    "at": "2026-11-18T19:05:28.626516+00:00",
     "stage": "reading"
   },
   "reader:file:sources/accb322b9224a59dc54c.html@en": {
     "page": "reader:file:sources/accb322b9224a59dc54c.html",
     "language": "en",
-    "reviewer": "u37-codex-gpt-6.2-sol",
+    "reviewer": "u38-codex-gpt-6.2-sol",
     "author": "familiar-demo-original-authors",
     "digest": "73bdf23131046b68632df8b19765cdfa9bfb6768d5f7166f5f8bdff279e12920",
     "safety_digest": "5ee13b9b7bb97e0e2de3d14d14f0f41364d2b85eee3cf32ea4280a120a52fdb5",
@@ -104,13 +68,13 @@
     ],
     "inspection_digest": "3293671a1aaaf1e4a652a849dbce81ada75437c6c4045d3d8c8a74e0dcdab0f6",
     "verdict": "pass",
-    "at": "2026-11-18T18:48:25.807333+00:00",
+    "at": "2026-11-18T19:05:28.626516+00:00",
     "stage": "reading"
   },
   "reader:file:sources/7cebdfd04b3813e08a8b.html@en": {
     "page": "reader:file:sources/7cebdfd04b3813e08a8b.html",
     "language": "en",
-    "reviewer": "u37-codex-gpt-6.2-sol",
+    "reviewer": "u38-codex-gpt-6.2-sol",
     "author": "familiar-demo-original-authors",
     "digest": "a3906aa684f3d1a7984c5334cd393536b644fe50e43d803346708611c69c8d66",
     "safety_digest": "5ee13b9b7bb97e0e2de3d14d14f0f41364d2b85eee3cf32ea4280a120a52fdb5",
@@ -122,13 +86,13 @@
     ],
     "inspection_digest": "584ea136a075500513c225743d191f65e13421660b099f3b969366bff1b27899",
     "verdict": "pass",
-    "at": "2026-11-18T18:48:25.807333+00:00",
+    "at": "2026-11-18T19:05:28.626516+00:00",
     "stage": "reading"
   },
   "reader:file:sources/document-back.js@en": {
     "page": "reader:file:sources/document-back.js",
     "language": "en",
-    "reviewer": "u37-codex-gpt-6.2-sol",
+    "reviewer": "u38-codex-gpt-6.2-sol",
     "author": "familiar-demo-original-authors",
     "digest": "ec7ef05df03eddbbcfd61232a09250e7fe0ea1a5a49f11ca034eae8415701155",
     "safety_digest": "5ee13b9b7bb97e0e2de3d14d14f0f41364d2b85eee3cf32ea4280a120a52fdb5",
@@ -140,7 +104,7 @@
     ],
     "inspection_digest": "60b348b09e3a04bfc6ef49b9da89f8c17bdb415c82488bc3fc7e5784010963be",
     "verdict": "pass",
-    "at": "2026-11-18T18:48:25.807333+00:00",
+    "at": "2026-11-18T19:05:28.626516+00:00",
     "stage": "reading"
   }
 }
