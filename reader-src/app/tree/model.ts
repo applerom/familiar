@@ -99,7 +99,9 @@ export function clanGenitive(s:string){if(!/^[А-ЯЁ][а-яё-]+$/.test(s))retu
  if(/(ов|ев|ёв|ин|ын)$/.test(s))return s+'ых';if(/(ова|ева|ёва|ина|ына)$/.test(s))return s.slice(0,-1)+'ых';
  if(/(ич|ш|ж|щ|ч)$/.test(s))return s+'ей';return s}
 export function lineTitle(l:{id:string},model:Model,labels:Row){const i=model.info[l.id];const s=i?.surnameKey||i?.short?.split(' ').pop()||'';const t=String(labels.lineOf||'{s}');return t.replace('{s}',t.startsWith('Род ')?clanGenitive(s):s)}
-export function withHome(word:string,home:string,labels:Row){const gen=labels.homeGenitive?.[home]||home;return labels.genitiveFirst?`${gen} ${word}`:`${word} ${gen}`}
+// English and Swedish mark the possessor on the name itself: Amaro's wife, Amaros fru.
+const possessive=(home:string,lang:string)=>lang==='en'?home+(/s$/i.test(home)?"'":"'s"):lang==='sv'?home+(/[sxz]$/i.test(home)?'':'s'):home;
+export function withHome(word:string,home:string,labels:Row){const gen=labels.homeGenitive?.[home]||possessive(home,labels.languageCode);return labels.genitiveFirst?`${gen} ${word}`:`${word} ${gen}`}
 /** Genitive of a relation word: "прадеда", "бабушки", "двоюродного брата"; Polish from a table, English with 's. */
 export function genitive(word:string,lang:string){return genitive0(word,lang)}
 function genitive0(word:string,lang:string){
