@@ -200,7 +200,7 @@ def _assemble_checked(instance, active, config, delivered, watch, stamp, *, publ
         navigation.append(('nav_photos', '/#view=photos'))
     navigation.append(('nav_progress', '/desk/progress.html'))
     if not public_reader:
-        navigation[0:0] = [('nav_asks', '/desk/asks.html'), ('nav_correspondence', '/desk/correspondence.html')]
+        navigation[1:1] = [('nav_asks', '/desk/asks.html'), ('nav_correspondence', '/desk/correspondence.html')]
     links = ''.join('<a data-desk-label="' + label + '" href="' + href + '">'
                     + html.escape(w[label]) + '</a>' for label, href in navigation)
     banner = (styles + '<footer id="desk-footer"><aside id="desk-notice" role="note"><span class="desk-private-label">' + html.escape(w['private_notice']) + '</span>'

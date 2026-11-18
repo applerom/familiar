@@ -1,7 +1,7 @@
 """Build the family-only conversation page and reader links from ranked asks."""
 import json
 import re
-from collections import Counter, defaultdict
+from collections import defaultdict
 from datetime import UTC, date, datetime, timedelta
 from html import escape
 
@@ -19,18 +19,22 @@ def link(identity):
     return '/desk/asks.html#ask-' + identity
 
 
-def question_count(w, count):
-    singular = count == 1 if w.get('singular_one_only') else count % 10 == 1 and count % 100 != 11
-    if singular:
-        unit = w['question_one']
-    elif count % 10 in {2, 3, 4} and count % 100 not in {12, 13, 14}:
-        unit = w['question_few']
-    else:
-        unit = w['question_many']
-    return f'{count} {unit}'
+def years(person):
+    """Tree-tile years: recorded birth/death years, else the guessed birth year."""
+    def year(value):
+        found = re.search(r'\b(\d{4})\b', value) if isinstance(value, str) else None
+        return found[1] if found else ''
+
+    shown = person.get('cardPresentation') or {}
+    events = person.get('events', [])
+    pick = lambda kinds: next((e.get('date') for e in events if e.get('type') in kinds and e.get('date')), '')
+    born, died = year(shown.get('birth') or pick({'birth', 'BIRT'})), year(shown.get('death') or pick({'death', 'DEAT'}))
+    if not born and (person.get('birthGuess') or {}).get('year'):
+        born = '\u2248' + str(person['birthGuess']['year'])
+    return born + ('\u2013' + died if died else '')
 
 
-def birthday(person, today, w):
+def birthday(person, today, w, name=''):
     for event in person.get('events', []):
         raw = event.get('date', '')
         if (event.get('type') != 'birth' or event.get('open_question') or not isinstance(raw, str)
@@ -55,8 +59,8 @@ def birthday(person, today, w):
             except ValueError:
                 upcoming = date(year, 2, 28)
             if today <= upcoming <= today + timedelta(days=14):
-                return w['birthday'].format(day=upcoming.day, month=w['months'][upcoming.month - 1],
-                                            age=year - born.year)
+                # No age and no "turns": the family may not have told us everything.
+                return w['birthday'].format(day=upcoming.day, month=w['months'][upcoming.month - 1], name=name)
     return ''
 
 
@@ -141,9 +145,12 @@ def project(active, graph, delivery, w, *, today=None, feedback=()):
             if isinstance(source, str) and source.startswith('/') and source[1:] in delivery:
                 asset = source
             opener = opener['text']
-        labels = [data.name(about['person']) if about.get('person') else '', data.text(about.get('line')),
-                  data.text(about.get('place'))]
-        item = {'id': identity, 'holder': holder, 'name': name, 'about': ' · '.join(filter(None, labels[:1] + labels[2:])) or labels[1],
+        person = aliases.get(about.get('person'), about.get('person'))
+        shown = graph.get('people', {}).get(person) if person else None
+        tile = ({'person': person, 'name': shown.get('treeName') or data.name(person), 'years': years(shown)} if shown
+                else {'person': '', 'name': data.name(person) if person else data.text(about.get('line') or about.get('place')),
+                      'years': data.text(about.get('place')) if about.get('line') and not person else ''})
+        item = {'id': identity, 'holder': holder, 'name': name, 'tile': tile,
                 'question': data.text(row['question'], subjects), 'child': data.text(row.get('question_child'), subjects),
                 'opener': data.text(opener, subjects), 'asset': asset,
                 'hints': [s for h in row.get('hints', []) if (s := data.text(h, subjects))],
@@ -158,16 +165,14 @@ def project(active, graph, delivery, w, *, today=None, feedback=()):
     rank(active, data, entries, versions, {'settled': '{what}', 'settled_unknown': ''}, stale_asks=stale)
     ranked = sorted(((r, i) for r, i in entries if not i['shelved']), key=lambda pair: (-pair[1]['score'], pair[1]['id']))
     groups, cards, steps = defaultdict(list), defaultdict(list), defaultdict(dict)
-    counts, reminders = Counter(), []
+    reminders = []
     for row, item in ranked:
         holder = item['holder']
         groups[holder].append(item)
         if item['state'] not in VISIBLE:
             continue
-        if holder in live:
-            counts[holder] += 1
         if item['eligible']:
-            occasion = item['occasion'] or birthday(people.get(holder, {}), today, w)
+            occasion = item['occasion'] or birthday(people.get(holder, {}), today, w, item['name'])
             if occasion:
                 reminders.append({'id': item['id'], 'name': item['name'], 'question': item['question'],
                                   'holder': holder, 'child': item['child'],
@@ -185,67 +190,50 @@ def project(active, graph, delivery, w, *, today=None, feedback=()):
             child_steps[feed].add(index)
     summaries = [{'id': item['id'], 'text': item['question'], 'holder': item['name'],
                   'lane': (row['aim'].get('version') or '')} for row, item in ranked if item['state'] in VISIBLE][:3]
-    links = {'cards': dict(cards), 'steps': dict(steps), 'child_steps': {k: sorted(v) for k, v in child_steps.items()},
-             'counts': {pid: question_count(w, count) for pid, count in counts.items()}}
+    links = {'cards': dict(cards), 'steps': dict(steps), 'child_steps': {k: sorted(v) for k, v in child_steps.items()}}
     require_displayable(active, [list(groups.values()), reminders, links])
-    return render(active.source_language, groups, live, w), links, reminders, summaries, inputs, listings
+    return render(active.source_language, groups, w), links, reminders, summaries, inputs, listings
 
 
-def render(language, groups, live, w):
+def render(language, groups, w):
+    """A conversation, not a form: what we think, then one field for how it really was."""
     def label(key):
         return escape(w[key])
 
-    def button(action, name, cls=''):
-        return f'<button type="button" data-action="{action}" class="{cls}">{label(name)}</button>'
-
-    live_options = ''.join(f'<option value="{escape(pid)}">{escape(name)}</option>'
-                           for pid, name in sorted(live.items(), key=lambda pair: pair[1].casefold()))
+    def tile(about):
+        inner = f'<b>{escape(about["name"])}</b>' + (f'<small>{escape(about["years"])}</small>' if about['years'] else '')
+        if about['person']:
+            return f'<a class="ask-who" href="/#person={escape(about["person"])}">{inner}</a>'
+        return f'<span class="ask-who">{inner}</span>'
 
     def card(item):
-        hints = ''.join(f'<li>{escape(hint)}</li>' for hint in item['hints'])
+        hints = ''.join(f'<button type="button" class="ask-hint" data-hint="{escape(hint)}">{escape(hint)}</button>'
+                        for hint in item['hints'])
         opener = escape(item['opener'])
         if item['asset']:
             opener += f' <a href="{escape(item["asset"])}">{label("show_opener")}</a>'
         opener = f'<p class="ask-opener">{opener}</p>' if opener else ''
         tender = f'<p class="ask-tender">{label("tender_notice")}</p>' if item['tender'] else ''
         child = f'<span class="ask-child" hidden>{escape(item["child"])}</span>' if item['child'] else ''
-        extras = ''.join(f'<label>{label(k)}<input name="{k}" maxlength="1000"></label>'
-                         for k in item['wants'] if k != 'photo')
-        if extras:
-            extras = f'<details><summary>{label("details")}</summary><div class="ask-fields">{extras}</div></details>'
         photo = ('<details class="ask-photo"><summary>' + label('photo_button') + '</summary><p>'
                  + label('photo_note') + '</p><p>' + escape(item['photo_note']) + '</p></details>') if 'photo' in item['wants'] else ''
-        private = ('<p>' + label('private_default') + '</p>') if item['tender'] else (
-            '<label class="ask-private-choice"><input name="private" type="checkbox">' + label('private_default') + '</label>')
-        next_hint = escape(item['next_hint'])
-        hint_hidden = '' if (next_hint and item['state'] == 'dont_know') else ' hidden'
         mark = ' data-tender="true"' if item['tender'] else ''
-        return (f'<article id="ask-{escape(item["id"])}" class="ask-card" data-ask="{escape(item["id"])}" '
-                f'data-context="{item["context"]}"{mark}><p class="ask-about">{escape(item["about"])}</p>{opener}'
-                f'<h3><span class="ask-adult">{escape(item["question"])}</span>{child}</h3>'
-                + (f'<ul class="ask-hints">{hints}</ul>' if hints else '') + tender
-                + f'<p class="ask-next"{hint_hidden}>{next_hint}</p><div class="ask-actions" hidden>'
-                + button('tell', 'tell', 'ask-primary') + button('dont_know', 'dont_know')
-                + (button('handoff', 'handoff') if live_options else '') + button('private', 'private') + '</div>'
-                + f'<form class="ask-answer" hidden><label>{label("write")}<textarea required maxlength="6000" rows="4"></textarea></label>'
-                + extras + private + f'<button type="submit" class="ask-primary">{label("send")}</button></form>'
-                + (f'<form class="ask-handoff" hidden><label>{label("choose")}<select required><option value=""></option>{live_options}</select></label>'
-                   f'<button type="submit">{label("send")}</button></form>' if live_options else '')
-                + photo + '<p class="ask-status" role="status">'
-                + (label('saved_will_ask') if item['state'].startswith('will_ask:') else '') + '</p></article>')
+        status = label('saved_will_ask') if item['state'].startswith('will_ask:') else ''
+        return (f'<details id="ask-{escape(item["id"])}" class="ask-card" data-ask="{escape(item["id"])}" '
+                f'data-context="{item["context"]}"{mark}><summary>{tile(item["tile"])}'
+                f'<span class="ask-q"><span class="ask-adult">{escape(item["question"])}</span>{child}</span></summary>'
+                f'<div class="ask-body">{opener}' + (f'<div class="ask-hints">{hints}</div>' if hints else '') + tender
+                + f'<form class="ask-answer"><label>{label("write")}<textarea required maxlength="6000" rows="3"></textarea></label>'
+                + f'<div class="ask-send"><button type="submit" class="ask-primary">{label("send")}</button>{photo}</div></form>'
+                + f'<p class="ask-status" role="status">{status}</p></div></details>')
 
     sections = []
     for items in groups.values():
-        name = escape(items[0]['name'])
         lines = ' · '.join(escape(line) for line in dict.fromkeys(i['line'] for i in items) if line)
-        count = escape(question_count(w, len(items)))
-        child_count = escape(question_count(w, sum(bool(i['child']) for i in items)))
-        cards = ''.join(card(item) for item in items)
         sections.append(f'<section class="ask-holder"><header><span aria-hidden="true">{escape(items[0]["name"][:1])}</span>'
-                        f'<div><h2>{name}</h2><small><span class="ask-mode-count" data-adults="{count}" data-kids="{child_count}">'
-                        f'{count}</span>{(" · " + lines) if lines else ""}</small></div></header>{cards}</section>')
-    content = ('<div class="ask-page">'
-               '<div class="ask-modes" hidden>' + button('adults', 'adults') + button('kids', 'kids') + '</div>'
-               f'<section class="ask-today" hidden><h2>{label("today")}</h2><ul></ul></section>'
+                        f'<div><h2>{escape(items[0]["name"])}</h2>' + (f'<small>{lines}</small>' if lines else '')
+                        + '</div></header>' + ''.join(card(item) for item in items) + '</section>')
+    content = (f'<div class="ask-page"><p class="ask-lead">{label("lead")}</p><p class="ask-today" hidden></p>'
+               f'<div class="ask-modes" hidden><button type="button" data-action="kids" aria-pressed="false">{label("kids")}</button></div>'
                + (''.join(sections) if sections else f'<p class="ask-empty">{label("empty")}</p>') + '</div>')
     return page(w['title'], content, language)
