@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.40.0 — 18 November 2026
+
+- The tree zooms like a map: the wheel and the pinch only scale the picture
+  under the pointer, and who stands in the centre changes by choosing a person.
+  A couple is joined by a ring and their child hangs from it. Every tile shows
+  a year, estimated when no record gives one; distant tiles open into the whole
+  name when zoomed. The count sits in the corner map. The rays, the generation
+  switch and the large add-relative entry are gone.
+- A person's card tells the leading version. Versions weaker than 0.3 and their
+  papers stay in the investigation; grounds, search coverage and retired claims
+  share one fold at the end. Scans a source carries are shown as pictures.
+- Relatives is a conversation, not a form: the tree comes first in the
+  navigation, each ask names the person it is about, hints drop into one
+  answer field, and the state buttons and counters are gone. An occasion never
+  states an age.
+- Show preserved scans and thumbnails on local document pages.
+- Use a 75-year default for uncertain life status in the family reader
+  (`privacy.family_years`); the public horizon stays `privacy.living_years`.
+
 ## 0.39.1 — 18 November 2026
 
 - We show one tree count, keep sibling stacks as a visual cue, and leave out
