@@ -44,9 +44,9 @@ uv pip install --python ./familiar-env/bin/python "familiar[images] @ git+https:
 `familiar-env/bin/familiar` or `familiar-env/Scripts/familiar.exe`.)
 
 Use `--language ru --address informal` for Russian ты (`formal` for вы).
-Russian and Polish packs are connected automatically. For English host text,
-add `language_packs = { en = "demo-english" }` at the top of `familiar.toml`,
-before the first table. Keep the generated family id and engine pin.
+Russian, Polish and English packs are connected automatically
+(`language_packs` at the top of `familiar.toml`). Keep the generated family id
+and engine pin.
 Save `familiar.toml` as UTF-8 without a byte-order mark (BOM).
 Put the family directory under its own **private** version control and back it
 up: it is the only copy of what the family told and what was found.
@@ -333,9 +333,8 @@ The next step uses the recorded request, answer and case state; an unchanged
 wait stays a wait. The summary keeps papers, testimony and open questions apart.
 
 Host wording comes from the family's source-language pack. Bundled
-`demo-english` and `pl` supply it; declare, for example,
-`language_packs = { en = "demo-english" }` before `[family]` in an English
-family's configuration. Missing templates are reported as a language-pack gap,
+`demo-english`, `ru` and `pl` supply it; `instance init` declares the pack
+of the chosen language as `language_packs` before `[family]`. Missing templates are reported as a language-pack gap,
 without guessing a translation. Family prose and names stay as recorded.
 
 A Russian family starts with `familiar instance init ./family --language ru --address informal`

@@ -52,7 +52,6 @@ def cli(*args, check=True):
 
 assert main(['instance', 'init', str(family), '--title', 'Invented example', '--language', 'en']) == 0
 config = family / 'familiar.toml'
-config.write_text('language_packs = { en = "demo-english" }\n' + config.read_text(), encoding='utf-8')
 form = lambda name: cli('research', 'form', name).stdout
 for name in ('memory.toml', 'paper.toml'):
     (tmp_path / name).write_text(form(name), encoding='utf-8')

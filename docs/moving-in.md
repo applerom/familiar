@@ -20,6 +20,12 @@ familiar --root ./my-family instance paths
 - For a kinship spreadsheet, run `familiar --root ./my-family intake table ./relatives.xlsx --id relatives --told-by "Previous archive" --date YYYY-MM-DD --language en`.
   Review its `reading.json` cell ledger and editable `memory.toml`. Run the
   reported `intake memory` command with its frozen `--original` sheet.
+  The first nonempty row is the header. When the headers are not the bundled
+  ones (the run answers `No person column`), name the columns before the first
+  run in a small TOML file and pass `--mapping columns.toml`:
+  `columns."Sheet1!A" = "person"`, with roles `person`, `person_kin`, `kin`,
+  `birth`, `death`, `birth_place`, `death_place`, `place`, `notes`, `witness`,
+  `living`. A rejected draft keeps its `--id`; give the next attempt a new one.
 - For a website or structured export, map its people and family groups into the
   `people` and `families` arrays from `familiar research form memory.toml`.
   The same shape works in JSON. Cite a memory item in each claim's `provenance`.
@@ -55,18 +61,31 @@ Familiar feeds and run the normal evidence and review steps. For an existing
 
 ## Photographs
 
-Record the host's [archive declaration](PRD.md#family-archive-declaration-pathsarchive_rights-default-familyarchive-rightsjson)
-at `paths.archive_rights`, with effective `family_app` permission. Use the IDs
-from the working tree. Give all identified people on each frame.
+The host declares once that the family holds its photographs. Write the
+host's own words into `family/archive-rights.json` (the "Family archive
+declaration" paragraph of `docs/PRD.md` has every field):
+
+```json
+{"schema_version": 1, "kind": "family-photograph",
+ "holder": "The family of ...", "declared_by": "Host's name",
+ "declared_at": "YYYY-MM-DD", "effective_from": "YYYY-MM-DD",
+ "living_subject_consent": false,
+ "permissions": {"family_app": true, "processing": false, "colourisation": false}}
+```
+
+Use the person IDs of the working tree: `familiar --root ./my-family tree stats`
+and `tree person` list them. A GEDCOM pointer keeps its letters as written, so
+`@I1@` imported with `--id archive-tree` is `archive-tree-I1`. Give all
+identified people on each frame.
 
 ```sh
-familiar --root ./my-family intake photo ./portrait.jpg --person archive-tree-i1 --caption "At the garden gate" --when "Late 1940s" --received-from "Previous archive"
+familiar --root ./my-family intake photo ./portrait.jpg --person archive-tree-I1 --caption "At the garden gate" --when "Late 1940s" --received-from "Previous archive"
 familiar --root ./my-family intake photo ./photos.csv --table
 ```
 
 ```csv
 file,people,caption,when,received_from
-photos/garden.jpg,archive-tree-i1 archive-tree-i2,At the garden gate,Late 1940s,Previous archive
+photos/garden.jpg,archive-tree-I1 archive-tree-I2,At the garden gate,Late 1940s,Previous archive
 ```
 
 Use UTF-8 CSV or TSV. File paths may be relative to the table. Leave `when`

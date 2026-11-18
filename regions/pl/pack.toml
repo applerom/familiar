@@ -274,7 +274,7 @@ immigration = "Przeprowadzka"
 private_notice = "wersja niepubliczna"
 memory = "Do rodzinnego archiwum dodano wspomnienia. Można je teraz porównać z dokumentami."
 paper = "Do rodzinnego archiwum dodano domowy dokument. Pomoże sprawdzić rodzinne wspomnienia."
-gedcom = "Dodano inne drzewo rodzinne. Jego informacje wymagają jeszcze sprawdzenia."
+gedcom = "Dodano drzewo rodzinne."
 
 [table_intake]
 alive=["tak"]

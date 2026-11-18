@@ -94,7 +94,7 @@ def ingest(instance, data, kind, original=None, accepted_by=None, own=False):
     tree_people = [] if search_only else data.get('people', [])
     tree_families = [] if search_only else data.get('families', [])
     ident = token(data["id"])
-    digest = hashlib.sha256(json.dumps(data, sort_keys=True).encode()).hexdigest()
+    digest = hashlib.sha256((json.dumps(data, sort_keys=True) + ('|own' if own else '')).encode()).hexdigest()
     if original_digest:
         digest = hashlib.sha256((digest + original_digest).encode()).hexdigest()
     report_path = safe(instance, "state", f"intake/{ident}.json")
@@ -179,7 +179,9 @@ def ingest(instance, data, kind, original=None, accepted_by=None, own=False):
             dict(
                 e,
                 provenance=basis(e),
-                **({'status': 'hypothesis'} if foreign else {}),
+                # Whose tree it is never settles whether a person has died: a death read from a
+                # GEDCOM stays an imported claim, so life-status protection is the same in both modes.
+                **({'status': 'hypothesis'} if foreign or kind == 'gedcom' and e.get('type') == 'death' else {}),
                 tag=e.get(
                     "tag", {"birth": "BIRT", "death": "DEAT"}.get(e["type"], e["type"].upper())
                 ),

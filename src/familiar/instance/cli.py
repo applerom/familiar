@@ -49,7 +49,8 @@ def run(args):
 
             from .writer import initialize
             config = args.directory / 'familiar.toml'
-            packs = f'language_packs = {{ {json.dumps(args.language)} = {json.dumps(args.language)} }}\n' if args.language in {'ru', 'pl'} else ''
+            pack = {'ru': 'ru', 'pl': 'pl', 'en': 'demo-english'}.get(args.language)
+            packs = f'language_packs = {{ {json.dumps(args.language)} = {json.dumps(pack)} }}\n' if pack else ''
             initialize(args.directory, f'schema_version = 1\nregion_packs = []\n{packs}\n'
                        f'[engine]\nversion = "{__version__}"\n\n[family]\n'
                        f'id = "{uuid4()}"\ntitle = {json.dumps(args.title)}\n'

@@ -12,6 +12,9 @@
   stands on each person's card and on the Photos page.
 - `intake gedcom --own` takes the family's own tree as the family's word, with
   solid lines. Without it a GEDCOM stays another tree's claims.
+  A death read from a GEDCOM stays an imported claim in both modes, so whose
+  tree it is never opens a possibly living person's papers.
+- `instance init --language en` connects the English host wording by itself.
 - `intake kinship-case` carries an ex-ussr-kinship-research case into Familiar:
   people, relationships with their standing, artifacts with scans, claims and
   the search log, so coverage knows where was already looked. A dry run comes

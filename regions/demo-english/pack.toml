@@ -179,7 +179,7 @@ immigration = "Move"
 private_notice = "private version"
 memory = "Family memories have been added to the archive. They can now be compared with papers."
 paper = "A home paper has been added to the family archive. It can help check family memories."
-gedcom = "Another family tree has been added. Its claims still need checking."
+gedcom = "A family tree has been added."
 
 [table_intake]
 alive=["yes"]

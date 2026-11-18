@@ -11,8 +11,9 @@ familiar --root FAMILY intake kinship-case CASE --id archive --apply
 ```
 
 The first intake command is a dry run. Read `counts`, `losses` and
-`archive_only` before applying. New rows get IDs such as
-`kinship-archive-person-p-0001`. The same ID and original bytes can be applied
+`archive_only` before applying. A row keeps its own register ID in lower case:
+person `P1` of a case taken with `--id archive` becomes
+`kinship-archive-person-p1`. The same ID and original bytes can be applied
 again safely. Review a previous intake before giving a changed case a new ID.
 
 | Case input | Familiar working files |
@@ -46,11 +47,10 @@ are ZIP-only. A mismatched scan stays in the ZIP and is listed in `losses`.
 ```sh
 familiar --root FAMILY instance check
 familiar --root FAMILY tree build --view working
-familiar --root FAMILY research coverage --person kinship-archive-person-p-0001
+familiar --root FAMILY research coverage --person kinship-archive-person-p1
 familiar --root FAMILY family summary
 ```
 
 Use the IDs from the working tree. Compare one record and one search pass
 against the original case, then review any losses before continuing research.
-For a fresh English instance, put `language_packs = { en = "demo-english" }`
-before `[family]` in `familiar.toml` for `family summary` and the desk.
+`instance init --language en` connects the English host wording by itself.
