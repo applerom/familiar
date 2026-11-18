@@ -74,7 +74,7 @@ def _locator(text, root):
 def _packet(instance, *, case=None, people=(), mode='owner', stage='evidence', max_chars=24000):
     if max_chars < 600:
         raise ValueError('max_chars must be at least 1000 including the diagnostic envelope')
-    keys = ('cases', 'versions', 'memory', 'answers', 'records', 'searches', 'questions')
+    keys = ('cases', 'versions', 'memory', 'answers', 'records', 'searches', 'asks')
     collections = {k: _collect(instance.path(k)) for k in keys}
     selected_cases = [r for r in collections['cases'] if r['data'].get('id') == case] if case else []
     if case and not selected_cases:
@@ -100,7 +100,8 @@ def _packet(instance, *, case=None, people=(), mode='owner', stage='evidence', m
     selected_people = {known[p]['id'] for p in selected_people}
     if not selected_people:
         raise ValueError('select a case or at least one person')
-    requests = [r for r in collections['questions'] if r['data'].get('question') in qids or r['data'].get('case') == case and case]
+    ask_versions = qids | {v['id'] for row in versions for v in row['data'].get('versions', []) if v.get('id')}
+    requests = [r for r in collections['asks'] if r['data'].get('aim', {}).get('version') in ask_versions or r['data'].get('case') == case and case]
     request_ids = {r['data']['id'] for r in requests}
     # Memory often has no person tags. Include every telling, marked as a superset,
     # rather than losing an unlinked old family observation by text matching.

@@ -304,8 +304,8 @@ def person_card(instance, query, *, catalog=None, aliases=(), relatives=(), max_
     surnames = [n.split()[-1] for n in names if len(n.split()) > 1]
     search = list(dict.fromkeys([*focus, *sorted(selected), *relative_terms, *surnames]))
     sources = config.get('sources', [])
-    defaults = [{'id': key, 'path_key': key, 'glob': '**/*.json*', 'historical': key not in {'memory', 'answers', 'questions', 'searches'}, 'kind': key}
-                for key in ('records', 'versions', 'cases', 'memory', 'answers', 'questions', 'searches', 'contributions', 'evidence', 'associations', 'identity_decisions')]
+    defaults = [{'id': key, 'path_key': key, 'glob': '**/*.json*', 'historical': key not in {'memory', 'answers', 'asks', 'searches'}, 'kind': key}
+                for key in ('records', 'versions', 'cases', 'memory', 'answers', 'asks', 'searches', 'contributions', 'evidence', 'associations', 'identity_decisions')]
     rows, coverage = collect(instance, [*sources, *defaults], search)
     refs = references([people[pid] for pid in selected | near.keys() if pid in people] + [r['data'] for r in rows])
     for ref in sorted(refs & graph['sources'].keys()):

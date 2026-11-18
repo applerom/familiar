@@ -4,7 +4,7 @@
 # INVARIANTS:
 # - protected life conflicts advise with participants, death evidence and a resolution [review: engine lead]
 # - photo-treatment is a distinct image kind whose frame binding is checked at publication [review: engine lead]
-# - misplaced family/requests data reports the configured questions path instead of silently disappearing [review: engine lead]
+# - misplaced family/requests data reports the configured asks path instead of silently disappearing [review: engine lead]
 # - invalid settings and dangling adopted references cannot receive a valid report; collector-only form errors remain separate [review: engine lead]
 # - empty folders do not count as chapter or cycle content [review: engine lead]
 # - own-file checks name every selected finding without certifying unrelated files or publication [review: engine lead]
@@ -319,9 +319,9 @@ def _check(instance, selected=None):
     search_index = index(searches, 'search')
     index(memory_rows, 'memory')
     items = index([(path, item) for path, row in memory_rows for item in (row.get('items', []) if isinstance(row.get('items', []), list) else [])], 'memory item')
-    versions_rows, cases_rows, requests_rows = rows('versions'), rows('cases'), rows('questions')
+    versions_rows, cases_rows, asks_rows = rows('versions'), rows('cases'), rows('asks')
     versions, cases = index(versions_rows, 'question'), index(cases_rows, 'case')
-    requests, answers = index(requests_rows, 'request'), index(rows('answers'), 'answer')
+    requests, answers = index(asks_rows, 'ask'), index(rows('answers'), 'answer')
     imports = index(rows('imports'), 'import')
     grounds = set(records) | set(items) | set(imports) | {'host'}
 
@@ -437,6 +437,8 @@ def _check(instance, selected=None):
         if not chosen(path):
             continue
         required(row, 'id told_by date items', path)
+        if row.get('visibility', 'family') not in ('family', 'search-only'):
+            fail(path, 'memory visibility must be family or search-only', 'instance.required-identity-privacy-fields-or-executable-collection')
         for item in row.get('items', []):
             required(item, 'id text strength witness', path)
             if item.get('strength') not in {'firm', 'hearsay'}:
@@ -480,23 +482,18 @@ def _check(instance, selected=None):
         if row.get('state') == 'waiting-for-family':
             ref(row.get('waiting_on'), requests, path)
         provenance(row.get('basis'), path)
-    for path, row in requests_rows:
-        if not chosen(path):
-            continue
-        required(row, 'id case question our_version paper why_this_paper outcomes addressee holder_reason state', path)
-        for person in row.get('people', []):
-            ref(person, people, path)
-        # An addressee is a role of the family (the host, the narrator named in the tree
-        # metadata, some relative) or one person of the working tree.
-        if row.get('addressee') not in {'host', 'relative', 'narrator'}:
-            ref(row.get('addressee'), people, path)
-        ref(row.get('case'), cases, path)
-        question_ref(row, path)
-        if row.get('state') == 'answered':
-            required(row, 'answer', path)
-            ref(row.get('answer'), answers, path)
+    from .asks import validate as validate_ask
     from .correspondence import aim_versions, validate as validate_correspondence
     correspondence_versions = aim_versions(versions.values())
+    for path, row in asks_rows:
+        if not chosen(path):
+            continue
+        try:
+            validate_ask(row, people, correspondence_versions)
+        except (ValueError, TypeError, KeyError) as exc:
+            fail(path, str(exc), 'instance.required-identity-privacy-fields-or-executable-collection-container')
+        ref(row.get('answer'), answers, path)
+        ref(row.get('case'), cases, path)
     for path, row in rows('correspondence'):
         if not chosen(path):
             continue

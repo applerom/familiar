@@ -26,7 +26,7 @@ COST = {'free': 1, 'unknown': .8, 'paid': .6}
 OPEN_LETTERS = {'draft', 'ready', 'sent'}
 
 
-def rank(instance, data, entries, versions, w):
+def rank(instance, data, entries, versions, w, *, stale_asks=None):
     from familiar.research.coverage import family_lines, settings, surname_keys
     from familiar.tree.builder import _build, read_json
 
@@ -68,15 +68,18 @@ def rank(instance, data, entries, versions, w):
                            if (text := data.text(value, people))), item['settles'])
             item['relevance'] = w['settled'].format(what=reason) if reason else w['settled_unknown']
         item['shelved'] |= settled
-        reply = row['replies'][-1] if row.get('replies') else {}
-        context = reply_context(row)
-        stale = (reply.get('outcome') == 'dont_know' or no_knowledge(reply.get('text', ''))) and (
-            reply.get('asked_with', context) == context)
+        if stale_asks is None:
+            reply = row['replies'][-1] if row.get('replies') else {}
+            context = reply_context(row)
+            stale = (reply.get('outcome') == 'dont_know' or no_knowledge(reply.get('text', ''))) and (
+                reply.get('asked_with', context) == context)
+        else:
+            stale = row['id'] in stale_asks
         value = aim.get('value', 0)
         value = value if type(value) in (int, float) and 0 <= value <= 1 else 0
         if not item['shelved']:
             item['score'] = value * line_weight * uncertainty * COST.get(item['cost'], .8) * (.5 if stale else 1)
-        if item['shelved'] or row['state'] not in OPEN_LETTERS:
+        if stale_asks is not None or item['shelved'] or row['state'] not in OPEN_LETTERS:
             continue
         # A linked version identifies the goal across differently worded routes.
         key = (item['line'].casefold(), frozenset(people),
@@ -111,7 +114,7 @@ def project(instance):
             raise ValueError('Correspondence aim refers to an unknown person; inspect ids with tree build --view working')
         if aim.get('version') is not None and aim['version'] not in versions:
             raise ValueError('Correspondence aim refers to an unknown version; inspect research versions')
-        for key, collection in (('question', 'versions'), ('request', 'questions')):
+        for key, collection in (('question', 'versions'), ('request', 'asks')):
             if row.get(key) and not data.find(collection, row[key]):
                 raise ValueError('Correspondence refers to an unknown ' + key)
         # References bind context, never become visible labels. Unlike generic
@@ -125,8 +128,8 @@ def project(instance):
             value = data._check_ids(value)
             return value
         context = [data.name(pid) for pid in row['people']]
-        request = data.find('questions', row.get('request'))
-        question = data.find('versions', row.get('question') or request.get('question'))
+        ask = data.find('asks', row.get('request'))
+        question, _ = versions.get(row.get('question') or ask.get('aim', {}).get('version'), ({}, {}))
         title = data.text(question.get('title'), row['people'])
         if title:
             context.append(title)

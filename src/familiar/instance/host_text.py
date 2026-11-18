@@ -6,7 +6,7 @@
 # - a next step changes with intake, answers, waiting and missing tests without writing inputs [review: cold reviewer]
 # CHANGES_WITH:
 # - MOD-INSTANCE-RESEARCH-FORMS (request and case storage vocabulary)
-# - forms/request.json (optional host-facing request fields)
+# - forms/ask.json (optional host-facing request fields)
 # - docs/gate.md (host explanation)
 # :END_MODULE_CONTRACT
 from datetime import date
@@ -15,47 +15,31 @@ from .host_language import HostData
 
 
 def _letter(data, request):
-    w = data.words
-    question = data.find('versions', request.get('question'))
-    subjects = data.subjects(question)
-    paper = data.text(request.get('paper'), subjects)
-    if not paper:
-        return w('withheld')
-    title = data.text(question.get('title'), subjects)
-    witness = data.text(request.get('witness_question'), subjects) or (w('witness', question=title) if title else '')
-    version = data.text(request.get('our_version'), subjects)
-    why = data.text(request.get('why_this_paper'), subjects) or w('withheld' if request.get('why_this_paper') else 'purpose_unknown')
-    is_self = request.get('addressee') == 'host'
-    call_as = data.call_as(request)
-    sender = data.personal_name(request.get('sender_name'))
-    return '\n\n'.join(filter(None, [
-        w('self_heading') if is_self else (w('greeting_named', name=call_as) if call_as else w('greeting')),
-        '' if is_self else w('purpose'),
-        witness,
-        w('our_version', version=version) if version else '',
-        w('request_self' if is_self else 'request', paper=paper, why=why),
-        data.text(request.get('paper_description'), subjects),
-        data.text(request.get('look_in'), subjects),
-        data.text(request.get('photograph'), subjects),
-        w('no_paper_self' if is_self else 'no_paper'),
-        '' if is_self else (w('closing_named', name=sender) if sender else w('closing')),
-    ]))
+    subjects = request['aim'].get('people', [])
+    holder = request['holder']
+    who = data.name(holder) if isinstance(holder, str) else data.text(holder.get('label') or holder.get('line'))
+    opener = request.get('opener')
+    if isinstance(opener, dict) and 'text' in opener:
+        opener = opener['text']
+    return '\n\n'.join(filter(None, [who, data.text(opener, subjects),
+        data.text(request['question'], subjects), data.text(request.get('photo_note'), subjects)]))
 
 
 def _next(data, today):
     w = data.words
     hints = []
-    for request in data.rows['questions']:
+    from .asks import current, latest_feedback, rows
+    latest = latest_feedback(r for _, r in rows(data.instance._inside('family/feedback/inbox')))
+    for request in data.rows['asks']:
         case = data.find('cases', request.get('case'))
-        question = data.find('versions', request.get('question'))
-        subjects = data.subjects(question)
-        paper = data.text(request.get('paper'), subjects)
-        if request.get('paper') and not paper:
-            hints.append(w('withheld'))
-        if not paper or request.get('state') == 'closed':
+        question = data.find('versions', request['aim'].get('version'))
+        subjects = request['aim'].get('people', [])
+        paper = data.text(request.get('photo_note') or request['question'], subjects)
+        state, _, _ = current(request, latest.get(request['id']))
+        if not paper or state in {'closed', 'private'}:
             continue
-        is_self = request.get('addressee') == 'host'
-        who = data.call_as(request) or w('relative')
+        holder = request['holder']
+        who = data.name(holder) if isinstance(holder, str) else data.text(holder.get('label') or holder.get('line')) or w('relative')
         if case.get('state') == 'bridged':
             papers = [data.find('records', rid) for rid in case.get('basis', [])]
             title = '; '.join(filter(None, (data.text(r.get('title'), data.subjects(r)) for r in papers if r)))
@@ -67,35 +51,29 @@ def _next(data, today):
         answer = data.find('answers', request.get('answer'))
         if not answer:
             answer = next((a for a in data.rows['answers'] if a.get('request') == request.get('id')), {})
-        if answer or request.get('state') in {'answered', 'not-presented'}:
-            if request.get('state') == 'not-presented':
-                fallback = data.text(request.get('host_next'), subjects) or w('choose_test')
-                hints.append(w('not_presented', paper=paper, next=fallback))
+        if answer or state == 'answered':
+            result = (data.text(answer.get('text'), subjects) if not request.get('tender') else '') or w('answer_open')
+            if question.get('status') in {'accepted', 'closed', 'resolved'}:
+                decision = data.text(question.get('summary'), subjects) or w('decision_unknown')
             else:
-                result = data.text(answer.get('text'), subjects) or w('answer_private')
-                if question.get('status') in {'accepted', 'closed', 'resolved'}:
-                    decision = data.text(question.get('summary'), subjects) or w('withheld' if question.get('summary') else 'decision_unknown')
-                else:
-                    decision = w('answer_open')
-                hints.append(w('answer', paper=paper, answer=result, decision=decision))
-        elif request.get('state') == 'asked':
+                decision = w('answer_open')
+            hints.append(w('answer', paper=paper, answer=result, decision=decision))
+        elif state in {'open', 'dont_know'} and request.get('asked_at'):
             try:
                 days = (today - date.fromisoformat(request['asked_at'][:10])).days
                 elapsed = w.days(max(0, days))
             except (KeyError, TypeError, ValueError):
                 elapsed = w('date_unknown')
-            hints.append(w('waiting_self', paper=paper, elapsed=elapsed) if is_self else
-                         w('waiting', paper=paper, who=who, elapsed=elapsed))
+            hints.append(w('waiting', paper=paper, who=who, elapsed=elapsed))
         else:
-            hints.append(w('draft_request_self', paper=paper) if is_self else
-                         w('draft_request', paper=paper, who=who))
+            hints.append(w('draft_request', paper=paper, who=who))
     for question in data.rows['versions']:
         if question.get('status') not in {'accepted', 'closed', 'resolved'} and not question.get('tests'):
             title = data.text(question.get('title'), data.subjects(question))
             if title:
                 hints.insert(0, w('no_test', question=title))
         elif question.get('status') not in {'accepted', 'closed', 'resolved'} and not any(
-                r.get('question') == question.get('id') and r.get('state') != 'closed' for r in data.rows['questions']):
+                r['aim'].get('version') == question.get('id') and r.get('state') != 'closed' for r in data.rows['asks']):
             test = next((data.text((t.get('text') or t.get('test')), data.subjects(question)) for t in question.get('tests', []) if (t.get('text') or t.get('test'))), '')
             if test:
                 title = data.text(question.get('title'), data.subjects(question))
@@ -166,8 +144,9 @@ def _summary(data, page_titles):
         if not title:
             questions.append(w('withheld'))
             continue
-        request = next((r for r in data.rows['questions'] if r.get('question') == question['id']), {})
-        paper = data.text(request.get('paper'), data.subjects(question))
+        ask = next((r for r in data.rows['asks'] if r['aim'].get('version') == question['id']
+                    and r['state'] not in {'private', 'closed'}), {})
+        paper = data.text(ask.get('photo_note') or ask.get('question'), data.subjects(question))
         questions.append(w('open_question', question=title, paper=paper or w('test_missing')))
     sections.append(w('questions') + '\n' + ('\n'.join(questions) or w('none')))
     sections.append(w('stories') + '\n' + ('\n'.join(page_titles) or w('none')))
@@ -182,7 +161,10 @@ def _build(instance, view, selection=None, feed=None, today=None):
     if view == 'confirmation':
         text = w('confirmation')
     elif view == 'requests':
-        requests = [r for r in data.rows['questions'] if not selection or r.get('id') == selection]
+        from .asks import current, latest_feedback, rows
+        latest = latest_feedback(r for _, r in rows(instance._inside('family/feedback/inbox')))
+        requests = [r for r in data.rows['asks'] if (not selection or r.get('id') == selection)
+                    and current(r, latest.get(r['id']))[0] != 'private']
         if selection and not requests:
             raise ValueError('No such family request.')
         text = '\n\n'.join(_letter(data, request) for request in requests) or w('no_requests')

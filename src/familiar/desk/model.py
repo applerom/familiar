@@ -83,7 +83,8 @@ def words(instance, language=None):
     base = read(bundled_root() / 'demo-english' / 'pack.toml')['desk']
     local = pack.get('desk', {})
     result = base | local | {'show': base['show'] | local.get('show', {}),
-                            'correspondence': base['correspondence'] | local.get('correspondence', {})}
+                            'correspondence': base['correspondence'] | local.get('correspondence', {}),
+                            'asks': base['asks'] | local.get('asks', {})}
     return result
 
 

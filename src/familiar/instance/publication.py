@@ -142,10 +142,9 @@ SCHEMAS['record'] = fields('interest', policy='never') | fields('id', 'reference
 # Storage-only forms have explicit never rules; diagnostics are not reader outputs.
 STORAGE_ONLY = {
     'archive-rights': 'schema_version kind holder declared_by declared_at effective_from permissions living_subject_consent',
-    'memory': 'id told_by date narrator items', 'version': 'interest id title line people status unknown_weight versions tests updated summary advice',
+    'memory': 'id told_by date narrator items visibility', 'version': 'interest id title line people status unknown_weight versions tests updated summary advice',
     'case': 'id question state waiting_on story_level basis narrative outcome waiting budget second_looks',
     'search': 'interest id at by source question query hits coverage meaning strict control saved result result_state provenance candidate_forms',
-    'request': 'id case question our_version paper why_this_paper outcomes addressee holder_reason state answer witness_question fallback priority asked_at answered_at paper_description look_in photograph call_as sender_name host_next migrated_correspondence',
     'correspondence': 'id title subject recipient channel destination follow_up language text people question request sender state sent replies closed_at priority cost cost_note kind how relevance aim',
     'answer': 'id request by at text', 'scenario': 'level basis through_object rows hardship_map not_taken',
     'privacy': 'closed_topics living living_rule people life_decisions',
@@ -314,6 +313,8 @@ def restrict_feed(instance, feed):
 
 
 def scan(instance, value, shape, *, host_private=False):
+    from .memory_visibility import require_displayable
+    require_displayable(instance, value)
     """Scan precisely what the declared projection can publish, in every language."""
     from familiar.checks.engine import load
     from familiar.rules.cascade import Registry

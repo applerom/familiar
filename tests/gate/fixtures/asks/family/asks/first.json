@@ -1,0 +1,8 @@
+{
+  "id": "first",
+  "holder": "p-daniel",
+  "about": {"person": "p-rosa"},
+  "state": "open",
+  "question": "What story did Rosa tell about the bell?",
+  "aim": {"people": ["p-rosa"], "value": 0.9}
+}

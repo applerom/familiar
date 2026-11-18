@@ -1,6 +1,7 @@
 import runpy
 import sys
 from pathlib import Path
+from shutil import copytree
 from types import SimpleNamespace
 
 
@@ -22,18 +23,34 @@ def test_personal_login_flow_is_not_replaced_by_ambient_requests(monkeypatch):
     assert auth['auth'](event)['statusCode'] == 400
 
 
-def test_desk_requires_host_decision(family):
-    import json, pytest; from familiar.desk.model import decision
-    with pytest.raises(ValueError, match='recorded host decision'): decision(family)
-    path = family.root / 'family/desk-access.json'; row = {'schema_version': 1, 'family_id': family.id, 'projection': 'reader-private', 'host': 'demo host', 'recipient': 'demo narrator', 'decided_at': '2026-11-13', 'reason': 'Invented personal review', 'dataset': 'accepted-family-reader', 'pages': ['reader', 'journal', 'stories', 'cases', 'plan', 'questions']}; path.write_text(json.dumps(row), encoding='utf-8')
-    assert decision(family)[1]; row['revoked'] = True; path.write_text(json.dumps(row), encoding='utf-8'); pytest.raises(ValueError, decision, family)
-
-
 def test_documents_rank_current_aims(family):
-    from shutil import copytree
     from familiar.desk.correspondence import project
     from familiar.desk.model import words
     copytree(Path(__file__).with_name('fixtures') / 'documents', family.root, dirs_exist_ok=True)
     page = project(family, words(family))[0]['desk/correspondence.html'].decode()
     assert page.index('data-recommend="free-route"') < page.index('data-recommend="paid-route"') < page.index('data-recommend="other-line"')
     assert page.index('>Ferrolho</h2>') < page.index('>Calhau</h2>') < page.index('>Set aside</h2>') < page.index('Already established:') < page.index('>No aim</h2>')
+
+
+def test_family_asks_carry_over_and_private_memory(family):
+    import json, pytest
+    from familiar.cli import main
+    from familiar.desk.build import assemble, hosted_files
+    from familiar.instance.asks import migrate
+    from familiar.instance.gate import publication
+    with pytest.raises(ValueError, match='recorded host decision'): assemble(family)
+    fixture = Path(__file__).with_name('fixtures') / 'asks'
+    copytree(fixture / 'family', family.root / 'family', dirs_exist_ok=True)
+    assert migrate(family) == 2 and migrate(family) == 0
+    page = assemble(family).files['desk/asks.html']
+    assert page.index(b'id="ask-first"') < page.index(b'id="ask-witness"')
+    envelope = json.loads(next((fixture / 'inbox').glob('*.json')).read_bytes())
+    copytree(fixture / 'inbox', family.root / 'family/feedback/inbox')
+    cli = lambda *args: main(['--root', str(family.root), *args])
+    assert cli('intake', 'feedback-draft', envelope['id'], '--output', 'inputs/reply.toml', '--id', 'private-telling') == 0
+    assert cli('intake', 'memory', str(family.root / 'inputs/reply.toml')) == 0
+    saved = json.loads((family.path('memory') / 'private-telling.json').read_bytes())
+    assert saved['visibility'] == 'search-only' and saved['items'][0]['text'] == envelope['text']
+    shared = hosted_files(assemble(family).files, personal=False, feedback_ids={envelope['id']})
+    reader = publication(family, 'reader', for_review=True).files()
+    assert all(envelope['text'].encode() not in raw for raw in (*shared.values(), *reader.values()))

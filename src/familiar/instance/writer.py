@@ -287,6 +287,7 @@ def fresh(instance):
     active = Instance(instance.root, host_paths={str(instance.root): instance.host_paths},
                       host_packs=instance._host_packs, legacy_rules=instance._legacy_rules)
     active._display_scope = getattr(instance, '_display_scope', False)
+    active._carry_over_asks = getattr(instance, '_carry_over_asks', False)
     active._research_work_scope = getattr(instance, '_research_work_scope', False)
     return active
 
@@ -311,6 +312,8 @@ def _inputs(instance):
     for key in DEFAULTS:
         if key in {'build', 'state', 'export'} | _SELECTED_ROOTS:
             continue
+        if key == 'questions' and not getattr(instance, '_carry_over_asks', False):
+            continue  # The retired path is read only by the carry-over command.
         if instance._display_scope:
             from .display import EXCLUDED
             if key in EXCLUDED:
@@ -566,7 +569,7 @@ def snapshot(instance):
 
 
 @boundary('transaction')
-def mutate(instance, changes=None, *, exclusive=(), working_journals=False, remove=None):
+def mutate(instance, changes=None, *, exclusive=(), working_journals=False, remove=None, expect=None):
     """Validate the changed items before touching a destination file.
 
     working_journals: a carry-over of search journals, which are working research; the
@@ -600,14 +603,17 @@ def mutate(instance, changes=None, *, exclusive=(), working_journals=False, remo
             preserve(before_json, json.loads(value))
     transaction = fresh(instance)
     transaction._research_work_scope = True
+    transaction._carry_over_asks = any(p.is_relative_to(instance.path('questions')) for p in remove)
     with snapshot(transaction) as (staged, before):
         if any(Path(p).exists() for p in exclusive):
             raise ValueError('refusing to replace existing family data')
-        for path, expected in remove.items():
+        for path, expected in (dict(expect or {}) | remove).items():
             target = _relative(staged.root, path.relative_to(instance.root))
-            if not target.is_file() or json.loads(target.read_bytes()) != expected:
-                raise ValueError('family input changed before move')
-            target.unlink()
+            raw = target.read_bytes() if target.is_file() else None
+            if raw is None or (raw if isinstance(expected, bytes) else json.loads(raw)) != expected:
+                raise ValueError('family input changed before mutation')
+            if path in remove:
+                target.unlink()
         for path, value in changes.items():
             target = _relative(staged.root, path.relative_to(instance.root))
             target.unlink(missing_ok=True)  # Detach an archive hard link before a staged edit.
@@ -899,6 +905,8 @@ def read_generation(instance, out):
         if hashlib.sha256(data).hexdigest() != manifest['files'][name]:
             raise ValueError('generation changed during read')
     _check_uses(instance, manifest)
+    from .memory_visibility import check_delivery
+    check_delivery(fresh(instance), files)
     return files
 
 
@@ -1195,12 +1203,15 @@ def store_desk(instance, bundle):
 def desk_upload(instance, *, personal):
     """Stage only the verified hosted projection; local owner bytes stay intact."""
     from familiar.desk.build import CheckedDesk, hosted_files
-    from familiar.desk.feedback import owner_only
+    from familiar.desk.feedback import owner_only, research_feedback
     from familiar.desk.model import source
     checked = CheckedDesk(instance)
-    public_ids = {p.stem for p in source(instance)._inside('family/feedback/inbox').glob('*.json')
-                  if not owner_only(json.loads(p.read_bytes()))}
+    active = source(instance)
+    public_ids = {p.stem for p in active._inside('family/feedback/inbox').glob('*.json')
+                  if not owner_only(row := json.loads(p.read_bytes())) and not research_feedback(row)}
     files = hosted_files(checked.files, personal=personal, feedback_ids=public_ids)
+    from .memory_visibility import check_delivery
+    check_delivery(active, files)
     with tempfile.TemporaryDirectory(prefix='familiar-desk-upload-') as directory:
         root = Path(directory)
         for name, content in files.items():

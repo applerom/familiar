@@ -1,0 +1,9 @@
+{
+  "id": "witness",
+  "addressee": "p-daniel",
+  "people": ["p-rosa"],
+  "state": "asked",
+  "our_version": "We found an old passenger list.",
+  "witness_question": "What was the island called?",
+  "paper": "Family photograph"
+}

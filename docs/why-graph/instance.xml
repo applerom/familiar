@@ -181,7 +181,6 @@
   <MODULE_CORRESPONDENCE ID="MOD-CORRESPONDENCE" FILE="src/familiar/instance/correspondence.py" STATE="IMPLEMENTED">
     <INVARIANT REVIEW="engine lead">Planning metadata and not-needed state can change without rewriting sent text or replies.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Letters without a destination retain text and literal reply history.</INVARIANT>
-    <INVARIANT REVIEW="engine lead">The relative-letter carry-over keeps the literal letter, reply history and original references in its new family question.</INVARIANT>
     <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_f5_undeclared_reader_fields_stay_private">Reply references select original bytes in private snapshots; inapplicable actions retain bytes and a processed reason without blocking later feedback; repeated sent is a no-op.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-FAMILY-WRITER"/>
   </MODULE_CORRESPONDENCE>
@@ -190,4 +189,11 @@
     <INVARIANT REVIEW="engine lead">Rank follows the current version weights, and authored relevance takes precedence over automatic explanations.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-PUBLICATION"/>
   </MODULE_CORRESPONDENCE_VIEW>
+  <MODULE_FAMILY_ASKS ID="MOD-FAMILY-ASKS" FILE="src/familiar/instance/asks.py" STATE="IMPLEMENTED">
+    <INVARIANT TEST="tests/gate/test_desk_guarantees.py::test_family_asks_carry_over_and_private_memory">Question ids and relative letters survive carry-over; private replies enter research memory while family output excludes them.</INVARIANT>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-FAMILY-WRITER"/>
+  </MODULE_FAMILY_ASKS>
+  <MODULE_MEMORY_VISIBILITY ID="MOD-MEMORY-VISIBILITY" FILE="src/familiar/instance/memory_visibility.py" STATE="IMPLEMENTED">
+    <INVARIANT TEST="tests/gate/test_desk_guarantees.py::test_family_asks_carry_over_and_private_memory">Search-only memory stays in research and source reuse stops display.</INVARIANT>
+  </MODULE_MEMORY_VISIBILITY>
 </Why_Graph_Shard>

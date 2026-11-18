@@ -1,0 +1,48 @@
+{
+  "id": "rosa-death-paper",
+  "holder": {
+    "line": "Ferrolho"
+  },
+  "about": {
+    "person": "p-rosa",
+    "line": "Ferrolho"
+  },
+  "opener": "Rosa came from near Amaro on the island.",
+  "question": "Did you keep any family papers? We’re looking for Rosa's death certificate.",
+  "hints": [],
+  "wants": [
+    "photo"
+  ],
+  "photo_note": "Rosa's death certificate",
+  "next_hint": "",
+  "aim": {
+    "people": [
+      "p-rosa"
+    ],
+    "value": 0.5,
+    "settles": "It may name her birthplace.",
+    "why_now": "",
+    "version": "rosa-birthplace",
+    "line": "Ferrolho"
+  },
+  "state": "proposed",
+  "legacy": {
+    "question": {
+      "_about": "Invented for the Familiar demo.",
+      "id": "rosa-death-paper",
+      "case": "rosa-calhau",
+      "question": "rosa-birthplace",
+      "our_version": "Rosa came from near Amaro on the island.",
+      "paper": "Rosa's death certificate",
+      "why_this_paper": "It may name her birthplace.",
+      "outcomes": {
+        "place-named": "Compare both versions with the named parish.",
+        "no-paper": "Make one bounded parish search."
+      },
+      "addressee": "host",
+      "holder_reason": "The host inherited the family papers.",
+      "state": "draft"
+    }
+  },
+  "case": "rosa-calhau"
+}

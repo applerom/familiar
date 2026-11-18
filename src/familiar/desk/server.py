@@ -18,7 +18,7 @@ from familiar.instance.writer import desk_feedback, encode
 from familiar.reader.server import LocalHandler
 
 from .build import CheckedDesk
-from .feedback import matches, receipt, received, validate
+from .feedback import matches, preserve_tender, receipt, received, research_feedback, validate
 
 
 def server(instance, port=0):
@@ -57,7 +57,7 @@ def server(instance, port=0):
                 items = []
                 for path in sorted(instance._inside('family/feedback/inbox').glob('*.json')):
                     item = json.loads(path.read_bytes())
-                    if item.get('id') in identities or matches(item, subject):
+                    if not research_feedback(item) and (item.get('id') in identities or matches(item, subject)):
                         items.append(item | receipt(instance, item['id']))
                 return self.reply(200, encode({'items': items}))
             try:
@@ -94,7 +94,7 @@ def server(instance, port=0):
                     return self.reply(200, encode({'id': data['id'], 'duplicate': True}))
                 from .model import decision
                 host = json.loads(decision(instance)[1])['host']
-                envelope = received(data) | {'sender': {'role': 'owner', 'username': host}}
+                envelope = received(preserve_tender(instance, data)) | {'sender': {'role': 'owner', 'username': host}}
                 desk_feedback(instance, data['id'], encode(envelope), local=True)
                 return self.reply(201, encode({'id': data['id']}))
             except (ValueError, TypeError, KeyError, UnicodeError):

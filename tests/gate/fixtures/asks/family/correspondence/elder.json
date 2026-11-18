@@ -1,0 +1,11 @@
+{
+  "id": "elder",
+  "channel": "relative",
+  "state": "ready",
+  "title": "Our family",
+  "recipient": "An elder",
+  "language": "en",
+  "text": "What do you remember about the island?",
+  "people": ["p-rosa"],
+  "sender": {"kind": "host", "name": "Invented relative"}
+}

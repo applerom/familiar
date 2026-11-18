@@ -97,7 +97,7 @@ class HostData:
         self.id_locations = {pid: instance.path('tree_snapshot') / 'people.json'
                              for pid in self.people}
         self.rows = {key: self._rows(key) for key in
-                     ('questions', 'answers', 'versions', 'cases', 'memory', 'records', 'correspondence')}
+                     ('asks', 'answers', 'versions', 'cases', 'memory', 'records', 'correspondence')}
         for name in ('people', 'families'):
             path = instance.path('tree_snapshot') / (name + '.json')
             self._ids(load(path, {}), path)
@@ -115,6 +115,9 @@ class HostData:
                                        + r')(?![\w-])') if self.ids else re.compile(r'(?!)')
 
     def _rows(self, key):
+        if key == 'memory':
+            from .memory_visibility import select
+            return [row for _, row in select(self.instance)[0]]
         path = self.instance.path(key)
         if not path.exists():
             return []

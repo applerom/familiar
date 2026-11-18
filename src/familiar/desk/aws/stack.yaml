@@ -172,6 +172,7 @@ Resources:
           import json
           import os
           import uuid
+          import re
           from datetime import datetime, timezone
           from urllib.parse import unquote
           import boto3
@@ -181,6 +182,28 @@ Resources:
               return {'statusCode': status, 'headers': {'content-type': 'application/json',
                   'cache-control': 'no-store', 'x-content-type-options': 'nosniff'},
                   'body': json.dumps(value)}
+          ASK_FIELDS = {'wants', 'private', 'tender', 'via_child', 'ask_state', 'ask_context'}
+
+          def ask_valid(data):
+              kind = data['kind']
+              if kind not in {'ask_answer', 'ask_state'}:
+                  return not any(k in data for k in ASK_FIELDS)
+              if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]{0,119}', data.get('ask_id', '')):
+                  return False
+              wants = data.get('wants', {})
+              state = data.get('ask_state', '')
+              context = data.get('ask_context', '')
+              if not all(type(data.get(k, False)) is bool for k in ('private', 'tender', 'via_child')):
+                  return False
+              if not isinstance(context, str) or context and not re.fullmatch('[0-9a-f]{16}', context):
+                  return False
+              if kind == 'ask_answer':
+                  return (not state and isinstance(wants, dict)
+                          and not set(wants) - {'name', 'patronymic', 'maiden', 'place', 'date', 'photo', 'story'}
+                          and all(isinstance(v, str) and len(v) <= 1000 for v in wants.values()))
+              return (not wants and isinstance(state, str) and (state in ('dont_know', 'private')
+                      or state.startswith('will_ask:') and 0 < len(state[9:]) <= 200))
+
           def owner_only(data):
               try:
                   page = unquote(data.get('page', ''), errors='strict').lower().split('?', 1)[0]
@@ -213,7 +236,7 @@ Resources:
                   for page in s3.get_paginator('list_objects_v2').paginate(Bucket=os.environ['BUCKET'], Prefix='feedback/inbox/'):
                       for obj in page.get('Contents', []):
                           item = json.loads(s3.get_object(Bucket=os.environ['BUCKET'], Key=obj['Key'])['Body'].read())
-                          if owner_only(item):
+                          if item.get('kind') in {'ask_answer', 'ask_state'} or owner_only(item):
                               continue
                           if item.get('id') in identities or subject and any(item.get(k) == subject for k in ('subject', 'anchor', 'question', 'ask_id', 'person')):
                               items.append({k: v for k, v in item.items() if k not in {'status', 'reply'}})
@@ -236,7 +259,7 @@ Resources:
                       raise ValueError()
                   if not 1 <= len(data.get('text', '').strip()) <= 6000 or len(data['text']) > 6000:
                       raise ValueError()
-                  if not data.get('kind', '').strip():
+                  if not data.get('kind', '').strip() or not ask_valid(data):
                       raise ValueError()
                   if data.get('kind') == 'add_person' and (not data.get('anchor') or data.get('relation') not in {'child', 'spouse', 'parent', 'father', 'mother', 'sibling', 'relative', 'self'}):
                       raise ValueError()
@@ -255,7 +278,7 @@ Resources:
                   return reply(400, {'error': 'invalid_feedback'})
               if owner_only(data):
                   return reply(403, {'error': 'owner_required'})
-              data = {k: v for k, v in data.items() if k in allowed or k == 'new_person'}
+              data = {k: v for k, v in data.items() if k in allowed or k == 'new_person' or k in ASK_FIELDS}
               key = 'feedback/inbox/' + identity + '.json'
               existing = s3.list_objects_v2(Bucket=os.environ['BUCKET'], Prefix=key, MaxKeys=1)
               if any(obj['Key'] == key for obj in existing.get('Contents', [])):

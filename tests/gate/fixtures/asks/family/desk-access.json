@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "family_id": "demo-ferrolho",
+  "projection": "reader-private",
+  "host": "Invented host",
+  "recipient": "Invented narrator",
+  "decided_at": "2026-11-13",
+  "reason": "Fictional privacy check",
+  "dataset": "accepted-family-reader",
+  "pages": ["reader", "journal", "stories", "cases", "plan", "questions"]
+}

@@ -75,6 +75,19 @@ def ingest(instance, data, kind, original=None, accepted_by=None):
     require_assertions(data)
     if not isinstance(data, dict) or any(not isinstance(data.get(k, []), list) for k in ('people', 'families', 'items')):
         raise ValueError('intake must be an object with people, families and items arrays')
+    visibility = data.get('visibility', 'family')
+    if kind == 'memory':
+        from .feedback import ask_private
+        for item in data.get('items', []):
+            locator = item.get('original', '')
+            if re.fullmatch(r'family/feedback/inbox/[0-9a-f-]{36}\.json', locator):
+                if ask_private(instance, read(instance._inside(locator), {})):
+                    visibility = 'search-only'
+        if visibility not in ('family', 'search-only'):
+            raise ValueError('Memory visibility must be family or search-only')
+    search_only = kind == 'memory' and visibility == 'search-only'
+    tree_people = [] if search_only else data.get('people', [])
+    tree_families = [] if search_only else data.get('families', [])
     ident = token(data["id"])
     digest = hashlib.sha256(json.dumps(data, sort_keys=True).encode()).hexdigest()
     if original:
@@ -88,7 +101,7 @@ def ingest(instance, data, kind, original=None, accepted_by=None):
             raise ValueError("intake id already used with different content; use a new id")
         return prior
     snapshot = safe(instance, "tree_snapshot")
-    changes_tree = bool(data.get("people") or data.get("families"))
+    changes_tree = bool(tree_people or tree_families)
     people = read(snapshot / "people.json", {"people": []})["people"] if changes_tree else []
     families = read(snapshot / "families.json", {"families": []})["families"] if changes_tree else []
     known = {p["id"]: p for p in people}
@@ -128,7 +141,7 @@ def ingest(instance, data, kind, original=None, accepted_by=None):
             raise ValueError("every assertion must cite this intake or one of its memory items")
         return result
 
-    for row in data.get("people", []):
+    for row in tree_people:
         local = token(row["id"])
         if local in refs:
             raise ValueError("duplicate local person id")
@@ -225,7 +238,7 @@ def ingest(instance, data, kind, original=None, accepted_by=None):
                 candidates.append({'canonical': old['id'], 'alias': pid, 'status': 'candidate',
                                    'sources': sorted(grounds), 'evidence': evidence,
                                    'next_test': 'Compare dated records and relatives; never merge by name alone.'})
-    for row in data.get("families", []):
+    for row in tree_families:
         family = {
             "id": f"{ident}-{token(row['id'])}",
             "husband": refs.get(row.get("husband")),
@@ -263,6 +276,9 @@ def ingest(instance, data, kind, original=None, accepted_by=None):
     binary = None
     if kind == "memory":
         memory = {k: data[k] for k in ("id", "told_by", "date", "items")}
+        memory['visibility'] = visibility
+        if search_only:
+            memory.update({k: data[k] for k in ('people', 'families', 'narrator') if k in data and data[k]})
         if data.get('narrator') in refs:
             memory['narrator'] = refs[data['narrator']]
         for item in memory["items"]:
@@ -304,7 +320,7 @@ def ingest(instance, data, kind, original=None, accepted_by=None):
     # Keep provenance there as well as in the normalized snapshot.
     strengths = {item["id"]: item["strength"] for item in items}
     facts = {}
-    for row in data.get("people", []):
+    for row in tree_people:
         pid = refs[row["id"]]
         for field in ("names", "events", "notes"):
             for claim in row.get(field, []):
@@ -330,7 +346,7 @@ def ingest(instance, data, kind, original=None, accepted_by=None):
                         "sources": sources,
                     }
                 )
-    files[safe(instance, "contributions", f"intake/{ident}.json")] = {
+    contribution = {
         "update": {
             "person": next(iter(refs.values()), next(iter(known), None)),
             "title": "Family intake",
@@ -345,7 +361,9 @@ def ingest(instance, data, kind, original=None, accepted_by=None):
         "sources": {sid: {"kind": kind, "intake": ident} for sid in grounds},
     }
     if not changes_tree:
-        files[safe(instance, "contributions", f"intake/{ident}.json")].pop("update", None)
+        contribution.pop('update', None)
+    if not search_only:
+        files[safe(instance, 'contributions', f'intake/{ident}.json')] = contribution
     for path in [*files, *([binary] if binary else [])]:
         if path.exists():
             raise ValueError(f"refusing to replace existing source: {path}")
@@ -364,7 +382,7 @@ def ingest(instance, data, kind, original=None, accepted_by=None):
         files[snapshot / 'people.json'] = {'people': people}
         files[snapshot / 'families.json'] = {'families': families}
     narrator = data.get('narrator') or (data.get('told_by') if data.get('told_by') in refs else None)
-    if narrator:
+    if narrator and not search_only:
         if narrator not in refs:
             raise ValueError('narrator must name a local person id')
         metadata_path = safe(instance, 'tree_metadata')

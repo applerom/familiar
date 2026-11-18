@@ -2,6 +2,7 @@
 id="bea-telling"
 told_by="host"
 date="2026-11-12"
+visibility = "family" # Use "search-only" to retain a telling solely for research.
 [[items]]
 id="bea-memory-name"
 text="Bea Example lived in a city. Her family remembers her life as 1880 to 1955."

@@ -164,7 +164,7 @@ card_reviews = "tree/card-reviews.json"
 tree_metadata = "tree/metadata.json" # import origins, root, original-card and removed-edge annotations
 cases = "cases"
 versions = "versions"
-questions = "family/questions"
+asks = "family/asks"
 answers = "family/answers"
 memory = "family/memory"
 privacy = "family/privacy.json"            # closed topics and people: data, not rules
@@ -406,25 +406,10 @@ retains the earlier `name` and `names` in `nameHistory`, with author and
 contribution locator. A named card still refuses replacement; use a separate
 evidence decision for a correction. No duplicate person or merge is needed.
 
-**Text for the host.** `family requests [REQUEST] --text` renders one letter per
-paper, with a greeting, family-history purpose, an unprompted question before
-our version, one paper and why, a useful no-paper answer and a closing.
-Request `question` is a versions-file ID; optional `witness_question` is the
-unprompted memory question asked before `our_version`, as the supplied form shows.
-`research form request` prints the JSON template and its storage instruction:
-`family/questions/<id>.json`, or configured `paths.questions` (`instance paths`).
-JSON/JSONL files mistakenly saved in `family/requests` outside that configured
-collection produce a validation diagnostic with the destination; host output
-refuses the misplaced input instead of silently claiming there are no requests.
-Request `call_as` is the host's ready-to-use form of address, never inferred
-from the full name; `sender_name` supplies the signature. Both are optional:
-without them the pack supplies a neutral greeting and thank-you. Optional
-`paper_description`, `look_in`, `photograph` supplies specific instructions;
-absent paragraphs are omitted, never inferred from a title. An absent question
-or version has no filler paragraph. A request addressed to `host` is a home-search
-note, with its own next step and no wait for a reply to oneself. Researcher-only
-`fallback`, `outcomes` and test instructions never become host advice; optional
-`host_next` is the separate host-facing next step. Paper citations use semicolons.
+**Text for the host.** `family requests [ASK] --text` reads the witness, opener,
+question and photo note from `family/asks/<id>.json`, or configured `paths.asks`.
+`research form ask` prints the template. `family ask migrate` carries older
+questions and relative letters over to this collection.
 `feed pages [FEED] --text [--page CHAPTER]` reads title, story, children's block
 and support; its first line calls unreviewed, released or changed material a
 draft. A current independent reading of the source page permits the reviewed
@@ -1657,7 +1642,12 @@ attestations across different projections or permissions.
 ## Private narrator desk
 <!-- PRD_ANCHOR: FAMILY-DESK -->
 
-The owner's Documents page keeps prepared external letters beside family questions.
+Relatives groups open conversation prompts by living witness and ranks them by
+their aim and its current version. The desk shows prompts in the matching feed
+step and person card. Private ask feedback stays in research memory with
+`visibility: search-only`. It cannot enter the family reader or hosted desk.
+
+The owner's Documents page keeps prepared external letters beside family asks.
 `family/correspondence` (or `paths.correspondence`) stores recipient, channel
 (`forum`, `archive`, `message`), optional destination email/HTTP(S) URL, reply
 URL, recipient language, literal text, person/question/request references and a
@@ -1667,9 +1657,9 @@ date, origin, original UTF-8 bytes and the researcher's interpretation.
 An interpretation is research advice; it never changes the tree automatically.
 Letters can carry an `aim` with people, line, version, expected result (`settles`),
 value between 0 and 1, and the reason to act now (`why_now`). The person and
-version references resolve against the working family. We move old relative letters
-to the existing family question and answer forms with `migrate-relatives`, retaining
-the letter and literal reply history in the question's storage-only record.
+version references resolve against the working family. `family ask migrate`
+carries old questions and relative letters to `family/asks`, preserving the
+letter and literal replies alongside the new form.
 
 `research form correspondence` supplies a fictional example. Under
 `family correspondence`, use `create FILE`, `update ID PATCH`, `sent ID --by NAME`,

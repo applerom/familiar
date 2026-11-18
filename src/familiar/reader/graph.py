@@ -26,9 +26,9 @@ from familiar.tree.builder import _build, read_json
 
 def intake_prose(instance, graph):
     """Present stored intake assertions; keep originals and provenance untouched."""
+    from familiar.instance.memory_visibility import select
     memories = {}
-    for path in instance.path('memory').glob('*.json'):
-        memory = read_json(path, {})
+    for _, memory in select(instance)[0]:
         for item in memory.get('items', []):
             memories[item['id']] = (memory, item)
     records = {r.get('id'): r for path in instance.path('records').rglob('*.json')

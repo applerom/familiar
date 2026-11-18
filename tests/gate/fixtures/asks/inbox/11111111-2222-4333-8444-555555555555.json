@@ -1,0 +1,11 @@
+{
+  "id": "11111111-2222-4333-8444-555555555555",
+  "schema_version": 1,
+  "received_at": "2026-11-18T12:00:00+00:00",
+  "kind": "ask_answer",
+  "ask_id": "first",
+  "page": "/desk/asks.html",
+  "private": true,
+  "text": "The red teapot kept a note under its lid.",
+  "wants": {"story": "An invented family memory"}
+}

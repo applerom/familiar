@@ -99,7 +99,7 @@ def run(args):
                                 "exists": instance.path(key).exists(),
                                 "origin": "host" if key in instance.host_paths else
                                 "set" if key in instance.overrides else "default"}
-                              for key in DEFAULTS] + [
+                              for key in DEFAULTS if key != 'questions'] + [
                                   {"key": "pack:" + pack['id'], "path": str(pack['path']),
                                    "exists": pack['path'].exists(), "origin": pack['origin']}
                                   for pack in [*instance.packs, *instance.language_pack_data.values()]

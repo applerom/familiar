@@ -15,6 +15,8 @@ import uuid
 from datetime import UTC, datetime
 from urllib.parse import unquote
 
+from familiar.instance.asks import FEEDBACK, WANTS, key
+
 FIELDS = {'id', 'text', 'kind', 'page', 'person', 'question', 'ask_id', 'finding',
           'client_time', 'subject', 'anchor', 'relation', 'place', 'where', 'screen',
           'feed', 'step', 'text_mode', 'language', 'selection', 'viewport',
@@ -61,6 +63,40 @@ def owner_only(data):
             or page.startswith('/desk/correspondence'))
 
 
+def ask_valid(data):
+    kind = data['kind']
+    if kind not in FEEDBACK:
+        return not any(k in data for k in ('wants', 'private', 'tender', 'via_child', 'ask_state', 'ask_context'))
+    key(data.get('ask_id'))
+    wants = data.get('wants', {})
+    state = data.get('ask_state', '')
+    context = data.get('ask_context', '')
+    if not all(type(data.get(k, False)) is bool for k in ('private', 'tender', 'via_child')):
+        return False
+    if not isinstance(context, str) or context and (len(context) != 16 or any(c not in '0123456789abcdef' for c in context)):
+        return False
+    if kind == 'ask_answer':
+        return (not state and isinstance(wants, dict) and not set(wants) - set(WANTS)
+                and all(isinstance(v, str) and len(v) <= 1000 for v in wants.values()))
+    return (not wants and isinstance(state, str) and (state in ('dont_know', 'private')
+            or state.startswith('will_ask:') and 0 < len(state[9:]) <= 200))
+
+
+def research_feedback(data):
+    return data.get('kind') in FEEDBACK
+
+
+def preserve_tender(instance, data):
+    """Bind a local answer to the current ask before storing the literal envelope."""
+    if research_feedback(data):
+        from familiar.instance.asks import get
+        from .model import source
+        _, ask = get(source(instance), data['ask_id'])
+        if ask.get('tender') or ask.get('state') == 'private':
+            return data | {'tender': True, 'private': True}
+    return data
+
+
 def validate(body):
     if len(body) > 20000:
         raise ValueError('too_large')
@@ -74,7 +110,7 @@ def validate(body):
         raise ValueError('invalid_feedback')
     if data.get('kind') == 'add_person' and (not data.get('anchor') or data.get('relation') not in RELATIONS):
         raise ValueError('invalid_feedback')
-    if not new_person_valid(data):
+    if not new_person_valid(data) or not ask_valid(data):
         raise ValueError('invalid_feedback')
     from familiar.instance.correspondence import ACTIONS, token
     if data['kind'] in ACTIONS:

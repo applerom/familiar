@@ -134,7 +134,7 @@ def request(url, *, authorization=None, data=None, method=None, follow_redirects
 
 
 def _anonymous(state):
-    for path in ('/', '/graph.json', '/reader-manifest.json', '/api/feedback', '/desk/questions.html'):
+    for path in ('/', '/graph.json', '/reader-manifest.json', '/api/feedback', '/desk/asks.html'):
         status, _, headers = request(state['url'] + path, follow_redirects=False)
         if state.get('login_mode') == 'personal':
             if status != 302 or headers.get('location') != '/auth/login':
@@ -346,7 +346,7 @@ def verify(instance):
     _anonymous(state)
     if state.get('login_mode') != 'personal':
         auth = _authorization(state)
-        for path in ('/', '/graph.json', '/reader-manifest.json', '/desk/questions.html', '/desk/progress.html'):
+        for path in ('/', '/graph.json', '/reader-manifest.json', '/desk/asks.html', '/desk/progress.html'):
             status, _, _ = request(state['url'] + path, authorization=auth)
             if status != 200:
                 raise ValueError(f'Authenticated delivery check failed ({status})')

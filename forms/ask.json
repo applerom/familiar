@@ -1,0 +1,23 @@
+{
+  "_about": "Fictional sample. Use family ask create; the default location is family/asks.",
+  "id": "rosa-parish-with-daniel",
+  "holder": "p-daniel",
+  "about": {"person": "p-rosa", "line": "Calhau", "place": "Lajedo do Vento"},
+  "opener": {"text": "We found a passenger list that places Rosa on the island.", "record": "rec-santa-ludovina-1921-14"},
+  "question": "Do you remember what Rosa called the village where she grew up?",
+  "question_child": "Ask Daniel if he remembers the name of Rosa’s village.",
+  "hints": ["Maybe it was near the harbour?", "Did she tell a story about the church bell?"],
+  "wants": ["place", "story", "photo"],
+  "tender": false,
+  "occasion": "A good question to bring along when the family visits the island.",
+  "aim": {
+    "people": ["p-rosa"],
+    "line": "Calhau",
+    "version": "rosa-birthplace",
+    "settles": "The parish to look in for Rosa’s birth",
+    "value": 0.8,
+    "why_now": "Daniel remembers stories that his grandmother told at home."
+  },
+  "state": "proposed",
+  "next_hint": "If the name slips your mind, would a photograph of the church help?"
+}

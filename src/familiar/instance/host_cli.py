@@ -18,6 +18,8 @@ def register(commands):
     family = commands.add_parser('family', help='Read requests, next steps and a family summary as plain text')
     actions = family.add_subparsers(dest='host_view', required=True)
     from .correspondence import register as correspondence_commands
+    from .asks import register as ask_commands
+    ask_commands(actions)
     correspondence_commands(actions)
     for name, help_text in (
         ('requests', 'Letters ready for the host to forward to relatives'),

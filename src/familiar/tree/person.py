@@ -36,7 +36,7 @@ def person(instance, ident):
     def touches(row):
         data = row['data']
         from familiar.instance.subjects import explicit_subjects
-        return ident in canonical(explicit_subjects(data)) or data.get('question') in questions
+        return ident in canonical(explicit_subjects(data)) or (data.get('question') or data.get('aim', {}).get('version')) in questions
     result = {'id': ident, 'person': graph['people'][ident],
               'names': card.get('names', []), 'events': card.get('events', []),
               'snapshot_locator': str(snapshot.relative_to(instance.root)) if card else None,
@@ -45,7 +45,7 @@ def person(instance, ident):
               'identity_decisions': read_json(instance.path('identity_decisions'), {}),
               'versions': versions, 'sources': graph['sources'],
               'weight_note': 'Absent weights remain unknown. GEDCOM claims are unverified hypotheses recorded in another tree; firm attributed family memory is testimony, not documentary confirmation.'}
-    for key in ('cases', 'questions', 'records'):
+    for key in ('cases', 'asks', 'records'):
         result[key] = [r for r in _collect(instance.path(key)) if touches(r)]
     # Preserve claims verbatim; never assign a probability to an unweighted fact.
     from familiar.instance.gate import evaluate

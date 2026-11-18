@@ -22,7 +22,7 @@ from functools import cache
 from .subjects import normalized
 
 EXCLUDED = {'records', 'searches', 'originals', 'captures', 'imports', 'media', 'media_archive',
-            'cases', 'versions', 'questions', 'answers', 'correspondence', 'research_permission', 'variant_overrides',
+            'cases', 'versions', 'asks', 'questions', 'answers', 'correspondence', 'research_permission', 'variant_overrides',
             'working_version', 'card_reviews', 'associations'}
 
 

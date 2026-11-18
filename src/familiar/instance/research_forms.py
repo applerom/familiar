@@ -2,7 +2,7 @@
 # PURPOSE: Protect stored containers, finite probabilities and auditable acceptance decisions.
 # PRD_REF: docs/PRD.md#FORMS
 # INVARIANTS:
-# - request storage diagnostics respect the instance questions override [review: engine lead]
+# - ask storage diagnostics respect the instance asks override [review: engine lead]
 # - accepted assertions at every ingestion surface need strong status and auditable grounds [review: engine lead]
 # - optional interest stays separate from probability and reports malformed fields [review: engine lead]
 # - unknown numeric metadata is allowed; nonfinite numbers and invalid probabilities are refused [review: engine lead]
@@ -55,10 +55,10 @@ def require_container(path, value, *, form=None):
 def request_storage_errors(instance):
     """Diagnose the tempting alternate folder without treating it as an input."""
     misplaced = instance._inside('family/requests')
-    questions = instance.path('questions')
+    questions = instance.path('asks')
     if misplaced.is_relative_to(questions):
         return []
-    return [(path, (f'Request stored outside paths.questions: move it to {questions}; '
+    return [(path, (f'Ask stored outside paths.asks: move it to {questions}; '
                     'inspect configured storage with instance paths.'))
             for path in sorted(misplaced.rglob('*'))
             if path.is_file() and path.suffix in {'.json', '.jsonl'}

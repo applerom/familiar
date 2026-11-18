@@ -1,12 +1,11 @@
 # START_MODULE_CONTRACT: MOD-CORRESPONDENCE
-# PURPOSE: Keep human-sent correspondence and literal replies beside family questions.
+# PURPOSE: Keep human-sent correspondence and literal replies beside family asks.
 # PRD_REF: docs/PRD.md#FAMILY-DESK
 # INVARIANTS:
 # - only the family writer changes records, original replies and feedback receipts [review: engine lead]
 # - feedback applies once with an owner; inapplicable actions are receipted with a reason and never block intake [review: engine lead]
 # - owner correspondence is a sealed working view, never a reader field [review: engine lead]
 # - letters without a destination retain their text and literal reply history [review: engine lead]
-# - migration carries relative letters and their literal reply history into family questions [review: engine lead]
 # - hosted marks require an identified personal owner; loopback origin is explicit [review: engine lead]
 # CHANGES_WITH:
 # - MOD-FAMILY-GATE
@@ -60,7 +59,7 @@ def validate(row, *, migrating=False):
     channels = CHANNELS | {'relative'} if migrating else CHANNELS
     if row.get('state') not in STATES or row.get('channel') not in channels:
         if row.get('channel') == 'relative':
-            raise ValueError('Move relative letters with family correspondence migrate-relatives')
+            raise ValueError('Move relative letters with family ask migrate')
         raise ValueError('Unknown correspondence state or channel')
     if (aim := row.get('aim')) is not None:
         if not isinstance(aim, dict):
@@ -271,75 +270,11 @@ def change(instance, action, *, identity=None, value=None, by=None, at=None,
     return row['id']
 
 
-@boundary('transaction')
-def migrate_relatives(instance):
-    from .host_language import HostData
-    from .writer import mutate
-
-    entries = [(path, row) for path, row in rows(instance) if row.get('channel') == 'relative']
-    if not entries:
-        return 0
-    data = HostData(instance)
-    questions = instance.path('questions')
-    used = {row['id'] for row in data.rows['questions']}
-    moved = {prior['id']: row for row in data.rows['questions']
-             if isinstance(prior := row.get('migrated_correspondence'), dict) and 'id' in prior}
-    versions = aim_versions(data.rows['versions'])
-    changes, originals = {}, {}
-    answers = instance.path('answers')
-    used_answers = {row['id']: row for row in data.rows['answers']}
-    for path, row in entries:
-        validate(row, migrating=True)
-        identity = row['id']
-        originals[path] = row
-        if moved.get(identity, {}).get('migrated_correspondence') == row:
-            continue  # A previous process already wrote the answer and question.
-        while identity in used or (questions / (identity + '.json')).exists():
-            identity = 'relative-' + identity
-        used.add(identity)
-        linked = data.find('questions', row.get('request'))
-        aim = row.get('aim') or {}
-        question = row.get('question') or linked.get('question')
-        if not question and aim.get('version') in versions:
-            question = versions[aim['version']][0]['id']
-        request = {**linked, 'id': identity, 'question': question,
-                   'case': linked.get('case'), 'addressee': linked.get('addressee') or 'relative',
-                   'call_as': row['recipient'], 'sender_name': row['sender']['name'],
-                   'witness_question': row['text'], 'paper': linked.get('paper') or row['title'],
-                   'people': list(dict.fromkeys(row['people'] + aim.get('people', []))),
-                   'why_this_paper': linked.get('why_this_paper') or aim.get('settles'),
-                   'our_version': linked.get('our_version', ''),
-                   'holder_reason': linked.get('holder_reason', ''), 'outcomes': linked.get('outcomes', {}),
-                   'state': {'sent': 'asked', 'answered': 'answered', 'closed': 'closed',
-                             'not_needed': 'closed'}.get(row['state'], 'draft'),
-                   'migrated_correspondence': row}
-        for key in ('answer', 'asked_at', 'answered_at'):
-            request.pop(key, None)
-        if row.get('sent'):
-            request['asked_at'] = row['sent']['at']
-        if row.get('replies'):
-            reply = row['replies'][-1]
-            answer = identity + '-reply'
-            payload = {'request': identity, 'by': reply['by'], 'at': reply['at'], 'text': reply['text']}
-            while answer in used_answers or (answers / (answer + '.json')).exists():
-                if used_answers.get(answer) == payload | {'id': answer}:
-                    break  # This answer was written before the previous process stopped.
-                answer = 'relative-' + answer
-            request.update(answer=answer, answered_at=reply['at'])
-            if answer not in used_answers:
-                used_answers[answer] = payload | {'id': answer}
-                changes[answers / (answer + '.json')] = used_answers[answer]
-        changes[questions / (identity + '.json')] = request
-    mutate(instance, changes, exclusive=changes, remove=originals)
-    return len(entries)
-
-
 def register(actions):
     parser = actions.add_parser('correspondence', help='Letters prepared by agents and sent by people')
     commands = parser.add_subparsers(dest='correspondence_action')
     parser.add_argument('--text', action='store_true', help='List open correspondence as plain text')
     parser.set_defaults(run=execute)
-    commands.add_parser('migrate-relatives', help='Move relative letters and their history into family questions')
     for name in ('create', 'update', 'sent', 'reply', 'interpret', 'close'):
         command = commands.add_parser(name)
         if name != 'create':
@@ -372,8 +307,6 @@ def execute(args):
             result = publication(instance, 'correspondence')
             result.check(instance)
             print(result.data()['text'])
-        elif action == 'migrate-relatives':
-            print(f'Moved {migrate_relatives(instance)} relative letters to family questions')
         else:
             options = {k: getattr(args, k) for k in ('identity', 'by', 'at', 'source', 'meaning', 'reply_number', 'outcome')
                        if hasattr(args, k)}

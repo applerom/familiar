@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.38.0 — 18 November 2026
+
+- Relatives gathers conversation prompts by living witness, adds a mode for
+  grandchildren and brings open asks into the family feed and tree. Answers
+  marked private, including answers to tender asks, can stay in research memory.
+- Data: Run `family ask migrate` to carry `family/questions` and old `relative`
+  letters to `family/asks`, preserving question IDs, replies and original
+  references. Rebuild the desk and provision its stack to receive the new
+  feedback kinds in a hosted desk.
+
 ## 0.37.1 — 18 November 2026
 
 - A letter whose question has only a weak leading answer now ranks as fully

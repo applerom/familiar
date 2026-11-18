@@ -52,7 +52,7 @@ CHANGES_WITH:
     const w = words(), shell = document.querySelector('[data-feedback-screen]');
     const feed = document.querySelector('.feed-viewer'), panel = document.querySelector('.panel');
     const cardOpen = panel && (!matchMedia('(max-width:800px)').matches || panel.classList.contains('open'));
-    const screen = feed ? 'feed' : shell?.dataset.feedbackScreen || (location.pathname.includes('progress') || location.pathname.includes('questions') ? 'progress' : 'page');
+    const screen = feed ? 'feed' : shell?.dataset.feedbackScreen || (location.pathname.includes('progress') ? 'progress' : 'page');
     const data = {page: location.pathname + location.search + location.hash, screen,
       language: document.documentElement.lang, person: screen === 'tree' && cardOpen ? panel.dataset.feedbackPerson || '' : '',
       feed: feed?.dataset.feedbackFeed || '', step: feed?.dataset.feedbackStep || '', text_mode: feed?.dataset.feedbackTextMode || '',
@@ -109,7 +109,8 @@ CHANGES_WITH:
     if (!response.ok) throw new Error(words().failed);
     const acknowledgement = await response.json();
     if (acknowledgement.id !== item.id) throw new Error(words().failed);
-    remember(item); return item;
+    if (!['ask_answer', 'ask_state'].includes(item.kind)) remember(item);
+    return item;
   };
   function keepDraft() {
     if (draftKey) { drafts[draftKey] = {text: area.value, pending, context}; save(':drafts', drafts); }
@@ -192,7 +193,7 @@ CHANGES_WITH:
       const label = words()[link.dataset.deskLabel];
       if (label !== undefined && link.textContent !== label) link.textContent = label;
       const active = link.pathname === '/' ? location.pathname === '/' && link.hash === '#view=' + view
-        : location.pathname === link.pathname || location.pathname === '/desk/questions.html' && link.pathname === '/desk/progress.html';
+        : location.pathname === link.pathname;
       if (active) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current');
       if (active && activeLink !== link.href) {
         activeLink = link.href;

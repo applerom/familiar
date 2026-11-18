@@ -3,7 +3,7 @@
 # PRD_REF: docs/PRD.md#FAMILY-DESK
 # INVARIANTS:
 # - historical research labels use the shared effective life status after merges [review: engine lead]
-# - commit messages, search queries, paths and unaccepted person details never enter the show [test: tests/gate/test_desk_guarantees.py::test_desk_requires_host_decision]
+# - commit messages, search queries, paths and unaccepted person details never enter the show [review: engine lead]
 # - output contains ordered event pages and numeric weight history, never research timestamps [review: engine lead]
 # - absent reasons, source types and readings are never invented [review: engine lead]
 # - unfinished collector records and journal lines do not block or invalidate the derived investigation summary [review: engine lead]
@@ -45,7 +45,7 @@ def weight(value):
     return 0
 
 
-def project(active, graph, w):
+def project(active, graph, w, *, asks=()):
     """Read once; dates order events internally and are discarded before delivery."""
     inputs, listings = {}, {}
     collector_roots = {active.path(k) for k in ('records', 'searches')}
@@ -92,7 +92,7 @@ def project(active, graph, w):
     people = graph.get('people', {})
     from familiar.checks.engine import _known_people, life_status
     known = _known_people(active)
-    events, versions, lanes, asks, pending = [], [], [], [], []
+    events, versions, lanes, pending = [], [], [], []
     lanes.append({'id': 'tree', 'title': w['tree'], 'kind': 'tree'})
     lane_ids, version_paths = {}, {}
     def event(at, lane, kind, line, **extra):
@@ -252,18 +252,8 @@ def project(active, graph, w):
             for at, status, _ in entries:
                 if status == 'A':
                     event(at, 'tree', 'person', w['tree_extended'])
-    for _, row in rows(active.path('questions')):
-        if row.get('state') == 'closed' or row.get('addressee') == 'host' or row.get('migrated_correspondence'):
-            continue
-        text = public_line(row.get('witness_question'))
-        if text and len(asks) < 3:
-            asks.append({'id': row['id'], 'lane': lane_ids.get(row.get('lane') or row.get('question'), 'tree'),
-                         'text': text, 'why': public_line(row.get('why_this_paper')),
-                         'options': [public_line(o) for o in row.get('options', []) if public_line(o)][:4]})
-    reviewed_pending, answered = [], set()
+    reviewed_pending = []
     for path, row in rows(active._inside('family/feedback/inbox')):
-        if row.get('kind') == 'answer':
-            answered.add(row.get('ask_id') or row.get('question'))
         if row.get('kind') != 'add_person':
             continue
         if read(active._inside('family/feedback/read/' + path.name)):
@@ -293,7 +283,7 @@ def project(active, graph, w):
             'source_counts': dict(source_counts), 'outcomes': dict(outcomes), 'search_coverage': searched,
             'lanes': lanes, 'versions': versions, 'shifts': shifts[:4],
             'event_pages': [events[i:i + PAGE_SIZE] for i in range(0, len(events), PAGE_SIZE)],
-            'asks': [a for a in asks if a['id'] not in answered],
+            'asks': [a | {'lane': lane_ids.get(a['lane'], 'tree')} for a in asks],
             'pending': pending, 'reviewed_pending': reviewed_pending}, inputs, listings
 
 

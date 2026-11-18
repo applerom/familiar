@@ -20,6 +20,14 @@ from .core import read, safe, token
 from .table import toml
 
 
+def ask_private(instance, row):
+    from familiar.instance.asks import FEEDBACK, get
+    if row.get('kind') not in FEEDBACK:
+        return False
+    _, ask = get(instance, row['ask_id'])
+    return bool(row.get('private') or row.get('ask_state') == 'private' or ask.get('tender') or row.get('tender'))
+
+
 @boundary('writer')
 def prepare(instance, identities, output, ident=None, told_by='Рассказчик; уточнить исследователю'):
     ident = token(ident or 'feedback-' + uuid4().hex[:12])
@@ -31,6 +39,7 @@ def prepare(instance, identities, output, ident=None, told_by='Рассказч�
     people, families = people_index(graph), graph['families']
     data = {'id': ident, 'told_by': told_by, 'date': date.today().isoformat(), 'items': [], 'people': [], 'families': []}
     comments, refs, seen, inferred_families = [], {}, set(), {}
+    from familiar.instance.asks import FEEDBACK, get
 
     def existing(pid):
         if pid not in people:
@@ -55,6 +64,17 @@ def prepare(instance, identities, output, ident=None, told_by='Рассказч�
         strength = 'firm' if isinstance(np, dict) and np.get('known_from') == 'memory' else 'hearsay'
         data['items'].append({'id': source, 'text': row['text'], 'received_at': row.get('received_at', ''),
                               'original': original, 'witness': told_by, 'strength': strength})
+        if row.get('kind') in FEEDBACK:
+            _, ask = get(instance, row['ask_id'])
+            item = data['items'][-1]
+            for field in ('ask_id', 'wants', 'via_child', 'ask_state'):
+                if field in row:
+                    item[field] = row[field]
+            pid = ask.get('about', {}).get('person')
+            if pid in people:
+                item['person'] = people[pid]['id']
+            if ask_private(instance, row):
+                data['visibility'] = 'search-only'
         if row.get('kind') != 'add_person' or not isinstance(np, dict) or not np:
             comments.extend([f'# {identity}: свободный текст — заполните вручную:', '# [[people]]', f'# id = "person{len(seen)}"', f'# names = [{{given = "", type = "reported", provenance = ["{source}"]}}]', '# events = []', '# notes = []'])
             continue
@@ -125,6 +145,7 @@ def prepare(instance, identities, output, ident=None, told_by='Рассказч�
             comments.append(f'# {identity}: уточните родство {rel!r}, добавьте [[families]] вручную.')
             continue
         data['families'].append(fam)
+    data.setdefault('visibility', 'family')
     content = ('# Черновик: проверьте рассказчика, людей, родство и источники перед приёмом.\n' + '\n'.join(comments) + '\n').encode('utf-8') + toml(data)
     mutate(instance, {target: content}, exclusive=[target])
     return {'status': 'draft', 'draft': str(target), 'id': ident, 'items': len(data['items']), 'people': len(data['people']), 'families': len(data['families'])}

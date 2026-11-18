@@ -48,6 +48,8 @@ def hosted_files(files, *, personal, feedback_ids=()):
     if 'desk/feedback.json' in result:
         result['desk/feedback.json'] = encode({k: v for k, v in json.loads(result['desk/feedback.json']).items()
                                                if k in feedback_ids})
+    if not personal and 'desk/asks-reminders.json' in result:
+        result['desk/asks-reminders.json'] = encode([r for r in json.loads(result['desk/asks-reminders.json']) if not r['birthday']])
     if 'reader-manifest.json' in result:
         manifest = json.loads(result['reader-manifest.json'])
         manifest['files'] = {name: sha(result[name]) for name in manifest['files']}
@@ -133,35 +135,50 @@ def _assemble_checked(instance, active, config, delivered, watch, stamp, *, publ
     pages, inputs, listings = project(active, config, w)
     from .show import line_section, page as show_page, project as project_show
     graph = json.loads(delivery['graph.json'])
-    show, show_inputs, show_listings = project_show(active, graph, w['show'] | {'tree': w['tree']})
-    inputs.update(show_inputs)
+    inbox = active._inside('family/feedback/inbox')
+    inbox_paths, listings[inbox, '*.json'] = listing(inbox, '*.json')
+    inbox_rows = {p: json.loads(inputs.setdefault(p, p.read_bytes())) for p in inbox_paths}
+    summaries = []
+    if not public_reader:
+        from .asks import project as project_asks
+        asks, links, reminders, summaries, ask_inputs, ask_listings = project_asks(
+            active, graph, delivery, w, feedback=inbox_rows.values())
+        pages['desk/asks.html'] = asks
+        pages['desk/asks-links.json'] = encode(links)
+        pages['desk/asks-reminders.json'] = encode(reminders)
+        inputs.update(ask_inputs)
+        listings.update(ask_listings)
+    show, show_inputs, show_listings = project_show(active, graph, w['show'] | {'tree': w['tree']}, asks=summaries)
+    show_inputs.update(inputs)
+    inputs = show_inputs
     listings.update(show_listings)
     pages['desk/show.json'] = encode(show)
     lines = '' if public_reader else line_section(active, graph, w['show'])
     pages['desk/progress.html'] = show_page(active, w, 'desk/journal.html' in pages, lines=lines)
-    pages['desk/questions.html'] = pages['desk/progress.html']
     if not public_reader:
         from .correspondence import project as project_correspondence
         correspondence_pages, correspondence_inputs, correspondence_listings = project_correspondence(active, w)
         pages.update(correspondence_pages)
         inputs.update(correspondence_inputs)
         listings.update(correspondence_listings)
-    from .feedback import receipt, owner_only
-    inbox = active._inside('family/feedback/inbox')
-    inbox_paths, listings[inbox, '*.json'] = listing(inbox, '*.json')
+    from .feedback import owner_only, receipt, research_feedback
     def read_mark(path):
         raw = path.read_bytes() if path.is_file() else None
         inputs[path] = raw
         return raw
-    pages['desk/feedback.json'] = encode({p.stem: receipt(active, p.stem, read_mark) for p in inbox_paths if not owner_only(json.loads(p.read_bytes()))})
-    for item in inbox_paths:
-        inputs[item] = item.read_bytes()
+    pages['desk/feedback.json'] = encode({p.stem: receipt(active, p.stem, read_mark)
+        for p, row in inbox_rows.items() if not owner_only(row) and not research_feedback(row)})
+    from familiar.instance.memory_visibility import check_delivery
+    check_delivery(active, pages)
     if set(files) & (set(pages) | {'desk/desk.js', 'desk/desk.css', 'desk/words.json', 'robots.txt'}):
         raise ValueError('Reader resources collide with desk pages')
     files.update(pages)
     assets = package_files('familiar.desk').joinpath('assets')
     files.update({'desk/' + name: assets.joinpath(name).read_bytes()
                   for name in ('desk.js', 'desk.css', 'session.js', 'show.js', 'show.css', 'tree-add.js', 'tree-add.css', 'access.js', 'access.css', 'correspondence.js', 'correspondence.css')})
+    if not public_reader:
+        for name in ('asks.js', 'asks.css'):
+            files['desk/' + name] = assets.joinpath(name).read_bytes()
     files['desk/access.html'] = assets.joinpath('access.html').read_bytes()
     files['desk/words.json'] = encode(w | {'languages': {lang: words(instance, lang)
         for lang in instance.languages}, 'engine_version': __version__, 'build': build_id,
@@ -183,7 +200,7 @@ def _assemble_checked(instance, active, config, delivered, watch, stamp, *, publ
         navigation.append(('nav_photos', '/#view=photos'))
     navigation.append(('nav_progress', '/desk/progress.html'))
     if not public_reader:
-        navigation.append(('nav_correspondence', '/desk/correspondence.html'))
+        navigation[0:0] = [('nav_asks', '/desk/asks.html'), ('nav_correspondence', '/desk/correspondence.html')]
     links = ''.join('<a data-desk-label="' + label + '" href="' + href + '">'
                     + html.escape(w[label]) + '</a>' for label, href in navigation)
     banner = (styles + '<footer id="desk-footer"><aside id="desk-notice" role="note"><span class="desk-private-label">' + html.escape(w['private_notice']) + '</span>'
@@ -209,6 +226,9 @@ def _assemble_checked(instance, active, config, delivered, watch, stamp, *, publ
             if name == 'index.html':
                 files[name] += (b'<link rel="stylesheet" href="/desk/tree-add.css">'
                                 b'<script defer src="/desk/tree-add.js"></script>')
+            if not public_reader and name in {'index.html', 'desk/asks.html'}:
+                files[name] += (b'<link rel="stylesheet" href="/desk/asks.css">'
+                                b'<script defer src="/desk/asks.js"></script>')
     # HTML delivery includes the private notice; manifest digests describe those
     # delivered bytes, not the unwrapped source document.
     files['reader-manifest.json'] = encode({k: bundle[k] for k in ('schema_version', 'family_id', 'state')}
@@ -283,6 +303,9 @@ class CheckedDesk:
         changed.extend(name for name, data in files.items() if sha(data) != manifest['files'][name])
         if changed:
             raise ValueError('Desk changed while checking build: ' + ', '.join(changed))
+        self.active = source(self.instance)
+        self.memory = None
+        self.check_memory(files)
         self.files = files
         self.immutable_paths = {name for name in shell() if name.startswith('assets/')}
         self.etags = {name: '"' + sha(data) + '"' for name, data in files.items()}
@@ -297,6 +320,16 @@ class CheckedDesk:
             if self.invalid or self.stamp() != self.metadata:
                 self.invalid = True
                 raise ValueError('Desk changed; rebuild')
+            self.check_memory(self.files)
+
+    def check_memory(self, files):
+        from familiar.instance.memory_visibility import check_delivery, stamp
+        before = stamp(self.active)
+        if before != self.memory:
+            check_delivery(self.active, files)
+            if stamp(self.active) != before:
+                raise ValueError('Desk memory changed during review; retry')
+            self.memory = before
 
     def resource(self, name):
         with self.lock:

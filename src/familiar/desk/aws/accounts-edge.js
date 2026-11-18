@@ -38,7 +38,7 @@ async function handler(event) {
   }
   // Reader resources are allow-listed. New desk service pages default to owner-only.
   if (user.role !== 'owner' && (path === '/api/access' || path === '/desk' || path.indexOf('/desk/') === 0 &&
-      !/^\/desk\/(?:desk\.(?:js|css)|tree-add\.(?:js|css)|session\.js|words\.json|stories\/[a-z0-9_-]+\.html)$/.test(path))) {
+      !/^\/desk\/(?:desk\.(?:js|css)|tree-add\.(?:js|css)|asks\.(?:html|js|css)|asks-(?:links|reminders)\.json|session\.js|words\.json|stories\/[a-z0-9_-]+\.html)$/.test(path))) {
     return response(403, 'This page is for the family owner. / Эта страница доступна хозяину семьи.');
   }
   r.headers['x-familiar-user'] = {value: user.sub};

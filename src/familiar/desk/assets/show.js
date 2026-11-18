@@ -16,7 +16,6 @@ CHANGES_WITH:
     .map(async path => (await fetch(new URL(path, root))).json()));
   const interactive = !document.querySelector('meta[name="familiar-static-demo"]');
   const w = words.show, language = document.documentElement.lang;
-  const family = profile.family_id || profile.family?.id || document.title;
   const el = (tag, cls, text) => {
     const node = document.createElement(tag); if (cls) node.className = cls;
     if (text !== undefined) node.textContent = text; return node;
@@ -121,28 +120,14 @@ CHANGES_WITH:
     node.style.left = lane.x + 'px'; node.style.setProperty('--h', event.kind === 'cool' ? 'var(--version)' : heat(event.w_to ?? .5));
     g.append(node); row.append(g);
   }
-  let answered = {};
-  try { answered = JSON.parse(localStorage.getItem('familiar-desk-answers:' + family) || '{}'); } catch (_) { /* optional */ }
-  for (const ask of data.asks.filter(a => !answered[a.id])) {
+  for (const ask of data.asks) {
     const row = el('li', 'ask-row'), card = el('article', 'askcard'); gutter(row, {...ask, kind: 'ask'});
-    card.append(el('span', 'lbl', w.ask_label), el('p', '', ask.text));
-    if (ask.why) card.append(el('small', 'why', ask.why));
-    const chips = el('div', 'chips'), status = el('p'); status.setAttribute('role', 'status');
-    for (const option of interactive ? [...ask.options, w.ask_family, w.dont_know] : []) {
-      const button = el('button', '', option); button.type = 'button';
-      button.onclick = async () => {
-        if (!window.familiarDeskSend) return;
-        for (const b of chips.children) b.disabled = true;
-        try {
-          await window.familiarDeskSend({kind: 'answer', ask_id: ask.id, question: ask.id, text: option});
-          answered[ask.id] = option;
-          try { localStorage.setItem('familiar-desk-answers:' + family, JSON.stringify(answered)); } catch (_) { /* optional */ }
-          card.replaceChildren(el('p', '', words.received + '. ' + w.answer_saved));
-        } catch (error) { status.textContent = error.message; for (const b of chips.children) b.disabled = false; }
-      };
-      chips.append(button);
-    }
-    card.append(chips, status); row.append(card); document.querySelector('#show-asks').append(row);
+    const prompt = el('a', '', ask.text);
+    prompt.href = 'desk/asks.html#ask-' + encodeURIComponent(ask.id);
+    if (!document.querySelector('meta[name="familiar-static-demo"]')) prompt.href = '/' + prompt.getAttribute('href');
+    card.append(el('span', 'lbl', ask.holder), el('p', '', ''));
+    card.lastChild.append(prompt);
+    row.append(card); document.querySelector('#show-asks').append(row);
   }
   const log = document.querySelector('#show-log'), pagination = document.querySelector('#show-pagination');
   let current = 0;
