@@ -22,6 +22,7 @@ body:has(.ask-page) { margin: 0; }
 .ask-card:target > summary { box-shadow: inset 3px 0 var(--ember); }
 .ask-card > summary { display: grid; grid-template-columns: 168px minmax(0, 1fr); gap: 14px; align-items: start; padding: 10px 2px; list-style: none; cursor: pointer; }
 .ask-card > summary::-webkit-details-marker { display: none; }
+.desk-page a.ask-who { text-decoration: none; }
 .ask-who { display: grid; gap: 1px; justify-self: start; max-width: 100%; box-sizing: border-box; padding: 5px 9px; border: 1px solid var(--rule); border-radius: 7px; background: var(--sheet); color: var(--ink); font-size: 13px; line-height: 1.25; text-decoration: none; }
 a.ask-who:hover { border-color: var(--act); }
 .ask-who b { font-weight: 600; }

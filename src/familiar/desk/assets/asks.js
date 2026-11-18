@@ -87,7 +87,8 @@
       if (state === 'answered' || state === 'private') card.querySelector('.ask-answer').hidden = true;
     }
     function openTarget() {
-      const target = location.hash.startsWith('#ask-') && document.getElementById(decodeURIComponent(location.hash.slice(1)));
+      if (!location.hash.startsWith('#ask-')) return;
+      const target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
       if (target?.matches('.ask-card')) { target.open = true; target.scrollIntoView({block: 'start'}); }
     }
     async function send(card, fields) {
