@@ -68,6 +68,8 @@ and keep family details out of public issues.
 
 You are the intended reader of this repository.
 
+Already have a family archive? [Move it into Familiar](docs/moving-in.md).
+
 1. **Walk the first family:** [docs/first-family.md](docs/first-family.md) —
    install a tagged release, create an instance, take in memory and a paper,
    build the tree, write and review the first story, open the reader and the

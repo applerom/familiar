@@ -30,6 +30,7 @@ this file only routes you to them.
 4. Read `familiar --root <family-root> rules for <role>` (add `--feed <id>`
    for feed-specific work), then inspect `instance paths` and the task's forms.
 5. Take memory, papers, tables and decisions in through engine commands.
+   For an existing family archive, follow `docs/moving-in.md` in this release.
    Inputs you author as whole files — a feed's `feed.json`, `chapters.json`
    and `documents.json`, a versions file, the desk decision, the engine pin in
    `familiar.toml` — are written where `instance paths` and the form say, and

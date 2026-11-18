@@ -1,6 +1,8 @@
 <!-- PURPOSE: The agent's walk from an empty directory to a family that reads its first story locally. -->
 # First family: the agent's walk
 
+Already have a family archive? [Move it into Familiar](moving-in.md).
+
 This page is written for the agent. The host (the person whose family it is)
 chooses the family directory, tells memories, supplies home papers and reads
 the result; the agent uses the commands below and authors the explicitly named
