@@ -55,6 +55,7 @@
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INTAKE-CORE"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INTAKE-NAMES"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INTAKE-GEDCOM"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INTAKE-KINSHIP-CASE"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INTAKE-CLI"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INTAKE-PHOTO"/>
     <PRD_REF>docs/PRD.md#FEATURES</PRD_REF>
@@ -94,6 +95,13 @@
          unsupported adoption/role semantics remain explicit import losses. -->
   </MODULE_INTAKE_GEDCOM>
   <MODULE_INTAKE_CLI ID="MOD-INTAKE-CLI" FILE="src/familiar/intake/cli.py" STATE="IMPLEMENTED"/>
+  <MODULE_INTAKE_KINSHIP_CASE ID="MOD-INTAKE-KINSHIP-CASE" FILE="src/familiar/intake/kinship_case.py" STATE="IMPLEMENTED">
+    <INVARIANT TEST="tests/gate/test_kinship_case.py::test_kinship_case_keeps_research_and_its_evidence">Dependent copies preserve their shared argument chain; journal entries preserve the difference between a scoped zero and denied access.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">The original case bytes and normalized forms enter the family together without resolving identities or exposing unknown-life papers.</INVARIANT>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-FAMILY-WRITER"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-TREE-LIFE"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-SEARCH-LEDGER"/>
+  </MODULE_INTAKE_KINSHIP_CASE>
   <MODULE_INTAKE_PHOTO ID="MOD-INTAKE-PHOTO" FILE="src/familiar/intake/photo.py" STATE="IMPLEMENTED">
     <INVARIANT REVIEW="engine lead">One atomic intake binds every photo to the original bytes, safe display pixels and all identified subjects.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-FAMILY-GALLERY"/>

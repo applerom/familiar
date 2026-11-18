@@ -1,0 +1,3 @@
+relationship_id,person_a_id,relationship_type,person_b_id,status,confidence,supporting_artifact_ids,contradicting_artifact_ids
+R1,P2,parent-of,P1,corroborated,high,A1;A2,
+R2,P3,parent-of,P1,contradicted,high,,A1

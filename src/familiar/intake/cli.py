@@ -41,6 +41,10 @@ def register(commands):
             sub.add_argument("--id", required=True)
             sub.add_argument("--living-years", type=int, help='Must match the family registry privacy.living_years')
             sub.add_argument("--as-of")
+    case = actions.add_parser('kinship-case', help='Preview a kinship research case migration')
+    case.add_argument('input', type=Path, metavar='CASE')
+    case.add_argument('--id', required=True, help='Namespace for the imported case')
+    case.add_argument('--apply', action='store_true', help='Preserve and import the case (default: preview)')
     photo = actions.add_parser('photo', help='Attach one family photo or a CSV/TSV of photos')
     photo.add_argument('input', type=Path)
     photo.add_argument('--table', action='store_true', help='Columns: file, people, caption, received_from, when (optional)')
@@ -61,6 +65,11 @@ def run(args):
     try:
         instance = Instance(args.root)
         kind = args.intake_kind
+        if kind == 'kinship-case':
+            from .kinship_case import intake_case
+            report = intake_case(instance, args.input, args.id, apply=args.apply)
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+            return 0
         if kind == 'photo':
             from .photo import ingest as ingest_photo
             if args.table and (args.person or args.caption or args.when or args.received_from):
@@ -96,10 +105,10 @@ def run(args):
         return 0
     except (ValueError, OSError, KeyError, TypeError, RootNotFound, csv.Error) as exc:
         reason = f'{args.input}: {exc}'
-        if isinstance(exc, KeyError):
+        if isinstance(exc, KeyError) and args.intake_kind != 'kinship-case':
             reason += '; check required fields and local person keys: [[people]] id="local", existing="canonical-id"; record.people values use local keys'
         report = {"status": "rejected", "input": str(args.input), "reason": reason}
-        if instance:
+        if instance and args.intake_kind != 'kinship-case':
             diagnostic(instance, f"intake/rejected-{uuid4().hex}.json", report)
         print(json.dumps(report), file=sys.stderr)
         return 1

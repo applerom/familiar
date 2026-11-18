@@ -1,0 +1,4 @@
+person_id,preferred_label,living_status,candidate_status
+P1,Ada Loom,deceased,identified
+P2,Eli Loom,deceased,candidate
+P3,Eli Loom,unknown,candidate

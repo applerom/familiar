@@ -718,6 +718,13 @@ in .state/intake/<id>.json. A tag retained only in the original is a loss from
 the normalized forms. Unknown birth defaults living; otherwise no death and
 latest birth year newer than as-of year minus threshold means living.
 
+`intake kinship-case CASE --id ID` previews a UTF-8 register migration. With
+`--apply` one writer transaction preserves the full case ZIP in imports and
+saves namespaced cards, life decisions, attributed records, versions and
+coverage journals. Distinct candidates stay separate, dependent copies share
+one argument chain, and contradicted links stay in the research versions.
+See [Move a kinship research case](moving-from-kinship-research.md).
+
 Reports in .state/intake include digest, counts, losses, next_step and
 candidates. A repeated id with identical content is idempotent; changed content
 requires a new id. Existing IDs must be explicitly declared via existing;

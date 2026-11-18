@@ -1,0 +1,2 @@
+claim_id,claim_text,subject_person_ids,status,confidence,artifact_ids
+C1,Eli was Ada's father.,P1;P2,corroborated,high,A1;A2
