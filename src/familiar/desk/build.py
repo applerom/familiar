@@ -16,9 +16,11 @@
 # - reader and supplemental pages use one packaged page-top component with reserved control slots [review: browser walk]
 # - fictional demo exports use portable links and omit server-backed editing controls [review: engine lead]
 # - public-reader demos consume the public, independently read seal instead of the host-private projection [review: engine lead]
+# - the desk line front uses checked reader names and watches the research inputs from which its counts are derived [review: browser walk]
 # CHANGES_WITH:
 # - MOD-READER-SERVER (packaged shell manifest)
 # - MOD-FAMILY-WRITER (checked reader consumption and desk output)
+# - MOD-RESEARCH-COVERAGE (line front)
 # :END_MODULE_CONTRACT
 import html
 import json
@@ -80,10 +82,14 @@ class DeskBundle:
     stamp: object
     inputs: dict
     listings: dict
+    coverage_stamp: dict | None
 
     def check(self, instance):
+        from familiar.instance.writer import coverage_inputs
         if instance.root != self.instance.root or self.watch.stamp() != self.stamp:
             raise ValueError('desk source changed; rebuild')
+        if self.coverage_stamp is not None and coverage_inputs(source(instance)) != self.coverage_stamp:
+            raise ValueError('desk coverage inputs changed; rebuild')
         if any((p.read_bytes() if p.is_file() else None) != raw
                for p, raw in self.inputs.items()):
             raise ValueError('desk decision or selected page changed; rebuild')
@@ -106,6 +112,8 @@ def assemble(instance):
 
 
 def _assemble_checked(instance, active, config, delivered, watch, stamp, *, public_reader=False):
+    from familiar.instance.writer import coverage_inputs
+    coverage_stamp = None if public_reader else coverage_inputs(active)
     bundle = json.loads(delivered['bundle.json'])
     expected = 'clean' if public_reader else 'host-private'
     if bundle.get('state') != expected:
@@ -123,13 +131,14 @@ def _assemble_checked(instance, active, config, delivered, watch, stamp, *, publ
         'files': {name: sha(data) for name, data in delivery.items()}})
     from .pages import project
     pages, inputs, listings = project(active, config, w)
-    from .show import project as project_show
-    show, show_inputs, show_listings = project_show(active, json.loads(delivery['graph.json']), w['show'] | {'tree': w['tree']})
+    from .show import line_section, page as show_page, project as project_show
+    graph = json.loads(delivery['graph.json'])
+    show, show_inputs, show_listings = project_show(active, graph, w['show'] | {'tree': w['tree']})
     inputs.update(show_inputs)
     listings.update(show_listings)
     pages['desk/show.json'] = encode(show)
-    from .show import page as show_page
-    pages['desk/progress.html'] = show_page(active, w, 'desk/journal.html' in pages)
+    lines = '' if public_reader else line_section(active, graph, w['show'])
+    pages['desk/progress.html'] = show_page(active, w, 'desk/journal.html' in pages, lines=lines)
     pages['desk/questions.html'] = pages['desk/progress.html']
     if not public_reader:
         from .correspondence import project as project_correspondence
@@ -160,7 +169,6 @@ def _assemble_checked(instance, active, config, delivered, watch, stamp, *, publ
     files['robots.txt'] = b'User-agent: *\nDisallow: /\n'
     styles = ''.join('<link rel="stylesheet" href="/' + name + '">'
                      for name in files if name.startswith('assets/tokens-') and name.endswith('.css'))
-    graph = json.loads(delivery['graph.json'])
     people = list(graph.get('people', {}).values())
     navigation = [('tree_short', '/#view=tree')]
     if any(f.get('chapters') for f in graph.get('feeds', [])) or any(p.get('story') for p in people):
@@ -207,7 +215,7 @@ def _assemble_checked(instance, active, config, delivered, watch, stamp, *, publ
         | {'profile': 'reader-profile.json', 'files': {name: sha(files[name]) for name in delivery}})
     inputs[path] = raw
     inputs[instance.root / 'familiar.toml'] = (instance.root / 'familiar.toml').read_bytes()
-    result = DeskBundle(files, instance, watch, stamp, inputs, listings)
+    result = DeskBundle(files, instance, watch, stamp, inputs, listings, coverage_stamp)
     result.check(instance)
     return result
 

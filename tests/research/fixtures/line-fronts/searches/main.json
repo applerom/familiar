@@ -1,0 +1,23 @@
+{
+  "id": "main",
+  "at": "2026-11-18",
+  "question": "elder-parents",
+  "source": "obd-memorial",
+  "people": [
+    "father",
+    "sibling"
+  ],
+  "hits": 1,
+  "query": "Example",
+  "coverage": {
+    "forms": [
+      "Example"
+    ],
+    "read": 1
+  },
+  "by": {
+    "agent": "example",
+    "model": "gpt-6.2-sol",
+    "effort": "low"
+  }
+}

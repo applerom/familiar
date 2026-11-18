@@ -60,12 +60,13 @@ def register(commands):
     migrate.add_argument('--apply', action='store_true', help='Write the migrated journals through the family writer')
     migrate.add_argument('--executors', metavar='FILE', help='JSON map of executor labels or prefixes to recorded model and effort')
     migrate.add_argument('--legacy', action='append', metavar='PATH', help='Legacy SEARCHES*.jsonl file or directory inside the family (default: research/team)')
-    cover = actions.add_parser('coverage', help='Who was looked for in which source, when, by whom and how hard (reads the journal only)')
+    cover = actions.add_parser('coverage', help='Searches, read records and remaining gaps by person, source or family line')
     cover.add_argument('--person', help='One person: every source with dates and executors')
     cover.add_argument('--family', action='store_true', help='The whole person-by-source matrix (the default)')
     cover.add_argument('--recheck', nargs='?', type=int, const=15, metavar='N', help='The N most useful cells to look at again (default 15)')
+    cover.add_argument('--lines', action='store_true', help='The farthest known person, open parent versions and coverage gaps on each family line')
     cover.add_argument('--json', action='store_true', help='JSON instead of markdown')
-    cover.add_argument('--save', action='store_true', help='Also store the JSON as coverage.json in the instance state directory for the desk and the display')
+    cover.add_argument('--save', action='store_true', help='Also store the matrix and full queue in coverage.json in the instance state directory')
     parser.set_defaults(run=run)
     migrate.set_defaults(run=run_migrate)
     cover.set_defaults(run=run_coverage)
@@ -110,7 +111,7 @@ def run_migrate(args):
 def run_coverage(args):
     from .coverage import coverage
     try:
-        data, text = coverage(Instance(args.root), person=args.person, queue=args.recheck, save=args.save)
+        data, text = coverage(Instance(args.root), person=args.person, queue=args.recheck, lines=args.lines, save=args.save)
         print(json.dumps(data, ensure_ascii=False, indent=1) if args.json else text)
         return 0
     except (ValueError, OSError, KeyError, TypeError) as exc:

@@ -1040,7 +1040,7 @@ def desk_transition(instance, value):
         os.replace(temporary, path)
 
 
-def _coverage_inputs(instance):
+def coverage_inputs(instance):
     """Name, size and time of every file the host-private coverage block reads."""
     paths = set()
     for key in ('searches', 'records', 'versions'):
@@ -1083,7 +1083,7 @@ def desk_reader(instance, active):
             selected[str(active.root / 'familiar.toml')] = semantic_digest(config)
             # The "where it was looked for" block reads the host's own journals and
             # records, which the display snapshot does not hold.
-            selected['coverage'] = _coverage_inputs(instance)
+            selected['coverage'] = coverage_inputs(instance)
             from datetime import date
             key = content_digest(encode([selected, cache.contract(), date.today().isoformat(),
                 {str(p): input_digest(p) for p in method_root().rglob('*') if p.is_file()}]))

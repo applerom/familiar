@@ -1,0 +1,12 @@
+{
+  "sources": [],
+  "edges": [
+    {
+      "type": "parent",
+      "from": "spouse-father",
+      "to": "spouse",
+      "role": "father",
+      "status": "export"
+    }
+  ]
+}

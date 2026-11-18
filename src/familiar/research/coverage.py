@@ -8,6 +8,7 @@
 # - rows not in the ledger form are counted aside, not mixed into the matrix [review: engine lead]
 # - catalogue epoch/place mismatches leave the queue, never erase recorded searches; unknown geography remains eligible [review: engine lead]
 # - the life assessment excludes living and possibly living people from the recheck queue, counted separately [review: engine lead]
+# - collateral descendants stay outside the main planning denominator and queue; the line front derives from tree, versions and existing cells [review: engine lead]
 # - explicit people survive dictionary mismatch; local identity work precedes repeat searches and stopped sources wait [review: engine lead]
 # - local reviews assess record links only; no search strength, forms, yield or availability comes from them [review: engine lead]
 # CHANGES_WITH:
@@ -16,6 +17,7 @@
 # :END_MODULE_CONTRACT
 import json
 import re
+from collections import Counter, defaultdict
 from datetime import UTC, datetime
 
 from familiar.desk.search_volume import domain, name_key
@@ -33,6 +35,11 @@ GAP_STATES = {'access-gap', 'refused', 'not_ready', 'app_error', 'help-stop', 'c
 RANK = {'none': 0, 'gap': 1, 'unrecorded': 2, 'query-dubious': 2.5, 'zero-uncontrolled': 3, 'zero-controlled': 4, 'read': 4.5, 'found': 5}
 MARK = {'found': 'R', 'read': 'D', 'zero-controlled': 'Z', 'zero-uncontrolled': 'z', 'gap': '!', 'unrecorded': '?', 'query-dubious': 'Q', 'none': '.'}
 REASON = {'identity-unestablished': 15, 'identity-conflict': 16, 'source-stopped': 0, 'query-dubious': 4, 'not-searched': 5, 'access-gap': 4, 'outcome-unrecorded': 4, 'weak-only': 4, 'zero-without-control': 3, 'forms-missing': 2, 'forms-unassessed': 2, 'source-grown': 1}
+OPEN_EXCLUSIONS = {'accepted', 'closed', 'resolved', 'settled', 'rejected', 'superseded'}
+CLOSED_OPTIONS = OPEN_EXCLUSIONS | {'accepted_evidence', 'firm', 'refuted', 'discarded', 'dropped', 'ruled-out'}
+PARENT_QUESTION = re.compile(
+    r'\b(?:parents?|parentage|father|mother|paternity|maternity|родител\w*|отец|отца|матери|мать|'
+    r'отцовств\w*|материнств\w*|rodzic\w*|ojciec|ojca|matka|matki)\b', re.I)
 
 
 def control_basis(row):
@@ -63,7 +70,8 @@ def settings(instance):
     registry = Registry(method_root() / 'rules', instance)
     table = dict(registry.settings['research.search_strength']['default'])
     table.update(registry.resolve_setting('research.search_strength').value)
-    return table, registry.resolve_setting('research.recheck_strength').value
+    return (table, registry.resolve_setting('research.recheck_strength').value,
+            registry.resolve_setting('research.collateral').value)
 
 
 def strength(by, table):
@@ -107,7 +115,7 @@ def collect(instance):
     tree, resolver, versions = Tree(instance), Resolver(instance), read_versions(instance)
     from familiar.tree.birth_guess import apply as birth_guess
     birth_guess(instance, tree.graph, host_private=True)
-    table, threshold = settings(instance)
+    table, threshold, mode = settings(instance)
     cells, sources, legacy, no_people, unknown, titles, no_source = {}, {}, 0, 0, set(), {}, 0
     found_by_source, planning_events, source_access, access_journals = {}, {}, {}, {}
     reviews = {}
@@ -233,19 +241,31 @@ def collect(instance):
             who = cell['who'].setdefault((by.get('agent'), by.get('model'), by.get('effort')), {'passes': 0, 'strength': 0})
             who['passes'] += 1; who['strength'] = max(who['strength'], level)
             cell['strength'] = max(cell['strength'], level)
-    named = {pid for pid, _ in cells} | {p for v in versions.values() for p in v['people']}
-    focus = {p['id'] for p in (tree.person(x) for x in named) if p}
+    named = {pid for pid, _ in cells} | {p['id'] for v in versions.values() for ident in v['people']
+                                       if (p := tree.person(ident))}
+    from familiar.tree.builder import read_json
+    root = (read_json(instance.path('tree_metadata'), {}).get('root') or tree.graph.get('root')
+            or next(iter(tree.people), None))
+    root = tree.aliases.get(root, root)
+    distance = distances(tree.graph, root)
+    lines, collateral = family_lines(tree.graph, root)
+    main = {pid for line in lines for pid in line}
+    focus = (main | named) - collateral.keys()
+    side = sorted(collateral) if mode == 'full' else []
     data = {'tree': tree, 'resolver': resolver, 'versions': versions, 'table': table, 'threshold': threshold,
             'cells': cells, 'sources': sources, 'legacy': legacy, 'no_people': no_people, 'no_source': no_source, 'unknown': sorted(unknown),
-            'focus': sorted(focus), 'yield': found_by_source, 'titles': titles, 'distance': distances(instance, tree.graph),
+            'focus': sorted(focus), 'side': side, 'named': named, 'lines': lines,
+            'collateral': collateral, 'collateral_mode': mode,
+            'yield': found_by_source, 'titles': titles, 'distance': distance,
             'form_metadata': form_metadata(instance), 'planning_events': planning_events, 'source_access': source_access}
     # Each FamilySearch channel is independently eligible even if only one has a recorded visit.
     if any(s.startswith('familysearch') for s in sources):
         for sid in ('familysearch-tree', 'familysearch-records', 'familysearch-fulltext'):
             if sid in resolver.catalog.sources:
                 sources.setdefault(sid, {'rows': 0, 'people': set()})
-    contexts = {pid: planning_context(data, pid) for pid in focus}
-    data['not_applicable'] = {(pid, sid): applicability(data, pid, sid, contexts[pid]) for pid in focus for sid in sources}
+    contexts = {pid: planning_context(data, pid) for pid in [*focus, *side]}
+    data['not_applicable'] = {(pid, sid): applicability(data, pid, sid, context)
+                              for pid, context in contexts.items() for sid in sources}
     return data
 
 
@@ -256,12 +276,9 @@ def new_cell():
             'dictionary_mismatches': [], 'query_issues': [], 'query_scripts': set(), 'latest_refusal': None}
 
 
-def distances(instance, graph):
+def distances(graph, root):
     """Steps from the tree's root person through marriages and parent links; absent for people the root does not reach."""
-    from familiar.tree.builder import read_json
     people = graph.get('people', {})
-    root = read_json(instance.path('tree_metadata'), {}).get('root') or graph.get('root') or next(iter(people), None)
-    root = graph.get('identityAliases', {}).get(root, root)
     near = {}
     for family in graph.get('families', []):
         members = [family.get('husband'), family.get('wife'), *family.get('children', [])]
@@ -279,6 +296,74 @@ def distances(instance, graph):
                 seen[other] = seen[pid] + 1
                 queue.append(other)
     return seen
+
+
+def family_lines(graph, root):
+    """Father chains split at mothers; collateral people retain their ancestor anchors."""
+    people = graph['people']
+    children, spouses, siblings = (defaultdict(set) for _ in range(3))
+    fathers, mothers = defaultdict(set), defaultdict(set)
+    unsettled = {'hypothesis', 'conflict', 'rejected', 'disproved'}
+    for family in graph.get('families', []):
+        if family.get('status') in unsettled:
+            continue
+        father, mother = family.get('husband'), family.get('wife')
+        kids = set(family.get('children', [])) & people.keys()
+        if father in people and mother in people:
+            spouses[father].add(mother)
+            spouses[mother].add(father)
+        for child in kids:
+            siblings[child].update(kids)
+            for parent, role in ((father, fathers), (mother, mothers)):
+                if parent in people and parent != child:
+                    role[child].add(parent)
+                    children[parent].add(child)
+
+    # The working tree can have an accepted parent edge without a family group.
+    for edge in graph.get('edges', []):
+        parent, child = edge.get('parent'), edge.get('child')
+        if parent not in people or child not in people or parent == child or edge.get('status') in unsettled:
+            continue
+        if parent not in fathers[child] and parent not in mothers[child]:
+            role = edge.get('role')
+            is_father = role in {'father', 'отец', 'ojciec'} or (
+                role not in {'mother', 'мать', 'matka'} and str(people[parent].get('sex')).lower() == 'm')
+            (fathers if is_father else mothers)[child].add(parent)
+        children[parent].add(child)
+
+    starts = [root, *sorted(spouses[root] - {root})] if root in people else []
+    lines, ancestors, started = [], set(), set()
+    for start in starts:
+        if start in started:
+            continue
+        started.add(start)
+        chain, pid = [], start
+        while pid and pid not in chain:
+            chain.append(pid)
+            paternal, maternal = sorted(fathers[pid]), sorted(mothers[pid])
+            starts.extend([*maternal, *paternal[1:]])
+            ancestors.update([*paternal, *maternal])
+            pid = next(iter(paternal), None)
+        lines.append(chain)
+
+    main = {pid for chain in lines for pid in chain}
+    for pid in main:
+        for parent in fathers[pid] | mothers[pid]:
+            siblings[pid].update(children[parent])
+    collateral = defaultdict(set)
+    for ancestor in sorted(ancestors):
+        for sibling in sorted(siblings[ancestor] - main):
+            pending = sorted(children[sibling])
+            seen = main | {sibling}
+            for pid in pending:
+                if pid in seen:
+                    continue
+                seen.add(pid)
+                for relative in {pid, *spouses[pid]} - main:
+                    collateral[relative].add(ancestor)
+                pending.extend(sorted(children[pid]))
+    primary_siblings = set().union(*(siblings[pid] for pid in main))
+    return lines, {pid: anchors for pid, anchors in collateral.items() if pid not in primary_siblings}
 
 
 def planning_context(data, pid):
@@ -362,92 +447,171 @@ def cell_view(data, pid, sid):
                            for (a, m, e), v in cell['who'].items()), key=lambda w: (-w['strength'], str(w['agent'])))}
 
 
-def recheck(data, limit=None):
-    """Cells worth another look, most useful first: never looked, only weak passes, zero without control, missing forms."""
-    tree, threshold = data['tree'], data['threshold']
+def planning_sources(data):
     # A reference work (a dictionary, a law text) holds no person to look for.
     catalog = data['resolver'].catalog.sources
-    catalogued = sorted(s for s in data['sources'] if not s.startswith('~') and catalog.get(s, {}).get('kind') != 'reference')
-    open_people = {p for v in data['versions'].values() if v['status'] not in {'closed', 'settled'} for p in v['people']}
+    return sorted(s for s in data['sources'] if not s.startswith('~') and catalog.get(s, {}).get('kind') != 'reference')
+
+
+def planning_people(data, people):
+    return (pid for pid in people if data['tree'].graph['people'][pid].get('life_assessment', {}).get('status') == 'dead')
+
+
+def eligible_cells(data, people):
+    sources = planning_sources(data)
+    return ((pid, sid) for pid in planning_people(data, people) for sid in sources
+            if not data['not_applicable'].get((pid, sid)))
+
+
+def recheck(data, limit=None):
+    """Cells worth another look, most useful first within each search scope."""
+    tree, threshold = data['tree'], data['threshold']
+    catalog = data['resolver'].catalog.sources
+    open_people = {p['id'] for v in data['versions'].values()
+                   if v.get('status', v.get('state')) not in OPEN_EXCLUSIONS
+                   for ident in v['people'] if (p := tree.person(ident))}
     queue = []
-    for pid in data['focus']:
-        if tree.graph['people'][pid].get('life_assessment', {}).get('status') != 'dead':
+    for pid, sid in eligible_cells(data, [*data['focus'], *data['side']]):
+        view = cell_view(data, pid, sid)
+        kind, reasons = view['outcome'], []
+        action = 'search'
+        if view['identity'] in {'unestablished', 'conflict'}:
+            reasons.append('identity-conflict' if view['identity'] == 'conflict' else 'identity-unestablished')
+            action = 'link-record'
+        elif view['identity'] in {'same', 'other', 'context-only'} and not any(r.get('review') for r in view['record_links']):
             continue
-        for sid in catalogued:
-            if data['not_applicable'].get((pid, sid)):
-                continue
-            view = cell_view(data, pid, sid)
-            kind, reasons = view['outcome'], []
-            action = 'search'
-            if view['identity'] in {'unestablished', 'conflict'}:
-                reasons.append('identity-conflict' if view['identity'] == 'conflict' else 'identity-unestablished')
-                action = 'link-record'
-            elif view['identity'] in {'same', 'other', 'context-only'} and not any(r.get('review') for r in view['record_links']):
-                continue
-            elif view['availability'] and view['availability']['state'] == 'stopped':
-                reasons.append('source-stopped')
-                action = 'wait-for-access'
-            elif kind == 'none':
-                reasons.append('not-searched')
-            elif kind == 'query-dubious':
-                reasons.append('query-dubious')
-            elif kind in {'gap', 'unrecorded'}:
-                reasons.append('access-gap' if kind == 'gap' else 'outcome-unrecorded')
-            else:
-                if view['strength'] < threshold:
-                    reasons.append('weak-only')
-                if kind == 'zero-uncontrolled':
-                    reasons.append('zero-without-control')
-                if view['missing_forms']:
-                    reasons.append('forms-missing')
-                elif not view['plan_complete']:
-                    reasons.append('forms-unassessed')
-            updated = str(data['resolver'].catalog.sources.get(sid, {}).get('updated') or '')
-            if action == 'search' and updated and kind != 'none' and view['last'] and updated > view['last']:
-                reasons.append('source-grown')
-            if not reasons:
-                continue
-            score = sum(REASON[r] for r in reasons) + (pid in open_people) + (data['yield'].get(sid, 0) > 0)
-            if action == 'search':
-                source = catalog.get(sid, {})
-                fit = episode_fit(tree.graph['people'][pid], source)
-                score += fit
-                if fit > 0:
-                    reasons.append('known-episode')
-                years = source.get('years', [])
-                lower, _ = life_window(tree.graph['people'][pid])
-                if lower and len(years) == 2 and set(source.get('classes', [])) & {'military', 'award'} and years[1] - lower < 16:
-                    score -= 6
-                    reasons.append('child-at-source-epoch')
-            queue.append({'person': pid, 'name': tree.people[pid]['name'], 'source': sid, 'title': title(data, sid),
-                          'reasons': reasons, 'score': score, 'outcome': kind, 'strength': view['strength'],
-                          'last': view['last'], 'missing_forms': view['missing_forms'], 'action': action,
-                          'availability': view['availability'], 'record_links': view['record_links'],
-                          'latest_refusal': view['latest_refusal'],
-                          'query_issues': view['query_issues']})
-    queue.sort(key=lambda q: (-q['score'], q['person'], q['source']))
+        elif view['availability'] and view['availability']['state'] == 'stopped':
+            reasons.append('source-stopped')
+            action = 'wait-for-access'
+        elif kind == 'none':
+            reasons.append('not-searched')
+        elif kind == 'query-dubious':
+            reasons.append('query-dubious')
+        elif kind in {'gap', 'unrecorded'}:
+            reasons.append('access-gap' if kind == 'gap' else 'outcome-unrecorded')
+        else:
+            if view['strength'] < threshold:
+                reasons.append('weak-only')
+            if kind == 'zero-uncontrolled':
+                reasons.append('zero-without-control')
+            if view['missing_forms']:
+                reasons.append('forms-missing')
+            elif not view['plan_complete']:
+                reasons.append('forms-unassessed')
+        updated = str(catalog.get(sid, {}).get('updated') or '')
+        if action == 'search' and updated and kind != 'none' and view['last'] and updated > view['last']:
+            reasons.append('source-grown')
+        if not reasons:
+            continue
+        score = sum(REASON[r] for r in reasons) + (pid in open_people) + (data['yield'].get(sid, 0) > 0)
+        if action == 'search':
+            source = catalog.get(sid, {})
+            fit = episode_fit(tree.graph['people'][pid], source)
+            score += fit
+            if fit > 0:
+                reasons.append('known-episode')
+            years = source.get('years', [])
+            lower, _ = life_window(tree.graph['people'][pid])
+            if lower and len(years) == 2 and set(source.get('classes', [])) & {'military', 'award'} and years[1] - lower < 16:
+                score -= 6
+                reasons.append('child-at-source-epoch')
+        queue.append({'person': pid, 'name': tree.people[pid]['name'], 'source': sid, 'title': title(data, sid),
+                      'reasons': reasons, 'score': score, 'outcome': kind, 'strength': view['strength'],
+                      'last': view['last'], 'missing_forms': view['missing_forms'], 'action': action,
+                      'availability': view['availability'], 'record_links': view['record_links'],
+                      'latest_refusal': view['latest_refusal'],
+                      'query_issues': view['query_issues']})
+    queue.sort(key=lambda q: (q['person'] in data['collateral'], -q['score'], q['person'], q['source']))
     return queue[:limit] if limit else queue
 
 
-def matrix(data):
+def matrix_group(data, group):
     people = [{'id': pid, 'name': data['tree'].people[pid]['name'], 'distance': data['distance'].get(pid),
                'not_applicable': [sid for sid in data['sources'] if data['not_applicable'].get((pid, sid))],
                'cells': {sid: cell_view(data, pid, sid) for sid in data['sources'] if (pid, sid) in data['cells']}}
-              for pid in data['focus']]
+              for pid in group]
+    excluded = [data['not_applicable'][pid, sid] for pid in group for sid in data['sources']
+                if data['not_applicable'].get((pid, sid))]
+    return {'people': people, 'totals': {'people': len(people),
+            'cells': sum(len(p['cells']) for p in people),
+            'eligible_cells': sum(1 for _ in eligible_cells(data, group)),
+            'living_or_possibly_living': len(group) - sum(1 for _ in planning_people(data, group)),
+            'not_applicable': len(excluded), 'not_applicable_epoch': sum('epoch' in r for r in excluded),
+            'not_applicable_region': sum('region' in r for r in excluded)}}
+
+
+def collateral_hints(data):
+    if data['collateral_mode'] == 'off':
+        return []
+    hints = {}
+    for (pid, _), cell in data['cells'].items():
+        if pid in data['collateral']:
+            for link in cell['record_links']:
+                if link['status'] != 'other':
+                    hints[pid, link['record']] = link['status']
+    return [{'person': pid, 'name': data['tree'].people[pid]['name'], 'record': record,
+             'status': status, 'ancestors': sorted(data['collateral'][pid])}
+            for (pid, record), status in sorted(hints.items())]
+
+
+def matrix(data):
+    main = matrix_group(data, data['focus'])
     sources = [{'id': sid, 'title': title(data, sid), 'catalogued': not sid.startswith('~'),
                 'rows': used['rows'], 'people': len(used['people'])}
                for sid, used in sorted(data['sources'].items(), key=lambda kv: -kv[1]['rows'])]
+    collateral = {'mode': data['collateral_mode'], 'hints': collateral_hints(data)}
+    if data['collateral_mode'] == 'full':
+        collateral.update(matrix_group(data, data['side']))
     return {'schema': 1, 'generated_at': datetime.now(UTC).strftime('%Y-%m-%dT%H:%M:%SZ'),
             'strength_table': data['table'], 'recheck_strength': data['threshold'],
-            'totals': {'people': len(people), 'sources': len(sources), 'cells': len(data['cells']),
+            'totals': main['totals'] | {'sources': len(sources),
                        'rows_not_in_ledger_form': data['legacy'], 'rows_without_people': data['no_people'],
                        'unknown_people': data['unknown'],
-                       'rows_without_source': data['no_source'],
-                       'living_or_possibly_living': sum(data['tree'].graph['people'][p].get('life_assessment', {}).get('status') != 'dead' for p in data['focus']),
-                       'not_applicable': sum(bool(r) for r in data['not_applicable'].values()),
-                       'not_applicable_epoch': sum('epoch' in r for r in data['not_applicable'].values()),
-                       'not_applicable_region': sum('region' in r for r in data['not_applicable'].values())},
-            'sources': sources, 'people': people}
+                       'rows_without_source': data['no_source']},
+            'sources': sources, 'people': main['people'], 'collateral': collateral}
+
+
+def line_front(data):
+    """Derive frontier questions and planning gaps without adding ledger rows."""
+    tree = data['tree']
+    by_person = defaultdict(list)
+    for ident, question in data['versions'].items():
+        if question.get('status', question.get('state')) in OPEN_EXCLUSIONS:
+            continue
+        if not PARENT_QUESTION.search(ident.replace('_', ' ') + ' ' + str(question.get('title', ''))):
+            continue
+        subjects = sorted({tree.aliases.get(pid, pid) for pid in question['people']})
+        for option in question.get('versions') or []:
+            if not isinstance(option, dict) or option.get('status', option.get('state')) in CLOSED_OPTIONS:
+                continue
+            weight = option.get('weight')
+            if type(weight) not in (int, float) or not 0 <= weight <= 1:
+                continue
+            version = {'question': ident, 'id': option.get('id'), 'label': option.get('label') or option.get('id'),
+                       'weight': weight, 'people': subjects}
+            for pid in subjects:
+                by_person[pid].append(version)
+    hints = collateral_hints(data)
+    lines = []
+    for chain in data['lines']:
+        gaps = Counter()
+        for key in eligible_cells(data, chain):
+            cell = data['cells'].get(key)
+            if not cell or cell['rank'] == RANK['none']:
+                gaps['not_searched'] += 1
+            elif cell['rank'] >= RANK['zero-uncontrolled'] and cell['strength'] < data['threshold']:
+                gaps['weak'] += 1
+        start, end = chain[0], chain[-1]
+        members = set(chain)
+        versions = sorted(by_person[end], key=lambda v: -v['weight'])
+        lines.append({'start': {'id': start, 'name': tree.people[start]['name']},
+                      'frontier': {'id': end, 'name': tree.people[end]['name']}, 'people': chain,
+                      'versions': versions, 'not_searched': gaps['not_searched'], 'weak': gaps['weak'],
+                      'collateral_hints': sum(not members.isdisjoint(h['ancestors']) for h in hints)})
+    def priority(line):
+        weight = max((v['weight'] for v in line['versions']), default=0)
+        return (-(line['not_searched'] + line['weak']) * (1 + weight), -weight, line['start']['id'])
+    return {'schema': 1, 'collateral_mode': data['collateral_mode'], 'lines': sorted(lines, key=priority)}
 
 
 def person_card(data, pid):
@@ -457,8 +621,9 @@ def person_card(data, pid):
     pid = person['id']
     seen = {sid: cell_view(data, pid, sid) for sid in data['sources'] if (pid, sid) in data['cells']}
     excluded = {sid: applicability(data, pid, sid) for sid in data['sources'] if not sid.startswith('~')}
+    planned = pid not in data['collateral'] or data['collateral_mode'] == 'full'
     never = [{'id': sid, 'title': title(data, sid)} for sid, reasons in sorted(excluded.items())
-             if sid not in seen and not reasons and data['resolver'].catalog.sources.get(sid, {}).get('kind') != 'reference']
+             if planned and sid not in seen and not reasons and data['resolver'].catalog.sources.get(sid, {}).get('kind') != 'reference']
     return {'schema': 1, 'person': pid, 'name': person['name'], 'recheck_strength': data['threshold'],
             'sources': [{'id': sid, 'title': title(data, sid), **view} for sid, view in sorted(seen.items(), key=lambda kv: kv[1]['last'] or '', reverse=True)],
             'never_looked': never,
@@ -510,18 +675,35 @@ def markdown_queue(queue, heading):
 
 def markdown_matrix(view):
     """Catalogue sources as columns; every other source a person was looked for in is one last column."""
-    sources = [s for s in view['sources'] if s['people'] and s['catalogued']]
+    sources = [s for s in view['sources'] if s['catalogued']]
     other = sum(1 for s in view['sources'] if s['people'] and not s['catalogued'])
     t = view['totals']
     out = ['# Search coverage: people by source', '',
-           f"{t['people']} people, {len(sources)} catalogue sources and {other} others, {t['cells']} person-by-source cells; "
+           f"{t['people']} people, {len(sources)} catalogue sources and {other} others, {t['cells']} recorded cells, {t['eligible_cells']} eligible for planning; "
            f"{t['rows_not_in_ledger_form']} journal rows not in ledger form, {t['rows_without_people']} rows name no person; "
            f"{t['not_applicable']} cells not applicable by epoch/region; {t['living_or_possibly_living']} living/possibly living people outside recheck; {t['rows_without_source']} rows without a source.",
            'Cell: R result rows, D read record, +F established identity, Z zero with control, z zero without control, ? outcome unrecorded, ! access gap, . not looked, - planning fit unestablished/outside scope; digit = strongest pass (1-4, 0 = executor model not recorded); '
-           '? = the person was inferred from the question only, not from the names searched.', '',
-           '| ' + ' | '.join(['Person', *(s['id'] for s in sources), 'other']) + ' |', '|' + '---|' * (len(sources) + 2)]
+           '? = the person was inferred from the question only, not from the names searched.', '']
+    out += matrix_table(view['people'], sources)
+    collateral = view['collateral']
+    out += ['', f"Collateral research: `{collateral['mode']}`."]
+    if 'totals' in collateral:
+        t = collateral['totals']
+        out += ['', '## Collateral coverage', '',
+                f"{t['people']} people, {t['cells']} recorded cells, {t['eligible_cells']} eligible for planning.", '']
+        out += matrix_table(collateral['people'], sources)
+    if collateral['mode'] != 'off':
+        hints = collateral['hints']
+        out += ['', '## Collateral hints', '']
+        out += [f"- {h['name']} ({h['person']}) · `{h['record']}` · {h['status']} · via {', '.join(h['ancestors'])}"
+                for h in hints] or ['No hints from read records.']
+    return '\n'.join(out)
+
+
+def matrix_table(people, sources):
+    out = ['| ' + ' | '.join(['Person', *(s['id'] for s in sources), 'other']) + ' |', '|' + '---|' * (len(sources) + 2)]
     ids = {s['id'] for s in sources}
-    for person in view['people']:
+    for person in people:
         cells = [person['cells'].get(s['id']) for s in sources]
         rest = [c for sid, c in person['cells'].items() if sid not in ids]
         cells.append(max(rest, key=lambda c: (RANK[c['outcome']], c['strength'])) if rest else None)
@@ -529,23 +711,41 @@ def markdown_matrix(view):
                  MARK[c['outcome']] + str(c['strength']) + ('+F' if c['identified'] else '') + ('≠' if c['identity'] == 'other' else '') + ('!' if (c.get('availability') or {}).get('state') == 'stopped' else '') + ('~' if 'surname' in c['scope'] else '') + ('?' if c['person_basis'] == ['question'] else '')
                  for s, c in zip([*sources, {'id': 'other'}], cells)]
         out.append(f"| {person['name']} ({person['id']}) | " + ' | '.join(marks) + ' |')
+    return out
+
+
+def markdown_lines(view):
+    def column(value):
+        return str(value).replace('|', r'\|').replace('\n', ' ')
+
+    out = ['# Family line fronts', '', f"Collateral research: `{view['collateral_mode']}`.", '',
+           '| Line starts at | Farthest known ancestor | Open parent versions (weight) | Not searched | Weak | Collateral hints |',
+           '|---|---|---|---:|---:|---:|']
+    for line in view['lines']:
+        versions = ', '.join(f"{v['label']} ({v['weight']:g})" for v in line['versions']) or '—'
+        out.append('| ' + ' | '.join(map(column, [line['start']['name'], line['frontier']['name'], versions,
+                   line['not_searched'], line['weak'], line['collateral_hints']])) + ' |')
     return '\n'.join(out)
 
 
 @boundary('diagnostic')
-def coverage(instance, *, person=None, queue=None, save=False):
-    """The matrix (default), one person's card or the recheck queue; save puts the matrix JSON in the instance state."""
+def coverage(instance, *, person=None, queue=None, lines=False, save=False):
+    """Read a coverage view; save always writes the matrix and complete queue."""
     data = collect(instance)
-    view = matrix(data)
+    view = matrix(data) if save or (not lines and not person and queue is None) else None
     if save:
         from familiar.instance.writer import mutate
-        mutate(instance, {instance.path('state') / 'coverage.json': json.dumps(view | {'recheck': recheck(data)}, ensure_ascii=False, indent=1).encode('utf-8')})
+        saved = view | {'recheck': recheck(data)}
+        mutate(instance, {instance.path('state') / 'coverage.json': json.dumps(saved, ensure_ascii=False, indent=1).encode('utf-8')})
+    if lines:
+        front = line_front(data)
+        return front, markdown_lines(front)
     if person:
         card = person_card(data, person)
         return card, markdown_card(card)
     if queue is not None:
         rows = recheck(data, queue)
-        excluded = view['totals']['not_applicable']
+        excluded = sum(bool(r) for r in data['not_applicable'].values())
         return rows, '\n'.join(markdown_queue(rows, f'Recheck queue: top {len(rows)}') +
                                ['', f'Not applicable by epoch/region: {excluded} cells (see matrix JSON totals).'])
     return view, markdown_matrix(view)

@@ -413,6 +413,14 @@ help = "A pass of at least this strength settles a person-by-source cell; a cell
 serves = "UC-RESEARCH"
 scopes = ["region", "family"]
 
+[setting."research.collateral"]
+type = "string"
+choices = ["off", "hints", "full"]
+default = "hints"
+help = "Descendants of ancestors' siblings and their spouses: off skips them, hints shows records already read, full also plans searches after the main queue."
+serves = "UC-RESEARCH"
+scopes = ["family"]
+
 [setting."research.scope"]
 type = "string"
 choices = ["known_lines_first", "all"]

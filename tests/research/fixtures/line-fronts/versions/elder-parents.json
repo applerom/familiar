@@ -1,0 +1,14 @@
+{
+  "id": "elder-parents",
+  "status": "open",
+  "people": [
+    "elder"
+  ],
+  "versions": [
+    {
+      "id": "elder-parents",
+      "label": "elder-parents",
+      "weight": 0.7
+    }
+  ]
+}

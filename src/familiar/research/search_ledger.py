@@ -221,7 +221,7 @@ class Tree:
 
 
 def read_versions(instance):
-    """Question id -> the tree people the question is about."""
+    """Question id -> saved question, with its tree people normalized for the ledger."""
     result = {}
     base = instance.path('versions')
     for file in sorted(base.rglob('*.json')) if base.exists() else []:
@@ -232,7 +232,8 @@ def read_versions(instance):
         if isinstance(data, dict) and isinstance(data.get('id'), str):
             people = data.get('people', [])
             people = list(people.values()) if isinstance(people, dict) else people
-            result[data['id']] = {'people': [p for p in people if isinstance(p, str)], 'status': data.get('status')}
+            result[data['id']] = data | {'people': [p for p in people if isinstance(p, str)]
+                                        if isinstance(people, list) else []}
     return result
 
 

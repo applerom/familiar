@@ -296,7 +296,38 @@ def project(active, graph, w):
             'pending': pending, 'reviewed_pending': reviewed_pending}, inputs, listings
 
 
-def page(active, w, supplemental=False):
+def line_section(active, graph, w):
+    from familiar.research.coverage import collect, line_front, planning_people
+
+    try:
+        data = collect(active)
+        front = line_front(data)
+    except (ValueError, OSError, KeyError, TypeError, AttributeError):
+        return ''  # The private reader tolerates unreadable working coverage as well.
+    people, esc = graph.get('people', {}), html.escape
+    historical = people.keys() & set(planning_people(data, data['tree'].people))
+    mode = front['collateral_mode']
+    rows = []
+    for line in front['lines']:
+        start, end = line['start']['id'], line['frontier']['id']
+        if start not in people or end not in people:
+            continue
+        name = people[start].get('name') or ''
+        if start != end:
+            name += ' → ' + (people[end].get('name') or '')
+        counts = w['lines_counts'].format(**line)
+        versions = [f"{public_line(v['label'], w['branch'].format(n=n))} ({v['weight'] * 100:g}%)"
+                    for n, v in enumerate(line['versions'], 1) if historical.issuperset(v['people'])]
+        details = ' · '.join(versions) or ('—' if line['versions'] else w['lines_no_versions'])
+        rows.append(f'<li><strong>{esc(name)}</strong><span>{esc(details)}</span><small>{esc(counts)}</small></li>')
+    return ('<section class="line-front" aria-labelledby="line-front-title"><h3 id="line-front-title" class="h2">'
+            + esc(w['lines_title']) + '</h3><p class="sub">' + esc(w['collateral_' + mode])
+            + ' <code>familiar.toml</code> · <code>[settings]</code> · '
+            + f'<code>"research.collateral" = "{mode}"</code> (off / hints / full)</p>'
+            + ('<ul>' + ''.join(rows) + '</ul>' if rows else '<p>' + esc(w['lines_empty']) + '</p>') + '</section>')
+
+
+def page(active, w, supplemental=False, *, lines=''):
     esc, s = html.escape, w['show']
     title = active.config['family']['title']
     extras = ('<p class="desk-extra"><a href="/desk/journal.html">' + esc(w['journal'])
@@ -321,7 +352,8 @@ def page(active, w, supplemental=False):
             '<div id="searched-days" class="searched-days" role="list"></div>'
             '<p id="searched-undated" class="sub" hidden></p></div></div>'
             '<p class="sub">' + esc(s['searched_categories']) + '</p><div id="show-sources"></div>'
-            '<p class="searched-note">' + esc(s['searched_note']) + '</p></section></section>'
+            '<p class="searched-note">' + esc(s['searched_note']) + '</p></section>'
+            + lines + '</section>'
             '<div class="show"><section><h2 class="h2">' + esc(s['log']) + '</h2><p class="sub">'
             + esc(s['log_hint']) + '</p><div class="log"><ol id="show-asks"></ol><ol id="show-log"></ol></div>'
             '<nav id="show-pagination" aria-label="' + esc(s['log']) + '"></nav></section><aside class="rail">'

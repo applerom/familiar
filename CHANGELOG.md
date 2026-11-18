@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.36.0 — 18 November 2026
+
+- We see each family line's farthest known ancestor, open parent versions and
+  coverage gaps in `research coverage --lines` and the family desk. Read records
+  can surface hints from collateral branches. When enabled, their descendants
+  and spouses have their own coverage totals and follow the main recheck queue.
+
 ## 0.35.0 — 17 November 2026
 
 - We turn correspondence into a mailbox: compact letter rows, status and recipient

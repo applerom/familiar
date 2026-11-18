@@ -26,7 +26,9 @@ def person_blocks(instance):
             queue[item['person']] = queue.get(item['person'], 0) + 1
     reference = lambda sid: data['resolver'].catalog.sources.get(sid, {}).get('kind') == 'reference'  # noqa: E731
     blocks = {}
-    for pid in data['focus']:
+    for pid in [*data['focus'], *data['side']]:
+        if pid not in data['named']:
+            continue
         seen = []
         for sid in data['sources']:
             cell = data['cells'].get((pid, sid))

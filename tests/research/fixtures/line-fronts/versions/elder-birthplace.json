@@ -1,0 +1,14 @@
+{
+  "id": "elder-birthplace",
+  "status": "open",
+  "people": [
+    "elder"
+  ],
+  "versions": [
+    {
+      "id": "elder-birthplace",
+      "label": "elder-birthplace",
+      "weight": 0.8
+    }
+  ]
+}

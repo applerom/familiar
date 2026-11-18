@@ -15,7 +15,7 @@ researcher's work except naming three things on each row.
   Anything else is advice from `instance check`, with the nearest id; web search
   is `web-search`. The matrix groups uncatalogued sources by site, aside.
 - `by`: `{agent, model, effort}`, e.g. `{"agent": "collector-w23", "model":
-  "gpt-6.1-sol", "effort": "high"}`; a host or family member reading themselves
+  "gpt-6.2-sol", "effort": "high"}`; a host or family member reading themselves
   is model `human`.
 - A zero is worth most with `control` (a known person found by the same query)
   and `coverage.forms` listing every spelling read.
@@ -46,13 +46,43 @@ researcher's work except naming three things on each row.
   written places to countries/regions; ambiguous borderlands can name several.
   Excluded cells are counted as `not_applicable` (epoch/region), shown as `-`
   when empty; recorded passes stay visible even outside the planning window.
+  `totals.eligible_cells` counts applicable cells for deceased people across
+  the catalogue sources the ledger knows about. `totals.cells` counts recorded
+  person-by-source cells.
+- `--lines`: one row for each father's line from the tree root, each spouse,
+  and each maternal branch. The row shows the farthest known person, open
+  versions about their parents, eligible cells never searched or searched
+  weakly, and the number of collateral hints. We recognize parent questions
+  from their existing titles or IDs (for example, `parents`, `родители`,
+  `rodzice`) and their named tree people. We rank lines by the sum of these gaps
+  multiplied by one plus the strongest open parent weight.
 - `--json`; `--save` also writes `coverage.json` in the instance state
-  directory (`instance paths`, key `state`) for the desk and the display.
+  directory (`instance paths`, key `state`) with the matrix and full queue.
 
 Strength comes from `research.search_strength` (keys `model:effort`, either
 side `*`; region and family layers add or replace keys). Reading is local: no
 network, and a conclusion rests on what the journal says, not on what the site
 holds.
+
+### Collateral branches
+
+In the instance's `familiar.toml` set `"research.collateral" = "hints"` under
+`[settings]`. The family desk shows the effective mode next to **Lines** on the
+research progress page. Edit that line and rebuild the desk to change the mode.
+
+- `off`: leave collateral descendants out of planning and omit their hints.
+- `hints` (default): show each linked, already read record under **Collateral
+  hints**, with the person, link status and related ancestor. These people
+  contribute no planning cells to the matrix or recheck queue.
+- `full`: also plan searches for these branches. `collateral.totals` and
+  `collateral.people` give their own matrix counts and rows. These cells come
+  after the main queue, even when their scores are higher.
+
+The root, spouses and their ancestors define the main lines. Their own siblings
+keep the existing research scope. The collateral group follows descendants of
+ancestors' siblings, including the descendants' spouses. Living and possibly
+living people stay outside recheck in every mode. Existing journals, records
+and version files remain the inputs.
 
 ## Scope, completeness and read records
 
@@ -189,7 +219,7 @@ claims. Question-only rows are refined on repeat when a named person can be foun
 rows without names keep their question basis (`?`). Declared people are preserved.
 
 `--executors file.json` supplies a host-prepared map such as
-`{"collector-a": {"model": "gpt-6.1-sol", "effort": "high"}}`. Labels match exactly
+`{"collector-a": {"model": "gpt-6.2-sol", "effort": "high"}}`. Labels match exactly
 or as prefixes at a separator (`-`, `_`, `/`, space, `;`, `(`); the longest match
 wins. Thus `collector-a1` does not match `collector-a10`. Conflicting matches
 stay unknown. Only missing/generic executor details are enriched, also on rows

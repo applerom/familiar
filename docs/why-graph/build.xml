@@ -125,7 +125,7 @@
   <MODULE_DESK_PAGES ID="MOD-DESK-PAGES" FILE="src/familiar/desk/pages.py" STATE="IMPLEMENTED"/>
   <MODULE_DESK_SHOW ID="MOD-DESK-SHOW" FILE="src/familiar/desk/show.py" STATE="IMPLEMENTED">
     <INVARIANT REVIEW="engine lead">Historical research labels use the shared life assessment; merged events cannot release a protected participant.</INVARIANT>
-    <!-- Research progress skips incomplete collector rows; raw working files do not invalidate a checked desk. Adopted dependencies remain guarded by the reader. -->
+    <!-- Line fronts show checked reader names, historical version labels and aggregate coverage counts. -->
   </MODULE_DESK_SHOW>
   <MODULE_DESK_SHOW_CLIENT ID="MOD-DESK-SHOW-CLIENT" FILE="src/familiar/desk/assets/show.js" STATE="IMPLEMENTED"/>
   <MODULE_DESK_SHOW_STYLE ID="MOD-DESK-SHOW-STYLE" FILE="src/familiar/desk/assets/show.css" STATE="IMPLEMENTED"/>

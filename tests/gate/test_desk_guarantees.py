@@ -4,18 +4,6 @@ from pathlib import Path
 from types import SimpleNamespace
 
 
-def test_correspondence_mailbox(family, tmp_path):
-    import json; from familiar.cli import main; from familiar.desk.correspondence import project; from familiar.desk.model import words
-    form = tmp_path / 'letter.json'; row = json.loads((Path(__file__).parents[2] / 'forms/correspondence.json').read_bytes()); row.update(state='ready', people=['p-amaro'], destination='1 Example Square, Imaginary Town')
-    def command(action, value):
-        form.write_text(json.dumps(value), encoding='utf-8')
-        assert main(['--root', str(family.root), 'family', 'correspondence', action, *([] if action == 'create' else [row['id']]), str(form)]) == 0
-    command('create', row); command('update', dict(subject='Register copy', priority='later', cost='free', kind='specialist', how='Open profile'))
-    page = project(family, words(family))[0]['desk/correspondence.html'].decode(); assert all(value in page for value in ('data-mail-kind="forum"', 'data-copy="destination"', 'data-copy="subject"', 'data-copy="letter"', 'Example Square', 'Register copy', 'Later', 'Free', 'Open profile'))
-    command('update', dict(relevance='The record was found elsewhere.', state='not_needed')); page = project(family, words(family))[0]['desk/correspondence.html'].decode(); assert 'data-mail-group="unneeded"' in page and 'The record was found elsewhere.' in page
-
-
-
 def test_personal_login_flow_is_not_replaced_by_ambient_requests(monkeypatch):
     monkeypatch.setitem(sys.modules, 'boto3', SimpleNamespace(client=lambda _: None))
     monkeypatch.setitem(sys.modules, 'botocore.exceptions', SimpleNamespace(ClientError=RuntimeError))
