@@ -5,6 +5,7 @@
 # - generation permission checks resolve merged person references [review: engine lead]
 # - engine modules cannot write around this component [review: engine lead]
 # - upload staging excludes owner correspondence for shared login; loopback feedback origin is explicit [review: engine lead]
+# - carrying over relative letters verifies the source and rolls back both sides of an interrupted in-process move [review: engine lead]
 # - unadopted collector records and journals never enter output snapshots; selected-input race rejection remains complete [review: engine lead]
 # - changed inputs cannot commit a clean generation [review: engine lead]
 # - saved photo restoration versions are append-only across family transactions [review: engine lead]
@@ -565,7 +566,7 @@ def snapshot(instance):
 
 
 @boundary('transaction')
-def mutate(instance, changes=None, *, exclusive=(), working_journals=False):
+def mutate(instance, changes=None, *, exclusive=(), working_journals=False, remove=None):
     """Validate the changed items before touching a destination file.
 
     working_journals: a carry-over of search journals, which are working research; the
@@ -574,10 +575,14 @@ def mutate(instance, changes=None, *, exclusive=(), working_journals=False):
     A failed in-process commit restores old bytes. Multi-file family edits are
     serialized by the host; a process/OS crash during that edit is not a database transaction.
     """
-    if not changes:
+    if not changes and not remove:
         return
     changes = {Path(p).resolve(): encode(v) if not isinstance(v, bytes) else v for p, v in (changes or {}).items()}
-    for path in changes:
+    remove = {Path(p).resolve(): v for p, v in (remove or {}).items()}
+    if changes.keys() & remove.keys():
+        raise ValueError('Cannot write and remove the same family input')
+    targets = changes.keys() | remove.keys()
+    for path in targets:
         if not path.is_relative_to(instance.root):
             raise ValueError('family writer cannot modify host-mapped external inputs')
         _mutation_target(instance, path)
@@ -596,6 +601,13 @@ def mutate(instance, changes=None, *, exclusive=(), working_journals=False):
     transaction = fresh(instance)
     transaction._research_work_scope = True
     with snapshot(transaction) as (staged, before):
+        if any(Path(p).exists() for p in exclusive):
+            raise ValueError('refusing to replace existing family data')
+        for path, expected in remove.items():
+            target = _relative(staged.root, path.relative_to(instance.root))
+            if not target.is_file() or json.loads(target.read_bytes()) != expected:
+                raise ValueError('family input changed before move')
+            target.unlink()
         for path, value in changes.items():
             target = _relative(staged.root, path.relative_to(instance.root))
             target.unlink(missing_ok=True)  # Detach an archive hard link before a staged edit.
@@ -605,10 +617,12 @@ def mutate(instance, changes=None, *, exclusive=(), working_journals=False):
             validate_changes(staged, [staged.root / p.relative_to(instance.root) for p in changes])
         if fingerprints(transaction) != before:
             raise ValueError('family inputs changed before mutation')
-        old = {p: p.read_bytes() if p.exists() else None for p in changes}
+        old = {p: p.read_bytes() if p.exists() else None for p in targets}
         try:
             for path, value in changes.items():
                 _put(path, value)
+            for path in remove:
+                path.unlink()
         except BaseException:
             for path, value in old.items():
                 if value is None:

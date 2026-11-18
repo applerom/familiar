@@ -1,0 +1,20 @@
+{
+  "id": "settled-letter",
+  "title": "Find the marriage register",
+  "recipient": "Invented archive",
+  "channel": "archive",
+  "language": "en",
+  "text": "Do you hold the marriage register?",
+  "people": [],
+  "sender": {"kind": "host", "name": "Demo host"},
+  "state": "ready",
+  "cost": "free",
+  "aim": {
+    "people": ["p-amaro"],
+    "line": "Ferrolho",
+    "version": "known-marriage-parish",
+    "settles": "Find the parish of Amaro's marriage",
+    "value": 1,
+    "why_now": "The parish can guide the next search."
+  }
+}

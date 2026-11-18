@@ -1,0 +1,11 @@
+{
+  "id": "old-letter",
+  "title": "Check the older inventory",
+  "recipient": "Invented archive",
+  "channel": "archive",
+  "language": "en",
+  "text": "Can we inspect the old inventory?",
+  "people": [],
+  "sender": {"kind": "host", "name": "Demo host"},
+  "state": "ready"
+}

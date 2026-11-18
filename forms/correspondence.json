@@ -1,9 +1,16 @@
 {
-  "_about": "Save through family correspondence create FILE. This optional owner-only form lives at paths.correspondence (default family/correspondence). Agents prepare; humans send. Review outgoing prose like family requests: about living people only names and kinship. Link people, request (family question ID) and question (versions-file ID) when known; null leaves the link unassigned. destination may be omitted or null for a relative reached in person, by phone or in a messenger; the page keeps the letter and Copy without a send link. follow_up is where the sender watches for the answer (a forum thread, a site inbox); null when the answer returns to the sender's own mailbox. Reply commands preserve original UTF-8 bytes; interpret adds research meaning without changing the literal reply.",
+  "_about": "Save through family correspondence create FILE. This owner-only form lives at paths.correspondence (default family/correspondence). Agents prepare; humans send. Review outgoing prose like family requests: about living people only names and kinship. Set aim.people to working tree IDs and aim.version to a versions-file or alternative ID when known; use null when there is no linked version. aim.value ranges from 0 to 1. A null destination keeps the text copyable without a send link. follow_up is where the sender watches for the answer; null means the sender's own mailbox. Reply commands preserve literal bytes; interpret adds research meaning.",
   "id": "archive-bea-letter",
   "title": "Ask about Bea's baptism register",
   "subject": "Baptism register enquiry, Brookfield, 1890",
-  "priority": "first",
+  "aim": {
+    "people": ["bea-telling-bea-person"],
+    "line": "Example",
+    "version": "bea-birthplace",
+    "settles": "Bea's birthplace",
+    "value": 0.8,
+    "why_now": "The baptism entry can guide us to the right parish."
+  },
   "cost": "unknown",
   "cost_note": "Ask for a quote before ordering copies.",
   "kind": "archive",

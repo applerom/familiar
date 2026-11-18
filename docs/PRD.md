@@ -1657,15 +1657,19 @@ attestations across different projections or permissions.
 ## Private narrator desk
 <!-- PRD_ANCHOR: FAMILY-DESK -->
 
-The owner's Correspondence page keeps prepared letters beside family questions.
+The owner's Documents page keeps prepared external letters beside family questions.
 `family/correspondence` (or `paths.correspondence`) stores recipient, channel
-(`forum`, `archive`, `message`, `relative`), optional destination email/HTTP(S) URL, reply
+(`forum`, `archive`, `message`), optional destination email/HTTP(S) URL, reply
 URL, recipient language, literal text, person/question/request references and a
 host or named relative as sender. States are `draft`, `ready`, `sent`, `answered`,
 `closed`; sending records who and when. Replies preserve literal text, author,
 date, origin, original UTF-8 bytes and the researcher's interpretation.
 An interpretation is research advice; it never changes the tree automatically.
-We add an optional form without changing existing stored forms or migrating data.
+Letters can carry an `aim` with people, line, version, expected result (`settles`),
+value between 0 and 1, and the reason to act now (`why_now`). The person and
+version references resolve against the working family. We move old relative letters
+to the existing family question and answer forms with `migrate-relatives`, retaining
+the letter and literal reply history in the question's storage-only record.
 
 `research form correspondence` supplies a fictional example. Under
 `family correspondence`, use `create FILE`, `update ID PATCH`, `sent ID --by NAME`,
@@ -1676,7 +1680,7 @@ the original and its digest, marking the supplied text as a transcript rather
 than claiming that the engine read the file.
 `--at` records a known sending/reply date; without it the current UTC time is used.
 Updates change draft/ready letter fields; sent text and literal replies remain history.
-Optional `subject`, `priority` (`first`/`later`), `cost` (`free`/`paid`/`unknown`),
+Optional `subject`, `cost` (`free`/`paid`/`unknown`),
 `cost_note`, recipient `kind` (`archive`/`forum`/`person`/`specialist`), `how` and
 `relevance` describe the next human action. Planning metadata can change after
 sending; `state=not_needed` shelves an unnecessary letter without losing its history.
@@ -1685,10 +1689,12 @@ Researchers receive `"host.correspondence_voice"` from the family's `[settings]`
 the default is neutral and polite. They review outgoing living-person prose with
 the same rules as family letters: names and kinship only.
 
-The mailbox groups ready letters, awaited replies, answers and unnecessary letters,
-with recipient chips and priority ordering. Each compact row opens its letter
-inline on a phone or in a wide reading pane. Missing priority is explicit;
-relevance reasons mute letters and move them below more useful letters.
+We group letters by line and person and rank each group by value, line weight,
+uncertainty, cost and freshness. The three highest-ranked eligible ready letters
+appear first. A paid route ranks below a free route to the same goal. A settled
+version or a leading weight above .9 sets a letter aside, with the authored
+relevance explanation taking precedence. Letters without an aim appear last.
+Each compact row opens its letter inline on a phone or in a wide reading pane.
 Copy preserves the destination, subject or complete text separately, with text
 selection when the clipboard is unavailable. Sent and reply actions use the existing feedback inbox.
 Local receipt applies marks through the family writer; `desk fetch-feedback`

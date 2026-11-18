@@ -27,3 +27,13 @@ def test_desk_requires_host_decision(family):
     with pytest.raises(ValueError, match='recorded host decision'): decision(family)
     path = family.root / 'family/desk-access.json'; row = {'schema_version': 1, 'family_id': family.id, 'projection': 'reader-private', 'host': 'demo host', 'recipient': 'demo narrator', 'decided_at': '2026-11-13', 'reason': 'Invented personal review', 'dataset': 'accepted-family-reader', 'pages': ['reader', 'journal', 'stories', 'cases', 'plan', 'questions']}; path.write_text(json.dumps(row), encoding='utf-8')
     assert decision(family)[1]; row['revoked'] = True; path.write_text(json.dumps(row), encoding='utf-8'); pytest.raises(ValueError, decision, family)
+
+
+def test_documents_rank_current_aims(family):
+    from shutil import copytree
+    from familiar.desk.correspondence import project
+    from familiar.desk.model import words
+    copytree(Path(__file__).with_name('fixtures') / 'documents', family.root, dirs_exist_ok=True)
+    page = project(family, words(family))[0]['desk/correspondence.html'].decode()
+    assert page.index('data-recommend="free-route"') < page.index('data-recommend="paid-route"') < page.index('data-recommend="other-line"')
+    assert page.index('>Ferrolho</h2>') < page.index('>Calhau</h2>') < page.index('>Set aside</h2>') < page.index('Already established:') < page.index('>No aim</h2>')

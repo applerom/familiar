@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.37.0 — 18 November 2026
+
+- We show Documents by family line and person, rank ready letters by what they
+  can establish, and set letters aside when their linked version is settled.
+- Data: Run `family correspondence migrate-relatives` to move old relative
+  letters and replies to family questions. External letters without an `aim`
+  stay available under No aim.
+
 ## 0.36.3 — 18 November 2026
 
 - We skip military sources outside a person's birth cohort and accept plain-text person notes in builds.

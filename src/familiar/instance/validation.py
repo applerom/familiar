@@ -16,6 +16,7 @@
 # - a controlled saved zero supports only against arguments; missing read scope or doubtful queries remain unusable [review: engine lead]
 # - whole and selected-file checks report rejected contributions with their claim and cause [review: engine lead]
 # - all person references use applied contributions and resolve merged ids to active people [review: engine lead]
+# - a correspondence aim resolves its people and linked research version [review: engine lead]
 # CHANGES_WITH:
 # - MOD-FAMILY-GATE (the shared family boundary contract)
 # - docs/PRD.md#FORMS
@@ -494,7 +495,8 @@ def _check(instance, selected=None):
         if row.get('state') == 'answered':
             required(row, 'answer', path)
             ref(row.get('answer'), answers, path)
-    from .correspondence import validate as validate_correspondence
+    from .correspondence import aim_versions, validate as validate_correspondence
+    correspondence_versions = aim_versions(versions.values())
     for path, row in rows('correspondence'):
         if not chosen(path):
             continue
@@ -507,6 +509,10 @@ def _check(instance, selected=None):
             fail(path, 'correspondence id differs from filename', 'instance.required-identity-privacy-fields-or-executable-collection')
         for person in row['people']:
             ref(person, people, path)
+        if aim := row.get('aim'):
+            for person in aim.get('people', []):
+                ref(person, people, path)
+            ref(aim.get('version'), correspondence_versions, path)
         if row.get('question'):
             question_ref(row, path)
         if row.get('request'):

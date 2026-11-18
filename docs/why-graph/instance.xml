@@ -26,6 +26,7 @@
       <INVARIANT REVIEW="engine lead">Life conflicts advise with merged participants, their independent death evidence and the canonical life decision or undo needed; protected output stays available.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Image kinds distinguish a real-photo treatment from a generated drawing.</INVARIANT>
     <INVARIANT REVIEW="engine lead">All person references resolve applied contributions and identity successors; invalid ids name the working-tree commands.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">A correspondence aim resolves its people and linked research version.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Rejected tree contributions are blocking data findings with file, claim and cause, including selected-file checks.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-TREE-BUILDER"/>
     <INVARIANT REVIEW="engine lead">A saved controlled zero may support a weak against argument only within its recorded read scope; positive arguments still require findings, and refusals or dubious queries supply no negative evidence.</INVARIANT>
@@ -99,6 +100,7 @@
     <REL TYPE="DEPENDS_ON" TARGET="MOD-SUBJECT-CLOSURE"/>
   </MODULE_FAMILY_GATE>
   <MODULE_FAMILY_WRITER ID="MOD-FAMILY-WRITER" FILE="src/familiar/instance/writer.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">The relative-letter move verifies the source in the staged family and restores both sides if the write fails.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Generation exclusions resolve merged person references.</INVARIANT>
     <!-- Hosted upload stages the verified delivery, excluding correspondence for shared login; local feedback carries an explicit origin. -->
     <!-- Standalone demo storage accepts only a checked fictional desk and an empty
@@ -109,6 +111,7 @@
     <REL TYPE="DEPENDS_ON" TARGET="MOD-OUTPUT-REVIEW"/>
   </MODULE_FAMILY_WRITER>
   <MODULE_PUBLICATION ID="MOD-PUBLICATION" FILE="src/familiar/instance/publication.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">The owner correspondence seal declares ranked fields; stored aims and migrated letter originals have no reader field.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Spouse union weights reach the reader unchanged.</INVARIANT>
     <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_photo_treatment_stays_local_for_living_subject">Restorations refuse living or unknown subjects everywhere and require original frames and version recipes; deceased pairs reach both views.</INVARIANT>
     <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_photo_treatment_stays_local_for_living_subject">Living photo treatments stay in the family display; public generations track dead-only treatment uses.</INVARIANT>
@@ -169,7 +172,7 @@
     <REL TYPE="DEPENDS_ON" TARGET="MOD-PUBLICATION"/>
   </MODULE_HOST_PAGES>
   <FEATURE_CORRESPONDENCE ID="FEAT-CORRESPONDENCE" STATE="IMPLEMENTED">
-    <INTENT>Agents prepare linked letters in the host's voice; a compact mailbox shows priority, cost and relevance while people send and record replies.</INTENT>
+    <INTENT>Agents prepare linked letters in the host's voice; Documents groups them by family line and person while people send and record replies.</INTENT>
     <PRD_REF>docs/PRD.md#FAMILY-DESK</PRD_REF>
     <INVARIANT REVIEW="engine lead">Literal replies and feedback principals survive; hosted correspondence requires an identified personal owner, local origin is explicit, and no public reader field exposes it.</INVARIANT>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-CORRESPONDENCE"/>
@@ -178,11 +181,13 @@
   <MODULE_CORRESPONDENCE ID="MOD-CORRESPONDENCE" FILE="src/familiar/instance/correspondence.py" STATE="IMPLEMENTED">
     <INVARIANT REVIEW="engine lead">Planning metadata and not-needed state can change without rewriting sent text or replies.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Letters without a destination retain text and literal reply history.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">The relative-letter carry-over keeps the literal letter, reply history and original references in its new family question.</INVARIANT>
     <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_f5_undeclared_reader_fields_stay_private">Reply references select original bytes in private snapshots; inapplicable actions retain bytes and a processed reason without blocking later feedback; repeated sent is a no-op.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-FAMILY-WRITER"/>
   </MODULE_CORRESPONDENCE>
   <MODULE_CORRESPONDENCE_VIEW ID="MOD-CORRESPONDENCE-VIEW" FILE="src/familiar/instance/correspondence_view.py" STATE="IMPLEMENTED">
     <INVARIANT REVIEW="engine lead">A missing destination projects no send link or address line.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Rank follows the current version weights, and authored relevance takes precedence over automatic explanations.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-PUBLICATION"/>
   </MODULE_CORRESPONDENCE_VIEW>
 </Why_Graph_Shard>

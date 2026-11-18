@@ -8,6 +8,7 @@
 # - absent reasons, source types and readings are never invented [review: engine lead]
 # - unfinished collector records and journal lines do not block or invalidate the derived investigation summary [review: engine lead]
 # - open, dropped, confirmed awaiting tree and included outcomes are distinct in the work-volume summary [review: browser walk]
+# - letters moved from owner correspondence do not become shared prompts [review: engine lead]
 # CHANGES_WITH:
 # - MOD-DESK-BUILD (selected inputs and history binding)
 # - MOD-DESK-SHOW-CLIENT (show.json contract)
@@ -252,7 +253,7 @@ def project(active, graph, w):
                 if status == 'A':
                     event(at, 'tree', 'person', w['tree_extended'])
     for _, row in rows(active.path('questions')):
-        if row.get('state') == 'closed' or row.get('addressee') == 'host':
+        if row.get('state') == 'closed' or row.get('addressee') == 'host' or row.get('migrated_correspondence'):
             continue
         text = public_line(row.get('witness_question'))
         if text and len(asks) < 3:

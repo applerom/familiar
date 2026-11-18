@@ -205,6 +205,7 @@ CHANGES_WITH:
   new MutationObserver(update).observe(document.querySelector('#root') || nav, {childList: true, subtree: true});
   new MutationObserver(update).observe(document.documentElement, {attributes: true, attributeFilter: ['lang']});
   update(); document.dispatchEvent(new Event('familiar-desk-ready'));
+  document.fonts.ready.then(() => { activeLink = ''; update(); });
   window.addEventListener('hashchange', update);
   window.addEventListener('pagehide', keepDraft);
   window.addEventListener('focus', () => { if (dialog.open) refreshHistory(); });

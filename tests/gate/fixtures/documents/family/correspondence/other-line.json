@@ -1,0 +1,19 @@
+{
+  "id": "other-line",
+  "title": "Check the parish catalogue",
+  "recipient": "Invented catalogue",
+  "channel": "message",
+  "language": "en",
+  "text": "Which years survive in the catalogue?",
+  "people": [],
+  "sender": {"kind": "host", "name": "Demo host"},
+  "state": "ready",
+  "cost": "free",
+  "aim": {
+    "people": ["p-amaro"],
+    "line": "Calhau",
+    "settles": "Check the surviving years",
+    "value": 0.2,
+    "why_now": "We can narrow down the volumes."
+  }
+}
