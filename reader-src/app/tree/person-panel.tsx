@@ -81,7 +81,7 @@ export default function PersonPanel({data,model,id,go,showFamily,labels,language
    ];
    return [base];
   });
-  const covered=new Set(own.map(d=>d.sourceSid));const shot=(s:Row)=>s?.image||(/\.(png|jpe?g|webp|gif)$/i.test(s?.asset||'')?s.asset:'');
+  const covered=new Set(own.map(d=>d.sourceSid));const own_=(s:Row)=>/[.](png|jpe?g|webp|gif)$/i.test(s?.asset||'')?s.asset:'';const shot=(s:Row)=>own_(s)||s?.image||'';
   return [...own,...growth.documents.filter(sid=>shot(data.sources[sid])&&!covered.has(sid)&&!dropped.has(sid)).map((sid):Doc=>{const s=data.sources[sid];return {sid,sourceSid:sid,title:s.title||labels.source,asset:shot(s),photo:false,kind:1,...(s.asset&&s.asset!==shot(s)?{href:s.asset,hrefLabel:labels.feedOpenDoc}:{})}})]},[p,labels,lifeFacts]);
  // A story may have a simple part first and details after a line of dashes; illustrations are period pictures, not family documents.
  const paired=(s:Row)=>s.kind==='photo-restoration'||s.ours?.kind==='photo-restoration';

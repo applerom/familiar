@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.40.1 — 18 November 2026
+
+- A cut-out keeps its own picture on the person's card; the whole sheet stands
+  only for sources without one.
+
 ## 0.40.0 — 18 November 2026
 
 - The tree zooms like a map: the wheel and the pinch only scale the picture
