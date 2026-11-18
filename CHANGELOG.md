@@ -8,8 +8,10 @@
 - What only another tree says about a person (a name, a date, a remark) stays
   in the fold of details as a version, not on the card.
 - Kin phrases decline the name they lean on ("Amaro's wife", "жена Андрея"),
-  "after 1941" reads in the reader's language, and the Russian kinship words
-  count generations in the right form.
+  "after 1941" reads in the reader's language, and counted generations agree
+  with their number in Russian, Polish and English.
+- Back on a paper opened in its own tab returns to the story it was opened
+  from. A place only another tree gives no longer heads the card.
 - The confirmed mark names only papers that name the person: a record listing
   its subjects without them no longer stands behind their card.
 - The kinship words page opens without a caution about proof, and the reader

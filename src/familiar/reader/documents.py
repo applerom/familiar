@@ -30,6 +30,11 @@ _BACK = b"""document.getElementById('document-back').addEventListener('click', (
   if (window.navigation?.canGoBack || (document.referrer && history.length > 1)) {
     event.preventDefault();
     history.back();
+  } else if (window.opener || history.length <= 1) {
+    // Opened in its own tab from a story or a card: going back means returning to that tab.
+    event.preventDefault();
+    window.close();
+    setTimeout(() => { location.href = event.target.href; }, 150);
   }
 });
 """

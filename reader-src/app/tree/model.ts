@@ -171,7 +171,13 @@ export function kinPhrase(k:Kin,labels:Row,lang:string){
  return (k.sure?'':(MAYBE[lang]||MAYBE.ru))+text;
 }
 /** Pack table first, then a neutral generation description. No guessed gender. */
-const substitute=(text:string,values:Record<string,string|number>)=>text.replace(/\{(\w+)\}/g,(_,key)=>String(values[key]??''));
+// A counted generation agrees with its number: 1 поколение, 3 поколения, 5 поколений; 1 generation; 2 pokolenia.
+const few=(n:number)=>n%10>=2&&n%10<=4&&(n%100<12||n%100>14);
+const agree=(text:string)=>text
+ .replace(/(\d+) поколений/g,(_,n)=>`${n} ${+n%10===1&&+n%100!==11?'поколение':few(+n)?'поколения':'поколений'}`)
+ .replace(/(\d+) pokole(?:ń|nia|nie)(?![a-ząćęłńóśźż])/g,(_,n)=>`${n} ${+n===1?'pokolenie':few(+n)?'pokolenia':'pokoleń'}`)
+ .replace(/(^|[^0-9])1 (generation)(s|er)(?![a-z])/g,'$11 $2');
+const substitute=(text:string,values:Record<string,string|number>)=>agree(text.replace(/\{(\w+)\}/g,(_,key)=>String(values[key]??'')));
 function collateralWord(n1:number,n2:number,g:'m'|'f'|'',lang:string,_cousinG:'m'|'f'|''='m'){
  const r:Relation={kind:'collateral',n1,n2,g,sure:true};const t=kinshipTerm(r,lang);
  const pack=kinshipLexicon(lang);return t?`${t.word} (${t.explanation})`:substitute(pack?.fallback.collateral||'',{n1,n2});
@@ -228,7 +234,7 @@ export function buildModel(data:Row,labels:Row={}){
   const ownerSurname=cleanSurname(p.names?.find((n:Row)=>n.surname)?.surname||ownerLabel.split('(')[0]);
   const story=typeof p.story==='string'?p.story.trim():!!(p.story?.ru||p.story?.pl||p.story?.en||p.story?.sv);
   const g=growth(data,id,connector);if(connector&&!g.documents.length&&!g.hasMedia){g.found=false;g.confirmed=[]}const basis=g.confirmed.map(s=>data.sources[s]?.title).filter(Boolean).join(' · ');
-  info[id]={connector,connectorNote:connector?ownerLabel:undefined,growth:g,confirmation:g.confirmed.length?{level:'document',basis:{ru:basis,en:basis,pl:basis,sv:basis},sources:g.confirmed}:p.confirmation,id,name:full,treeName:ownerLabel||tileName(p.treeName,short,np.maidenSurname,!!p.surnameDisplay?.form)||short,clanSurname:p.surnameDisplay?.form,providedName:ownerLabel||undefined,story:!!story,fullName:full,maidenSurname:np.maidenSurname||undefined,maidenShown,showMaiden:!ownerLabel&&!!(np.isWoman&&(np.isWife||np.maidenSurname)),unknownSurname:!!np.surnameUnknown,isWoman:!!np.isWoman,placeholder,surnameKey:p.surnameDisplay?.form|| (ownerLabel?(SURNAME.test(ownerSurname)?ownerSurname:''):main?surnameKey(np,short):''),short,alt,note:ownerLabel?'':note,birth,death,approx:approx||!!guess,guess,sex:/^m$/i.test(p.sex||'')?'m':/^f$/i.test(p.sex||'')||np.isWoman?'f':(data.families||[]).some((f:Row)=>f.husband===id)?'m':'',place:shortPlace(cp.place??b?.place),life,placeRole:cp.placeRole||'birth',birthText,deathText,birthKind:cp.birthKind||'source',deathKind:cp.deathKind||'source',connectionNote:cp.connectionNote||{},connectionShort:cp.connectionShort||{},dateBasis:cp.dateBasis||{},dateReference:cp.dateReference||{}}
+  info[id]={connector,connectorNote:connector?ownerLabel:undefined,growth:g,confirmation:g.confirmed.length?{level:'document',basis:{ru:basis,en:basis,pl:basis,sv:basis},sources:g.confirmed}:p.confirmation,id,name:full,treeName:ownerLabel||tileName(p.treeName,short,np.maidenSurname,!!p.surnameDisplay?.form)||short,clanSurname:p.surnameDisplay?.form,providedName:ownerLabel||undefined,story:!!story,fullName:full,maidenSurname:np.maidenSurname||undefined,maidenShown,showMaiden:!ownerLabel&&!!(np.isWoman&&(np.isWife||np.maidenSurname)),unknownSurname:!!np.surnameUnknown,isWoman:!!np.isWoman,placeholder,surnameKey:p.surnameDisplay?.form|| (ownerLabel?(SURNAME.test(ownerSurname)?ownerSurname:''):main?surnameKey(np,short):''),short,alt,note:ownerLabel?'':note,birth,death,approx:approx||!!guess,guess,sex:/^m$/i.test(p.sex||'')?'m':/^f$/i.test(p.sex||'')||np.isWoman?'f':(data.families||[]).some((f:Row)=>f.husband===id)?'m':'',place:shortPlace(cp.place??(b?.status==='hypothesis'?'':b?.place)),life,placeRole:cp.placeRole||'birth',birthText,deathText,birthKind:cp.birthKind||'source',deathKind:cp.deathKind||'source',connectionNote:cp.connectionNote||{},connectionShort:cp.connectionShort||{},dateBasis:cp.dateBasis||{},dateReference:cp.dateReference||{}}
   if (!ownerLabel) info[id].givenName = p.names?.[0]?.given?.trim() || undefined;
  }
  // An unnamed connector is shown by the placeholder the family data carries, literally; the engine never builds
