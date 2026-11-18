@@ -189,10 +189,11 @@ def _local_sources(instance, graph, media, *, host_private=False):
         if not entry and source.get('asset', '').lstrip('/') in media:
             entry = source['asset'].lstrip('/')
         image = None
-        if capture:
-            image = _rendition(capture, capture_ref, record, capture_ref.locator, generated, bindings, rendered)
-        elif entry and 'excerpt' not in source:
+        # The source's own registered picture (a cut-out) comes before the whole sheet its record names.
+        if entry and 'excerpt' not in source:
             image = _rendition(media[entry][1], None, None, entry, generated, bindings, rendered)
+        elif capture:
+            image = _rendition(capture, capture_ref, record, capture_ref.locator, generated, bindings, rendered)
         if record or image:
             name = 'sources/' + hashlib.sha256(sid.encode()).hexdigest()[:20] + '.html'
             from familiar.instance.publication import scan
