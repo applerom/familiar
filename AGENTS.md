@@ -25,7 +25,9 @@ The engine and method live here; real families live elsewhere. Pin
   **`uv run pytest -q --full` once**, including fast checks. `uv run pytest -q`
   is an optional shorter iteration, not another pre-commit requirement. No nested
   or source replay of the installed journey; no automatic UI tests. Interface
-  acceptance uses a manual browser walk when the task includes interface work.
+  acceptance uses a manual browser walk when the task includes interface work,
+  on the host's real local instance the task names (evidence outside the repo);
+  fixtures and tests committed here stay fictional because the repository is public.
 - Before delivering a release: commit, then `uv run python -X utf8
   scripts/check_release.py --deny-root <each-family-root> --wheel-dir <outside-repo>`.
   It checks the archive, denied roots and required wheel files. Optional

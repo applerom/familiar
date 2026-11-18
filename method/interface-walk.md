@@ -1,7 +1,11 @@
 # Interface acceptance walk
 
 Copy this sheet into the task's external work/report directory and extend it.
-Use an isolated fictional family. Record engine commit/version, family root,
+Walk the host's real local instance named in the task, on the release you
+changed: real data is the feedback, and debugging happens there. Evidence
+(screenshots, notes) stays in the external directory, never in this
+repository. A fictional family only when no real instance fits the change
+(public demo, a case no family has yet). Record engine commit/version, family root,
 local URL, browser, viewport widths, date, reviewer and evidence paths. Start
 the actual reader/desk, verify HTTP and render both tree and a chapter. Stop
 owned servers at the end. This is a browser walk, not an automatic UI test.
