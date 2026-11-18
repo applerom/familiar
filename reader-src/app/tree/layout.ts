@@ -24,6 +24,16 @@ const scaleFor = (gen: number) => gen < HISTORY_LEVEL ? 1 : PERSPECTIVE[gen - HI
 const curve = (x1: number, y1: number, x2: number, y2: number) =>
   `M${x1},${y1} C${x1},${(y1 + y2) / 2} ${x2},${(y1 + y2) / 2} ${x2},${y2}`;
 
+/** Lines a name takes when it breaks between words only. */
+function wrapped(name: string, room: number) {
+  let lines = 1, used = 0;
+  for (const word of name.split(' ')) {
+    if (used && used + 1 + word.length > room) { lines++; used = word.length; }
+    else used += (used ? 1 : 0) + word.length;
+  }
+  return lines;
+}
+
 function rootsFor(m: Model, center: string) {
   const mate = m.spouses(center).find(id => !m.info[id].placeholder);
   if (!mate) return [center];
@@ -117,7 +127,7 @@ export function layoutTree(m: Model, center: string, viewport: number, level = d
     const font = gen === 0 ? 16 : gen === 1 ? 14 : 12.5;
     const base = gen === 0 ? 68 : 58;
     const h = compact ? Math.max(8, Math.round(54 * scale))
-      : Math.max(base, Math.ceil(name.length * font * .56 / (w - 25)) * font * 1.22 + 33);
+      : Math.max(base, wrapped(name, Math.floor((w - 25) / (font * .58))) * font * 1.22 + 33);
     const stackLayers = gen >= 0 && w >= 40 ? m.siblingLayers(id) : 0;
     return {id, gen, status, w, h, scale, compact, fade: gen < HISTORY_LEVEL ? 1 : .34 + scaleFor(gen) * .66,
       x: 0, y: 0, stackLayers, color: m.tone(id)?.color};
