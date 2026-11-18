@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.41.0 — 18 November 2026
+
+- A family that already keeps an archive can move in. `docs/moving-in.md` tells
+  an agent where people, kinship, notes, photographs, papers and finished
+  stories go and how to count what was lost on the way. What the family's own
+  archive holds as known arrives as firm family memory; only what that archive
+  itself doubted stays a version.
+- `intake photo` attaches a family photograph to the people on it, one file or
+  a whole table at once. The received file is kept byte for byte; the picture
+  stands on each person's card and on the Photos page.
+- `intake gedcom --own` takes the family's own tree as the family's word, with
+  solid lines. Without it a GEDCOM stays another tree's claims.
+- `intake kinship-case` carries an ex-ussr-kinship-research case into Familiar:
+  people, relationships with their standing, artifacts with scans, claims and
+  the search log, so coverage knows where was already looked. A dry run comes
+  first; `docs/moving-from-kinship-research.md` has the mapping.
+- The tree steps one generation at a time again. The wheel and the round
+  buttons add or drop exactly one generation of ancestors, one step per turn
+  of the wheel, and the whole drawn tree refits the screen. A crowded row gets
+  narrower tiles, down to an initial, instead of running off the edge. A click
+  centres the tree on that person. This replaces the map-like zoom of 0.40.0.
+- The tile tells the card's name: bracketed remarks of an old import are
+  dropped, and a written surname the card no longer carries stays only as the
+  known maiden name or the clan's adopted spelling.
+- Home, not court: notices such as "documents exist but do not confirm the
+  facts" are gone from the pages a family reads. Rule `CRAFT-HOME-NOT-COURT`
+  asks every role to tell the leading version and stay silent where nothing is
+  known.
+- An explicit unknown life decision is honoured in the family display, and a
+  card no longer cites a withheld paper of a protected person.
+- Data: memory intake accepts JSON with notes and an archive original; photo
+  intake stores gallery bindings with original and display hashes; kinship
+  intake saves the complete case ZIP and maps its registers into working
+  forms. Nothing already stored changes shape.
+
 ## 0.40.1 — 18 November 2026
 
 - A cut-out keeps its own picture on the person's card; the whole sheet stands
