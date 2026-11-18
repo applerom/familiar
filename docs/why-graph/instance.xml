@@ -131,6 +131,7 @@
     <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_photo_treatment_stays_local_for_living_subject">Restorations refuse living or unknown subjects everywhere and require original frames and version recipes; deceased pairs reach both views.</INVARIANT>
     <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_photo_treatment_stays_local_for_living_subject">Living photo treatments stay in the family display; public generations track dead-only treatment uses.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Family display includes living and unknown people; public output retains only names and kinship.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">A card fact linked to a canonical record follows that document's protection in both reader modes.</INVARIANT>
     <!-- Plain card serialization is cheaper than reading and checking hundreds
          of cache payloads; the full declared projection is always applied. -->
     <!-- Serializer validates term declarations once; semantic worklist matches

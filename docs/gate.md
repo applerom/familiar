@@ -27,8 +27,9 @@ We report withheld chapter cut-outs, pictures and game evidence as private advic
 in `feed check` and `feed pages --text`, separately for the local host and readers.
 Advice names the item, protected subjects and life status, and the next action:
 clarify life status or separate a deceased-only excerpt.
-A living person’s full document remains excluded. Omission remains safe and
-does not itself block a build; conflicting subjects still refuse it.
+A living or unknown person's full document and its record-linked card details
+remain excluded. The build can continue with that omission. Conflicting
+subjects still refuse it.
 
 A `photo-treatment` is the same real photographic frame with colour or print
 processing, distinct from a generated reconstruction. The original picture has

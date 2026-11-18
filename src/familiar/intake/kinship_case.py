@@ -279,7 +279,8 @@ class Case:
                 for pid in subjects:
                     # The documentary citation gives the card a paper link without making a factual or identity claim.
                     self.package['facts'].setdefault(pid, []).append(
-                        {'label': 'document', 'text': title, 'status': 'export', 'sources': [rid], 'detailOnly': True})
+                        {'label': 'document', 'text': title, 'status': 'export', 'record': rid,
+                         'sources': [rid], 'detailOnly': True})
             self.counts['artifacts']['imported'] += 1
 
     def dependency(self, group):

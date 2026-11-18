@@ -3,7 +3,7 @@
 # PRD_REF: docs/PRD.md#FORMS
 # INVARIANTS:
 # - publication asset failures retain each unique URL across feeds [review: engine lead]
-# - both reader modes exclude protected documents using accumulated structured attachments [review: engine lead]
+# - both reader modes exclude protected documents and their record-linked card details [review: engine lead]
 # - photo treatments inherit original privacy [review: engine lead]
 # - living name parts inferred by researchers are omitted from canonical names; reported kin wording remains permissible kinship [review: engine lead]
 # - the person's `coverage` (where it was looked for) is declared for the host-private reader only and is dropped from every public projection [review: engine lead]
@@ -428,6 +428,8 @@ def private_graph(instance, graph, *, host_private=True):
             resolved = closure(instance, node, shape='image', people=known)
             if any(life_status(known[p], privacy) != 'dead' for p in resolved.people):
                 return True
+        if key == 'facts' and node.get('record'):
+            return unsafe_document(node, 'fact')
         if key == 'records' or node.get('kind') == 'document-scan' or (key in {'media', 'illustrations', 'figures', 'picture'} and (node.get('record') or node.get('photo') is False)):
             return unsafe_document(node, 'document' if key == 'records' else 'image')
         return False
