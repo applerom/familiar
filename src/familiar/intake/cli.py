@@ -41,6 +41,7 @@ def register(commands):
             sub.add_argument("--id", required=True)
             sub.add_argument("--living-years", type=int, help='Must match the family registry privacy.living_years')
             sub.add_argument("--as-of")
+            sub.add_argument("--own", action="store_true", help="The family's own tree: its claims are the family's word, not another tree's hypotheses")
     case = actions.add_parser('kinship-case', help='Preview a kinship research case migration')
     case.add_argument('input', type=Path, metavar='CASE')
     case.add_argument('--id', required=True, help='Namespace for the imported case')
@@ -100,7 +101,7 @@ def run(args):
         else:
             data = tomllib.loads(args.input.read_text(encoding="utf-8-sig"))
         original = args.input if kind == "gedcom" else getattr(args, "original", None)
-        report = ingest(instance, data, kind, original, accepted_by=getattr(args, "by", None))
+        report = ingest(instance, data, kind, original, accepted_by=getattr(args, "by", None), own=getattr(args, "own", False))
         print(json.dumps(report, ensure_ascii=False, indent=2))
         return 0
     except (ValueError, OSError, KeyError, TypeError, RootNotFound, csv.Error) as exc:

@@ -711,7 +711,9 @@ snapshot; they have no public reader declaration. Preserving a phrase does not
 interpret its role or create an adoption relationship; unsupported parent tags
 still appear in the loss report.
 GEDCOM claims and imported kinship default to hypotheses, with the attribution
-"Recorded in another tree (unverified)"; inline/referenced `SOUR` titles,
+"Recorded in another tree (unverified)"; `intake gedcom --own` declares the
+family's own tree, whose claims enter as firm family statements instead;
+inline/referenced `SOUR` titles,
 `PAGE` and `QUAY` remain source text, never family testimony or a weight.
 Unrepresented tags (including subfields of supported tags) appear with counts
 in .state/intake/<id>.json. A tag retained only in the original is a loss from

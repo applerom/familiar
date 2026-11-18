@@ -42,7 +42,9 @@ from familiar.instance.gate import boundary
 
 
 @boundary('writer')
-def ingest(instance, data, kind, original=None, accepted_by=None):
+def ingest(instance, data, kind, original=None, accepted_by=None, own=False):
+    # A GEDCOM is another tree's claim unless the host says it is the family's own tree: then it is the family's word.
+    foreign = kind == 'gedcom' and not own
     from html import unescape
 
     from familiar.instance.subjects import normalized
@@ -170,14 +172,14 @@ def ingest(instance, data, kind, original=None, accepted_by=None):
                     name,
                     provenance=basis(name),
                     display=" ".join(filter(None, [name.get("given"), name.get("patronymic"), name.get("surname")])),
-                    **({'status': 'hypothesis'} if kind == 'gedcom' else {}),
+                    **({'status': 'hypothesis'} if foreign else {}),
                 )
             )
         events = [
             dict(
                 e,
                 provenance=basis(e),
-                **({'status': 'hypothesis'} if kind == 'gedcom' else {}),
+                **({'status': 'hypothesis'} if foreign else {}),
                 tag=e.get(
                     "tag", {"birth": "BIRT", "death": "DEAT"}.get(e["type"], e["type"].upper())
                 ),
@@ -253,14 +255,14 @@ def ingest(instance, data, kind, original=None, accepted_by=None):
             "provenance": basis(row),
             **({'notes': [dict(n, provenance=basis(n)) for n in row['notes']]} if row.get('notes') else {}),
             **({k: row[k] for k in ("derived", "basis")} if row.get("derived") is True else {}),
-            "status": 'hypothesis' if kind == 'gedcom' or row.get('status') == 'hypothesis' or any(
+            "status": 'hypothesis' if foreign or row.get('status') == 'hypothesis' or any(
                 item.get('strength') == 'hearsay' and item['id'] in basis(row) for item in items) else 'export',
         }
         for key in ("husband", "wife"):
             if row.get(key) and row[key] not in refs:
                 raise ValueError("unknown family member")
         family["events"] = [dict(e, provenance=basis(e), tag=e.get("tag", "MARR"),
-                                **({'status': 'hypothesis'} if kind == 'gedcom' else {}))
+                                **({'status': 'hypothesis'} if foreign else {}))
                             for e in row.get("events", [])]
         same = next(
             (
@@ -351,7 +353,7 @@ def ingest(instance, data, kind, original=None, accepted_by=None):
                 claim_text = claim.get("text") or json.dumps(claim, ensure_ascii=False)
                 if data.get("table_sha256") and field == "events":
                     claim_text = next((i["display_text"] for i in items if i["id"] in sources and i.get("display_text")), claim_text)
-                if kind == 'gedcom':
+                if foreign:
                     claim_text = 'Recorded in another tree (unverified): ' + claim_text
                     if row.get('source_text'):
                         claim_text += '; ' + '; '.join(row['source_text'])
@@ -362,7 +364,7 @@ def ingest(instance, data, kind, original=None, accepted_by=None):
                         **({'eventType': claim.get('type')} if field == 'events' else {}),
                         "text": claim_text,
                         "status": "hypothesis"
-                        if kind == 'gedcom' or claim.get('status') in {'hypothesis', 'possible'} or any(strengths.get(s) == "hearsay" for s in sources)
+                        if foreign or claim.get('status') in {'hypothesis', 'possible'} or any(strengths.get(s) == "hearsay" for s in sources)
                         else "export",
                         "sources": sources,
                     }
@@ -373,7 +375,7 @@ def ingest(instance, data, kind, original=None, accepted_by=None):
             "title": "Family intake",
             "date": data.get("date", "unknown"),
             "text": "Attributed intake; identity remains to be researched",
-            "status": "hypothesis" if kind == 'gedcom' else "export",
+            "status": "hypothesis" if foreign else "export",
             "sources": sorted(grounds),
         },
         "schema": 1,

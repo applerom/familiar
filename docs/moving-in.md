@@ -12,24 +12,34 @@ familiar --root ./my-family instance paths
 
 ## People, relationships and memory
 
-- For GEDCOM, run `familiar --root ./my-family intake gedcom ./archive.ged --id archive-tree`.
-  Read the loss and candidate report under `.state/intake/`. Imported tree claims
-  remain hypotheses. Confirm an identity only with evidence beyond a name match.
+- For GEDCOM of the family's own tree, run `familiar --root ./my-family intake gedcom ./archive.ged --id archive-tree --own`.
+  `--own` says the tree is what this family itself holds: its people and kinship
+  come in as the family's word, drawn with solid lines. Without `--own` the file is
+  someone else's tree and every claim is a hypothesis until research supports it.
+  Read the loss and candidate report under `.state/intake/`.
 - For a kinship spreadsheet, run `familiar --root ./my-family intake table ./relatives.xlsx --id relatives --told-by "Previous archive" --date YYYY-MM-DD --language en`.
   Review its `reading.json` cell ledger and editable `memory.toml`. Run the
   reported `intake memory` command with its frozen `--original` sheet.
 - For a website or structured export, map its people and family groups into the
   `people` and `families` arrays from `familiar research form memory.toml`.
   The same shape works in JSON. Cite a memory item in each claim's `provenance`.
-  Use `status: "hypothesis"` on tentative families. Preserve disputed dates
-  as attributed notes and retain unplaced identity candidates in the source or
-  a research version. Keep the old stable IDs in your mapping.
+  Keep the old stable IDs in your mapping.
+
+**The family's own knowledge stays firm.** What the old archive holds as known
+(a status such as "family", "confirmed", or no status at all) is firm family
+memory: `strength: "firm"`, no `status`. The family is at home here, not in
+court, and its tree must not arrive as a page of dotted lines and "possibly".
+Mark `status: "hypothesis"` or `strength: "hearsay"` only where the old archive
+itself doubted: a candidate, a disputed date, a question mark. Preserve such
+doubts as attributed notes and keep unplaced identity candidates in the source
+or a research version. Never merge two people by a matching name alone.
 
 Map a person's summary or fact to an item with its own `id`, `person` (local
 or working-tree ID), `role: "note"`, optional `label`, and literal `text`.
-Set `told_by` on the telling to the previous archive. An item can override it
-with `witness`. Use `strength: "hearsay"` or `status: "possible"` for uncertain
-claims. Preserve original status and context in the source. Keep protected
+Set `told_by` on the telling to the relative who kept the archive, or to the
+archive when no teller is known. An item can override it with `witness`. Use
+`strength: "hearsay"` or `status: "possible"` only for claims the archive
+itself marks as uncertain. Preserve original status and context in the source. Keep protected
 documents and street addresses in private originals or search-only memory.
 
 ```sh
