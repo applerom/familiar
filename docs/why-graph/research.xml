@@ -72,6 +72,7 @@
   </FEATURE_SEARCH_COVERAGE>
   <MODULE_SEARCH_LEDGER ID="MOD-SEARCH-LEDGER" FILE="src/familiar/research/search_ledger.py" STATE="IMPLEMENTED"/>
   <MODULE_RESEARCH_COVERAGE ID="MOD-RESEARCH-COVERAGE" FILE="src/familiar/research/coverage.py" STATE="IMPLEMENTED">
+    <INVARIANT TEST="tests/research/test_coverage_ledger.py::test_collateral_modes_and_line_fronts">A source birth cohort excludes a cell by epoch when the person's known birth window is entirely outside it.</INVARIANT>
     <INVARIANT TEST="tests/research/test_coverage_ledger.py::test_collateral_modes_and_line_fronts">Line fronts follow weighted parent hypotheses from 0.30, match questions by surname or explicit people, and honor the family's preferred line order. The recheck queue puts chosen chains and their ancestors' siblings first, then the secondary scope, then enabled collateral descendants, retaining score order within each group.</INVARIANT>
   </MODULE_RESEARCH_COVERAGE>
   <MODULE_RESEARCH_COVERAGE_DISPLAY ID="MOD-RESEARCH-COVERAGE-DISPLAY" FILE="src/familiar/research/coverage_display.py" STATE="IMPLEMENTED"/>

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.36.3 — 18 November 2026
+
+- We skip military sources outside a person's birth cohort and accept plain-text person notes in builds.
+
 ## 0.36.2 — 18 November 2026
 
 - We recheck the chosen main lines and ancestors' siblings first, label the

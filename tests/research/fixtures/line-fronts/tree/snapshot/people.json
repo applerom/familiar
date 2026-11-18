@@ -10,6 +10,6 @@
   {"id": "grandchild", "name": "Grandchild", "living": false},
   {"id": "living", "name": "Living", "living": true},
   {"id": "unknown", "name": "Unknown"},
-  {"id": "spouse-father", "name": "Spouse-Father", "living": false},
+  {"id": "spouse-father", "name": "Spouse-Father", "living": false, "notes": ["Born in 1961."]},
   {"id": "distant", "name": "Distant", "living": false}
 ]}

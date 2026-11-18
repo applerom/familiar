@@ -7,6 +7,7 @@
 # - consumers may enrich cards before one identity pass [review: engine lead]
 # - the private working view retains living data beside unfinished publications [review: engine lead]
 # - cheap normalization is recomputed before global identity and relationship checks; it requires no per-person cache files [review: engine lead]
+# - snapshot and contribution person notes normalize to objects before checks and publication [review: engine lead]
 # - no working or reader graph is returned when a contribution was rejected [review: engine lead]
 # - one reference index includes active people and resolves every merged id to its successor [review: engine lead]
 # CHANGES_WITH:
@@ -83,6 +84,9 @@ def _snapshot_graph(instance, raw, *, apply_identity=True):
                         languages=instance.languages, families=graph['families'],
                         record_ids={p.stem for p in instance.path('records').rglob('*.json')},
                         evidence_path=instance.path('evidence'))
+    for person in people.values():
+        if isinstance(person.get('notes'), list):
+            person['notes'] = [{'text': note} if isinstance(note, str) else note for note in person['notes']]
     return _apply_identities(graph, read_json(instance.path('identity_decisions'), {})) if apply_identity else graph
 
 

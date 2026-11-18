@@ -62,10 +62,10 @@ def test_collateral_modes_and_line_fronts(tmp_path, capsys):
         side = matrix['collateral']
         assert [h['record'] for h in side['hints']] == ([] if mode == 'off' else ['records/side-record.json'])
         queue = [r['person'] for r in matrix['recheck']]
-        expected = ['elder', 'father', 'root', 'spouse', 'spouse-father', 'sibling']
+        expected = ['elder', 'father', 'root', 'spouse', 'sibling']
         expected.insert(2 if mode == 'hints' else len(expected), 'mother')
         assert queue == expected + (['cousin', 'grandchild', 'inlaw'] if mode == 'full' else [])
-        assert [r['start']['id'] for r in lines] == (['root', 'spouse', 'mother'] if mode == 'hints' else ['spouse', 'root', 'mother'])
+        assert [r['start']['id'] for r in lines] == (['root', 'mother', 'spouse'] if mode == 'hints' else ['spouse', 'root', 'mother'])
         assert [r['secondary'] for r in lines] == [False, False, mode != 'hints']
         paternal = next(r for r in lines if r['start']['id'] == 'root')
         assert [(p['id'], p['weight']) for p in paternal['chain']] == [('root', None), ('father', None), ('elder', .6)]

@@ -49,6 +49,12 @@ researcher's work except naming three things on each row.
   `totals.eligible_cells` counts applicable cells for deceased people across
   the catalogue sources the ledger knows about. `totals.cells` counts recorded
   person-by-source cells.
+
+  An optional catalogue `born = [first, last]` gives the inclusive birth years
+  of people covered by a source. A known birth window wholly outside this range
+  excludes the cell by epoch. An overlapping or unknown birth window leaves the
+  cell eligible under the other filters. For wartime collections, `born` still
+  applies when `years` includes later awards or is unknown.
 - `--lines`: one row for each father's line from the tree root, each spouse,
   and each maternal branch. Rows show the surname, the chain to its farthest
   ancestor, and the weight of each hypothesized parent link followed (minimum

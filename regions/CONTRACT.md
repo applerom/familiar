@@ -186,6 +186,9 @@ be established. Source selection by year retains that candidate and labels it
 «годы неизвестны»; no invented wide interval may stand in for missing years.
 The pack's own `years` remains its declared territory/time scope.
 
+Optional `source.born = [first, last]` is the inclusive birth cohort for
+coverage planning. Only a known, disjoint personal birth window excludes a cell.
+
 Optional coverage-planning fields: `search_languages` (BCP-47), `search_scripts`
 (`Latn`, `Cyrl`), `search_language_eras` (`{years = [start, end], languages = [...]}`),
 `parishes` and `episodes` (applicable aliases). `planning_requires = "parish"` or

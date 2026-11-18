@@ -25,6 +25,7 @@
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-TREE-CLI"/>
   </FEATURE_TREE>
   <MODULE_TREE_BUILDER ID="MOD-TREE-BUILDER" FILE="src/familiar/tree/builder.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Snapshot and contribution note strings normalize to text objects before checks and publication.</INVARIANT>
     <INVARIANT REVIEW="engine lead">The working reference index resolves active people and immutable merged ids.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-TREE-SURNAMES"/>
     <!-- Normalization is cheaper than reading a cache entry; whole-graph checks remain. -->

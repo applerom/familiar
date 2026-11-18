@@ -71,6 +71,10 @@ def episode_fit(person, source):
 
 
 def life_window(person):
+    return planning_windows(person)[1]
+
+
+def planning_windows(person):
     """Planning only: even an uncertain family birth note is useful, never a life-status decision."""
     from familiar.tree.life import _birth_bounds
     bounds = {'birth': [], 'death': []}
@@ -93,8 +97,9 @@ def life_window(person):
         year = guess.get('year') if isinstance(guess, dict) else guess
         if isinstance(year, (int, float)):
             births = [(int(year) - 30, int(year) + 30)]
-    return (min((b[0] for b in births), default=None),
-            max((b[1] for b in deaths), default=max((b[1] + 120 for b in births), default=None)))
+    born = (min(b[0] for b in births), max(b[1] for b in births)) if births else (None, None)
+    last = born[1] + 120 if born[1] is not None else None
+    return born, (born[0], max((b[1] for b in deaths), default=last))
 
 
 def place_groups(raw, catalog):

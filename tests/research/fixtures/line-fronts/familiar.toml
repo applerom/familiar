@@ -1,4 +1,5 @@
 schema_version = 1
+region_packs = ["belarus-podlasie"]
 [family]
 id = "invented-lines"
 title = "Invented Lines"

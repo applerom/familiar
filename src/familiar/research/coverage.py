@@ -7,6 +7,7 @@
 # - strength comes from the research.search_strength setting; an executor no key names has strength 0 (unknown), never a guess [review: engine lead]
 # - rows not in the ledger form are counted aside, not mixed into the matrix [review: engine lead]
 # - catalogue epoch/place mismatches leave the queue, never erase recorded searches; unknown geography remains eligible [review: engine lead]
+# - a known birth window disjoint from the source's birth cohort excludes a cell by epoch [test: tests/research/test_coverage_ledger.py::test_collateral_modes_and_line_fronts]
 # - the life assessment excludes living and possibly living people from the recheck queue, counted separately [review: engine lead]
 # - collateral descendants stay outside the main planning denominator and queue; the line front derives from tree, versions and existing cells [review: engine lead]
 # - line fronts follow parent hypotheses from 0.30 and match questions by surname or explicit people; designated lines and ancestors' siblings lead the recheck queue [test: tests/research/test_coverage_ledger.py::test_collateral_modes_and_line_fronts]
@@ -29,7 +30,7 @@ from .search_ledger import METHOD, Resolver, Tree, in_ledger_form, is_review, re
 from .coverage_evidence import references, review_links
 from .search_variants import norm
 from .coverage_context import (contains, episode_fit, form_metadata, life_window, missing_forms, person_text,
-                               record_visits, row_people, script_of, text)
+                               planning_windows, record_visits, row_people, script_of, text)
 from .search_variants import form_data
 from .coverage_quality import availability, query_issues
 
@@ -408,14 +409,15 @@ def planning_context(data, pid):
         if any(contains(raw, a) for a in entry.get('aliases', [])):
             countries.update(entry.get('countries', []))
             regions.update(entry.get('regions', []))
-    return life_window(person), raw, countries, regions
+    return planning_windows(person), raw, countries, regions
 
 
 def applicability(data, pid, sid, context=None):
     """Planning fit only: generous life window; unknown dates/places never exclude a source."""
     source = data['resolver'].catalog.sources.get(sid, {})
-    (lower, upper), raw, countries, regions = context or planning_context(data, pid)
+    ((born_from, born_to), (lower, upper)), raw, countries, regions = context or planning_context(data, pid)
     years = source.get('years', [])
+    born = source.get('born', [])
     reasons = []
     person = data['tree'].graph['people'][pid]
     guess = person.get('birth_guess') or person.get('birthGuess') or {}
@@ -423,7 +425,9 @@ def applicability(data, pid, sid, context=None):
     # The uncertainty envelope remains useful for overlap, but not as a reason
     # to prioritize a person who was already about a century old.
     birth = birth if isinstance(birth, (int, float)) else lower
-    if len(years) == 2 and ((lower is not None and lower > years[1]) or (upper is not None and upper < years[0])):
+    outside_cohort = len(born) == 2 and born_from is not None and (born_from > born[1] or born_to < born[0])
+    outside_life = len(years) == 2 and ((lower is not None and lower > years[1]) or (upper is not None and upper < years[0]))
+    if outside_cohort or outside_life:
         reasons.append('epoch')
     elif len(years) == 2 and birth is not None and years[0] - birth > 100:
         reasons.append('age-at-source-start')
