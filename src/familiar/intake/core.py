@@ -355,10 +355,10 @@ def ingest(instance, data, kind, original=None, accepted_by=None, own=False):
                 claim_text = claim.get("text") or json.dumps(claim, ensure_ascii=False)
                 if data.get("table_sha256") and field == "events":
                     claim_text = next((i["display_text"] for i in items if i["id"] in sources and i.get("display_text")), claim_text)
-                if foreign:
-                    claim_text = 'Recorded in another tree (unverified): ' + claim_text
-                    if row.get('source_text'):
-                        claim_text += '; ' + '; '.join(row['source_text'])
+                if foreign and row.get('source_text'):
+                    # The tree's own source titles stay with the claim, inside its literal form.
+                    claim_text = (claim_text + '; ' + '; '.join(row['source_text']) if claim.get('text') else json.dumps(
+                        {**claim, 'source_text': [*claim.get('source_text', []), *row['source_text']]}, ensure_ascii=False))
                 facts.setdefault(pid, []).append(
                     {
                         **({k: claim[k] for k in ("derived", "basis")} if claim.get("derived") is True else {}),

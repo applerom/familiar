@@ -710,8 +710,8 @@ value, including unsupported adoption/role enums. Union notes remain in the
 snapshot; they have no public reader declaration. Preserving a phrase does not
 interpret its role or create an adoption relationship; unsupported parent tags
 still appear in the loss report.
-GEDCOM claims and imported kinship default to hypotheses, with the attribution
-"Recorded in another tree (unverified)"; `intake gedcom --own` declares the
+GEDCOM claims and imported kinship default to hypotheses attributed to their
+GEDCOM source; `intake gedcom --own` declares the
 family's own tree, whose claims enter as firm family statements instead;
 inline/referenced `SOUR` titles,
 `PAGE` and `QUAY` remain source text, never family testimony or a weight.

@@ -24,6 +24,8 @@ from familiar.feeds.service import _materialize, folders
 from familiar.tree.builder import _build, read_json
 
 
+FOREIGN_CLAIM = 'Recorded in another tree (unverified): '
+
 def intake_prose(instance, graph):
     """Present stored intake assertions; keep originals and provenance untouched."""
     from familiar.instance.memory_visibility import select
@@ -128,8 +130,13 @@ def _intake_person(person, source_map, records, telling, wording, labels):
         if not (any(s.get('kind') in {'memory', 'home-paper', 'gedcom'} for s in sources)
                 or any(sid in records for sid in fact.get('sources', []))):
             continue
+        raw = fact.get('text', '')
+        if isinstance(raw, str) and raw.startswith(FOREIGN_CLAIM):
+            # Intakes before 0.41.1 prefixed another tree's claims. The dotted status and the
+            # source already say whose claim it is; the family reads the claim itself.
+            raw = fact['text'] = raw[len(FOREIGN_CLAIM):]
         try:
-            claim = json.loads(fact.get('text', ''))
+            claim = json.JSONDecoder().raw_decode(raw)[0]
         except (ValueError, TypeError):
             continue
         if not isinstance(claim, dict):
