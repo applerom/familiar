@@ -5,7 +5,12 @@
 - A claim taken from another tree reads on the card as the claim itself: a
   name, a date and a place. The card no longer shows its stored form or the
   word "unverified"; the dotted status and the source say whose claim it is.
-- The kinship words page opens without a caution about proof.
+- Another tree's remarks about a person stay in the fold of details, not on
+  the card.
+- The confirmed mark names only papers that name the person: a record listing
+  its subjects without them no longer stands behind their card.
+- The kinship words page opens without a caution about proof, and the reader
+  button of a story is no longer cut off on a phone.
 - The Russian demonstration keeps its recorded deaths on merged cards.
 - Data: new GEDCOM intakes store a claim without the "Recorded in another
   tree" prefix; claims stored with it are read the same way, nothing to carry

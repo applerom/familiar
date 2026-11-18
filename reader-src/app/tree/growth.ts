@@ -21,7 +21,8 @@ export function growth(data:Row,id:string,connector=false){
  const claims=[...(p.events||[]),...(p.facts||[])].filter(r=>solid(r)&&key(r));
  const marriages=(data.families||[]).filter((f:Row)=>f.husband===id||f.wife===id).flatMap((f:Row)=>(f.events||[]).filter((e:Row)=>solid(f)&&solid(e)&&key(e)));
  const links=(data.edges||[]).filter((e:Row)=>(e.child===id||e.parent===id)&&solid(e));
- const grounds=[...claims,...marriages,...links].flatMap(refs).filter(s=>documentary(sources[s]));
+ // A paper confirms the people it names: a record that lists its subjects without this person is not theirs.
+ const grounds=[...claims,...marriages,...links].flatMap(refs).filter(s=>documentary(sources[s])&&(!sources[s].subjects?.length||sources[s].subjects.includes(id)));
  return {hasMedia:(p.media||[]).some((m:Row)=>!!m.asset&&!m.photo), memory, firmMemory, treeMemory, found:!memory&&docSources.length>0, documents:docSources,
   confirmed:[...new Set(grounds)], manual:p.confirmation?.level&&p.confirmation.level!=='mention'};
 }

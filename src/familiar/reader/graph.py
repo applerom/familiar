@@ -135,6 +135,8 @@ def _intake_person(person, source_map, records, telling, wording, labels):
             # Intakes before 0.41.1 prefixed another tree's claims. The dotted status and the
             # source already say whose claim it is; the family reads the claim itself.
             raw = fact['text'] = raw[len(FOREIGN_CLAIM):]
+        if field == 'notes' and fact.get('status') == 'hypothesis' and sources and all(s.get('kind') == 'gedcom' for s in sources):
+            fact['detailOnly'] = True  # Another tree's remarks are material for the investigation, not the card.
         try:
             claim = json.JSONDecoder().raw_decode(raw)[0]
         except (ValueError, TypeError):
