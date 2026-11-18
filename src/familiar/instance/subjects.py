@@ -306,6 +306,11 @@ def attribute_documents(instance, graph):
                 keys.append(('asset', value['asset']))
         value = dict(node, kind='archive-record') if shape == 'source' and node.get('record') in record_ids else node
         resolved = closure(instance, value, shape=shape, people=known)
+        if shape == 'source' and 'excerpt' not in node and (record := resolved.records.get(node.get('record'))):
+            from familiar.reader.scans import selected_capture
+            _, capture = selected_capture(instance, record)
+            if capture:
+                keys.append(('capture', capture))
         if shape in {'document', 'image'} and node.get('subjects') and not node.get('_document_attributed') and node.get('record') in resolved.records:
             actual = closure(instance, {'record': node['record'], **({'excerpt': node['excerpt']} if 'excerpt' in node else {})}, shape=shape, people=known).people
             declared = {known[p].get('id', p) for p in node['subjects']}

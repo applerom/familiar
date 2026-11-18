@@ -245,7 +245,10 @@ def publication(instance, kind, feed=None, *, for_review=False, tree_enrich=None
         elif kind == 'tree':
             from familiar.tree.builder import _build
             from familiar.tree.canonical import encode
-            data = scan(active, restrict_graph(active, _build(active, enrich=tree_enrich)), 'graph')
+            graph = _build(active, enrich=tree_enrich)
+            for source in graph['sources'].values():
+                source.pop('image', None)  # Only the checked reader document projection writes this field.
+            data = scan(active, restrict_graph(active, graph), 'graph')
             scan_assets(active, data)
             files = {'graph.json': encode(data).encode('utf-8')}
         elif kind in {'reader', 'reader-private'}:
@@ -261,16 +264,18 @@ def publication(instance, kind, feed=None, *, for_review=False, tree_enrich=None
                 # The display snapshot holds no search journals; the host's own instance supplies the coverage block.
                 from familiar.research.coverage_display import attach
                 attach(instance, graph)
-            pages = _local_sources(active, graph, media, host_private=private)
+            documents, scan_sources = _local_sources(active, graph, media, host_private=private)
             allowed = Registry(method_root() / 'rules', active).resolve_setting('media.external_embeds').value
             graph = external_links(graph, allowed)
             graph = scan(active, graph if private else restrict_graph(active, graph), 'graph', host_private=private)
             family = dict(active.config['family'])
             family.setdefault('fictional', False)
             profile = scan(active, {'schema_version': 1, 'family': family, 'data': 'graph.json', 'reader_names': {}}, 'profile')
-            used = dependencies(used_assets(graph, {**media, **{key: None for key in pages}}), media, pages)
+            if media.keys() & documents.keys():
+                raise ValueError('registered media collides with generated documents')
+            used = dependencies(used_assets(graph, media.keys() | documents.keys()), media, documents)
             files = {'graph.json': encode(graph), 'reader-profile.json': encode(profile),
-                     **{key: value for key, value in pages.items() if key in used}}
+                     **{key: value for key, value in documents.items() if key in used}}
             for name in sorted(used):
                 if name in media:
                     row, source = media[name]
@@ -279,6 +284,7 @@ def publication(instance, kind, feed=None, *, for_review=False, tree_enrich=None
             from .writer import content_digest
             manifest = {'schema_version': 1, 'family_id': active.id, 'state': 'host-private' if private else CLEAN, 'inputs': inputs,
                         'files': {name: {'sha256': content_digest(value),
+                                          **({'source_sha256': scan_sources[name]} if name in scan_sources else {}),
                                           **({'id': media[name][0]['id'], 'kind': media[name][0]['kind']} if name in media else {})}
                                   for name, value in sorted(files.items())}}
             files['bundle.json'] = encode(manifest)

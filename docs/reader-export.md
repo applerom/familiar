@@ -202,14 +202,16 @@ for hostile build code. Pass each local family root with its own `--deny-root`.
   associations, root and card statuses. Existing claim statuses and array order
   are retained. Canonical attributed names/events get the reader's display keys.
   Dates supplied only by tentative facts cannot replace ordinary card dates.
-- Local media under the names in the family's permanent manifest. Literal
-  record JSON becomes escaped local HTML. Research URLs stay in the private
-  sources. Export never downloads a document or fabricates an absent scan.
-  Document pages retain record titles, link back to the local reader and show
-  the fictional-family notice when the family or record is marked fictional.
+- Permanent media keeps its registered names. A canonical record has a local
+  document page with its title and escaped reading. When the record names a
+  preserved image, the page shows the image before the reading and opens it
+  at its delivered size. The graph source keeps its page URL in `asset` and
+  supplies the scan URL in `image`. Back follows browser history with the reader
+  home as the direct-entry fallback. Research URLs stay private.
 - `bundle.json`, written last: integer `schema_version: 1`, `family_id`,
   `state: clean` (or recorded `host release`), named `inputs` fingerprints, and `files` mapping relative
   names to SHA-256 (plus the stable media id and kind where relevant).
+  Automatic scans add `source_sha256` for the exact capture bytes.
 
 No timestamps or output-directory paths enter the bundle: unchanged inputs
 produce exactly the same bytes in two empty directories. A preview serializer
@@ -244,6 +246,14 @@ where it belongs in family data; an optional `source_id` associates a preserved
 display derivative with a graph source. Digests are verified, not inferred from
 file size. A derivative with `source_id` also carries `source_sha256`; changing
 that local primary document refuses the old derivative rather than reusing it.
+When an adopted record names a file in `source.locator` or its capture fields,
+the reader selects a file inside the instance or mapped originals, checks any
+recorded frame checksum and binds the original in the publication snapshot.
+Pillow (the `images` extra) makes a metadata-free image with a longest side of
+1800 px. The engine links a pixel-only PDF when a PDF is the selected capture
+and optional `pypdfium2` is available in its Python environment. A captured page
+image takes precedence over a PDF. Text remains available when a capture
+or decoder is unavailable. These exports need no permanent media rows.
 The manifest contains authored media and retained derivatives, never
 the sole copy in the export directory. The feed builder, approval fingerprints
 and trust check resolve the same manifest through `Instance.media_file()`;

@@ -125,12 +125,20 @@ def _resources(instance, files):
         raise ValueError('Family delivery collides with packaged shell resources')
     result = dict(shell)
     result['index.html'] = labelled(shell['index.html'])
-    result['reader-manifest.json'] = encode({key: bundle[key] for key in ('schema_version', 'family_id', 'state', 'files')}
-                                          | {'profile': 'reader-profile.json'})
+    tokens = ''.join(f'<link rel="stylesheet" href="/{name}">'
+                     for name in shell if name.startswith('assets/tokens-') and name.endswith('.css')).encode()
     # The internal bundle includes private dependency paths. It and generation
     # metadata are not browser resources, even if their names are guessed.
     for path in bundle['files']:
-        result[path] = labelled(files[path]) if path.endswith('.html') else files[path]
+        content = files[path]
+        if path.startswith('sources/') and path.endswith('.html'):
+            content = content.replace(b'</head>', tokens + b'</head>', 1)
+        result[path] = labelled(content) if path.endswith('.html') else content
+    result['reader-manifest.json'] = encode({key: bundle[key] for key in ('schema_version', 'family_id', 'state')}
+        | {'profile': 'reader-profile.json', 'files': {
+            name: (dict(row, sha256=hashlib.sha256(result[name]).hexdigest())
+                   if name.endswith('.html') else row)
+            for name, row in bundle['files'].items()}})
     return result, {name for name in shell if name.startswith('assets/')}
 
 

@@ -5,6 +5,7 @@
 # - display references select corpus records recursively by exact normalized filename stem [review: engine lead]
 # - original, capture, import and media files enter a display snapshot only through declared references or its media manifest [review: engine lead]
 # - a path reference that the reader only tests for existence is a presence dependency: its name, size and time bind the snapshot, never its bytes [review: engine lead]
+# - selected captures that supply reader scan pixels bind content as well as presence [review: engine lead]
 # - absolute originals resolve only within the family or its host-mapped originals root [test: tests/journeys/test_installed_engine.py::test_installed_engine]
 # - build-local reference indexes reuse unchanged JSON; each check resolves distinct local paths anew [review: engine lead]
 # - only explicitly adopted research records and search files enter output snapshots and watches [review: engine lead]
@@ -18,6 +19,7 @@ import os
 import re
 import stat
 from functools import cache
+from familiar.reader.scans import candidates, capture_path
 
 from .subjects import normalized
 
@@ -67,12 +69,12 @@ def _references(path, record, derived, *, literal_originals=False):
         pass
     for value in values:
         walk(value)
-    # Canonical records render literal fields, not legacy source.image/scan metadata.
     value = values[0] if values else None
     if (record and isinstance(value, dict) and value.get('kind') == 'index-entry'
             and isinstance(value.get('saved_result'), str) and value['saved_result'].strip()):
         local.add((value['saved_result'], False))
-    return refs, assets, local
+    captures = candidates(value) if record and isinstance(value, dict) else ()
+    return refs, assets, local, captures
 
 
 def reference_paths(instance):
@@ -99,10 +101,8 @@ def research_inputs(instance):
 def dependencies(instance, *, public=False, research_only=False):
     """Return (content files, record refs, presence files) for snapshot selection.
 
-    The reader delivers records, imports and registered media; a research
-    original named by `local`, `saved_result`, `original`, `image` or `scan` is
-    only tested for existence, unless a media row derived from that source
-    (`source_id`) needs its bytes to prove the derivative current.
+    The reader binds the bytes of selected record captures, registered media and
+    originals that a registered derivative uses. Other reference checks bind presence.
     """
     refs, files, assets, presence = set(), set(), set(), set()
     record_root, search_root = instance.path('records'), instance.path('searches')
@@ -159,13 +159,19 @@ def dependencies(instance, *, public=False, research_only=False):
     def read(path, *, record=False):
         from .writer import input_projection
         literal_originals = path.is_relative_to(instance.path('correspondence'))
-        found, media, links = input_projection(path, (record, context, literal_originals),
+        found, media, links, captures = input_projection(path, (record, context, literal_originals),
             lambda: _references(path, record, derived, literal_originals=literal_originals))
         refs.update(found)
         assets.update(media)
         if not research_only:
             for value, needed in links:
                 local(value, needed or public and record)
+            for reference in captures:
+                capture = capture_path(instance, reference, resolve=resolve)
+                if capture is not None:
+                    files.add(capture)
+                    if capture.is_file():
+                        break
 
     for path in reference_paths(instance):
         read(path)

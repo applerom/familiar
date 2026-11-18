@@ -48,7 +48,11 @@
   <MODULE_READER_DOCUMENTS ID="MOD-READER-DOCUMENTS" FILE="src/familiar/reader/documents.py" STATE="IMPLEMENTED">
     <PRD_REF>docs/PRD.md#FORMS</PRD_REF>
     <!-- A canonical record keeps its literal local page even when several cut-outs share its source. -->
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-READER-SCANS"/>
   </MODULE_READER_DOCUMENTS>
+  <MODULE_READER_SCANS ID="MOD-READER-SCANS" FILE="src/familiar/reader/scans.py" STATE="IMPLEMENTED">
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_f3_public_name_and_kinship_and_private_address_exclusion">A permitted scan is a local web derivative bound to its original fingerprint.</INVARIANT>
+  </MODULE_READER_SCANS>
   <!-- Person adaptation and card serialization run in memory; feeds/documents/media keep checked caches. -->
   <MODULE_READER_GRAPH ID="MOD-READER-GRAPH" FILE="src/familiar/reader/graph.py" STATE="IMPLEMENTED"/>
   <MODULE_READER_CLI ID="MOD-READER-CLI" FILE="src/familiar/reader/cli.py" STATE="IMPLEMENTED">

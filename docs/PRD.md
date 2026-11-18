@@ -472,6 +472,10 @@ Missing birth may be bounded by directly
 dated parents, children or spouse; conflicting estimates use their union.
 Privacy bounds are deliberately wide (parent/child 0–120 years, spouses ±100),
 never typical-generation averages that could declassify a younger spouse.
+The family reader and signed-in desk also use `privacy.family_years` (default
+75) for people whose status is unestablished, using a birth date or the
+reader’s birth estimate. Explicit living decisions and unresolved life
+conflicts remain protected. This rule applies only to family display.
 Dated canonical record subjects and attributed baptism/marriage events also bound
 birth: child/baptized/named no later than the record, parent/godparent/spouse
 at least 12 years earlier. A deceased role establishes death. Hypothetical

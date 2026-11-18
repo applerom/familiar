@@ -137,7 +137,9 @@ def used_assets(value, assets):
             schema = SCHEMAS.get(shape, {})
             for key, child in node.items():
                 child_shape = schema[key].shape if key in schema else 'text'
-                if child_shape == 'reference' and isinstance(child, str) and child and (key in {'asset', 'full', 'cover', 'orig', 'originalAsset'} or (shape == 'game-truth' and key == 'record')):
+                direct = key in {'asset', 'full', 'cover', 'orig', 'originalAsset'}
+                direct |= (shape, key) in {('game-truth', 'record'), ('source', 'image')}
+                if direct and child_shape == 'reference' and isinstance(child, str) and child:
                     if not child.startswith('/') or child.startswith('//'):
                         raise ValueError('reader asset must be a registered local absolute URL')
                     ref = relative(child[1:])
@@ -163,12 +165,17 @@ def dependencies(used, media, pages):
     """A local record page can reference its preserved scan: copy that too."""
     import re
     from urllib.parse import urlsplit
+
+    from .documents import BACK_SCRIPT
     pending = list(used)
     known = set(media) | set(pages)
     class References(HTMLParser):
         in_style = False
 
         def handle_starttag(self, tag, attrs):
+            if tag == 'script' and name in pages and attrs == [('defer', None), ('src', '/' + BACK_SCRIPT)]:
+                refs.append('/' + BACK_SCRIPT)
+                return
             if tag in {'script', 'iframe', 'object', 'embed', 'base'}:
                 raise ValueError('active document content is not a reader asset')
             self.in_style = tag == 'style'

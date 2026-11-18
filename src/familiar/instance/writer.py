@@ -556,6 +556,7 @@ def snapshot(instance):
                           legacy_rules=instance._legacy_rules)
         active._display_scope = instance._display_scope
         active._immutable_snapshot = True
+        active._snapshot_source_root = instance.root
         if before != fingerprints(instance):
             raise ValueError('family inputs changed while taking snapshot')
         if instance._display_scope:
@@ -1140,7 +1141,7 @@ def desk_reader(instance, active):
                 value = cache.read(path)
                 if value.digest != digest:
                     raise ValueError('desk cache payload checksum mismatch: ' + name)
-                files[name] = value if not name.endswith(('.json', '.html', '.svg')) else path.read_bytes()
+                files[name] = path.read_bytes() if name.endswith(('.json', '.html', '.svg', '.js')) else value
             if watch.stamp() != stamp or fingerprints(active) != inputs:
                 raise ValueError('desk reader inputs changed during build')
             yield files, watch, stamp

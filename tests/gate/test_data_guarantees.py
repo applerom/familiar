@@ -1,8 +1,11 @@
 """Representative data and privacy failures with a successful control."""
 import copy
+import hashlib
 import json
+from datetime import date
 
 import pytest
+from PIL import Image
 
 from familiar.feeds import service
 from familiar.instance.gate import evaluate, publication
@@ -71,7 +74,6 @@ def test_f2_record_subject_cannot_be_omitted(family):
 
 
 def test_photo_treatment_stays_local_for_living_subject(family, monkeypatch):
-    from PIL import Image
     from familiar.instance.publication import scan
     family.path('media').mkdir(exist_ok=True)
     for name in ('original.png', 'treated.png'):
@@ -82,7 +84,6 @@ def test_photo_treatment_stays_local_for_living_subject(family, monkeypatch):
     for private in (False, True):
         shown = scan(family, restrict_graph(family, copy.deepcopy(graph), host_private=private), 'graph', host_private=private)
         assert bool(shown['feeds'][0]['chapters'][0]['figures']) == private
-    import hashlib
     from pathlib import Path
     from familiar.checks.engine import _known_people
     from familiar.instance.restorations import preserve
@@ -109,7 +110,8 @@ def test_photo_treatment_stays_local_for_living_subject(family, monkeypatch):
 def test_f3_public_name_and_kinship_and_private_address_exclusion(family):
     family.path('edition').parent.mkdir(exist_ok=True)
     family.path('edition').write_text(json.dumps({'people': {p: {'story': {'en': 'A card story.'}} for p in ['p-amaro', 'p-daniel']}}), encoding='utf-8')
-    edit(family, 'tree/snapshot/people.json', lambda p: p['people'][-1].update(events=[{'type': kind, 'date': '2011', 'place': 'Private town', 'provenance': ['host']} for kind in ('birth', 'residence')]))
+    edit(family, 'tree/snapshot/people.json', lambda p: p['people'][-1].update(living=None,
+        events=[{'type': kind, 'date': str(date.today().year - 75), 'place': 'Private town', 'provenance': ['host']} for kind in ('birth', 'residence')]))
     source = {'people': {pid: {'id': pid, 'name': 'Example', 'events': [{'type': kind, 'date': '2011', 'place': 'Private town'} for kind in ('birth', 'residence')]} for pid in ('p-amaro', 'p-daniel')}}
     shown = restrict_graph(family, copy.deepcopy(source))['people']
     assert shown['p-amaro']['story']['en'] == 'A card story.' and 'story' not in shown['p-daniel'] and (not shown['p-daniel']['events'])
@@ -119,24 +121,21 @@ def test_f3_public_name_and_kinship_and_private_address_exclusion(family):
     assert chapter['text']['en'] == 'The public story.\n\nThe public story continues.'
     assert [p['name']['en'] for p in chapter['places']] == ['Public village']
     from familiar.instance.writer import publish
-    edit(family, 'records/home/doc-helena-baptism.json', lambda r: r.update(subjects=[{'person': 'p-daniel', 'role': 'child', 'written': 'Invented child'}]))
+    capture = family.root / 'fictional-paper.png'
+    Image.new('RGB', (2200, 400)).save(capture)
+    edit(family, 'records/home/doc-helena-baptism.json', lambda r: r.update(
+        subjects=[{'person': 'p-daniel', 'role': 'child', 'written': 'Invented child'}], source={'kind': 'home', 'holder': 'host', 'locator': capture.name + '; whole sheet'}))
     private = publication(family, 'reader-private')
     graph = json.loads(private.files()['graph.json'])
     assert [e['type'] for e in graph['people']['p-daniel']['events']] == ['birth']
     assert 'Private detail.' in graph['feeds'][0]['chapters'][0]['text']['en']
-    assert not any((r.get('record') == 'doc-helena-baptism' for r in graph['feeds'][0]['chapters'][0]['records']))
+    assert 'asset' not in graph['sources']['doc-helena-baptism'] and not graph['feeds'][0]['chapters'][0]['records']
     with pytest.raises(ValueError, match='not for publication or clean release'):
         publish(family, family.root / 'rejected', private)
-    from datetime import date
-    birth_year = str(date.today().year - 75)
-    edit(family, 'tree/snapshot/people.json', lambda p: p['people'][-1].update(
-        living=None, events=[{'type': 'birth', 'date': birth_year, 'provenance': ['host']}]))
-    def document_shown(kind):
-        graph = json.loads(publication(family, kind, for_review=kind == 'reader').files()['graph.json'])
-        return any(s.get('record') == 'doc-helena-baptism' and s.get('asset') for s in graph['sources'].values())
-    assert not document_shown('reader-private')  # Explicitly living at the family cutoff.
     edit(family, 'family/privacy.json', lambda p: p.update(living=[]))
-    assert document_shown('reader-private') and not document_shown('reader')
+    files = publication(family, 'reader-private').files()
+    scan = json.loads(files['graph.json'])['sources']['doc-helena-baptism']['image'][1:]
+    assert scan in files and json.loads(files['bundle.json'])['files'][scan]['source_sha256'] == hashlib.sha256(capture.read_bytes()).hexdigest()
     for target, alias, flag in [('p-modern', 'p-amaro', {}), ('p-amaro', 'p-modern', {}), ('p-modern', 'p-amaro', {'living': True}), ('p-amaro', 'p-modern', {'living': True})]:
         edit(family, 'tree/snapshot/people.json', lambda p: p.update(people=[r for r in p['people'] if r['id'] != 'p-modern'] + [dict(id='p-modern', name='Invented', events=[{'type': 'birth', 'date': '1990'}], **flag)]))
         family.path('identity_decisions').write_text(json.dumps({'merges': [dict(canonical=target, alias=alias, status='accepted_family_confirmation', sources=['doc-helena-baptism'], name='Invented', summary='Duplicate', birth='1990')]}), encoding='utf-8')
