@@ -166,40 +166,19 @@ CHANGES_WITH:
     refresh(true);
   }
   toggle.onclick = () => setBuilding(!building); done.onclick = () => setBuilding(false);
-  // The labelled entry beside the tree; the quiet builder toggle stays for ghost places.
-  const addEntry = el('button', 'desk-add-entry');
-  addEntry.type = 'button'; addEntry.append(el('span', 'desk-plus', '+'), el('span', '', w.add_person));
-  addEntry.setAttribute('aria-label', w.add_person); addEntry.title = w.add_person;
-  addEntry.setAttribute('data-pan-ignore', '');
-  addEntry.onclick = () => open(current());
-  const kin = el('section', 'group desk-add-kin'), kinRow = el('div', 'desk-add-kin-row');
-  kin.append(el('h3', '', w.add_kin), kinRow);
+  // One quiet line at the end of the person's card opens the sheet; the tree itself carries no entry but the builder toggle.
+  const kin = el('p', 'desk-add-kin'), kinLink = el('button', 'link', '+ ' + w.add_person);
+  kinLink.type = 'button'; kinLink.onclick = () => open(kin.dataset.person);
+  kin.append(kinLink);
   function panelEntry() {
     const panel = document.querySelector('.panel[data-feedback-person]'), body = panel?.querySelector('.body');
     const id = panel?.dataset.feedbackPerson;
     if (!body || !people[id]) { kin.remove(); return; }
-    if (kin.dataset.person !== id) {
-      const row = (graph.families || []).find(f => f.children?.includes(id)) || {};
-      const sexOf = pid => String(people[pid]?.sex || '').toLowerCase();
-      // A researched father may have a parent link without a family row.
-      const ups = [...(graph.edges || []).filter(e => !['rejected', 'disproved'].includes(e.status) && (e.child || e.to) === id).map(e => e.parent || e.from), row.husband, row.wife].filter(Boolean);
-      const hasFather = ups.some(p => p === row.husband || sexOf(p) === 'm'), hasMother = ups.some(p => p === row.wife || sexOf(p) === 'f');
-      const wanted = [...(!hasFather ? ['father'] : []), ...(!hasMother ? ['mother'] : []), 'sibling', 'child', 'spouse'];
-      kin.dataset.person = id; kinRow.replaceChildren();
-      for (const rel of wanted) {
-        const label = rel === 'spouse' && sexOf(id) === 'm' ? w.ghost_wife : rel === 'spouse' && sexOf(id) === 'f' ? w.ghost_husband : w['add_rel_' + rel];
-        const button = el('button', '', label); button.type = 'button';
-        button.onclick = () => open(id, rel); kinRow.append(button);
-      }
-    }
-    // Before the first fact group, right under who the person is.
-    const next = body.querySelector(':scope > section.group:not(.ask):not(.desk-add-kin)');
-    if (next ? kin.nextSibling !== next : kin.parentNode !== body) next ? next.before(kin) : body.append(kin);
+    kin.dataset.person = id;
+    if (kin.parentNode !== body || kin.nextSibling) body.append(kin);
   }
   function controls() {
     const stage = document.querySelector('.stage');
-    if (stage && !building && addEntry.parentNode !== stage) stage.append(addEntry);
-    if (building) addEntry.remove();
     panelEntry();
     const group = document.querySelector('.stage .controls');
     toggle.setAttribute('aria-pressed', String(building));

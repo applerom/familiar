@@ -43,7 +43,8 @@ test('the tree counts known relatives and fits the central couple with its child
       expect(tree.tiles.map(tile => tile.id).sort()).toEqual([
         'ancestor1','ancestor2','ancestor3','ancestor4','ancestor5','child','home','mate','mate-child','mother',
       ]);
-      expect(tree.links.filter(link => link.kind === 'parent')).toHaveLength(6);
+      expect(tree.links.filter(link => link.kind === 'parent')).toHaveLength(5);
+      expect(tree.links.filter(link => link.kind === 'union')).toHaveLength(2);
       expect(tree.tiles.every(tile => tile.w > tile.h && tile.h > 0)).toBe(true);
       expect(tree.tiles.find(tile => tile.id === 'home')?.stackLayers).toBe(3);
       expect(tree.tiles.find(tile => tile.id === 'mate')?.stackLayers).toBe(0);

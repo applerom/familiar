@@ -15,7 +15,7 @@ import {SearchSheet,SearchButton} from './search';
 import {MiniMap,OverviewDialog,buildOverview} from './tree/overview';
 import {buildModel,kinPhrase,lifeLabel,placeLabel,relationPhrase} from './tree/model';
 
-import {translations,type Language} from './i18n';
+import {plural,translations,type Language} from './i18n';
 type Row=Record<string,any>;
 const ICONS:Record<string,React.ReactNode>={tree:<><circle cx="12" cy="5" r="2.5"/><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M12 7.5V12M12 12 6.8 16.6M12 12l5.2 4.6"/></>,stories:<><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3H11v16H5.5A2.5 2.5 0 0 0 3 21z"/><path d="M21 5.5A2.5 2.5 0 0 0 18.5 3H13v16h5.5A2.5 2.5 0 0 1 21 21z"/></>,families:<><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-4 3.4-6 6.5-6s5.9 2 6.5 6"/><circle cx="17.5" cy="9" r="2.5"/><path d="M17 14c2.5.2 4 2 4.5 5"/></>,photos:<><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="10.5" r="1.8"/><path d="m4 17 5-4.5 4 3.5 3-2.5 4 3.5"/></>};
 ICONS.kinship=<><path d="M4 4h7v16H4zM13 4h7v16h-7zM7 8h1M7 12h1M16 8h1M16 12h1"/></>;
@@ -66,7 +66,7 @@ export default function Family({initialData}:{initialData:Row}){
   {finding&&<SearchSheet data={data} model={model} group={group} row={id=>row(id,kinOf(id))} labels={labels} onClose={()=>Find(false)}/>}
   {currentView==='tree'&&<div className="tree-body">
    <TreeStage model={model} id={personId} selected={panelId} select={setPicked} go={go} jump={openFamily} labels={labels} onVisible={setVisible}>
-    {mini&&<MiniMap ov={mini} model={model} visible={visible} center={personId} onOpen={()=>Map_(true)} label={t.map}/>}
+    {mini&&<MiniMap ov={mini} model={model} visible={visible} center={personId} onOpen={()=>Map_(true)} label={t.map} caption={`${model.familyPeople.size} ${plural(model.familyPeople.size,labels.personsForms,language)}`}/>}
    </TreeStage>
    <PersonPanel data={data} model={model} id={panelId} go={go} showFamily={panelId!==personId?()=>openFamily(panelId):undefined} labels={labels} language={language} expanded={expanded} setExpanded={Expand} me={me} setMe={setMe} openFeed={openFeed}/>
   </div>}

@@ -81,8 +81,8 @@ function Dots({ov,model,visible,center,selected,onPick,onHover,detail,k,names}:{
   {detail&&[...ov.pos].map(([id,p])=>{const t=label(id);const text=id===selected?[model.info[id].short,model.info[id].life].filter(Boolean).join(' · '):t;return text?<text key={'t'+id} x={p.x} y={p.y+r*2.3+fs*.6} fontSize={fs} textAnchor="middle" fill="#2b4338" fontWeight={id===center||id===selected?700:500} stroke="#f6f3ea" strokeWidth={fs*.35} paintOrder="stroke">{text}</text>:null})}
  </>
 }
-export function MiniMap({ov,model,visible,center,onOpen,label}:{ov:Overview;model:Model;visible:Set<string>;center:string;onOpen:()=>void;label:string}){
- return <button className="minimap" onClick={onOpen} aria-label={label} title={label}><svg viewBox={`${-PADL} ${-PAD} ${ov.w+PADL+PAD} ${ov.h+PAD*2}`} preserveAspectRatio="xMidYMid meet" aria-hidden="true"><Dots ov={ov} model={model} visible={visible} center={center} detail={false} k={1} names={new Set()}/></svg></button>
+export function MiniMap({ov,model,visible,center,onOpen,label,caption}:{ov:Overview;model:Model;visible:Set<string>;center:string;onOpen:()=>void;label:string;caption?:string}){
+ return <button className="minimap" onClick={onOpen} aria-label={label} title={label}><svg viewBox={`${-PADL} ${-PAD} ${ov.w+PADL+PAD} ${ov.h+PAD*2}`} preserveAspectRatio="xMidYMid meet" aria-hidden="true"><Dots ov={ov} model={model} visible={visible} center={center} detail={false} k={1} names={new Set()}/></svg>{caption&&<small>{caption}</small>}</button>
 }
 export function OverviewDialog({ov,model,visible,center,go,onClose,labels,language,me}:{ov:Overview;model:Model;visible:Set<string>;center:string;go:(id:string)=>void;onClose:()=>void;labels:Row;language:string;me?:string}){
  const box=useRef<HTMLDivElement>(null);const cw=ov.w+PAD+PADL,ch=ov.h+PAD*2;const content=useRef({w:cw,h:ch});

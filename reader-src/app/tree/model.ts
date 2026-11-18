@@ -51,7 +51,7 @@ const lifeSpan=(b:string,d:string)=>/\//.test(b+d)?`${b||'…'} – ${d||'…'}`
 function compactDate(date:string){const y=year(date);if(y===undefined)return '';const q=(date||'').trim();const span=yearSpan(q);if(span)return spanText(span);return APPROX_DATE.test(q)?'≈'+y:/^(BEF|до)/i.test(q)?'BEF '+y:/^(AFT|после)/i.test(q)?'AFT '+y:String(y)}
 export const translated=(value:any,lang:string)=>typeof value==='string'?value:value?.[lang]||value?.en||value?.ru||'';
 /** "1974–…" for the dead or the long-ago born; "род. 1974" for someone born in living memory with no death recorded. */
-export function lifeLabel(p:Info,labels:Row,lang:string){const b=p.birthText?humanText(p.birthText,lang):'',d=p.deathText?humanText(p.deathText,lang):'';if(b&&!d&&(p.birth??p.guess?.year??0)>=1920&&labels.born)return `${labels.born} ${b}`;return b||d?lifeSpan(b,d):translated(p.dateReference,lang)}
+export function lifeLabel(p:Info,labels:Row,lang:string){const b=p.birthText?humanText(p.birthText,lang):'',d=p.deathText?humanText(p.deathText,lang):'';if(b&&!d&&labels.born)return `${labels.born} ${b}`;return b||d?lifeSpan(b,d):translated(p.dateReference,lang)}
 type GuessWords={rel:Record<BirthGuess['relation'],[string,string,string]>;age:(g:string,n:number)=>string;spouse:(g:string,n:number)=>string;sibling:string;guessed:string;later:string};
 const ruYears=(n:number)=>n%10===1&&n%100!==11?'год':n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?'года':'лет';
 const plYears=(n:number)=>n===1?'rok':n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?'lata':'lat';
