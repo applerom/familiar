@@ -7,7 +7,7 @@ body:has(.ask-page) { margin: 0; }
 .ask-page :is(button, input, select, textarea) { font: inherit; }
 .ask-lead { max-width: 640px; color: var(--ink-soft); font: italic 17px/1.45 var(--font-story, Georgia); }
 .ask-page > .ask-today { font-size: 14px; line-height: 1.4; }
-.ask-today a, .ask-in-feed a, .ask-on-card a, .ask-opener a { color: var(--act); text-decoration: underline; text-underline-offset: 3px; }
+.ask-today a, .ask-in-feed a, .ask-opener a { color: var(--act); text-decoration: underline; text-underline-offset: 3px; }
 .ask-modes { justify-self: end; margin-top: -6px; }
 .ask-page .ask-modes button { min-height: 36px; border: 1px solid var(--rule); border-radius: 18px; padding: 4px 12px; color: var(--ink-soft); background: transparent; font-size: 13px; cursor: pointer; }
 .ask-page .ask-modes button[aria-pressed=true] { color: var(--sheet); background: var(--ink); border-color: var(--ink); }
@@ -49,12 +49,10 @@ a.ask-who:hover { border-color: var(--act); }
 .ask-today ul { list-style: none; padding: 0; margin: 0; }
 .ask-today li + li { margin-top: 6px; }
 .ask-today li { font-size: 13px; line-height: 1.4; }
-.ask-on-card a { display: block; margin-block: 6px; }
+.ask-on-card a { display: block; margin-block: 6px; padding: 9px 12px; border-radius: 10px; background: #fff6e2; border: 1px solid #ecd49c; color: inherit; text-decoration: none; font-size: 13.5px; line-height: 1.4; }
+.ask-on-card a:hover { border-color: var(--ember, #c8741c); }
 .ask-in-feed { padding: 9px 12px; border-inline-start: 3px solid var(--ember); background: var(--ember-soft, #fbe6cf); border-radius: 6px; font-size: 15px; }
 .ask-child-mark { display: block; margin-block: 3px; color: var(--act); font: 700 12px/1.4 var(--font-ui, system-ui); }
-.ask-home { position: absolute; z-index: 8; top: 22px; left: 50%; transform: translateX(-50%); width: max-content; max-width: min(410px, calc(100% - 36px)); border: 1px solid color-mix(in srgb, var(--ember) 35%, var(--rule)); border-radius: 12px; padding: 10px 13px; background: var(--ember-soft, #fbe6cf); }
-.ask-home summary { cursor: pointer; margin: 0; font: 600 14px/1.3 var(--font-story, Georgia); }
-.ask-home[open] summary { margin-bottom: 6px; }
 @media (max-width: 849px) {
   body:has(.ask-page) #page-top .page-top { display: flex; padding: 6px 18px; }
   body:has(.ask-page) #page-top :is(.page-search, .page-language):empty { display: none; }
@@ -70,3 +68,5 @@ a.ask-who:hover { border-color: var(--act); }
   .ask-q { font-size: 16px; }
   .ask-body { padding-left: 2px; }
 }
+
+.ask-on-card a.ask-all { padding: 2px 0; border: 0; background: none; color: var(--act); font-weight: 600; }

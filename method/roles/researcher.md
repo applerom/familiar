@@ -38,6 +38,13 @@ Add a found spouse union in `families[]` with `id`, `husband`, `wife`, `status`,
 `text`, `sources`, `basis` and `weight`; the spouse may be in this package's `people`.
 Add known children through ordinary `edges`, separately from the spouse union.
 
+A person's card is the clean telling, not the investigation: `summary` and `facts`
+say who this was as we would tell it today, one leading version, and stay silent
+where nothing is known. From weight 0.5 write it plainly; from 0.3 to 0.5 it may
+stand as the leading version with its weight; a weaker candidate stays in
+`versions/` and its case (the card hides facts below 0.3). Candidates, the search
+path and coverage belong to the investigation page.
+
 ## Deliver
 
 - Updated links on the tree (facts with source and status) and versions with

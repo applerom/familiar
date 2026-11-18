@@ -167,9 +167,12 @@
         if (body && items && (!old || old.dataset.person !== person)) {
           const section = el('section', 'ask-on-card group');
           section.dataset.person = person;
-          section.append(el('h3', '', w.on_card), ...items.map(item => link(item.id, item.text)));
-          const header = body.querySelector('header');
-          if (header) header.after(section); else body.prepend(section);
+          // Two asks are an invitation; the whole list lives on the relatives page.
+          section.append(el('h3', '', w.on_card), ...items.slice(0, 2).map(item => link(item.id, item.text)));
+          if (items.length > 2) { const all = link(items[2].id, w.title + ' →'); all.className = 'ask-all'; section.append(all); }
+          // After the person and the family, before the folded details: the card first tells, then asks.
+          const next = body.querySelector(':scope > .card-more, :scope > .kin-viewer, :scope > section.group.ask');
+          if (next) next.before(section); else body.append(section);
         }
       }
       const feed = reader.querySelector('[data-feedback-feed]');
@@ -191,13 +194,6 @@
           const story = [...body.children].filter(node => node.classList.contains('feed-simple')).at(-1);
           if (story) story.after(aside); else body.append(aside);
         }
-      }
-      const tree = reader.querySelector('.tree-body');
-      if (tree && !tree.querySelector('.ask-home') && reminders.length) {
-        const section = el('details', 'ask-home ask-today');
-        section.append(el('summary', '', w.today), el('ul'));
-        tree.append(section);
-        fillToday(section);
       }
     }
     const schedule = () => {

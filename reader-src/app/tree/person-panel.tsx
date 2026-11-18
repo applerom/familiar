@@ -18,13 +18,13 @@ function Fact({f,data,labels,subject,language,docs,open:openDoc}:{f:Row;data:Row
  const [open,setOpen]=useState(false);const long=(f.text||'').length>150;
  const tone=f.scope==='search'?'search':f.status;
  const pics=(f.sources||[]).map((sid:string)=>docs.findIndex(d=>(d.sourceSid||d.sid)===sid)).filter((i:number)=>i>=0);
- const label=(f.label||'').replace(/\s*из (дерева|экспорта)$/i,'');const badge=f.testimony&&label.toLocaleLowerCase()!==labels.familyFirm?.toLocaleLowerCase()?labels.familyFirm:'';
+ const label=(f.label||'').replace(/\s*из (дерева|экспорта)$/i,'').replace(/^Память семьи$/i,'');const linked=(f.sources||[]).some((sid:string)=>{const s=data.sources[sid];return s&&!PLACEHOLDER.test(s.title||'')&&(s.asset||s.url)});
  return <article className={'fact '+tone}>
-  <h4><i className={'tone '+tone} aria-hidden="true"/>{label}{badge&&<small>{badge}</small>}</h4>
+  {label&&<h4><i className={'tone '+tone} aria-hidden="true"/>{label}</h4>}
   <p className={open||!long?'':'clamp'}>{humanText(f.text,language)}</p>
   {open&&f.basis&&<p className="note">{translated(f.basis,language)}</p>}
   {pics.length>0&&<div className="fact-pics">{pics.slice(0,4).map((i:number)=>{const d=docs[i];return <button key={d.sid} onClick={()=>openDoc(i)} title={d.title}>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={d.asset} alt={d.title} loading="lazy"/></button>})}</div>}
-  {(long||f.basis||f.sources?.length>0)&&<button className="more" onClick={()=>setOpen(!open)}>{open?labels.less:labels.more}</button>}
+  {(long||f.basis||linked)&&<button className="more" onClick={()=>setOpen(!open)}>{open?labels.less:labels.more}</button>}
   {open&&<div className="source-links">{(f.sources||[]).map((sid:string)=>{const s=data.sources[sid];return s&&!PLACEHOLDER.test(s.title||'')?<a key={sid} href={s.asset||s.url||undefined} target="_blank" rel="noreferrer">{s.title||labels.source}{!s.asset&&!s.url?' · '+labels.localArchive:''}</a>:null})}</div>}
   {open&&feedbackEnabled()&&<details><summary>{labels.correctEvent}</summary><Feedback subject={subject+':fact:'+f.eventKey} language={language}/></details>}
  </article>
@@ -121,7 +121,7 @@ export default function PersonPanel({data,model,id,go,showFamily,labels,language
    {showFamily&&<button className="show-person-family panel-family-action" onClick={showFamily}>{labels.treeShowFamily}</button>}
    {p.surnameDisplay?.written?.length>0&&<p className="note surname-written">{labels.writtenSurname}: {p.surnameDisplay.written.join(' · ')}</p>}
    {p.surnameDisplay?.origin==='derived-from-children'&&<p className="note surname-derived">{labels.surnameFromChildren} {(p.surnameDisplay.children||[]).map((pid:string)=>model.info[pid]?.short).filter(Boolean).join(', ')}.</p>}
-   <div className="kin">{me&&model.info[me]?<>{reportedKin.length?<span>{reportedKin.join(' · ')}</span>:rel?<KinshipExplanation relation={rel} model={model} labels={labels} language={language}/>:<span>{labels.meNone}</span>}{reportedKin.length>0&&rel&&<><small>{labels.graphKinship}:</small><KinshipExplanation relation={rel} model={model} labels={labels} language={language}/></>}</>
+   <div className="kin">{me&&model.info[me]?<>{reportedKin.length?<span>{reportedKin.join(' · ')}</span>:rel?<KinshipExplanation relation={rel} model={model} labels={labels} language={language}/>:<span>{labels.meNone}</span>}</>
     :<>{kin.map((k,i)=><span key={i}>{k}</span>)}</>}
    </div>
    {restored.map((f:Row,i:number)=><FeedFigure key={'restored:'+id+':'+i} f={f as any} labels={labels} language={language}/>)}
@@ -136,7 +136,7 @@ export default function PersonPanel({data,model,id,go,showFamily,labels,language
    {(docs.length>0||growth.documents.some(sid=>!dropped.has(sid)))&&<section className="group"><h3>{labels.docs}</h3><div className="strip">{docs.map((d,i)=><button key={d.sid} className={'thumb'+(d.view==='detail'?' record':'')} onClick={()=>setLb(i)}>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={d.asset} alt={d.title} loading="lazy"/><i>{d.view?labels[d.view]:d.kind===3?labels.docGrave:d.kind===2?labels.docMention:d.photo?labels.docPhoto:labels.original}</i><span>{d.title}</span></button>)}</div>{growth.documents.filter(sid=>!dropped.has(sid)&&!docs.some(d=>d.sourceSid===sid||d.asset===data.sources[sid]?.asset)).map(sid=>{const s=data.sources[sid];return <p className="note" key={sid}>{s.asset?<a href={s.asset} target="_blank" rel="noreferrer">{s.title||labels.source} ↗</a>:s.title||labels.source}</p>})}</section>}
    {(p.events||[]).filter((e:Row)=>(e.tag==='DEAT'||e.type==='death')&&e.cause&&!lifeFacts.some(f=>(f.eventType==='death'||f.label===labels.deathEvent)&&f.text?.includes(e.cause))).map((e:Row,k:number)=><section className="group" key={'cause'+k}><h3>{labels.deathEvent}</h3><p>{String(labels.deathCause).replace('{cause}',e.cause)}</p></section>)}
    {shown.length>0&&<section className="group"><h3>{labels.known}</h3>{shown.map((f:Row,i:number)=><Fact key={`${f.eventKey||'fact'}:${i}`} f={f} data={data} labels={labels} subject={id} language={language} docs={docs} open={setLb}/>)}{known.length>4&&<button className="more wide" onClick={()=>setAll(!all)}>{all?labels.less:labels.showAll}</button>}</section>}
-   {lifeFacts.length>0&&<section className="group"><h3>{labels.life}</h3><ul className="life-list">{lifeFacts.map((f,i)=><li key={i}><b>{f.label.replace(/\s*из дерева$/i,'')}</b><span>{lifeFactText(f.text,language)}{f.testimony&&<small className="note"> · {labels.familyFirm}</small>}{f.basis&&<details><summary>{labels.more}</summary><p className="note">{translated(f.basis,language)}</p></details>}{(f.sources||[]).map((sid:string)=>{const s=data.sources[sid];return s?.asset?<a key={sid} className="source-links" href={s.asset} target="_blank" rel="noreferrer">{labels.feedFullDoc} ↗</a>:null})}{feedbackEnabled()&&<details><summary>{labels.correctEvent}</summary><Feedback subject={id+':fact:'+f.eventKey} language={language}/></details>}</span></li>)}</ul></section>}
+   {lifeFacts.length>0&&<section className="group"><h3>{labels.life}</h3><ul className="life-list">{lifeFacts.map((f,i)=><li key={i}><b>{f.label.replace(/\s*из дерева$/i,'')}</b><span>{lifeFactText(f.text,language)}{f.basis&&<details><summary>{labels.more}</summary><p className="note">{translated(f.basis,language)}</p></details>}{(f.sources||[]).map((sid:string)=>{const s=data.sources[sid];return s?.asset?<a key={sid} className="source-links" href={s.asset} target="_blank" rel="noreferrer">{labels.feedFullDoc} ↗</a>:null})}</span></li>)}</ul></section>}
    {group(labels.parents,parents.map(s=>chip(s.id,model.connectionLevel(s)===3)))}
    {group(labels.spouses,spouses.map(s=>chip(s,model.connectionLevel(spouseLink(s))===3)))}
    {group(labels.children,kids.map(k=>chip(k)))}

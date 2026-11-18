@@ -185,6 +185,7 @@ export function humanText(text:string,lang:string){
  const w=WORDS[lang]||WORDS.ru;const fmt=(o:Intl.DateTimeFormatOptions,d:Date)=>new Intl.DateTimeFormat(lang,{...o,timeZone:'UTC'}).format(d);
  return (text||'')
   .replace(/\s*[·,]?\s*@[A-Z]\d+@/g,'')
+  .replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g,(s,y,mo,d)=>+mo>=1&&+mo<=12&&+d>=1&&+d<=31?fmt({day:'numeric',month:'long',year:'numeric'},new Date(Date.UTC(+y,+mo-1,+d))):s)
   .replace(/^Дата не указана\s*·\s*/,'')
   .replace(/\b(?:FROM|BET) (\d{4}) (?:TO|AND) (\d{4})\b/g,'$1–$2')
   .replace(/\b(\d{4})(?:\s*[–—]\s*|\s+-\s+)(\d{4})\b|\b(\d{4})-(\d{4})\b(?![-./]\d)/g,(_,a,b,c,d)=>`${a||c}–${b||d}`)

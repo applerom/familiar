@@ -194,7 +194,13 @@ export function layoutTree(m: Model, center: string, viewport: number, level = d
   let familyBottom = rootBottom;
   // Keep the closer part of each row readable on a phone; wider families can pan to the remaining children.
   for (const [ids, kind] of [[children, 'child'], [extras, 'union']] as const) {
-    const row = [...ids].filter(id => !visible.has(id)).sort(m.bySeniority);
+    // Children of the left parent alone stand left, shared ones in the middle: the lines never cross.
+    const side = (id: string) => {
+      const mine = [...m.parents(id).slots, ...m.parents(id).extra].map(p => p?.id);
+      const [a, b] = roots.map(pid => mine.includes(pid));
+      return kind !== 'child' || roots.length < 2 || a === b ? 1 : a ? 0 : 2;
+    };
+    const row = [...ids].filter(id => !visible.has(id)).sort((a, b) => side(a) - side(b) || m.bySeniority(a, b));
     const w = narrow ? 148 : 158;
     const wideChildren = new Map<string, {x: number; y: number; status: string; stops: number[]}>();
     row.forEach((id, i) => {
