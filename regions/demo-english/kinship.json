@@ -822,7 +822,7 @@
     {
       "id": "collateral-3-1-m",
       "word": "great-uncle",
-      "explanation": "a sibling of a grandparent",
+      "explanation": "a brother of a grandparent",
       "group": "collateral",
       "match": [
         {
@@ -839,7 +839,7 @@
     {
       "id": "collateral-1-3-m",
       "word": "great-nephew",
-      "explanation": "a grandchild of a sibling",
+      "explanation": "a grandson of a sibling",
       "group": "collateral",
       "match": [
         {
@@ -908,7 +908,7 @@
     {
       "id": "collateral-4-1-m",
       "word": "great-great-uncle",
-      "explanation": "a sibling of a great-grandparent",
+      "explanation": "a brother of a great-grandparent",
       "group": "collateral",
       "match": [
         {
@@ -925,7 +925,7 @@
     {
       "id": "collateral-1-4-m",
       "word": "great-great-nephew",
-      "explanation": "a great-grandchild of a sibling",
+      "explanation": "a great-grandson of a sibling",
       "group": "collateral",
       "match": [
         {
@@ -1080,7 +1080,7 @@
     {
       "id": "collateral-3-1-f",
       "word": "great-aunt",
-      "explanation": "a sibling of a grandparent",
+      "explanation": "a sister of a grandparent",
       "group": "collateral",
       "match": [
         {
@@ -1097,7 +1097,7 @@
     {
       "id": "collateral-1-3-f",
       "word": "great-niece",
-      "explanation": "a grandchild of a sibling",
+      "explanation": "a granddaughter of a sibling",
       "group": "collateral",
       "match": [
         {
@@ -1114,7 +1114,7 @@
     {
       "id": "collateral-4-1-f",
       "word": "great-great-aunt",
-      "explanation": "a sibling of a great-grandparent",
+      "explanation": "a sister of a great-grandparent",
       "group": "collateral",
       "match": [
         {
@@ -1131,7 +1131,7 @@
     {
       "id": "collateral-1-4-f",
       "word": "great-great-niece",
-      "explanation": "a great-grandchild of a sibling",
+      "explanation": "a great-granddaughter of a sibling",
       "group": "collateral",
       "match": [
         {
@@ -1459,7 +1459,7 @@
     {
       "id": "stepParent-m",
       "word": "stepfather",
-      "explanation": "a parent’s spouse who is not this child’s parent",
+      "explanation": "a mother’s husband who is not this child’s father",
       "group": "blended",
       "match": [
         {
@@ -1471,7 +1471,7 @@
     {
       "id": "stepParent-f",
       "word": "stepmother",
-      "explanation": "a parent’s spouse who is not this child’s parent",
+      "explanation": "a father’s wife who is not this child’s mother",
       "group": "blended",
       "match": [
         {
@@ -1483,7 +1483,7 @@
     {
       "id": "stepChild-m",
       "word": "stepson",
-      "explanation": "a spouse’s child who is not one’s own child",
+      "explanation": "a spouse’s son who is not one’s own child",
       "group": "blended",
       "match": [
         {
@@ -1495,7 +1495,7 @@
     {
       "id": "stepChild-f",
       "word": "stepdaughter",
-      "explanation": "a spouse’s child who is not one’s own child",
+      "explanation": "a spouse’s daughter who is not one’s own child",
       "group": "blended",
       "match": [
         {

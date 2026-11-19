@@ -22,6 +22,11 @@ CHANGES_WITH:
   };
   const fmt = (key, values) => Object.entries(values).reduce((s, [k, v]) => s.replaceAll('{' + k + '}', v), w[key]);
   const number = n => n.toLocaleString(language);
+  // A caption counted with a number carries its forms as "one|few|many" (or "one|other") and agrees with it.
+  const counted = (text, n) => {
+    const forms = text.split('|'), rule = new Intl.PluralRules(language).select(n);
+    return forms[rule === 'one' ? 0 : forms.length > 2 && rule !== 'few' ? 2 : Math.min(1, forms.length - 1)];
+  };
   const heat = value => `color-mix(in oklab,var(--ember) ${Math.round(value * 100)}%,var(--version))`;
   const word = v => {
     if (v.state === 'firm') return w.firm;
@@ -56,7 +61,7 @@ CHANGES_WITH:
   document.querySelector('#show-added').hidden = !additions.length;
   for (const [key, value] of Object.entries(data.summary)) {
     if (!value) continue;
-    const cell = el('div'); cell.append(el('b', '', number(value)), el('span', '', w['total_' + key]));
+    const cell = el('div'); cell.append(el('b', '', number(value)), el('span', '', counted(w['total_' + key], value)));
     document.querySelector('#show-summary').append(cell);
   }
   const coverage = values => ['zero', 'gap'].filter(key => values[key] > 0)

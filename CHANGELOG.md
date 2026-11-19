@@ -14,6 +14,11 @@
 - The count of generations between the two round buttons reads as a figure,
   not as a third button.
 - A page opened by a link to a person starts on that person at once.
+- A kin word for a man or a woman is explained by the person it names: a
+  great-aunt is a sister of a grandparent, "двоюродная бабушка" is "сестра
+  дедушки или бабушки" (Russian, Polish, English).
+- Counted captions of the investigation agree with their number ("2 вопроса",
+  "1 question").
 
 ## 0.41.1 — 18 November 2026
 
