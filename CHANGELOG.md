@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.41.3 — 19 November 2026
+
+- The ring is back, and now it belongs to every family in the tree: the
+  branches of the two parents meet in a ring above their child, the same ring
+  that joins the couple in the middle. It rides above a child's stack of
+  siblings; rows in the haze keep the plain fork.
+
 ## 0.41.2 — 19 November 2026
 
 - The wheel always leads somewhere. Outwards draws one more generation; once

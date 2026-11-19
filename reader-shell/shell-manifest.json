@@ -15,9 +15,9 @@
     "size": 1069
   },
   "files": {
-    "assets/index-BNmD1DaZ.js": {
-      "sha256": "1aecf4e22039194b7cfbb12f07cb9906537bc76822ab4e2ad029c2601be2e1fb",
-      "size": 212392
+    "assets/index-B0z7NLJD.js": {
+      "sha256": "3a173ff4c4dc3ccc0dab45f2220d2bb3c0790e4f519e7fa95573669b8454ddb8",
+      "size": 212890
     },
     "assets/index-BSe5ZRCK.css": {
       "sha256": "9b7159cbefaf14286928865e0dc69445ae2b966338abb5dc99e4bac1931d4bad",
@@ -52,7 +52,7 @@
       "size": 2204
     },
     "index.html": {
-      "sha256": "75c1f70e180e33054eb98ea5d44c2db6394a64bd0f6b1405c4ea06fe046a402c",
+      "sha256": "c1e55230160ee4e077d3d18ee91d526a169614d886e2faed1900383ad1c20e47",
       "size": 610
     },
     "THIRD_PARTY_NOTICES.txt": {

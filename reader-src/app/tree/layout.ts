@@ -17,7 +17,7 @@ const HISTORY_LEVEL = 3; // The centre is generation one.
 const HORIZON_Y = 14;
 const PAD = 14;
 const STACK_STEP = 4;
-const RING = 4.5;
+const RING = 5;
 const BASE = 106; // The width a compact tile's scale is measured against.
 const PERSPECTIVE = [.8, .66, .55, .47, .41, .36, .32];
 const scaleFor = (gen: number) => gen < HISTORY_LEVEL ? 1 : PERSPECTIVE[gen - HISTORY_LEVEL];
@@ -190,7 +190,8 @@ export function layoutTree(m: Model, center: string, viewport: number, level = d
   // Cut rows start lower: the haze covers the stubs that lead further up, not the people themselves.
   const top = cut.length ? HORIZON_Y + PAD + 30 : horizon ? HORIZON_Y + PAD : PAD;
   const heights = rowTiles.map(row => Math.max(...row.map(tile => tile.h)));
-  const below = rowTiles.map((_, gen) => gen >= HISTORY_LEVEL ? Math.max(12, Math.round(scaleFor(gen) * (narrow ? 32 : 39))) : narrow ? 26 : 34);
+  // Near rows leave room for the ring of the parents above each child.
+  const below = rowTiles.map((_, gen) => gen > HISTORY_LEVEL ? Math.max(12, Math.round(scaleFor(gen) * (narrow ? 32 : 39))) : narrow ? 38 : 44);
   // Rows spread to use the height the screen leaves: the branches between them get room to bend.
   const hasChildren = roots.some(id => m.children(id).length > 0);
   const natural = top + heights.reduce((a, b) => a + b, 0) + below.slice(1).reduce((a, b) => a + b, 0) + (hasChildren ? 118 : 0) + PAD;
@@ -212,7 +213,7 @@ export function layoutTree(m: Model, center: string, viewport: number, level = d
     links.push({key: 'more:' + tile.id, d: `M${midX(tile)},${tile.y} v${-rise}`, gen: tile.gen, status: 'hypothesis',
       kind: 'more', color: tile.color, ids: [tile.id]});
   }
-  // A couple is joined by a ring; their child hangs from the ring, not from each parent separately.
+  // The couple in the middle is joined by a ring; their children hang from it.
   const knot = (left: Tile, right: Tile) => {
     const from = left.x + left.w + left.stackLayers * STACK_STEP;
     const r = Math.max(1, Math.min(Math.max(2.5, RING * left.scale), (right.x - from) / 2 - .5));
@@ -221,11 +222,27 @@ export function layoutTree(m: Model, center: string, viewport: number, level = d
     return {x, y: y + r, bottom: Math.max(left.y + left.h, right.y + right.h),
       d: `M${left.x + left.w},${y} H${x - r} M${x + r},${y} H${right.x} M${x - r},${y} a${r},${r} 0 1,0 ${r * 2},0 a${r},${r} 0 1,0 ${-r * 2},0`};
   };
-  // Every parent sends an own branch down to the child: two of them meet above the child like the fork of a tree.
-  for (const {child: from, parent, status} of parentLinks) {
-    const child = tileById.get(from.id)!, to = tileById.get(parent.id)!;
-    const d = to.gen > child.gen ? curve(midX(child), child.y, midX(to), to.y + to.h) : curve(midX(child), child.y, midX(to), to.y);
-    links.push({key: JSON.stringify([from.id, parent.id]), d, gen: to.gen, status, kind: 'parent', color: to.color, ids: [from.id, parent.id]});
+  // Every parent sends an own branch down to the child. Two branches meet in a ring above the child: the same ring
+  // that joins the couple in the middle, so a child always hangs from the ring of the parents.
+  const byChild = new Map<string, typeof parentLinks>();
+  for (const link of parentLinks) byChild.set(link.child.id, [...byChild.get(link.child.id) || [], link]);
+  for (const [childId, pair] of byChild) {
+    const child = tileById.get(childId)!;
+    const above = pair.map(link => tileById.get(link.parent.id)!).filter(to => to.gen > child.gen);
+    const fall = above.length === 2 ? child.y - Math.max(...above.map(to => to.y + to.h)) : 0;
+    const r = Math.max(3, RING * Math.min(1, child.scale));
+    const stem = Math.max(2, Math.round(r * .6));
+    // The ring rides above the child's stack of siblings. Rows in the haze keep the plain fork.
+    const lift = child.stackLayers * STACK_STEP;
+    const ring = child.gen < HISTORY_LEVEL && fall >= lift + stem + r * 2 + 10 ? child.y - lift - stem - r : 0;
+    const x = midX(child);
+    for (const {parent, status} of pair) {
+      const to = tileById.get(parent.id)!;
+      const d = to.gen > child.gen ? curve(x, ring ? ring - r : child.y, midX(to), to.y + to.h) : curve(x, child.y, midX(to), to.y);
+      links.push({key: JSON.stringify([childId, parent.id]), d, gen: to.gen, status, kind: 'parent', color: to.color, ids: [childId, parent.id]});
+    }
+    if (ring) links.push({key: 'ring:' + childId, gen: child.gen + 1, status: 'export', kind: 'union', ids: [childId, ...above.map(to => to.id)],
+      d: `M${x - r},${ring} a${r},${r} 0 1,0 ${r * 2},0 a${r},${r} 0 1,0 ${-r * 2},0 M${x},${ring + r} V${child.y}`});
   }
   const rootJoint = roots.length === 2 ? knot(rowTiles[0][0], rowTiles[0][1]) : null;
   if (rootJoint) {
