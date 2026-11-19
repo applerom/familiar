@@ -151,7 +151,10 @@ export function layoutTree(m: Model, center: string, viewport: number, level = d
     const fit = w / full;
     if (gen) tightest = Math.min(tightest, w);
     const cards = ordered.map(n => card(n.id, gen, n.status, w, gen >= HISTORY_LEVEL || fit < 1));
-    const desired = ordered.map((n, i) => gen === 0
+    // A couple whose parents are drawn stands apart, each under the own parents, so the branches rise evenly;
+    // with nobody above, the two stand close.
+    const apart = rows.length > 1 && ordered.length > 1;
+    const desired = ordered.map((n, i) => gen === 0 && !apart
       ? axis + (i - (ordered.length - 1) / 2) * (w + (narrow ? 35 : 72)) - w / 2
       : axis + (n.x - axis) * depth - w / 2);
     const gap = (i: number) => Math.max(2, Math.round(fullGap(i) * fit));
@@ -188,10 +191,10 @@ export function layoutTree(m: Model, center: string, viewport: number, level = d
   const top = cut.length ? HORIZON_Y + PAD + 30 : horizon ? HORIZON_Y + PAD : PAD;
   const heights = rowTiles.map(row => Math.max(...row.map(tile => tile.h)));
   const below = rowTiles.map((_, gen) => gen >= HISTORY_LEVEL ? Math.max(12, Math.round(scaleFor(gen) * (narrow ? 32 : 39))) : narrow ? 26 : 34);
-  // When the width of the screen sets the size, the rows spread to use its height as well.
+  // Rows spread to use the height the screen leaves: the branches between them get room to bend.
   const hasChildren = roots.some(id => m.children(id).length > 0);
   const natural = top + heights.reduce((a, b) => a + b, 0) + below.slice(1).reduce((a, b) => a + b, 0) + (hasChildren ? 118 : 0) + PAD;
-  const spread = shared && last && room > natural ? Math.min(44, (room - natural) / last) : 0;
+  const spread = last && room > natural ? Math.min(56, (room - natural) / last) : 0;
   let y = top;
   for (let gen = last; gen >= 0; gen--) {
     for (const tile of rowTiles[gen]) {
@@ -218,33 +221,11 @@ export function layoutTree(m: Model, center: string, viewport: number, level = d
     return {x, y: y + r, bottom: Math.max(left.y + left.h, right.y + right.h),
       d: `M${left.x + left.w},${y} H${x - r} M${x + r},${y} H${right.x} M${x - r},${y} a${r},${r} 0 1,0 ${r * 2},0 a${r},${r} 0 1,0 ${-r * 2},0`};
   };
-  const drop = (from: {x: number; y: number; bottom: number}, x: number, y: number) =>
-    `M${from.x},${from.y} V${from.bottom} C${from.x},${(from.bottom + y) / 2} ${x},${(from.bottom + y) / 2} ${x},${y}`;
-  const uncertain = (status: string) => status === 'hypothesis' || status === 'probable';
-  const byChild = new Map<string, typeof parentLinks>();
-  for (const link of parentLinks) byChild.set(link.child.id, [...byChild.get(link.child.id) || [], link]);
-  const couples = new Set<string>();
-  for (const [childId, pair] of byChild) {
-    const child = tileById.get(childId)!;
-    const [a, b] = pair.map(link => tileById.get(link.parent.id)!).sort((p, q) => p.x - q.x);
-    const row = b && a.gen === b.gen && a.gen === child.gen + 1 ? rowTiles[a.gen] : null;
-    if (pair.length === 2 && row && row.indexOf(b) - row.indexOf(a) === 1) {
-      const joint = knot(a, b);
-      const key = JSON.stringify([a.id, b.id]);
-      if (!couples.has(key)) {
-        couples.add(key);
-        links.push({key: 'couple:' + key, d: joint.d, gen: a.gen, status: 'export', kind: 'union', ids: [a.id, b.id]});
-      }
-      const status = pair.find(link => uncertain(link.status))?.status || pair[0].status;
-      links.push({key: JSON.stringify([childId, a.id, b.id]), d: drop(joint, midX(child), child.y), gen: a.gen,
-        status, kind: 'parent', color: child.color, ids: [childId, a.id, b.id]});
-      continue;
-    }
-    for (const {parent, status} of pair) {
-      const to = tileById.get(parent.id)!;
-      const d = to.gen > child.gen ? curve(midX(child), child.y, midX(to), to.y + to.h) : curve(midX(child), child.y, midX(to), to.y);
-      links.push({key: JSON.stringify([childId, parent.id]), d, gen: to.gen, status, kind: 'parent', color: to.color, ids: [childId, parent.id]});
-    }
+  // Every parent sends an own branch down to the child: two of them meet above the child like the fork of a tree.
+  for (const {child: from, parent, status} of parentLinks) {
+    const child = tileById.get(from.id)!, to = tileById.get(parent.id)!;
+    const d = to.gen > child.gen ? curve(midX(child), child.y, midX(to), to.y + to.h) : curve(midX(child), child.y, midX(to), to.y);
+    links.push({key: JSON.stringify([from.id, parent.id]), d, gen: to.gen, status, kind: 'parent', color: to.color, ids: [from.id, parent.id]});
   }
   const rootJoint = roots.length === 2 ? knot(rowTiles[0][0], rowTiles[0][1]) : null;
   if (rootJoint) {
@@ -285,7 +266,7 @@ export function layoutTree(m: Model, center: string, viewport: number, level = d
         if (!wideChildren.has(key)) wideChildren.set(key, {x, y, status, stops: []});
         wideChildren.get(key)!.stops.push(midX(tile));
       } else {
-        links.push({key: JSON.stringify([kind, center, id]), d: drop(from, midX(tile), lower), gen: 1, status, kind,
+        links.push({key: JSON.stringify([kind, center, id]), d: curve(from.x, from.y, midX(tile), lower), gen: 1, status, kind,
           ids: shared ? [id, ...roots] : [id, focus.id]});
       }
       tiles.push(tile);

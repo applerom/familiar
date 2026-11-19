@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.41.2 — 19 November 2026
+
+- The wheel always leads somewhere. Outwards draws one more generation; once
+  all are open it goes back the way the reader came, and with no such way one
+  step along the kinship towards the family's home people. Inwards over a
+  person moves the tree to that person and keeps the branch above them. One
+  turn of the wheel, one pinch or one press of a round button is one step.
+- Branches bend again: every parent sends an own coloured branch down to the
+  child, and two of them meet above the child like the fork of a tree. A
+  couple whose parents are drawn stands apart, each under the own parents.
+- Rows spread to use the height of the screen, so the branches have room.
+- The count of generations between the two round buttons reads as a figure,
+  not as a third button.
+- A page opened by a link to a person starts on that person at once.
+
 ## 0.41.1 — 18 November 2026
 
 - A claim taken from another tree reads on the card as the claim itself: a

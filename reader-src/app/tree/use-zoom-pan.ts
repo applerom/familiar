@@ -1,6 +1,6 @@
 import {useCallback,useEffect,useRef,useState,type RefObject} from 'react';
 export type T={k:number;x:number;y:number};
-type Opts={min:number;max:number;margin?:number;content:RefObject<{w:number;h:number}>;horizontalWheel?:boolean;onStep?:(direction:number)=>void};
+type Opts={min:number;max:number;margin?:number;content:RefObject<{w:number;h:number}>;horizontalWheel?:boolean;onStep?:(direction:number,at:{x:number;y:number})=>void};
 /**
  * Mouse drag, wheel, touch drag and two-finger pinch for one stage. Clicks that end a drag are swallowed.
  * `focal` is where the current wheel or pinch gesture points (null while dragging). A transform set from outside
@@ -38,7 +38,7 @@ export function useZoomPan(stage:RefObject<HTMLElement|null>,{min,max,margin=70,
    // With a step handler the plain wheel never scales pixels: one turn of the wheel is one step. A long spin
    // or a trackpad swipe stays one step until the wheel rests.
    if(step.current&&!sideways&&!e.ctrlKey){const now=performance.now();if(now<locked){turned=0;locked=Math.max(locked,now+160);return}
-    turned+=e.deltaY*units;if(Math.abs(turned)>=40){step.current(turned>0?1:-1);turned=0;locked=now+260}return}
+    turned+=e.deltaY*units;if(Math.abs(turned)>=40){step.current(turned>0?1:-1,p);turned=0;locked=now+260}return}
    setMoving(true);clearTimeout(wheelTimer);wheelTimer=setTimeout(()=>setMoving(false),140);
    if(sideways){
     focal.current=null;apply(clamp({...tRef.current,x:tRef.current.x-(e.deltaX||e.deltaY)*units}));
