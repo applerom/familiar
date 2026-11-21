@@ -14,13 +14,23 @@ The engine and method live here; real families live elsewhere. Pin
   Keep core data/privacy/install guarantees, one refusal/control each, and **one**
   installed memory → paper → tree → reader journey. Surface/form checks are not
   written: delete them. Only broken build/package references may remain advice.
+- Ask every check and test, new or kept: **what does it give the agent of a research application, and what
+  does that agent pay for it per day** (runs × seconds, in tests and in every gated engine call)? One that
+  saved nobody in two weeks but costs seconds on each call is deleted, however proper it looks; a test
+  rewritten twice for new code without a caught failure is deleted. A slower test run or family gate (a
+  research lookup, `instance check`, a desk build) is a defect fixed the same day, not a note in a report.
 - Active development, no stable version planned: checks only keep the journey and core data/privacy/install from
   falling apart; never write "stabilising" checks, never raise the test budget for them. A behaviour fix is not a
   stricter check. A new release must not invalidate data researchers already wrote without carrying it over:
-  a changed stored form ships its carry-over command in the same release and a CHANGELOG line starting `Data:`
-  (`docs/upgrading.md` is the public promise; old commands, flags and pages are not kept for compatibility).
+  a changed stored form ships its carry-over as a step in `instance/upgrade.py` `STEPS` (check, carry over or
+  name file and decision; idempotent; never deletes a file) in the same release and a CHANGELOG line starting
+  `Data:`; a stop on old data names the files and the action (`docs/upgrading.md` is the public promise; old
+  commands, flags and pages are not kept for compatibility).
 - This repository is public. `main` is pushed as it is: no real family names, ids, paths, prompts or host
-  machine paths in files **or commit messages**. Outsiders install tags, so tag only what families ran.
+  machine paths in files **or commit messages**. Examples in code, comments, tests and docs come from the
+  repository's invented family (demo and fixtures), plainly conventional ones only for a form the demo lacks;
+  surnames and places of the families the engine is developed beside never appear here, commit messages included.
+  Outsiders install tags, so tag only what families ran.
 - During work run the affected guarantee after changing it. Before **done**:
   **`uv run pytest -q --full` once**, including fast checks. `uv run pytest -q`
   is an optional shorter iteration, not another pre-commit requirement. No nested

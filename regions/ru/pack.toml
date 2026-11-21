@@ -1028,3 +1028,22 @@ state_answered="Есть ответ"
 saving="Сохраняем…"
 saved="Сохранено. Исследователь увидит вашу отметку."
 failed="Не удалось сохранить. Текст остался — попробуйте ещё раз."
+
+# One search key for the surname forms of Cyrillic acts (MOD-NAME-KEY). Applied after transliteration into the
+# key script of the region pack; endings run on that text. Key forms are search suggestions, never a spelling.
+[language.surname_key]
+purpose = "одна поисковая основа для мужской, женской, падежной и дореформенной формы фамилии в кириллическом акте"
+operation = "search-key-only"
+policy = "ключ предлагает форму поиска и подсказку; написание, род и тождество не меняет"
+# Cyrillic of the region's acts, incl. pre-reform and Belarusian letters, in Polish orthography.
+letters = { "щ" = "szcz", "ш" = "sz", "ч" = "cz", "ж" = "ż", "ц" = "c", "х" = "ch", "в" = "w", "й" = "j", "ы" = "y", "ё" = "io", "ю" = "iu", "я" = "ia", "е" = "e", "э" = "e", "ь" = "", "ъ" = "", "ѣ" = "e", "і" = "i", "ї" = "i", "ѳ" = "f", "ѵ" = "i", "ў" = "w", "ґ" = "g", "а" = "a", "б" = "b", "г" = "g", "д" = "d", "з" = "z", "и" = "i", "к" = "k", "л" = "l", "м" = "m", "н" = "n", "о" = "o", "п" = "p", "р" = "r", "с" = "s", "т" = "t", "у" = "u", "ф" = "f" }
+# я ю ё е at the start of a word or after a vowel; after a soft sign; a soft sign before a vowel.
+iotated = { "я" = "ja", "ю" = "ju", "ё" = "jo", "е" = "je" }
+after_soft = { "я" = "a", "ю" = "u", "ё" = "o", "е" = "e" }
+soft_before_vowel = "i"
+# Ending -> masculine nominative stem, on the transliterated text; first match wins.
+endings = [
+  ['(s|c|dz)k(aja|oj|ogo|omu|im|om|uju)$', '\1ki'], ['(s|c|dz)kij$', '\1ki'],
+  ['(icz|wicz|ycz)(uwna|ewna|owna|ewoj|owoj|owa|ewa)$', '\1'], ['(icz|wicz|ycz)(ej|ow|ew|i)$', '\1'],
+  ['(icz|wicz|ycz)(a|u|em|om)$', '\1'], ['(ow|ew|in|yn)(a|oj|u|ym|e)$', '\1'],
+]

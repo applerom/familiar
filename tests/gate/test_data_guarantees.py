@@ -34,22 +34,39 @@ def test_f1_shown_reference_resolves(family):
         mutate(family, {family.path('records') / 'new-paper.json': record | {'subjects': ['missing']}})
 
 
-def test_dropped_contribution_blocks_delivery(family):
+def test_waiting_contribution_is_quarantined_then_applied_and_never_quietly_lost(family):
     from familiar.tree.builder import build
     path = family.path('contributions') / 'researcher/claim.json'
     path.parent.mkdir(parents=True)
     union = {'id': 'new-union', 'husband': 'p-amaro', 'wife': 'p-new', 'status': 'hypothesis', 'text': 'Named as spouses.', 'basis': 'The document names the wife.', 'sources': ['paper'], 'weight': .4}
-    path.write_text(json.dumps({'schema': 1, 'author': 'researcher', 'people': {'p-new': {'name': 'Invented Spouse'}}, 'families': [union]}), encoding='utf-8')
-    for paths in (None, [str(path.relative_to(family.root))]):
-        report = check(family, paths=paths)
-        assert not report['valid'] and any(str(path) == e['location'] and all(s in e['message'] for s in ('families[0]', 'paper', 'Named as spouses')) for e in report['errors'])
-    for publish in (lambda: build(family, view='working'), lambda: publication(family, 'reader-private')):
-        with pytest.raises(ValueError, match='paper'):
-            publish()
+    path.write_text(json.dumps({'schema': 1, 'author': 'researcher', 'people': {'p-new': {'name': 'Invented Spouse'}}, 'families': [union], 'relations': []}), encoding='utf-8')
+    report = check(family)  # another wave has not committed 'paper' yet: named, not applied, nothing blocks
+    assert report['valid'] and report['quarantine'][0]['waits'] == ['paper'] and report['quarantine'][0]['author'] == 'researcher'
+    # A key the engine never reads (a wave once wrote links as `relations`) is named, not silently dropped.
+    assert any(a['location'] == str(path) and 'relations' in a['message'] and '`edges`' in a['message'] for a in report['advice'])
+    assert 'p-new' not in json.loads(publication(family, 'reader-private').files()['graph.json'])['people']
     edit(family, str(path.relative_to(family.root)), lambda p: p.update(sources={'paper': {'kind': 'home-paper', 'record': 'doc-helena-baptism'}}))
     graph = json.loads(publication(family, 'reader-private').files()['graph.json'])
     added = next(f for f in graph['families'] if f['id'] == union['id'])
     assert check(family)['valid'] and 'p-new' in graph['people'] and added['weight'] == .4 and added['basis'] == union['basis'] and added['provenance'] == ['paper'] and not any(e['parent'] == 'p-new' for e in graph['edges'])
+    edit(family, str(path.relative_to(family.root)), lambda p: p.pop('sources'))  # shown kinship lost: an error
+    for _ in range(2):
+        report = check(family)
+        assert not report['valid'] and any(str(path) == e['location'] and all(s in e['message'] for s in ('families[0]', 'paper', 'applied before')) for e in report['errors'])
+    for publish in (lambda: build(family, view='working'), lambda: publication(family, 'reader-private')):
+        with pytest.raises(ValueError, match='paper'):
+            publish()
+
+
+def test_probable_identity_dates_the_card_by_the_document():
+    from familiar.tree.identities import _apply_identities
+    # The family's card has only a guess; the found baptism record has the date: the tile takes the document's.
+    data = {'sources': {'s': {}}, 'people': {'kept': {'name': 'Invented'}, 'found': {'name': 'Invented', 'events': [{'type': 'birth', 'date': '1849-10-07'}]},
+            'aged': {'name': 'Invented', 'events': [{'type': 'birth', 'date': '1772', 'approximate': True}]}, 'other': {'name': 'Invented', 'events': [{'type': 'birth', 'date': 'ABT 1760'}]}}, 'edges': []}
+    merges = [{'canonical': 'kept', 'alias': 'found', 'status': 'probable', 'weight': .4, 'basis': 'b', 'sources': ['s']},
+              {'canonical': 'other', 'alias': 'aged', 'status': 'probable', 'weight': .4, 'basis': 'b', 'sources': ['s']}]
+    people = _apply_identities(data, {'merges': merges})['people']
+    assert people['kept']['events'][0]['date'] == '1849-10-07' and people['other']['events'][0]['date'] == 'ABT 1760'
 
 
 def test_f2_record_subject_cannot_be_omitted(family):

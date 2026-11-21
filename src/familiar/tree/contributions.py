@@ -17,7 +17,7 @@
 # :END_MODULE_CONTRACT
 """Merge independent researchers' additive findings without shared-file writes."""
 
-import copy
+import pickle
 import hashlib
 import json
 import re
@@ -43,6 +43,41 @@ def _read_package(path, project):
             if not target.is_relative_to(project.resolve()) or not target.is_file():
                 raise ValueError("Источник недоступен: " + sid)
     return pack
+
+
+# Every top-level key the merge reads, and the ones a contribution may carry for people. A key outside this set is
+# never read: its claims silently stay out of the tree, so the check names it (a wave once wrote links as `relations`).
+READ_KEYS = {'_about', 'id', 'schema', 'author', 'title', 'status', 'notes', 'sources', 'people', 'facts',
+             'confirmations', 'edges', 'families', 'relationship_decisions', 'fact_replacements', 'events', 'media',
+             'update'}
+_LINKS = {'relations', 'relationships', 'links', 'parents', 'children', 'kinship'}
+_UNIONS = {'unions', 'marriages', 'couples', 'spouses'}
+
+
+def unread_keys(pack):
+    """The top-level keys of a contribution the engine does not read, each with the hint the check prints."""
+    hint = lambda key: ('этот ключ не читается; связи — в `edges`' if key in _LINKS else
+                        'этот ключ не читается; браки — в `families`' if key in _UNIONS else
+                        'этот ключ не читается; его содержимое не попадает в дерево (форма: forms/contribution.json)')
+    return [(key, hint(key)) for key in pack if key not in READ_KEYS] if isinstance(pack, dict) else []
+
+
+def _clone(value):
+    """deepcopy of JSON-shaped data at C speed: every package is applied on private copies."""
+    return pickle.loads(pickle.dumps(value, pickle.HIGHEST_PROTOCOL))
+
+
+class Waiting(ValueError):
+    """A reference to what another wave has not committed yet: the package waits and applies once it appears."""
+
+    def __init__(self, message, waits):
+        super().__init__(message)
+        self.waits = sorted({str(w) for w in waits})
+
+
+def _author(pack, path):
+    author = pack.get("author") if isinstance(pack, dict) else None
+    return author if isinstance(author, str) and author else path.parent.name
 
 
 def _merge_contributions(
@@ -93,8 +128,7 @@ def _merge_contributions(
                     revisions.append(pack)
                     seen.add(path)
                 author = pack["author"]
-                pp, ee, ss = copy.deepcopy(people), copy.deepcopy(edges), copy.deepcopy(sources)
-                ff = copy.deepcopy(families)
+                pp, ee, ss, ff = (_clone(people), _clone(edges), _clone(sources), _clone(families))
                 for sid, source in pack.get("sources", {}).items():
                     claim = 'sources[' + sid + ']'
                     if sid in ss and (ss[sid] != source or owners.get(sid) == evidence_path):
@@ -120,8 +154,11 @@ def _merge_contributions(
                         raise ValueError("Утверждение без списка источников: " + str(fact.get('text')))
                     missing = [s for s in refs if not isinstance(s, str) or s not in resolved]
                     if missing:
-                        raise ValueError(f"Утверждение {fact.get('text')!r}: неизвестные источники {missing}; "
-                                         "объявите их в sources вклада этой семьи или в evidence")
+                        message = (f"Утверждение {fact.get('text')!r}: неизвестные источники {missing}; "
+                                   "объявите их в sources вклада этой семьи или в evidence")
+                        if all(isinstance(s, str) for s in missing):
+                            raise Waiting(message, missing)
+                        raise ValueError(message)
 
                 for pid, person in pack.get("people", {}).items():
                     claim = 'people[' + pid + ']'
@@ -131,7 +168,7 @@ def _merge_contributions(
                             raise ValueError("Карточка уже имеет имя; используйте facts: " + pid)
                         if set(person) - {'name', 'names'} or not person.get('names'):
                             raise ValueError('Naming an unnamed card needs only name and sourced names: ' + pid)
-                        names = copy.deepcopy(person['names'])
+                        names = _clone(person['names'])
                         for name in names:
                             display = ' '.join(filter(None, (name.get(k) for k in ('given', 'patronymic', 'surname'))))
                             check_fact({'text': display, 'status': 'export', 'sources': name.get('provenance')})
@@ -140,7 +177,7 @@ def _merge_contributions(
                         if person.get('name', display) != display:
                             raise ValueError('Name must match the recorded name parts: ' + pid)
                         prior.setdefault('nameHistory', []).append({'name': prior.get('name', ''),
-                            'names': copy.deepcopy(prior.get('names', [])), 'author': author,
+                            'names': _clone(prior.get('names', [])), 'author': author,
                             **({'placeholder': prior['placeholder']} if 'placeholder' in prior else {}),
                             'contribution': str(path.relative_to(project))})
                         prior.update(name=display, names=names)
@@ -149,7 +186,7 @@ def _merge_contributions(
                     if not person.get("name"):
                         raise ValueError("Нет имени: " + pid)
                     pp[pid] = dict(
-                        copy.deepcopy(person),
+                        _clone(person),
                         id=pid,
                         author=author,
                         origin=labels.get("contribution_origin", "Research record · ") + author,
@@ -163,7 +200,7 @@ def _merge_contributions(
                 for pid, facts in pack.get("facts", {}).items():
                     claim = 'facts[' + pid + ']'
                     if pid not in pp:
-                        raise ValueError("Неизвестный человек: " + pid)
+                        raise Waiting("Неизвестный человек: " + pid, [pid])
                     for n, fact in enumerate(facts):
                         claim = f'facts[{pid}][{n}]'
                         check_fact(fact)
@@ -181,14 +218,14 @@ def _merge_contributions(
                 for pid, confirmation in pack.get("confirmations", {}).items():
                     claim = 'confirmations[' + pid + ']'
                     if pid not in pp:
-                        raise ValueError("Подтверждение неизвестного человека: " + pid)
+                        raise Waiting("Подтверждение неизвестного человека: " + pid, [pid])
                     level = confirmation.get("level")
                     if level not in ("document", "family", "mention"):
                         raise ValueError("Неизвестное основание подтверждения: " + pid)
-                    if not confirmation.get("sources") or any(
-                        s not in resolved for s in confirmation["sources"]
-                    ):
+                    if not confirmation.get("sources"):
                         raise ValueError("Подтверждение без разрешимых источников: " + pid)
+                    if missing := [s for s in confirmation["sources"] if s not in resolved]:
+                        raise Waiting("Подтверждение без разрешимых источников: " + pid, missing)
                     if not all(confirmation.get("basis", {}).get(lang) for lang in languages):
                         raise ValueError(
                             "Confirmation missing basis for configured languages: " + pid
@@ -203,14 +240,14 @@ def _merge_contributions(
                     prior = pp[pid].get("confirmation")
                     if prior and prior != confirmation:
                         raise ValueError("Конфликт подтверждения: " + pid)
-                    pp[pid]["confirmation"] = copy.deepcopy(confirmation)
+                    pp[pid]["confirmation"] = _clone(confirmation)
                 pairs = {(e["child"], e["parent"]) for e in ee}
                 for n, edge in enumerate(pack.get("edges", [])):
                     claim = f'edges[{n}] ({edge.get("child")} → {edge.get("parent")})'
                     check_fact(edge)
                     pair = (edge["child"], edge["parent"])
                     if pair[0] not in pp or pair[1] not in pp:
-                        raise ValueError("Связь с неизвестным человеком")
+                        raise Waiting("Связь с неизвестным человеком", [p for p in pair if p not in pp])
                     if pair in pairs:
                         raise ValueError("Связь уже существует; исправление обсудить на доске")
                     ee.append(dict(edge, author=author))
@@ -221,7 +258,9 @@ def _merge_contributions(
                     claim = f'families[{n}]'
                     check_fact(union)
                     pair = (union['husband'], union['wife'])
-                    if pair[0] not in pp or pair[1] not in pp or pair[0] == pair[1]:
+                    if pair[0] != pair[1] and (pair[0] not in pp or pair[1] not in pp):
+                        raise Waiting('Union needs two distinct known people', [p for p in pair if p not in pp])
+                    if pair[0] == pair[1]:
                         raise ValueError('Union needs two distinct known people')
                     if not isinstance(union.get('id'), str) or not union['id'].strip():
                         raise ValueError('Union needs an id')
@@ -232,7 +271,7 @@ def _merge_contributions(
                     weight = union.get('weight')
                     if type(weight) not in (int, float) or not 0 <= weight <= 1:
                         raise ValueError('Union needs a weight between 0 and 1')
-                    added = dict(copy.deepcopy(union), author=author, provenance=union['sources'])
+                    added = dict(_clone(union), author=author, provenance=union['sources'])
                     added.setdefault('children', [])
                     added.setdefault('events', [])
                     ff.append(added)
@@ -302,7 +341,9 @@ def _merge_contributions(
                 )
             except failures as exc:
                 retry.append(path)
-                errors.append({"file": str(path.relative_to(project)), "error": claim + ': ' + str(exc)})
+                errors.append({"file": str(path.relative_to(project)), "error": claim + ': ' + str(exc),
+                               **({"waits": exc.waits, "author": _author(packages[path], path)}
+                                  if isinstance(exc, Waiting) else {})})
         # Later packages may introduce referenced people or sources. Failed
         # packages remain atomic and are retried only while a pass adds data.
         if len(applied) == before:
@@ -342,14 +383,21 @@ def _merge_contributions(
         if (missing := sorted(set(source_ids) - used))
     ]
     warnings = source_warnings
-    research["contributions"] = {"applied": applied, "errors": errors, "warnings": warnings}
+    # A package waiting for a reference is quarantined, named and not applied; the check decides
+    # whether it was applied before (an error) or waits for another wave's commit.
+    quarantine = [e for e in errors if e.get("waits")]
+    errors = [e for e in errors if not e.get("waits")]
+    unread = [{"file": str(path.relative_to(project)), "key": key, "message": message}
+              for path, pack in packages.items() for key, message in unread_keys(pack)]
+    research["contributions"] = {"applied": applied, "errors": errors, "warnings": warnings,
+                                 "quarantine": quarantine, "unread": unread}
     # The browser refreshes when this changes, including edits by any author.
-    if revisions or errors:
+    if revisions or errors or quarantine:
         research["revision"] = (
             research.get("revision", "")
             + ":"
             + hashlib.sha256(
-                json.dumps([revisions, errors], ensure_ascii=False, sort_keys=True).encode()
+                json.dumps([revisions, errors, quarantine], ensure_ascii=False, sort_keys=True).encode()
             ).hexdigest()[:12]
         )
     for error in errors:

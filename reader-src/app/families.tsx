@@ -1,8 +1,8 @@
 'use client';
 import {useMemo,useState,type ReactNode} from 'react';
-import {lineTitle,placeLabel,type Model,type Row} from './tree/model';
+import {clanKey,genderForm,lineTitle,placeLabel,type Model,type Row} from './tree/model';
 import {plural,type Language} from './i18n';
-import {findPeople} from './search';
+import {findPeople,searchKey} from './search';
 type Group={key:string;name:string;variants:string[];people:string[];from?:number;to?:number;places:string[];gen:number;version:number};
 /** Compare Cyrillic spellings in Polish Latin transliteration. */
 const CYR:Record<string,string>={а:'a',б:'b',в:'w',г:'h',д:'d',е:'ie',ё:'io',ж:'z',з:'z',и:'i',й:'j',к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',х:'ch',ц:'c',ч:'cz',ш:'sz',щ:'szcz',ъ:'',ы:'y',ь:'',э:'e',ю:'ju',я:'ja',і:'i',ў:'u'};
@@ -12,18 +12,28 @@ const fold=(s:string)=>translit(s.toLocaleLowerCase()).normalize('NFD').replace(
 /** Edit distance folds one-letter spelling variants into one family. */
 function dist(a:string,b:string){if(Math.abs(a.length-b.length)>1)return 2;const d=Array.from({length:a.length+1},(_,i)=>[i,...Array(b.length).fill(0)]);for(let j=1;j<=b.length;j++)d[0][j]=j;
  for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return d[a.length][b.length]}
-function groupBySurname(m:Model,ids:Iterable<string>,gen:(id:string)=>number,version:(id:string)=>boolean):Group[]{
- const groups=new Map<string,Group>();const forms=new Map<string,Map<string,number>>();
+/** A spelling the family assigned to a named clan brings everyone written so into it (a wife's maiden name too). */
+function clanOfSpelling(m:Model,people:Row){const out=new Map<string,string>();for(const i of Object.values(m.info))if(i.clan)
+ for(const sur of [i.surnameKey,...(people[i.id]?.surnameDisplay?.variants||[])])if(sur)out.set(fold(clanKey(sur)),i.clan);return out}
+function groupBySurname(m:Model,people:Row,ids:Iterable<string>,gen:(id:string)=>number,version:(id:string)=>boolean):Group[]{
+ const groups=new Map<string,Group>();const forms=new Map<string,Map<string,number>>();const clans=clanOfSpelling(m,people);const clanForm=new Map<string,string>();
  const add=(g:Group,id:string,sur:string)=>{const i=m.info[id];g.people.push(id);g.gen=Math.min(g.gen,gen(id));if(version(id))g.version++;
   if(i.birth){g.from=g.from===undefined?i.birth:Math.min(g.from,i.birth);g.to=g.to===undefined?i.birth:Math.max(g.to,i.birth)}
   if(i.place&&i.placeRole==='birth'&&!g.places.includes(i.place))g.places.push(i.place);
   const f=forms.get(g.key)||forms.set(g.key,new Map()).get(g.key)!;f.set(sur,(f.get(sur)||0)+1)};
- for(const id of ids){const i=m.info[id];if(!i||i.placeholder)continue;const sur=i.surnameKey;if(!sur)continue;const key=fold(sur);
+ // A clan the family named (surname decision) is one group in every spelling and language; otherwise the male,
+ // female and maiden forms of one spelling are one family (Корнеев, Корнеева), and a one-letter variant joins it.
+ for(const id of ids){const i=m.info[id];if(!i||i.placeholder)continue;const sur=i.surnameKey;if(!sur)continue;const clan=i.clan||clans.get(fold(clanKey(sur)));const key=clan?'clan:'+clan:fold(clanKey(sur));if(clan&&i.clanSurname)clanForm.set(key,i.clanSurname);
   let g=groups.get(key);
-  if(!g&&key.length>=7)for(const o of groups.values())if(dist(o.key,key)<=1){g=o;break}
+  if(!g&&!clan&&key.length>=7)for(const o of groups.values())if(!o.key.startsWith('clan:')&&dist(o.key,key)<=1){g=o;break}
   if(!g){g={key,name:sur,variants:[],people:[],places:[],gen:gen(id),version:0};groups.set(key,g)}
   add(g,id,sur)}
- for(const g of groups.values()){const ranked=[...forms.get(g.key)!.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).map(([s])=>s);g.name=ranked[0];g.variants=ranked.slice(1);g.people.sort((a,b)=>(m.info[a].birth??9999)-(m.info[b].birth??9999)||m.info[a].short.localeCompare(m.info[b].short))}
+ // the family is named in its male form (the women's forms are the same name), then by the most frequent spelling
+ for(const g of groups.values()){const count=new Map<string,number>();for(const [s,k] of forms.get(g.key)!){const male=genderForm(s,'m');count.set(male,(count.get(male)||0)+k)}
+  // a named clan reads as one family: its adopted form, or the reader-language spelling of it; documents' spellings stay on the cards
+  const form=clanForm.get(g.key);const ranked=[...count.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).map(([s])=>s);
+  if(form){g.name=ranked.find(v=>v===genderForm(form,'m'))||ranked.find(v=>searchKey(clanKey(v))===searchKey(clanKey(form)))||ranked[0];g.variants=[]}
+  else{g.name=ranked[0];g.variants=ranked.slice(1).filter(v=>fold(clanKey(v))!==fold(clanKey(g.name)))}g.people.sort((a,b)=>(m.info[a].birth??9999)-(m.info[b].birth??9999)||m.info[a].short.localeCompare(m.info[b].short))}
  return [...groups.values()].sort((a,b)=>a.gen-b.gen||b.people.length-a.people.length||a.name.localeCompare(b.name));
 }
 const cap=(s:string)=>s.charAt(0).toLocaleUpperCase()+s.slice(1);
@@ -32,11 +42,12 @@ export default function Families({data,model,connected,group,go,labels,language,
  // the four ancestor lines: everyone above the line's first person, with the generation and whether a dotted link lies on the way
  const lines=useMemo(()=>model.lines.map((l,idx)=>{const gen=new Map<string,number>(),via=new Map<string,boolean>();const todo:[string,number,boolean][]=[[l.id,1,l.status==='hypothesis']];
   while(todo.length){const [x,g,v]=todo.pop()!;if(gen.has(x))continue;gen.set(x,g);via.set(x,v);model.parents(x).slots.forEach(s=>s&&todo.push([s.id,g+1,v||model.connectionLevel(s)===3]))}
-  return {...l,idx,members:gen,groups:groupBySurname(model,gen.keys(),id=>gen.get(id)!,id=>via.get(id)!)}}),[model]);
+  return {...l,idx,members:gen,groups:groupBySurname(model,data.people,gen.keys(),id=>gen.get(id)!,id=>via.get(id)!)}}),[model,data]);
  // surnames that came in by marriage: everyone connected who is not on an ancestor line, minus the line surnames in any spelling
  const inLaws=useMemo(()=>{const taken=lines.flatMap(l=>l.groups.flatMap(g=>[g.name,...g.variants].map(fold)));const inside=new Set(lines.flatMap(l=>[...l.members.keys()]));
-  const isLine=(g:Group)=>[g.name,...g.variants].map(fold).some(k=>taken.some(t=>t===k||(k.length>=7&&dist(t,k)<=1)));
-  return groupBySurname(model,[...connected].filter(id=>!inside.has(id)&&(!lines.length||!model.homes.includes(id))),()=>0,()=>false).filter(g=>!isLine(g)).sort((a,b)=>b.people.length-a.people.length||a.name.localeCompare(b.name))},[lines,connected,model]);
+  const lineKeys=new Set(lines.flatMap(l=>l.groups.map(g=>g.key)));
+  const isLine=(g:Group)=>lineKeys.has(g.key)||[g.name,...g.variants].map(fold).some(k=>taken.some(t=>t===k||(k.length>=7&&dist(t,k)<=1)));
+  return groupBySurname(model,data.people,[...connected].filter(id=>!inside.has(id)&&(!lines.length||!model.homes.includes(id))),()=>0,()=>false).filter(g=>!isLine(g)).sort((a,b)=>b.people.length-a.people.length||a.name.localeCompare(b.name))},[lines,connected,model,data]);
  const needle=query.trim().toLocaleLowerCase();
  const results=useMemo(()=>{const keep=(id:string)=>scope==='all'||group(id)===scope;const ids=needle?findPeople(data.people,model,needle,keep).map(h=>h.id):list?Object.keys(data.people).filter(id=>model.info[id]&&!model.info[id].placeholder&&keep(id)):[];return ids.map(id=>data.people[id] as Row).sort((a,b)=>model.info[a.id].short.localeCompare(model.info[b.id].short,language))},[needle,list,scope,data,model,group,language]);
  const n=(k:number)=>`${k} ${plural(k,labels.personsForms,language)}`;

@@ -40,7 +40,7 @@ _BACK = b"""document.getElementById('document-back').addEventListener('click', (
 """
 
 
-def record_page(record, title='', language='en', fictional_family=False, *, scan=None):
+def record_page(record, title='', language='en', fictional_family=False, *, scan=None, others=()):
     esc = lambda value: html.escape(str(value))
     # An address inside a literal field remains text, never an active link.
     clean = lambda value: re.sub(r'https?://[^\s<>"\']+', '[reference retained in research]', str(value))
@@ -65,6 +65,9 @@ def record_page(record, title='', language='en', fictional_family=False, *, scan
     fictional = f'<p role="note">{demo}</p>' if record.get('fictional') or fictional_family else ''
     if isinstance(title, dict):
         title = title.get(language) or next(iter(title.values()), '')
+    # The same document in the family's other languages: the reader opens its own, the page offers the rest.
+    switch = ''.join(f' · <a href="{esc(href)}" hreflang="{esc(tag)}" lang="{esc(tag)}">{esc(tag.upper())}</a>'
+                     for tag, href in others)
     visual = ''
     if scan:
         url = esc(scan)
@@ -97,8 +100,25 @@ def record_page(record, title='', language='en', fictional_family=False, *, scan
             'border-bottom:1px solid var(--rule,#ddd3c1)}'
             '.document-page th{width:32%}.document-page td table{font-size:inherit}</style>'
             f'<script defer src="/{BACK_SCRIPT}"></script></head><body><main class="document-page">'
-            f'<a id="document-back" href="/">← {back}</a>{fictional}<h1>{esc(title)}</h1>{visual}'
+            f'<a id="document-back" href="/">← {back}</a>{switch}{fictional}<h1>{esc(title)}</h1>{visual}'
             f'{content}</main></body></html>').encode()
+
+
+def _translated_record(record, texts):
+    """A record's retelling in another language from the card translations; its reading stays as written."""
+    def one(value):
+        # Nested tables and lists of a retelling translate cell by cell.
+        if isinstance(value, dict):
+            return {one(k): one(v) for k, v in value.items()}
+        if isinstance(value, list):
+            return [one(v) for v in value]
+        return texts.get(value.strip(), value) if isinstance(value, str) else value
+    record = dict(record)
+    if isinstance(record.get('fields'), dict):
+        record['fields'] = {one(key): one(value) for key, value in record['fields'].items()}
+    if isinstance(record.get('events'), list):
+        record['events'] = [dict(e, text=one(e.get('text'))) if isinstance(e, dict) else e for e in record['events']]
+    return record
 
 
 def _rendition(file, reference, record, name, generated, bindings, rendered):
@@ -141,6 +161,8 @@ def _local_sources(instance, graph, media, *, host_private=False):
     from familiar.tree.builder import read_json
     privacy = read_json(instance.path('privacy'), {})
     known = _known_people(instance, family_display=host_private)
+    from .graph import card_memory
+    memory = card_memory(instance)
     registered = {}
     for name, (row, _) in media.items():
         if row.get('source_id'):
@@ -165,13 +187,17 @@ def _local_sources(instance, graph, media, *, host_private=False):
         source_file = None
         if local:
             if local.startswith('archive:'):
-                root, rel = instance.path('originals'), local[8:]
+                root = instance.path('originals')
+                file = (root / local[8:]).resolve()
+                if not file.is_relative_to(root):
+                    raise ValueError('source local path escapes its declared root')
             else:
-                root, rel = instance.root, local
-            file = (root / rel).resolve()
-            allowed = [root.resolve()] if local.startswith('archive:') else [instance.root, instance.path('originals')]
-            if not any(file.is_relative_to(base) for base in allowed):
-                raise ValueError('source local path escapes its declared root')
+                try:
+                    file = instance.local(local)  # data kept outside git resolves through the host map
+                except ValueError:
+                    file = (instance.root / local).resolve()
+                    if not file.is_relative_to(instance.path('originals')):
+                        raise ValueError('source local path escapes its declared root') from None
             if file.is_file():
                 source_file = file
         subjects = closure(instance, source, shape='source', people=known).people
@@ -205,12 +231,20 @@ def _local_sources(instance, graph, media, *, host_private=False):
             from familiar.instance.writer import cached
             title = source.get('title') or (record or {}).get('title') or sid
             fictional = instance.config['family'].get('fictional', False)
-            def render(record=record, title=title, fictional=fictional, image=image):
-                return record_page(scan(instance, record or {}, 'record'), title,
-                                   instance.source_language, fictional, scan=image).decode('utf-8')
-            generated[name] = cached('documents', sid,
-                [record, title, instance.source_language, instance.languages, fictional, privacy,
-                 instance.config.get('settings'), image], render).encode('utf-8')
+            pages = {instance.source_language: name} | {lang: name[:-5] + f'.{lang}.html' for lang in memory}
+            for lang, page in pages.items():
+                others = [(tag, '/' + other) for tag, other in pages.items() if tag != lang]
+                def render(record=record, title=title, fictional=fictional, image=image, lang=lang, others=others):
+                    sealed = scan(instance, record or {}, 'record')
+                    if lang != instance.source_language:
+                        sealed = _translated_record(sealed, memory[lang])
+                    return record_page(sealed, title, lang, fictional, scan=image, others=others).decode('utf-8')
+                generated[page] = cached('documents', sid if lang == instance.source_language else f'{sid}:{lang}',
+                    [record, title, instance.source_language, instance.languages, fictional, privacy,
+                     instance.config.get('settings'), image, lang, others,
+                     memory.get(lang, {}) if lang != instance.source_language else None], render).encode('utf-8')
+            if len(pages) > 1:
+                source['assetIn'] = {lang: '/' + page for lang, page in pages.items() if lang != instance.source_language}
             generated[BACK_SCRIPT] = _BACK
             source['asset'] = '/' + name
             if image and not image.endswith('.pdf'):

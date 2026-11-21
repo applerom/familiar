@@ -12,10 +12,12 @@ CHANGES_WITH:
 */
 (async () => {
   const root = new URL('../', document.currentScript.src);
-  const [data, words, profile] = await Promise.all(['desk/show.json', 'desk/words.json', 'reader-profile.json']
+  const source = document.querySelector('meta[name="familiar-show-data"]')?.content || 'desk/show.json';
+  const [data, words, profile] = await Promise.all([source, 'desk/words.json', 'reader-profile.json']
     .map(async path => (await fetch(new URL(path, root))).json()));
   const interactive = !document.querySelector('meta[name="familiar-static-demo"]');
-  const w = words.show, language = document.documentElement.lang;
+  const language = document.documentElement.lang;
+  const w = (words.languages?.[language] || words).show;
   const el = (tag, cls, text) => {
     const node = document.createElement(tag); if (cls) node.className = cls;
     if (text !== undefined) node.textContent = text; return node;
@@ -128,7 +130,9 @@ CHANGES_WITH:
   for (const ask of data.asks) {
     const row = el('li', 'ask-row'), card = el('article', 'askcard'); gutter(row, {...ask, kind: 'ask'});
     const prompt = el('a', '', ask.text);
-    prompt.href = 'desk/asks.html#ask-' + encodeURIComponent(ask.id);
+    const asksPage = language !== words.source_language && (words.page_languages?.asks || []).includes(language)
+      ? 'desk/asks.' + language + '.html' : 'desk/asks.html';
+    prompt.href = asksPage + '#ask-' + encodeURIComponent(ask.id);
     if (!document.querySelector('meta[name="familiar-static-demo"]')) prompt.href = '/' + prompt.getAttribute('href');
     card.append(el('span', 'lbl', ask.holder), el('p', '', ''));
     card.lastChild.append(prompt);

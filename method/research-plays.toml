@@ -1,0 +1,139 @@
+# Entries are in the default order. Requirements in one group apply to the same subject.
+[inputs]
+place = {en = "a place on the line", ru = "место этого рода"}
+historical_place = {en = "a place tied to the historical target", ru = "место, связанное с исторической целью"}
+nest_place = {en = "a historical place or a place in an origin hypothesis weighted at least 0.3", ru = "историческое место или место из версии происхождения с весом от 0,3"}
+surname = {en = "a surname", ru = "фамилия"}
+witness = {en = "a known living witness in the question's time horizon", ru = "заведомо живой свидетель в пределах своего времени"}
+registrar = {en = "a relevant archive or civil registrar", ru = "подходящий архив или ЗАГС"}
+year_or_household = {en = "a target year or an identifiable household", ru = "год или опознаваемый двор"}
+household = {en = "at least three names in one household", ru = "не менее трёх имён одного двора"}
+parish = {en = "the parish", ru = "приход"}
+birth_year = {en = "a birth year within ±10 years", ru = "год рождения с точностью ±10 лет"}
+episode = {en = "a list-producing event and its locality", ru = "событие, оставившее список, и его местность"}
+burial = {en = "a burial place", ru = "место захоронения"}
+death_years = {en = "the death years", ru = "годы смерти"}
+act_names = {en = "a read act naming witnesses or godparents", ru = "прочитанный акт с именами свидетелей или крёстных"}
+guide = {en = "a finding aid for the place", ru = "путеводитель по фондам этого места"}
+bridge = {en = "a link from the inventory target to living family with weight ≥0.5 at every step", ru = "связь цели поиска с живой семьёй, вес каждого звена ≥0,5"}
+
+[[play]]
+id = "place-administration"
+title = {en = "Who kept the records", ru = "Устройство места"}
+purpose = {en = "Find the parish or civil authority that recorded this place in each period.", ru = "Определить, кто вёл учёт в этом месте в каждый период."}
+requires = ["historical_place"]
+classes = ["record-keeper", "place-reference", "archive-guide", "map", "law"]
+exhaustion = {en = "The record keeper is known for every decade under study.", ru = "Известно, кто вёл учёт в каждом из нужных десятилетий."}
+cost = {en = "low", ru = "низкая"}
+next = {en = "Map the parish and civil record keepers by decade, starting with the gap in the books.", ru = "Распиши приход и орган учёта по десятилетиям, начиная с разрыва в книгах."}
+continue = {en = "Extend the existing record-keeper map through the decades that remain open.", ru = "Дополни карту уже найденных хранителей по десятилетиям, которые ещё не разобраны."}
+
+[[play]]
+id = "keeper-forms"
+title = {en = "Place names in the keeper's catalogue", ru = "Формы места у хранителя"}
+purpose = {en = "Search for a place the way each catalogue names it.", ru = "Искать место в той форме, в какой оно названо в каталоге."}
+requires = ["historical_place"]
+classes = ["archive-guide", "inventory", "place-reference"]
+exhaustion = {en = "All catalogue forms were tried with a positive control.", ru = "Все формы каталога перебраны с положительным контролем."}
+cost = {en = "very low", ru = "очень низкая"}
+next = {en = "Check the place forms in each keeper's catalogue with a known positive example.", ru = "Проверь формы места в каталогах хранителей на заведомо известном примере."}
+
+[[play]]
+id = "ask-family"
+title = {en = "Ask for a home document", ru = "Вопрос родным о документе"}
+purpose = {en = "Ask a living witness one question they can answer, starting with a document at home.", ru = "Задать живому свидетелю один вопрос в пределах его памяти, начиная с домашней бумаги."}
+requires = ["witness"]
+classes = ["family-memory", "home-paper"]
+exhaustion = {en = "The specific question was answered or no witness remains.", ru = "На конкретный вопрос ответили или свидетелей больше нет."}
+cost = {en = "no fee", ru = "бесплатно"}
+next = {en = "Ask a living relative for one specific home document that can establish the next link.", ru = "Попроси у живого родственника одну конкретную домашнюю бумагу для ближайшего звена."}
+
+[[play]]
+id = "archive-letters"
+title = {en = "Archive and civil-register enquiries", ru = "Письма в архивы и ЗАГС"}
+purpose = {en = "Request a specific offline document from its keeper.", ru = "Запросить у хранителя конкретную бумагу, которой нет в сети."}
+requires = ["place", "registrar", "year_or_household"]
+classes = ["civil-register", "parish-register", "village-council", "archive-guide"]
+exhaustion = {en = "The request was answered or declined on eligibility grounds.", ru = "Получен ответ или отказ в праве на выдачу."}
+cost = {en = "weeks of waiting", ru = "недели ожидания"}
+next = {en = "Prepare one narrow request to the registrar or archive, naming the person and year or household.", ru = "Подготовь один точный запрос в ЗАГС или архив с именем и годом либо составом двора."}
+
+[[play]]
+id = "household-fingerprint"
+title = {en = "Household fingerprint", ru = "Отпечаток двора"}
+purpose = {en = "Recognize a family by a group of given names in the parish books.", ru = "Узнать семью по сочетанию имён в приходских книгах."}
+requires = ["household", "parish"]
+classes = ["parish-register"]
+exhaustion = {en = "The parish books for the target years have been read or are unavailable online.", ru = "Книги прихода за нужные годы прочитаны или недоступны онлайн."}
+cost = {en = "medium", ru = "средняя"}
+next = {en = "Read the books of the relevant parish for the group of names from one household.", ru = "Проверь набор имён одного двора по книгам нужного прихода."}
+
+[[play]]
+id = "place-nest"
+title = {en = "Surname households by place", ru = "Гнездо места"}
+purpose = {en = "Reconstruct all households of the surname from the earliest local list to the break and rank candidates for the person without records.", ru = "Собери все дворы фамилии в месте от раннего списка до разрыва и перечисли, кто из них мог дать человека без бумаг."}
+requires = ["surname", "nest_place"]
+classes = ["parish-register", "census-revision", "inventory", "parishioner-list"]
+exhaustion = {en = "Households are mapped by generation for every decade with surviving books, and candidates at the break are listed with weights.", ru = "Дворы расставлены по поколениям за каждое десятилетие с сохранившимися книгами, кандидаты у разрыва перечислены с весами."}
+cost = {en = "high", ru = "высокая"}
+next = {en = "Find the earliest local household list and trace the surname's households forward to the break, checking neighboring parishes.", ru = "Найди самый ранний местный список и проследи дворы фамилии до разрыва, заглядывая в соседние приходы."}
+
+[[play]]
+id = "generation-events"
+title = {en = "What the generation did", ru = "Поведение поколения"}
+purpose = {en = "Use an event the person could have taken part in and the lists it produced.", ru = "Искать по спискам события, в котором человек мог участвовать."}
+requires = ["birth_year", "place", "episode"]
+classes = ["military", "award", "emigration", "forced-labour", "repression", "special-settlement"]
+exhaustion = {en = "The event's lists for the locality were read or are closed.", ru = "Списки события по этой местности прочитаны или закрыты."}
+cost = {en = "medium", ru = "средняя"}
+next = {en = "Use the birth window to choose an event and read the lists for its locality.", ru = "По окну рождения выбери событие и проверь его списки по этой местности."}
+
+[[play]]
+id = "surname-place"
+title = {en = "Surname and place in indexes", ru = "Фамилия и место по базам"}
+purpose = {en = "Query surname forms in indexes for the locality.", ru = "Перебрать формы фамилии в индексах по местности."}
+requires = ["surname", "place"]
+classes = ["name-index", "parish-register", "census-revision", "military", "newspaper", "web-search", "family-tree"]
+exhaustion = {en = "Three successive completed passes in a cell add no new records.", ru = "Три завершённых прохода подряд по клетке не прибавили записей."}
+cost = {en = "low per pass", ru = "низкая за проход"}
+next = {en = "Try the surname and place in an applicable index that still has a new avenue.", ru = "Проверь фамилию и место в подходящем индексе, где осталась новая ось поиска."}
+
+[[play]]
+id = "cemeteries"
+title = {en = "Cemeteries and gravestones", ru = "Кладбища и плиты"}
+purpose = {en = "Look for a burial or a photograph of the grave.", ru = "Искать захоронение или снимок плиты."}
+requires = ["burial", "death_years"]
+classes = ["cemetery"]
+exhaustion = {en = "The relevant online indexes were checked and the cemetery has been surveyed or is closed.", ru = "Базы проверены, кладбище снято целиком или закрыто."}
+cost = {en = "low", ru = "низкая"}
+next = {en = "Check the local cemetery index or ask for a photograph of the grave.", ru = "Проверь указатель местного кладбища или попроси снимок плиты."}
+
+[[play]]
+id = "neighbors-godparents"
+title = {en = "Neighbors and godparents", ru = "Соседи и крёстные"}
+purpose = {en = "Follow witnesses and godparents named in a read act.", ru = "Искать свидетелей и крёстных из прочитанного акта."}
+requires = ["act_names"]
+classes = ["parish-register", "civil-register"]
+exhaustion = {en = "The named people were checked in the same books.", ru = "Названные люди проверены по тем же книгам."}
+cost = {en = "medium", ru = "средняя"}
+next = {en = "Look up the named witnesses and godparents in the same books.", ru = "Проверь названных свидетелей и крёстных по тем же книгам."}
+
+[[play]]
+id = "forums"
+title = {en = "Forums and communities", ru = "Форумы и сообщества"}
+purpose = {en = "Use parish discussions to find local knowledge and routes to records.", ru = "Искать в темах о приходе местные сведения и путь к книгам."}
+requires = ["place", "parish"]
+classes = ["forum"]
+exhaustion = {en = "Forum searches had a positive control and the relevant parish threads were read.", ru = "Поиск на форуме прошёл контроль, темы о приходе прочитаны."}
+cost = {en = "low", ru = "низкая"}
+next = {en = "Search the parish and locality on a relevant forum and read the threads that describe the records.", ru = "Найди приход и место на профильном форуме и прочитай темы о книгах."}
+
+[[play]]
+id = "deep-inventories"
+title = {en = "Follow inventories back in time", ru = "Вглубь по описям"}
+purpose = {en = "Find older revisions, inventories and consistory files for the linked line.", ru = "Найти ранние ревизии, инвентари и дела консистории для связанного рода."}
+requires = ["historical_place", "guide", "bridge"]
+classes = ["archive-guide", "inventory", "census-revision", "consistory"]
+exhaustion = {en = "The relevant inventories were read and the case numbers recorded.", ru = "Нужные описи прочитаны, номера дел записаны."}
+cost = {en = "medium", ru = "средняя"}
+next = {en = "Use the finding aid to identify the older files for the village at the linked frontier.", ru = "По путеводителю выпиши ранние дела для деревни на ближайшем связанном звене."}

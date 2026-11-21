@@ -1,0 +1,28 @@
+# START_MODULE_CONTRACT: MOD-REGION-BP-EVIDENCE
+# PURPOSE: Give the identity score the region's facts about rite and calendar names and its honest default shares.
+# PRD_REF: docs/PRD.md#SOURCE-SEARCH
+# INVARIANTS:
+# - values are defaults for an argument, each with its basis; a family's own traces replace them where they exist [review: pack keeper]
+# CHANGES_WITH:
+# - MOD-MATCH-SCORE
+# :END_MODULE_CONTRACT
+schema_version = 1
+
+[rite]
+# The Uniate church of the north-west governorates joined the Orthodox church in 1839; before it Latin and Uniate
+# books often hold one bi-ritual family, after it a Latin / Orthodox pair is rarer.
+union_year = 1839
+before_union = 0.7
+after_union = 0.15
+# Names of the Latin calendar; such a name in an Orthodox act argues against identity.
+latin_calendar = ["franciszek", "kazimierz", "bronislaw", "stanislaw", "waclaw", "czeslaw", "wladyslaw", "tadeusz", "boleslaw"]
+latin_name_in_orthodox = 0.1
+
+[defaults]
+# A rural Catholic parish of the 19th century: about 20 adult men per birth year over a 30-year age window.
+pool = 600
+pool_basis = "about 20 men per birth year reaching adulthood in a rural parish, over the 30-year window of a revision age"
+surname_share = 0.05
+surname_share_basis = "assumed share of one surname among the parish's men; count it from full-page reads when they exist"
+village_share = 0.2
+village_share_basis = "assumed share of the parish's men of that surname living in one village"

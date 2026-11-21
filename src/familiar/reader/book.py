@@ -149,7 +149,8 @@ class BookHTML:
         # Same language lookup as reader-src/app/feed.tsx:tr. Literal document
         # readings are strings and remain in their original language.
         if isinstance(value, dict):
-            return value.get(self.language) or value.get('en') or value.get('ru') or ''
+            return (value.get(self.language) or value.get(getattr(self, 'source', '')) or value.get('en')
+                    or value.get('ru') or next(iter(value.values()), ''))
         return str(value) if value is not None else ''
 
     def clean(self, value, *, literal=False):
@@ -292,6 +293,7 @@ class BookHTML:
         return ''.join(out)
 
     def document(self, family, feeds, *, host_private, page_size):
+        self.source = family.get('source_language', '')  # untranslated text falls back to the family's language
         feeds = [dict(feed) for feed in feeds]
         for feed in feeds:
             if not self.text(feed.get('title')).strip():

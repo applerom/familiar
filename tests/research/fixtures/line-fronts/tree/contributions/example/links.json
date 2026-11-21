@@ -1,9 +1,0 @@
-{
-  "schema": 1,
-  "author": "example",
-  "sources": {"memory": {"kind": "memory", "title": "Fictional memory"}},
-  "edges": [
-    {"type": "parent", "parent": "elder", "child": "father", "role": "father", "status": "hypothesis", "weight": 0.6, "text": "Possible father", "sources": ["memory"]},
-    {"type": "parent", "parent": "distant", "child": "elder", "role": "father", "status": "hypothesis", "weight": 0.29, "text": "Weak father candidate", "sources": ["memory"]}
-  ]
-}

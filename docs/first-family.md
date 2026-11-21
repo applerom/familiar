@@ -20,7 +20,7 @@ Requirements: Python 3.11+, [uv](https://docs.astral.sh/uv/) and an agent that
 can run shell commands.
 
 ```sh
-uv tool install "familiar[images] @ git+https://github.com/applerom/familiar@v0.41.3"
+uv tool install "familiar[images] @ git+https://github.com/applerom/familiar@v0.50.0"
 familiar --version
 familiar instance init ./new-family --title "Invented example" --language en
 familiar --root ./new-family instance check
@@ -29,7 +29,7 @@ familiar --root ./new-family instance check
 Install a release tag, never `main`: `main` moves several times a day (see
 [upgrading](upgrading.md)). The `images` extra adds Pillow for document
 cropping; drop it for a text-only engine. To try a command without installing
-anything: `uvx --from "git+https://github.com/applerom/familiar@v0.41.3" familiar --version`.
+anything: `uvx --from "git+https://github.com/applerom/familiar@v0.50.0" familiar --version`.
 The name `familiar` on PyPI belongs to an unrelated project: install from this
 repository.
 
@@ -37,7 +37,7 @@ A family that wants its own pinned engine keeps a private environment instead:
 
 ```sh
 uv venv ./familiar-env
-uv pip install --python ./familiar-env/bin/python "familiar[images] @ git+https://github.com/applerom/familiar@v0.41.3"
+uv pip install --python ./familiar-env/bin/python "familiar[images] @ git+https://github.com/applerom/familiar@v0.50.0"
 ```
 
 (`./familiar-env/Scripts/python.exe` on Windows; then call
@@ -138,7 +138,7 @@ exact input paths; they are complete and mutually consistent for this invented
 practice family. For real work the agent authors their contents from evidence,
 matching person aliases to intake ids and record references to saved papers.
 Singular `chapter.json` and `document.json` forms emit one entry, not the complete
-file containers. See [forms](PRD.md#forms).
+file containers. See [forms](PRD.md#family-data-forms--contract-11).
 
 ```sh
 familiar method show role feed-author

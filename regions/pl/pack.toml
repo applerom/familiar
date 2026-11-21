@@ -66,6 +66,20 @@ check = "name-forms"
 operation = "detect-only"
 policy = "суффикс не доказывает вдовство, родство или девичью фамилию; окончание может быть частью неизменяемой фамилии; цитаты не менять"
 
+# One search key for Polish acts (MOD-NAME-KEY): marital, daughter, plural and case endings of the act fold to the
+# masculine stem for a search suggestion only; the surname itself is never rewritten.
+[language.surname_key]
+purpose = "одна поисковая основа для форм -owa, -ówna, -ska, «z ...ich» и падежей польского акта"
+operation = "search-key-only"
+policy = "ключ предлагает форму поиска и подсказку; суффикс по-прежнему не доказывает вдовство, родство или девичью фамилию"
+prefixes = ['^z ']
+endings = [
+  ['(ski|cki|dzki|zki)ch$', '\1'], ['(s|c|dz)k(a|ą|iej|ich|iego|im)$', '\1ki'],
+  ['(icz|wicz|ycz)(owna|ówna|ewna|iowna|owną|ówną|ową|owa|ewa)$', '\1'], ['(icz|wicz|ycz)(ów|ow|ewych|owych|ach)$', '\1'],
+  ['(icz|wicz|ycz)(a|em|owi|u)$', '\1'], ['(ojc)(iowna|iowną|owna|a)$', '\1'], ['owcow$', 'owiec'],
+  ['(ow|ew|in|yn)(a|ą)$', '\1'], ['(ow|ów)(na|ną)$', ''], ['(ianka|anka)$', ''],
+]
+
 [[language.surname_forms]]
 id = "married"
 pattern = "\\b[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+owa\\b"

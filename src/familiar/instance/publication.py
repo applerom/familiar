@@ -45,7 +45,7 @@ def fields(names, shape='text', policy='always'):
 # text is a scalar or a language row; scalar has no reader prose; refs are IDs.
 # Lists have one member declaration; ('map', schema) means a keyed collection.
 SCHEMAS = {}
-SCHEMAS['name'] = fields('given patronymic surname display type') | fields('provenance', ['reference']) | fields('source_text', ['text']) | fields('status', 'scalar')
+SCHEMAS['name'] = fields('given patronymic surname display type') | fields('provenance', ['reference']) | fields('source_text', ['text']) | fields('status lang', 'scalar')
 SCHEMAS['name-part-inference'] = fields('basis') | fields('provenance', ['reference'])
 SCHEMAS['inferred-name-parts'] = fields('given patronymic surname', 'name-part-inference')
 SCHEMAS['name']['inferred_parts'] = Field('inferred-name-parts')
@@ -98,12 +98,14 @@ SCHEMAS['person'] = fields('id', 'reference') | fields('sex living origin', 'sca
 SCHEMAS['reported-kinship'] = fields('viewer', 'reference') | fields('text') | fields('sources', ['reference'])
 SCHEMAS['person']['reportedKinship'] = Field(['reported-kinship'])
 SCHEMAS['person']['treeName'] = Field()
-SCHEMAS['surname-display'] = fields('clan', 'reference') | fields('form origin') | fields('written', ['text']) | fields('children', ['reference'])
+SCHEMAS['surname-display'] = fields('clan', 'reference') | fields('form origin') | fields('written variants', ['text']) | fields('children', ['reference'])
 SCHEMAS['person']['surnameDisplay'] = Field('surname-display')
 SCHEMAS['person'] |= fields('namePresentation', 'name-presentation') | fields('confirmation', 'confirmation') | fields('retiredFacts', ['retired-fact']) | fields('public_fact status') | fields('identityAliases', ['reference']) | fields('living_basis author imported_context', policy='never')
 SCHEMAS['birth-guess-anchor'] = fields('id', 'reference') | fields('year guessed age offset', 'scalar')
 SCHEMAS['birth-guess'] = fields('year exact relation', 'scalar') | fields('anchors', ['birth-guess-anchor'])
 SCHEMAS['person']['birthGuess'] = Field('birth-guess')
+SCHEMAS['probable-identity'] = fields('alias', 'reference') | fields('weight', 'scalar') | fields('name basis') | fields('sources', ['reference'])
+SCHEMAS['person']['probableIdentities'] = Field(['probable-identity'])
 # Where the person was looked for: the host-private reader only, never a public field.
 SCHEMAS['coverage-source'] = fields('title') | fields('id', 'reference') | fields('outcome last strength identified recordRead surnameSearch placeSearch planComplete missingMore', 'scalar') | fields('forms missingForms', ['text'])
 SCHEMAS['coverage-never'] = fields('title') | fields('id', 'reference')
@@ -111,13 +113,13 @@ SCHEMAS['coverage'] = fields('searched found identified recheck neverMore', 'sca
 SCHEMAS['person']['coverage'] = Field('coverage', 'host-private')
 SCHEMAS['person'] |= fields('story storyMore') | fields('illustrations', ['image']) | fields('relationshipUncertain', 'scalar')
 SCHEMAS['image'] |= fields('sid sourceSid originalAsset', 'reference') | fields('photo', 'scalar') | fields('mentionRole basis')
-SCHEMAS['name-presentation'] = fields('display full sourceName note patronymic maidenSurname') | fields('isWoman isWife surnameUnknown maidenStatus', 'scalar') | fields('maidenSources', ['reference'])
+SCHEMAS['name-presentation'] = fields('display full sourceName note patronymic maidenSurname byLanguage') | fields('isWoman isWife surnameUnknown maidenStatus', 'scalar') | fields('maidenSources', ['reference'])
 SCHEMAS['confirmation'] = fields('basis') | fields('level research identityAccepted', 'scalar') | fields('sources', ['reference'])
 SCHEMAS['retired-fact'] = SCHEMAS['fact'] | fields('retiredBecause')
 SCHEMAS['card'] = fields('birth death place placeRole birthKind deathKind connectionNote connectionShort dateBasis dateReference')
 SCHEMAS['family'] = fields('id husband wife', 'reference') | fields('children provenance', ['reference']) | fields('events', ['event']) | fields('status derived weight', 'scalar') | fields('basis')
-SCHEMAS['edge'] = fields('from to parent child family', 'reference') | fields('type status role confidence weight', 'scalar') | fields('sources', ['reference']) | fields('text note basis') | fields('derived', 'scalar')
-SCHEMAS['source'] = fields('excerpt subjects', ['reference']) | fields('title description text') | fields('id record asset image', 'reference') | fields('kind', 'scalar')
+SCHEMAS['edge'] = fields('from to parent child family identity', 'reference') | fields('type status role confidence weight missing missing_max main_line', 'scalar') | fields('sources', ['reference']) | fields('text note basis') | fields('derived', 'scalar')
+SCHEMAS['source'] = fields('excerpt subjects', ['reference']) | fields('title description text') | fields('id record asset image', 'reference') | fields('kind', 'scalar') | fields('assetIn', ('map', 'reference'))
 SCHEMAS['contribution-status'] = fields('applied errors warnings', ['text'])
 SCHEMAS['research'] = fields('updates highlights', ['fact']) | fields('contributions', 'contribution-status')
 SCHEMAS['badge'] = fields('text title') | fields('kind', 'scalar')
@@ -269,6 +271,9 @@ def restrict_graph(instance, graph, *, host_private=False):
             result['treeName'] = ' '.join(result['name'].replace(patronymic, '').split()) if patronymic else result['name']
             if person.get('reportedKinship'):
                 result['reportedKinship'] = person['reportedKinship']
+            # A living person's name in the reader's language is still only the name.
+            if (local := (person.get('namePresentation') or {}).get('byLanguage')) and result['name'] == person.get('name'):
+                result['namePresentation'] = {'byLanguage': local}
             graph['people'][pid] = result
     # Card explanations can contain dates, evidence and superseded claims.
     statuses = graph.get('cardStatuses', {})

@@ -7,12 +7,13 @@
 # - strength comes from the research.search_strength setting; an executor no key names has strength 0 (unknown), never a guess [review: engine lead]
 # - rows not in the ledger form are counted aside, not mixed into the matrix [review: engine lead]
 # - catalogue epoch/place mismatches leave the queue, never erase recorded searches; unknown geography remains eligible [review: engine lead]
-# - a known birth window disjoint from the source's birth cohort excludes a cell by epoch [test: tests/research/test_coverage_ledger.py::test_collateral_modes_and_line_fronts]
+# - a known birth window disjoint from the source's birth cohort excludes a cell by epoch [review: engine lead]
 # - the life assessment excludes living and possibly living people from the recheck queue, counted separately [review: engine lead]
 # - collateral descendants stay outside the main planning denominator and queue; the line front derives from tree, versions and existing cells [review: engine lead]
-# - line fronts follow parent hypotheses from 0.30 and match questions by surname or explicit people; designated lines and ancestors' siblings lead the recheck queue [test: tests/research/test_coverage_ledger.py::test_collateral_modes_and_line_fronts]
+# - line fronts follow parent hypotheses from 0.30 and match questions by surname or explicit people; designated lines and ancestors' siblings lead the recheck queue [review: engine lead]
 # - explicit people survive dictionary mismatch; local identity work precedes repeat searches and stopped sources wait [review: engine lead]
 # - local reviews assess record links only; no search strength, forms, yield or availability comes from them [review: engine lead]
+# - a cell leaves recheck after three completed distinct passes without a new read record [review: engine lead]
 # CHANGES_WITH:
 # - MOD-SEARCH-LEDGER (the ledger form it reads)
 # - docs/research-coverage.md
@@ -21,18 +22,21 @@ import json
 import re
 from collections import Counter, defaultdict
 from datetime import UTC, datetime
+from typing import NamedTuple
 
 from familiar.desk.search_volume import domain, name_key
 from familiar.instance.gate import boundary
 from familiar.tree.surnames import birth_names, decisions, gender_form
 
-from .search_ledger import METHOD, Resolver, Tree, in_ledger_form, is_review, read_rows, read_versions, row_tokens, search_files
+from .search_ledger import (METHOD, Resolver, Tree, in_ledger_form, infer_people, is_review, read_rows,
+                            read_versions, row_digest, row_tokens, search_files)
 from .coverage_evidence import references, review_links
 from .search_variants import norm
 from .coverage_context import (contains, episode_fit, form_metadata, life_window, missing_forms, person_text,
                                planning_windows, record_visits, row_people, script_of, text)
 from .search_variants import form_data
 from .coverage_quality import availability, query_issues
+from .search_plays import PlaySettings, links_to_living, query_label, source_classes
 
 GAP_STATES = {'access-gap', 'refused', 'not_ready', 'app_error', 'help-stop', 'coverage-gap'}
 RANK = {'none': 0, 'gap': 1, 'unrecorded': 2, 'query-dubious': 2.5, 'zero-uncontrolled': 3, 'zero-controlled': 4, 'read': 4.5, 'found': 5}
@@ -40,6 +44,15 @@ MARK = {'found': 'R', 'read': 'D', 'zero-controlled': 'Z', 'zero-uncontrolled': 
 REASON = {'identity-unestablished': 15, 'identity-conflict': 16, 'source-stopped': 0, 'query-dubious': 4, 'not-searched': 5, 'access-gap': 4, 'outcome-unrecorded': 4, 'weak-only': 4, 'zero-without-control': 3, 'forms-missing': 2, 'forms-unassessed': 2, 'source-grown': 1}
 OPEN_EXCLUSIONS = {'accepted', 'closed', 'resolved', 'settled', 'rejected', 'superseded'}
 CLOSED_OPTIONS = OPEN_EXCLUSIONS | {'accepted_evidence', 'firm', 'refuted', 'discarded', 'dropped', 'ruled-out'}
+
+
+class SearchLine(NamedTuple):
+    chain: list[str]
+    surname: str
+    forms: set[str]
+    main_order: int
+    secondary: bool
+    focus_order: int
 
 
 def control_basis(row):
@@ -111,23 +124,29 @@ def outcome(row):
     return 'gap'
 
 
-def collect(instance):
+def collect(instance, *, for_plan=False):
     """The journal as person-by-source cells, plus what could not be placed."""
     tree, resolver, versions = Tree(instance), Resolver(instance), read_versions(instance)
     from familiar.tree.birth_guess import apply as birth_guess
     birth_guess(instance, tree.graph, host_private=True)
     table, threshold, mode, configured_lines = settings(instance)
+    prefs = PlaySettings(instance.config.get('research', {}))
     main_lines = [keys for name in configured_lines if (keys := surname_keys(name, instance.source_language))]
+    focus_lines = [surname_keys(name, instance.source_language) for name in prefs.focus]
     cells, sources, legacy, no_people, unknown, titles, no_source = {}, {}, 0, 0, set(), {}, 0
     found_by_source, planning_events, source_access, access_journals = {}, {}, {}, {}
-    reviews = {}
+    reviews, observations, read_acts = {}, [], set()
     for path in search_files(instance):
         rows, _ = read_rows(path)
-        for row in rows or []:
+        for number, row in enumerate(rows or []):
             if not isinstance(row, dict):
                 continue
             if not in_ledger_form(row):
                 legacy += 1
+                if for_plan and not is_review(row):
+                    people, _ = infer_people(tree, versions, row)
+                    sid = resolver.row_source(row)
+                    observations.append({'source': sid, 'people': people, 'kind': outcome(row), 'row': row, 'cells': []})
                 continue
             unknown.update(p for p in row['people'] if not tree.person(p))
             sid = resolver.row_source(row)
@@ -142,12 +161,14 @@ def collect(instance):
                             reviews[ident] = assessment
                 continue
             if not sid:
-                text = str(row.get('source'))
-                if METHOD.search(text) or not row.get('source'):
+                source_text = str(row.get('source'))
+                if METHOD.search(source_text) or not row.get('source'):
+                    if for_plan:
+                        observations.append({'source': None, 'people': row['people'], 'kind': outcome(row), 'row': row, 'cells': []})
                     no_source += 1
                     continue
-                sid = '~' + (domain(text) or name_key(text))[:60]
-                titles.setdefault(sid, text[:80])
+                sid = '~' + (domain(source_text) or name_key(source_text))[:60]
+                titles.setdefault(sid, source_text[:80])
             kind = outcome(row)
             issues = query_issues(row, tree)
             if issues and kind != 'gap':
@@ -169,9 +190,17 @@ def collect(instance):
             used = sources.setdefault(sid, {'rows': 0, 'people': set()})
             used['rows'] += 1
             people, basis, scope = row_people(row, tree, resolver.catalog)
+            if for_plan:
+                observations.append({'source': sid, 'people': people, 'kind': kind, 'row': row,
+                                     'cells': [(p['id'], sid) for pid in people if (p := tree.person(pid))]})
             no_people += not bool(people)
             words = row_tokens(row)
             forms = row['coverage'].get('forms') if isinstance(row.get('coverage'), dict) else None
+            read = row['coverage'].get('read') if isinstance(row.get('coverage'), dict) else None
+            completed = kind == 'found' or kind.startswith('zero-') and type(read) in (int, float) and read > 0
+            attempt = (row.get('id_as_written') or row.get('id') or row_digest(row)) if completed else None
+            play, _ = query_label(row, source_classes(sid, resolver.catalog.sources.get(sid, {})))
+            saved = references(row.get('saved')) if completed else set()
             for pid in people:
                 person = tree.person(pid)
                 if not person:
@@ -184,6 +213,10 @@ def collect(instance):
                 cell['passes'] += 1
                 cell['basis'].add(basis)
                 cell['scopes'].add(scope)
+                if play:
+                    cell['plays'].add(play)
+                if attempt:
+                    cell['attempts'].setdefault(attempt, (str(row.get('at') or ''), path, number, saved))
                 if kind == 'gap':
                     refused = availability(row, True)
                     if refused['at'] >= (cell['latest_refusal'] or {}).get('at', ''):
@@ -198,16 +231,15 @@ def collect(instance):
                 if isinstance(candidate, dict):
                     for key, values in candidate.items():
                         if key in {'surname', 'given_name'} and isinstance(values, list):
-                            cell['planned'].update(f for f in values if isinstance(f, str))
-                if isinstance(forms, list):
-                    cell['planned'].update(f for f in forms if isinstance(f, str))
+                            known = tree.people[pid]['surnames' if key == 'surname' else 'givens']
+                            cell['planned'].update(f for f in values if isinstance(f, str)
+                                                   and norm(form_data(f)['text']) in known)
                 if at:
                     cell['first'] = min(at, cell['first'] or at)
                     cell['last'] = max(at, cell['last'] or at)
                 for form in forms if isinstance(forms, list) else [forms] if isinstance(forms, str) else []:
                     if isinstance(form, str) and form.strip():
                         cell['forms'][form.strip()[:80]] = True
-                read = row['coverage'].get('read') if isinstance(row.get('coverage'), dict) else None
                 if kind in {'found', 'zero-controlled', 'zero-uncontrolled'} and type(read) in (int, float) and read > 0:
                     cell['words'].update(words)
                     query = row.get('query')
@@ -222,6 +254,8 @@ def collect(instance):
                 if kind == 'found':
                     found_by_source[sid] = found_by_source.get(sid, 0) + 1
     for visit in record_visits(instance, tree, resolver, reviews):
+        if for_plan and visit['act_names']:
+            read_acts.update(pid for pid, link in visit['links'].items() if link['status'] == 'same')
         for pid, events in visit['planning_events'].items():
             planning_events.setdefault(pid, []).extend(events)
         sid = visit['source']
@@ -232,6 +266,7 @@ def collect(instance):
             cell['rank'] = max(cell['rank'], RANK['read'])
             cell['passes'] += 1
             cell['records'].append(visit['record'])
+            cell['record_events'].append((str(visit['at'] or ''), visit['references']))
             cell['record_links'].append({'record': visit['record'], **visit['links'][pid]})
             cell['basis'].add('record-person')
             cell['identified'] |= pid in visit['established']
@@ -243,6 +278,8 @@ def collect(instance):
             who = cell['who'].setdefault((by.get('agent'), by.get('model'), by.get('effort')), {'passes': 0, 'strength': 0})
             who['passes'] += 1; who['strength'] = max(who['strength'], level)
             cell['strength'] = max(cell['strength'], level)
+    for cell in cells.values():
+        cell['ceiling'] = stalled_passes(cell)
     named = {pid for pid, _ in cells} | {p['id'] for v in versions.values() for ident in v['people']
                                        if (p := tree.person(ident))}
     from familiar.tree.builder import read_json
@@ -258,16 +295,18 @@ def collect(instance):
             'cells': cells, 'sources': sources, 'legacy': legacy, 'no_people': no_people, 'no_source': no_source, 'unknown': sorted(unknown),
             'side': side, 'named': named, 'lines': lines,
             'collateral': collateral, 'collateral_mode': mode, 'line_weights': line_weights,
-            'main_lines': main_lines, 'surname_forms': decisions(metadata), 'language': instance.source_language,
+            'main_lines': main_lines, 'focus_lines': focus_lines, 'play_settings': prefs,
+            'ancestor_siblings': ancestor_siblings, 'surname_forms': decisions(metadata), 'language': instance.source_language,
+            'observations': observations, 'read_acts': read_acts,
             'yield': found_by_source, 'titles': titles, 'distance': distance,
             'form_metadata': form_metadata(instance), 'planning_events': planning_events, 'source_access': source_access}
     queue_lines = {}
-    if main_lines:
-        for chain, surname, _, _, secondary in sorted(line_names(data), key=lambda line: line[3]):
-            siblings = set().union(*(ancestor_siblings.get(pid, set()) for pid in chain))
-            for pid in set(chain) | siblings:
-                queue_lines.setdefault(pid, (secondary, surname))
-        main.update(pid for pid, (secondary, _) in queue_lines.items() if not secondary)
+    if main_lines or focus_lines or prefs.overrides:
+        for line in selected_lines(data):
+            for pid in line_members(data, line.chain):
+                queue_lines.setdefault(pid, line)
+        if main_lines:
+            main.update(pid for pid, line in queue_lines.items() if not line.secondary)
     focus = (main | named) - collateral.keys()
     data.update(focus=sorted(focus), queue_lines=queue_lines)
     # Each FamilySearch channel is independently eligible even if only one has a recorded visit.
@@ -276,6 +315,7 @@ def collect(instance):
             if sid in resolver.catalog.sources:
                 sources.setdefault(sid, {'rows': 0, 'people': set()})
     contexts = {pid: planning_context(data, pid) for pid in [*focus, *side]}
+    data['contexts'] = contexts
     data['not_applicable'] = {(pid, sid): applicability(data, pid, sid, context)
                               for pid, context in contexts.items() for sid in sources}
     return data
@@ -285,7 +325,36 @@ def new_cell():
     return {'rank': 0, 'passes': 0, 'first': None, 'last': None, 'forms': {}, 'words': set(),
             'who': {}, 'strength': 0, 'basis': set(), 'planned': set(), 'scopes': set(),
             'records': [], 'record_links': [], 'identified': False, 'controls': set(), 'phrases': set(),
-            'dictionary_mismatches': [], 'query_issues': [], 'query_scripts': set(), 'latest_refusal': None}
+            'dictionary_mismatches': [], 'query_issues': [], 'query_scripts': set(), 'latest_refusal': None,
+            'attempts': {}, 'record_events': [], 'plays': set()}
+
+
+def stalled_passes(cell):
+    """Count completed, distinct searches since the last newly saved record."""
+    attempts = cell['attempts'].values()
+    new_records = []
+    for read_at, refs in cell['record_events']:
+        linked = [(at, journal, number) for at, journal, number, saved in attempts if at and refs & saved]
+        if linked:
+            # The earliest row naming this record is enough to date its presence.
+            first = min(linked)
+            if not read_at or first[0][:10] <= read_at[:10]:
+                new_records.append(first)
+                continue
+        if read_at:
+            new_records.append((read_at, None, None))
+
+    def after(pass_at, journal, number, record):
+        at, other_journal, other_number = record
+        if pass_at[:10] != at[:10]:
+            return pass_at[:10] > at[:10]
+        if len(pass_at) > 10 and len(at) > 10 and pass_at != at:
+            return pass_at > at
+        # A day-only date does not order two independent journals.
+        return journal == other_journal and number > other_number
+
+    return sum(all(after(at, journal, number, record) for record in new_records)
+               for at, journal, number, _ in attempts)
 
 
 def distances(graph, root):
@@ -470,6 +539,8 @@ def cell_view(data, pid, sid):
                 else 'context-only' if statuses == {'mention'} else 'unassessed')
     return {'outcome': next(k for k, v in RANK.items() if v == cell['rank']), 'strength': cell['strength'],
             'passes': cell['passes'], 'first': cell['first'], 'last': cell['last'],
+            'ceiling': cell['ceiling'] >= 3, 'passes_without_new_records': cell['ceiling'],
+            'not_applicable': data['not_applicable'].get((pid, sid), []),
             'forms': list(cell['forms']), 'missing_forms': missing, 'person_basis': sorted(cell['basis']),
             'people_basis': 'surname-place' if cell['basis'] == {'surname-place'} else sorted(cell['basis']),
             'scope': sorted(cell['scopes']), 'identified': cell['identified'], 'records': cell['records'],
@@ -499,15 +570,28 @@ def eligible_cells(data, people):
             if not data['not_applicable'].get((pid, sid)))
 
 
-def recheck(data, limit=None):
+def recheck(data, limit=None, *, line=None):
     """Cells worth another look, most useful first within each search scope."""
     tree, threshold = data['tree'], data['threshold']
     catalog = data['resolver'].catalog.sources
+    prefs = data['play_settings']
+    selected = {}
+    if line is not None:
+        for match in selected_lines(data, line):
+            for pid in line_members(data, match.chain):
+                selected.setdefault(pid, match)
+    queue_lines = selected if line is not None else data['queue_lines']
+    choice_cache = {}
+    linked = None
+    people = [pid for pid in [*data['focus'], *data['side']] if line is None or pid in selected]
     open_people = {p['id'] for v in data['versions'].values()
                    if v.get('status', v.get('state')) not in OPEN_EXCLUSIONS
                    for ident in v['people'] if (p := tree.person(ident))}
     queue = []
-    for pid, sid in eligible_cells(data, [*data['focus'], *data['side']]):
+    for pid, sid in eligible_cells(data, people):
+        cell = data['cells'].get((pid, sid))
+        if cell and cell['ceiling'] >= 3:
+            continue
         view = cell_view(data, pid, sid)
         kind, reasons = view['outcome'], []
         action = 'search'
@@ -539,6 +623,39 @@ def recheck(data, limit=None):
             reasons.append('source-grown')
         if not reasons:
             continue
+        known = cell['plays'] if cell else set()
+        if action != 'link-record' and 'deep-inventories' in known:
+            if linked is None:
+                linked = links_to_living(tree.graph)[1]
+            if pid not in linked:
+                known = known - {'deep-inventories'}
+                if not known:
+                    continue
+        play = None
+        order = 0
+        if prefs.overrides and action != 'link-record':
+            match = queue_lines.get(pid)
+            key = match.chain[0] if match else None
+            if key not in choice_cache:
+                choice_cache[key] = prefs.choices(match.forms if match else set(),
+                                                  lambda name: surname_keys(name, data['language']))
+            choices = choice_cache[key]
+            classes = set(source_classes(sid, catalog.get(sid, {})).get('classes', []))
+            if known:
+                choices = [choice for choice in choices if choice[2]['id'] in known]
+            else:
+                choices = [choice for choice in choices if classes.intersection(choice[2]['classes'])
+                           and choice[2]['id'] not in {'ask-family', 'archive-letters', 'deep-inventories', 'place-nest',
+                                                       'neighbors-godparents', 'household-fingerprint'}]
+                direct = {'cemetery': 'cemeteries', 'forum': 'forums'}
+                if direct.keys() & classes:
+                    choices = [choice for choice in choices if choice[2]['id'] in
+                               {direct[cls] for cls in direct.keys() & classes}]
+            if choices:
+                enabled = [choice for choice in choices if choice[1]]
+                if not enabled:
+                    continue
+                order, _, play = enabled[0]
         score = sum(REASON[r] for r in reasons) + (pid in open_people) + (data['yield'].get(sid, 0) > 0)
         if action == 'search':
             source = catalog.get(sid, {})
@@ -551,21 +668,29 @@ def recheck(data, limit=None):
             if lower and len(years) == 2 and set(source.get('classes', [])) & {'military', 'award'} and years[1] - lower < 16:
                 score -= 6
                 reasons.append('child-at-source-epoch')
-        queue.append({'person': pid, 'name': tree.people[pid]['name'], 'source': sid, 'title': title(data, sid),
+        queue.append((order, {'person': pid, 'name': tree.people[pid]['name'], 'source': sid, 'title': title(data, sid),
                       'reasons': reasons, 'score': score, 'outcome': kind, 'strength': view['strength'],
                       'last': view['last'], 'missing_forms': view['missing_forms'], 'action': action,
                       'availability': view['availability'], 'record_links': view['record_links'],
                       'latest_refusal': view['latest_refusal'],
-                      'query_issues': view['query_issues']})
-    queue_lines = data['queue_lines']
-    queue.sort(key=lambda q: (q['person'] in data['collateral'], queue_lines.get(q['person'], (True, ''))[0],
-                              -q['score'], q['person'], q['source']))
-    for item in queue:
+                      'query_issues': view['query_issues']} | ({'play': play['id']} if play else {})))
+    def priority(entry):
+        order, item = entry
+        pid = item['person']
+        line = queue_lines.get(pid)
+        focus = line.focus_order if line else len(data['focus_lines'])
+        return (focus, pid in data['collateral'], line is None or line.secondary,
+                prefs.overrides and item['action'] != 'link-record', order, -item['score'], pid, item['source'])
+
+    queue.sort(key=priority)
+    rows = []
+    for _, item in queue:
         if item['person'] in queue_lines:
-            _, surname = queue_lines[item['person']]
+            surname = queue_lines[item['person']].surname
             if surname:
                 item['line'] = surname
-    return queue[:limit] if limit else queue
+        rows.append(item)
+    return rows[:limit] if limit else rows
 
 
 def matrix_group(data, group):
@@ -636,7 +761,7 @@ def line_names(data):
     tree, language = data['tree'], data['language']
     own_names = birth_names(tree.graph, language)
     clans = {row['id']: row for row in data['surname_forms']}
-    main_lines = data['main_lines']
+    main_lines, focus_lines = data['main_lines'], data['focus_lines']
     for chain in data['lines']:
         surname, forms = '', set()
         for pid in chain:
@@ -648,7 +773,24 @@ def line_names(data):
                     forms.update(surname_keys(form, language))
                 break
         order = next((i for i, keys in enumerate(main_lines) if keys & forms), len(main_lines))
-        yield chain, line_surname(surname, language), forms, order, bool(main_lines) and order == len(main_lines)
+        focus = next((i for i, keys in enumerate(focus_lines) if keys & forms), len(focus_lines))
+        yield SearchLine(chain, line_surname(surname, language), forms, order,
+                         bool(main_lines) and order == len(main_lines), focus)
+
+
+def selected_lines(data, name=None):
+    lines = sorted(line_names(data), key=lambda line: (line.focus_order, line.main_order))
+    if name is None:
+        return lines
+    keys = surname_keys(name, data['language'])
+    matches = [line for line in lines if line.chain[0] == name or keys & line.forms]
+    if not matches:
+        raise ValueError(f'unknown family line: {name}; list names with research coverage --lines')
+    return matches
+
+
+def line_members(data, chain):
+    return set(chain).union(*(data['ancestor_siblings'].get(pid, ()) for pid in chain))
 
 
 def line_front(data):
@@ -669,10 +811,12 @@ def line_front(data):
                                'weight': max(weights), 'people': subjects}))
     hints = collateral_hints(data)
     lines = []
-    for chain, surname, forms, order, secondary in line_names(data):
+    for chain, surname, forms, order, secondary, focus in line_names(data):
         gaps = Counter()
         for key in eligible_cells(data, chain):
             cell = data['cells'].get(key)
+            if cell and cell['ceiling'] >= 3:
+                continue
             if not cell or cell['rank'] == RANK['none']:
                 gaps['not_searched'] += 1
             elif cell['rank'] >= RANK['zero-uncontrolled'] and cell['strength'] < data['threshold']:
@@ -691,15 +835,15 @@ def line_front(data):
                 'collateral_hints': sum(not members.isdisjoint(h['ancestors']) for h in hints)}
         if data['main_lines']:
             line['living_or_possibly_living'] = len(chain) - sum(1 for _ in planning_people(data, chain))
-        lines.append((order, line))
+        lines.append((focus, order, line))
 
     def priority(entry):
-        order, line = entry
+        focus, order, line = entry
         weight = line['versions'][0]['weight'] if line['versions'] else 0
-        return (order, -(line['not_searched'] + line['weak']) * (1 + weight), -weight, line['start']['id'])
+        return (focus, order, -(line['not_searched'] + line['weak']) * (1 + weight), -weight, line['start']['id'])
 
     return {'schema': 1, 'collateral_mode': data['collateral_mode'],
-            'lines': [line for _, line in sorted(lines, key=priority)]}
+            'lines': [line for _, _, line in sorted(lines, key=priority)]}
 
 
 def person_card(data, pid):
@@ -735,6 +879,10 @@ def markdown_card(card):
             notes.append('пополнить словарь: ' + ', '.join(str(v) for v in s['dictionary_mismatches']))
         if s['query_issues']:
             notes.append('форма запроса сомнительна')
+        if s['ceiling']:
+            notes.append(f"ceiling: {s['passes_without_new_records']} passes without a new record")
+        if s['not_applicable']:
+            notes.append('not applicable: ' + ', '.join(s['not_applicable']))
         access = s.get('availability') or {}
         if access.get('state') == 'stopped':
             notes.append(f"! {access['at']} {access['kind']}: wait-for-access")
@@ -775,7 +923,7 @@ def markdown_matrix(view):
            f"{t['rows_not_in_ledger_form']} journal rows not in ledger form, {t['rows_without_people']} rows name no person; "
            f"{t['not_applicable']} cells not applicable by epoch/region; {t['living_or_possibly_living']} living/possibly living people outside recheck; {t['rows_without_source']} rows without a source.",
            'Cell: R result rows, D read record, +F established identity, Z zero with control, z zero without control, ? outcome unrecorded, ! access gap, . not looked, - planning fit unestablished/outside scope; digit = strongest pass (1-4, 0 = executor model not recorded); '
-           '? = the person was inferred from the question only, not from the names searched.', '']
+           '? = the person was inferred from the question only, not from the names searched. ⊣ = repeat ceiling.', '']
     out += matrix_table(view['people'], sources)
     collateral = view['collateral']
     out += ['', f"Collateral research: `{collateral['mode']}`."]
@@ -800,7 +948,7 @@ def matrix_table(people, sources):
         rest = [c for sid, c in person['cells'].items() if sid not in ids]
         cells.append(max(rest, key=lambda c: (RANK[c['outcome']], c['strength'])) if rest else None)
         marks = [('-' if s['id'] in person['not_applicable'] else '.') if not c else
-                 MARK[c['outcome']] + str(c['strength']) + ('+F' if c['identified'] else '') + ('≠' if c['identity'] == 'other' else '') + ('!' if (c.get('availability') or {}).get('state') == 'stopped' else '') + ('~' if 'surname' in c['scope'] else '') + ('?' if c['person_basis'] == ['question'] else '')
+                 MARK[c['outcome']] + str(c['strength']) + ('+F' if c['identified'] else '') + ('≠' if c['identity'] == 'other' else '') + ('!' if (c.get('availability') or {}).get('state') == 'stopped' else '') + ('~' if 'surname' in c['scope'] else '') + ('?' if c['person_basis'] == ['question'] else '') + ('⊣' if c['ceiling'] else '')
                  for s, c in zip([*sources, {'id': 'other'}], cells)]
         out.append(f"| {person['name']} ({person['id']}) | " + ' | '.join(marks) + ' |')
     return out
@@ -839,9 +987,11 @@ def markdown_lines(view, language='en'):
 
 
 @boundary('diagnostic')
-def coverage(instance, *, person=None, queue=None, lines=False, save=False):
+def coverage(instance, *, person=None, queue=None, lines=False, save=False, line=None):
     """Read a coverage view; save always writes the matrix and complete queue."""
     data = collect(instance)
+    if line is not None:
+        selected_lines(data, line)
     view = matrix(data) if save or (not lines and not person and queue is None) else None
     if save:
         from familiar.instance.writer import mutate
@@ -854,7 +1004,7 @@ def coverage(instance, *, person=None, queue=None, lines=False, save=False):
         card = person_card(data, person)
         return card, markdown_card(card)
     if queue is not None:
-        rows = recheck(data, queue)
+        rows = recheck(data, queue, line=line)
         excluded = sum(bool(r) for r in data['not_applicable'].values())
         return rows, '\n'.join(markdown_queue(rows, f'Recheck queue: top {len(rows)}') +
                                ['', f'Not applicable by epoch/region: {excluded} cells (see matrix JSON totals).'])

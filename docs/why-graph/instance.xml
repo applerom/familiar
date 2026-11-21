@@ -14,6 +14,7 @@
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-CLI"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INSTANCE-MODEL"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INSTANCE-CLI"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INSTANCE-UPGRADE"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-INSTANCE-VALIDATION"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-FAMILY-WRITER"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DISPLAY-INPUTS"/>
@@ -76,6 +77,9 @@
   </MODULE_INSTANCE_MODEL>
   <MODULE_INSTANCE_CLI ID="MOD-INSTANCE-CLI" FILE="src/familiar/instance/cli.py" STATE="IMPLEMENTED">
   </MODULE_INSTANCE_CLI>
+  <MODULE_INSTANCE_UPGRADE ID="MOD-INSTANCE-UPGRADE" FILE="src/familiar/instance/upgrade.py" STATE="IMPLEMENTED">
+    <INVARIANT TEST="tests/journeys/test_installed_engine.py::test_installed_engine">One command carries every older stored form over through the family writer or names the file and decision; it never deletes a file.</INVARIANT>
+  </MODULE_INSTANCE_UPGRADE>
   <MODULE_INSTANCE_PACKS ID="MOD-INSTANCE-PACKS" FILE="src/familiar/instance/packs.py" STATE="IMPLEMENTED"/>
   <MODULE_INTAKE_TABLE_REVIEW ID="MOD-INTAKE-TABLE-REVIEW" FILE="src/familiar/intake/table_review.py" STATE="IMPLEMENTED"/>
   <MODULE_INTAKE_FEEDBACK ID="MOD-INTAKE-FEEDBACK" FILE="src/familiar/intake/feedback.py" STATE="IMPLEMENTED">
@@ -109,6 +113,8 @@
   </MODULE_INTAKE_PHOTO>
   <MODULE_FAMILY_GATE ID="MOD-FAMILY-GATE" FILE="src/familiar/instance/gate.py" STATE="IMPLEMENTED">
     <INVARIANT REVIEW="engine lead">Withheld chapter media advise separately for the host and readers without weakening exclusions.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Research lookups are registered boundaries without the family verdict; they publish nothing.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">One verdict or one checked call reads fixed inputs: derived reads are shared inside it and its final fingerprint comparison still rejects any change.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-PUBLICATION"/>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-INSTANCE-VALIDATION"/>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-OUTPUT-REVIEW"/>

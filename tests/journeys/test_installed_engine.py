@@ -128,6 +128,11 @@ with patch('subprocess.run', side_effect=AssertionError('cloud subprocess')), pa
 assert fingerprint() == before_cloud
 access = family / 'family/desk-access.json'
 access.write_text(json.dumps({'schema_version': 1, 'family_id': Instance(family).id, 'projection': 'reader-private', 'host': 'Invented host', 'recipient': 'Invented narrator', 'decided_at': '2026-11-14', 'reason': 'Fictional check', 'dataset': 'accepted-family-reader', 'pages': ['reader', 'journal', 'stories', 'cases', 'plan', 'questions']}))
+legacy = family / 'media/migrated/legacy-page.html'; legacy.parent.mkdir(parents=True, exist_ok=True); legacy.write_bytes(b'<p>A page an old release kept</p>')
+registry_file = family / 'media/manifest.json'; registry = json.loads(registry_file.read_text(encoding='utf-8')) if registry_file.exists() else {'schema_version': 1, 'assets': []}
+registry['assets'].append({'id': 'legacy-page', 'kind': 'record-page', 'file': 'migrated/legacy-page.html', 'sha256': hashlib.sha256(legacy.read_bytes()).hexdigest(), 'origin': {'file': 'old-release'}, 'source_id': 'external-original', 'source_sha256': hashlib.sha256(scan.read_bytes()).hexdigest(), 'export': 'sources/' + hashlib.sha256(b'external-original').hexdigest()[:20] + '.html'})
+registry_file.write_text(json.dumps(registry), encoding='utf-8')
+assert '1 registered document pages' in cli('instance', 'upgrade').stdout and legacy.is_file()  # an old release's form carried over
 desk.build(Instance(family))
 from familiar.desk.server import server
 with server(Instance(family), 0) as http:

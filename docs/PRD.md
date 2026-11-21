@@ -738,6 +738,35 @@ endpoint spellings and families, retains both sets of names/events/claims, and
 resolves old document references to the active canonical card. Removing the
 decision restores the unchanged source cards. Identity acceptance does not
 promote the imported claims to accepted facts.
+
+**Probable branches in the tree.** Two links draw a found branch above a family person
+before it is proven; the drawing follows the weight (0.5+ solid, 0.3–0.5 dotted, below
+0.3 not drawn). The weight is the weight of the version, not a confidence in each link.
+- *Probable identity*: a `merges[]` entry with `status: "probable"`, `weight` 0.3–0.5,
+  `basis` and `sources`. The found card leaves the tree (its id becomes an alias, its
+  facts are not merged); its parents hang above the family person on a junction with the
+  version's weight, and the card's "More" names the found person with the basis. From
+  0.5 write an accepted merge; below 0.3 the cards stay apart. Use it when a found
+  person is probably someone the family already has.
+- *Origin with missing generations*: an association `possible_ancestor` (`from` the
+  ancestor, `to` the family person, `weight`, `missing`, optional `missing_max`,
+  `basis`, `sources`). The reader draws the missing generations as haze, so the
+  ancestor and his own tree stand at their generations. Anchor on the person every
+  candidate path goes through. `possible_parent` is the same link with no missing
+  generation. Use it when the line leads into a nest but nobody knows the parent.
+- *One of the possible branches*: when a person has nobody above and the leading
+  origin (the largest weight among its `possible_ancestor`/`possible_parent` links) is
+  below 0.3, that one link from 0.1 is drawn fainter than a dotted line (pale cards,
+  thick haze); "More" says "one of the possible branches". Below 0.1 nothing is drawn.
+  The anchor shows the way down through the missing generations to the person.
+- *The family's main line*: `main_line: true` on a `possible_parent`,
+  `possible_ancestor` or probable identity marks the version the family chose as its
+  working one. It is drawn as the main branch (a probable line in the line's colour)
+  whatever its weight, which stays honest in "More". Inside it every link keeps its own
+  form: a document solid, an assumption dotted with a light haze behind the card, a
+  missing generation as haze. A chain of possible parents one above another is drawn link
+  by link; each free line takes its leading link from 0.1. A probable identity on the
+  main line applies below 0.3; from 0.5 it may stay probable (facts kept apart).
 The snapshot additionally retains display/tag/plain adapter fields for the
 current graph builder. Contributions preserve attributed claim sources in the
 derived graph. Intake does not establish document identity or kinship truth.
@@ -775,7 +804,7 @@ still require the literal `written` name. Attaching a card invents neither.
 | `id` | R | Stable person id | always |
 | `sex` | R | Recorded sex or unknown | permission:sex |
 | `living` | R | Boolean living status | never |
-| `names[]` | R | given, surname, type (birth/married/as-written), provenance | always |
+| `names[]` | R | given, surname, type (birth/married/as-written/recorded/indexed), provenance; optional `lang` of a reader form | always |
 | `events[]` | R | Events below | permission:events |
 | `notes[]` | R | text and provenance | permission:notes |
 
@@ -913,6 +942,7 @@ Unlinked memories, answers and records are explicitly included as supersets.
 Original images are referenced, never certified as read by packet assembly.
 
 <!-- PRD_ANCHOR: PERSON-CARD -->
+<a id="person-card"></a>
 
 `research person <ID-or-name>` is the story author's private discovery card.
 It works for a person absent from the tree too. It keeps parents, spouses,
@@ -1182,7 +1212,7 @@ boundary; no caller can reinstate private editorial fields after that boundary.
 | `families[].status, derived, basis` | qualified union; basis may contain narrative | basis requires dead family members in public mode |
 | `narrator, defaultViewer` | declared viewer references; absent viewer never implies “your” | kinship only |
 | `readerLabels` | language-pack display words | no family data |
-| `namePresentation` | display/full/source name, patronymic, maiden surname, note; sex/marriage and surname flags, maiden status and source references | dead only |
+| `namePresentation` | display/full/source name, `byLanguage` reader-language forms, patronymic, maiden surname, note; sex/marriage and surname flags, maiden status and source references | dead only |
 | `story, storyMore` | multilingual card narrative and expandable continuation | dead only |
 | `illustrations[]` | selected attributed images using the image schema | dead only |
 | `confirmation` | level, identityAccepted, research, translated basis and source references; does not confirm relatives | dead only |
@@ -1633,8 +1663,11 @@ Zero-read observations can be recorded as access-gap, never as negative evidence
 
 Research consumes recipes and period-filtered general forms from the family's
 resolved region packs; `family/variants.json` adds family-only forms using the
-same `variant` array shape. Candidate comparisons count explicit independent
-dependency groups: one is possible, two probable; neither accepts identity.
+same `variant` array shape. A search key from pack rules (region `name_key`,
+language `surname_key`) proposes marked forms the family already wrote; they never
+become required forms. The identity score multiplies likelihood ratios (name
+rarity from the family's own tree, surname, age, place, rite, family as one damped
+group) and ranks candidates beside the unseen ones; it never accepts identity.
 These are search suggestions, not documentary assertions.
 
 The host interface has three operations: `authorize(family_id, source, url)`

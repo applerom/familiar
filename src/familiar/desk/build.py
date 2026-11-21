@@ -125,8 +125,9 @@ def _assemble_checked(instance, active, config, delivered, watch, stamp, *, publ
     w = words(instance)
     build_id = str(uuid.uuid4())
     files = shell()
-    if set(files) & set(bundle['files']):
-        raise ValueError('Reader resources collide with the shell')
+    if clash := sorted(set(files) & set(bundle['files'])):
+        raise ValueError(f'{len(clash)} reader files take names of the reader shell ({", ".join(clash[:3])}); '
+                         'rename their export in media/manifest.json')
     files.update(delivery)
     files['reader-manifest.json'] = encode({k: bundle[k] for k in
         ('schema_version', 'family_id', 'state')} | {'profile': 'reader-profile.json',
@@ -146,6 +147,13 @@ def _assemble_checked(instance, active, config, delivered, watch, stamp, *, publ
         pages['desk/asks.html'] = asks
         pages['desk/asks-links.json'] = encode(links)
         pages['desk/asks-reminders.json'] = encode(reminders)
+        from familiar.reader.graph import card_memory
+        for lang, texts in card_memory(active).items():
+            asks_in, links_in, reminders_in, *_ = project_asks(
+                active, graph, delivery, words(instance, lang), feedback=inbox_rows.values(), language=lang, texts=texts)
+            pages[f'desk/asks.{lang}.html'] = asks_in
+            pages[f'desk/asks-links.{lang}.json'] = encode(links_in)
+            pages[f'desk/asks-reminders.{lang}.json'] = encode(reminders_in)
         inputs.update(ask_inputs)
         listings.update(ask_listings)
     show, show_inputs, show_listings = project_show(active, graph, w['show'] | {'tree': w['tree']}, asks=summaries)
@@ -155,12 +163,33 @@ def _assemble_checked(instance, active, config, delivered, watch, stamp, *, publ
     pages['desk/show.json'] = encode(show)
     lines = '' if public_reader else line_section(active, graph, w['show'])
     pages['desk/progress.html'] = show_page(active, w, 'desk/journal.html' in pages, lines=lines)
+    from familiar.reader.graph import card_memory
+    memory = card_memory(active)
+    def translated(value, texts):
+        if isinstance(value, dict):
+            return {k: translated(v, texts) for k, v in value.items()}
+        if isinstance(value, list):
+            return [translated(v, texts) for v in value]
+        return texts.get(value.strip(), value) if isinstance(value, str) else value
+    # The investigation in another reader language: its captions, the family's translated texts, local names.
+    for lang, texts in memory.items():
+        lw = words(instance, lang)
+        shown_in = project_show(active, graph, lw['show'] | {'tree': lw['tree']}, asks=summaries)[0]
+        pages[f'desk/show.{lang}.json'] = encode(translated(shown_in, texts))
+        lines_in = '' if public_reader else line_section(active, graph, lw['show'], language=lang, texts=texts)
+        pages[f'desk/progress.{lang}.html'] = show_page(active, lw, 'desk/journal.html' in pages, lines=lines_in,
+                                                        language=lang, data=f'desk/show.{lang}.json')
     if not public_reader:
         from .correspondence import project as project_correspondence
         correspondence_pages, correspondence_inputs, correspondence_listings = project_correspondence(active, w)
         pages.update(correspondence_pages)
         inputs.update(correspondence_inputs)
         listings.update(correspondence_listings)
+        for lang, texts in memory.items():
+            names = {pid: form for pid, person in graph.get('people', {}).items()
+                     if isinstance(form := ((person.get('namePresentation') or {}).get('byLanguage') or {}).get(lang), str)
+                     and form.strip()}
+            pages.update(project_correspondence(active, words(instance, lang), language=lang, texts=texts, local_names=names)[0])
     from .feedback import owner_only, receipt, research_feedback
     def read_mark(path):
         raw = path.read_bytes() if path.is_file() else None
@@ -170,8 +199,9 @@ def _assemble_checked(instance, active, config, delivered, watch, stamp, *, publ
         for p, row in inbox_rows.items() if not owner_only(row) and not research_feedback(row)})
     from familiar.instance.memory_visibility import check_delivery
     check_delivery(active, pages)
-    if set(files) & (set(pages) | {'desk/desk.js', 'desk/desk.css', 'desk/words.json', 'robots.txt'}):
-        raise ValueError('Reader resources collide with desk pages')
+    if clash := sorted(set(files) & (set(pages) | {'desk/desk.js', 'desk/desk.css', 'desk/words.json', 'robots.txt'})):
+        raise ValueError(f'{len(clash)} reader files take names of desk pages ({", ".join(clash[:3])}); '
+                         'rename their export in media/manifest.json')
     files.update(pages)
     assets = package_files('familiar.desk').joinpath('assets')
     files.update({'desk/' + name: assets.joinpath(name).read_bytes()
@@ -181,7 +211,11 @@ def _assemble_checked(instance, active, config, delivered, watch, stamp, *, publ
             files['desk/' + name] = assets.joinpath(name).read_bytes()
     files['desk/access.html'] = assets.joinpath('access.html').read_bytes()
     files['desk/words.json'] = encode(w | {'languages': {lang: words(instance, lang)
-        for lang in instance.languages}, 'engine_version': __version__, 'build': build_id,
+        for lang in instance.languages}, 'source_language': instance.source_language,
+        'asks_languages': sorted(lang for lang in instance.languages if f'desk/asks.{lang}.html' in files),
+        'page_languages': {page: sorted(lang for lang in instance.languages if f'desk/{page}.{lang}.html' in files)
+                           for page in ('asks', 'correspondence', 'progress')},
+        'engine_version': __version__, 'build': build_id,
         'family_id': instance.id})
     files['robots.txt'] = b'User-agent: *\nDisallow: /\n'
     styles = ''.join('<link rel="stylesheet" href="/' + name + '">'
@@ -226,7 +260,7 @@ def _assemble_checked(instance, active, config, delivered, watch, stamp, *, publ
             if name == 'index.html':
                 files[name] += (b'<link rel="stylesheet" href="/desk/tree-add.css">'
                                 b'<script defer src="/desk/tree-add.js"></script>')
-            if not public_reader and name in {'index.html', 'desk/asks.html'}:
+            if not public_reader and (name == 'index.html' or re.fullmatch(r'desk/asks(\.[a-z-]+)?\.html', name)):
                 files[name] += (b'<link rel="stylesheet" href="/desk/asks.css">'
                                 b'<script defer src="/desk/asks.js"></script>')
     # HTML delivery includes the private notice; manifest digests describe those
@@ -343,9 +377,16 @@ def build(instance):
 
     if message := instance.engine_warning():
         print(f'WARNING: {message}', file=sys.stderr)
-    from familiar.instance.writer import store_desk
+    from familiar.instance.gate import QUARANTINE
+    from familiar.instance.writer import state_memory, store_desk
+    QUARANTINE.clear()
     bundle = assemble(instance)
     store_desk(instance, bundle)
+    # Quarantine never goes quiet: the build names what waits, publish counts it before sending.
+    waiting = [row for rows in QUARANTINE.values() for row in rows]
+    state_memory(instance, 'desk-quarantine.json', {'quarantine': waiting})
+    for row in waiting:
+        print(f"QUARANTINE: {row['file']} ({row['author']}): waits for {', '.join(row['waits'])}; not on the site")
     return len(bundle.files)
 
 

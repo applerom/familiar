@@ -2,6 +2,8 @@ import type {Language} from './i18n';
 export type ReaderProfile={schema_version:1;family:{id:string;title:string|Partial<Record<Language,string>>;source_language:Language;languages:Language[];fictional:boolean};data:string;reader_names?:Partial<Record<Language,Record<string,string>>>;legacy_storage?:boolean;host?:{feedback?:'disabled'|'api'}};
 let active:ReaderProfile|undefined;
 let account='';
+/** A text row in the reader's language; untranslated text falls back to the family's main language. */
+export function inLanguage(x:any,lang:string):string{if(typeof x==='string')return x;if(!x||typeof x!=='object')return '';const main=active?.family.source_language||'';return x[lang]||(main&&x[main])||x.en||x.ru||Object.values(x).find((v):v is string=>typeof v==='string'&&!!v)||''}
 export function profile(){if(!active)throw Error('Reader profile is not loaded');return active}
 /** Private delivery is labelled by the engine, in the family's language pack. */
 export function privateNotice(){return typeof document==='undefined'?'':document.getElementById('host-private-notice')?.textContent||''}

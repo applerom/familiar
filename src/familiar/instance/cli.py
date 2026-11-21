@@ -29,6 +29,8 @@ def register(commands):
     selection.add_argument('--path', action='append', help='Own JSON/JSONL file or directory, relative to family root; repeatable')
     selection.add_argument('--prefix', help='Own path/filename prefix, relative to family root')
     actions.add_parser("paths")
+    upgrade = actions.add_parser('upgrade', help='Carry stored forms over to the installed release')
+    upgrade.add_argument('--dry-run', action='store_true', help='Report what would change; write nothing')
     release = actions.add_parser('record-release', help='Record an installed wheel and its source commit')
     release.add_argument('--wheel', type=Path, required=True)
     release.add_argument('--commit', required=True)
@@ -63,6 +65,19 @@ def run(args):
         if args.action == 'record-release':
             print(record_release(instance, args.wheel, args.commit))
             return 0
+        if args.action == 'upgrade':
+            from familiar import __version__
+
+            from .upgrade import upgrade
+            found = upgrade(instance, apply=not args.dry_run)
+            for release, name, lines in found:
+                print(f'{release}: {name}')
+                for line in lines:
+                    print(f'  {line}')
+            print(f"upgrade: {'nothing to carry over' if not found else f'{len(found)} steps'}"
+                  f"{' (dry run, nothing written)' if found and args.dry_run else ''}; pinned "
+                  f"{instance.engine_version or 'none'}, installed {__version__}; next: instance check")
+            return 0
         if args.action == "check":
             from .validation import check
             report = check(instance, paths=args.path, prefix=args.prefix)
@@ -82,12 +97,25 @@ def run(args):
                     print(f"{error['location']}: {error['message']}")
                 for advice in report.get('advice', []):
                     print(f"ADVICE: {advice['location']}: {advice['message']}")
+                for row in report.get('quarantine', []):
+                    print(f"QUARANTINE: {row['file']} ({row['author']}): waits for {', '.join(row['waits'])}; "
+                          'not applied until committed')
                 if work := report.get('research_in_progress'):
-                    print(f"исследование в работе: {work['count']} findings; {len(work['paths'])} files")
+                    label = {'ru': 'исследование в работе', 'pl': 'badania w toku'}.get(instance.source_language,
+                                                                                         'research in progress')
+                    print(f"{label}: {work['count']} findings; {len(work['paths'])} files")
                     for path in work['paths']:
                         print(f'  {path}')
                 for finding in report.get('surname_findings', []):
                     print(f"{finding['location']}: {', '.join(finding['spellings'])}; {finding['message']}")
+                if hints := report.get('name_findings', []):
+                    print(f"names: {len(hints)} tile names a reader may not recognize (all in --json)")
+                for finding in hints[:5]:
+                    print(f"HINT: {finding['location']}: {finding['name']}; {finding['message']}")
+                if images := report.get('image_findings', []):
+                    print(f"documents: {len(images)} cited records name an image that is not on disk (all in --json)")
+                for finding in images[:5]:
+                    print(f"HINT: {finding['location']}: {', '.join(finding['images'])}; {finding['message']}")
                 for warning in report['warnings']:
                     print(f'WARNING: {warning}', file=sys.stderr)
                 for key in (() if report.get('scope') else ('first_chapter_missing', 'full_cycle_missing')):

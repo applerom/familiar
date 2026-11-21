@@ -6,6 +6,8 @@
 # - a surname inferred from children belongs only to an unambiguously identified father and retains its child basis [review: engine lead]
 # - conflicting or undecided paternal spellings produce actionable nonblocking findings [review: engine lead]
 # - clan membership and spelling compare birth names; married names remain literal source names [review: engine lead]
+# - a woman whose birth name is another clan keeps the name she is called by; her birth clan is her maiden surname [review: engine lead]
+# - male, female and Polish maiden forms of one spelling share one clan key, by the script the surname is written in [review: engine lead]
 # CHANGES_WITH:
 # - MOD-PUBLICATION (surname display and inferred-name projection)
 # - MOD-INSTANCE-VALIDATION (nonblocking surname findings)
@@ -20,14 +22,20 @@ def _key(value):
     return value.strip().casefold() if isinstance(value, str) else ''
 
 
-def gender_form(form, sex, language):
-    """Only regular, gendered language endings; invariant surnames stay intact."""
+# Regular gendered endings by the script a surname is written in, not by the family's language: a Russian family's
+# tree carries Polish acts (Korniejew, Korniejewa) and a Polish family's carries Russian ones.
+GENDER_PAIRS = {'cyrillic': [('ский', 'ская'), ('цкий', 'цкая'), ('ской', 'ская'), ('цкой', 'цкая'), ('ов', 'ова'),
+                             ('ев', 'ева'), ('ёв', 'ёва'), ('ин', 'ина'), ('ын', 'ына'), ('ый', 'ая')],
+                'latin': [('ski', 'ska'), ('cki', 'cka'), ('dzki', 'dzka'), ('ow', 'owa'), ('ew', 'ewa'), ('in', 'ina'),
+                          ('yn', 'yna')]}
+# A Polish maiden form: the father's surname with -ówna (Kowalczyk → Kowalczykówna), also in Cyrillic acts.
+MAIDEN_SUFFIXES = ('ówna', 'owna', 'увна')
+
+
+def gender_form(form, sex, language=''):
+    """Only regular, gendered endings; invariant surnames stay intact."""
     female = str(sex).lower() == 'f'
-    pairs = {'ru': [('ский', 'ская'), ('цкий', 'цкая'), ('ской', 'ская'),
-                    ('цкой', 'цкая'), ('ов', 'ова'), ('ев', 'ева'), ('ёв', 'ёва'),
-                    ('ин', 'ина'), ('ын', 'ына')],
-             'pl': [('ski', 'ska'), ('cki', 'cka'), ('dzki', 'dzka')]}
-    for male, woman in pairs.get(language, []):
+    for male, woman in GENDER_PAIRS['cyrillic' if _cyrillic(form) else 'latin']:
         if female and form.endswith(male):
             return form[:-len(male)] + woman
         if not female and str(sex).lower() == 'm' and form.endswith(woman):
@@ -35,8 +43,74 @@ def gender_form(form, sex, language):
     return form
 
 
+def clan_key(surname):
+    """One key for a clan's male, female and maiden forms of one spelling: Корнеева, Korniejewa, Kowalczykówna."""
+    key = _key(gender_form(_key(surname), 'm'))
+    for suffix in MAIDEN_SUFFIXES:
+        if key.endswith(suffix) and len(key) > len(suffix) + 2:
+            return key[:-len(suffix)]
+    return key
+
+
 def names(person):
     return [n for n in person.get('names', []) if n and n.get('type') != 'derived-from-children']
+
+
+def shown_first(person):
+    """Names in display order: a document's own spelling comes after every form written for the family."""
+    from .identities import DOCUMENT_NAME_TYPES
+    return sorted(names(person), key=lambda n: n.get('type') in DOCUMENT_NAME_TYPES)
+
+
+OLD_LETTERS = set('ѣѳіѵѢѲІѴ')
+CYRILLIC_LANGUAGES = {'ru', 'uk', 'be', 'bg', 'sr', 'mk'}
+# Male given names that end in -а/-я in the nominative; any other such male name on a tile may be the act's case.
+MALE_IN_A = {'никита', 'илья', 'фома', 'кузьма', 'савва', 'лука', 'иона', 'михайла', 'данила', 'гаврила',
+             'фока', 'сила', 'зосима', 'вавила', 'мина', 'ахилла'}
+
+
+def _cyrillic(text):
+    return any('Ѐ' <= c <= 'ӿ' for c in text)
+
+
+def name_findings(graph, languages, source_language):
+    """Hint where a tile would show a name its reader may not recognize: old letters, another script, an act's case."""
+    result = []
+    for pid, person in graph.get('people', {}).items():
+        if person.get('living') is True or person.get('placeholder'):
+            continue
+        np = person.get('namePresentation') or {}
+        for lang in languages:
+            local = (np.get('byLanguage') or {}).get(lang)
+            if not local and lang != source_language:
+                continue  # the family's main name stands in; that is the agreed fallback, not a finding
+            tile = (local or np.get('display') or person.get('name') or '').strip()
+            given = tile.split(' ')[0] if tile else ''
+            why = ('old orthography' if set(tile) & OLD_LETTERS or any(w.endswith('ъ') for w in tile.split())
+                   else 'another script' if '[' not in tile and _cyrillic(tile) != (lang in CYRILLIC_LANGUAGES)
+                   and any(c.isalpha() for c in tile)
+                   else 'possibly the case of the act' if (str(person.get('sex')).lower() == 'm' and _cyrillic(given)
+                                                           and given[-1:] in 'ая' and given.casefold() not in MALE_IN_A)
+                   else '')
+            if why:
+                result.append({'location': f'person:{pid}', 'language': lang, 'name': tile, 'message':
+                               f'tile name in {lang} is {why}; add a reader form: name_forms '
+                               f'"display" (main language) or "by_language".{{"{lang}": ...}} (docs/language-checks.md)'})
+    return result
+
+
+def is_woman(person):
+    return str(person.get('sex', '')).lower() == 'f' or (person.get('namePresentation') or {}).get('isWoman') is True
+
+
+def married_surname(person):
+    """The surname a woman is called by when her birth name belongs to another clan: she shows it, her father's
+    clan is hers."""
+    birth = next((n['surname'] for n in names(person) if n.get('type') == 'birth' and n.get('surname')), '')
+    shown = next((n for n in shown_first(person) if n.get('surname')), {})
+    if not birth or not is_woman(person) or shown.get('type') == 'birth' or clan_key(shown['surname']) == clan_key(birth):
+        return ''
+    return shown['surname']
 
 
 def birth_names(graph, language=''):
@@ -48,13 +122,12 @@ def birth_names(graph, language=''):
             husbands.setdefault(family.get('wife'), set()).add(family.get('husband'))
     result = {}
     for pid, person in people.items():
-        spouse_names = {_key(gender_form(n['surname'], 'm', language))
+        spouse_names = {clan_key(n['surname'])
                         for husband in husbands.get(pid, ()) if husband in people
                         for n in names(people[husband])
                         if n.get('surname') and n.get('type') != 'married'}
         own = [n for n in names(person) if n.get('type') != 'married' and
-               (n.get('type') == 'birth' or not n.get('surname') or
-                _key(gender_form(n['surname'], 'm', language)) not in spouse_names)]
+               (n.get('type') == 'birth' or not n.get('surname') or clan_key(n['surname']) not in spouse_names)]
         result[pid] = sorted(own, key=lambda n: n.get('type') != 'birth')
     return result
 
@@ -137,16 +210,14 @@ def apply(instance, graph, metadata):
     aliases = graph.get('identityAliases', {})
     errors = []
     for i, row in enumerate(rows):
-        variants = {_key(v) for v in [row['form'], *row['variants']]}
-        # Include ordinary feminine/male forms without equating unrelated spellings.
-        variants |= {_key(gender_form(v, sex, instance.source_language))
-                     for v in [row['form'], *row['variants']] for sex in ('m', 'f')}
+        # Ordinary feminine, male and maiden forms belong to the spelling without equating unrelated spellings.
+        variants = {clan_key(v) for v in [row['form'], *row['variants']]}
         members = {aliases.get(p, p) for p in row.get('people', [])}
         if members - people.keys():
             errors.append(f'tree_metadata.surname_forms[{i}].people: unknown people ' + ', '.join(sorted(members - people.keys())))
         for pid, person in people.items():
             primary = next((n['surname'] for n in own[pid] if n.get('surname')), '')
-            if (not members or pid in members) and _key(primary) in variants:
+            if (not members or pid in members) and primary and clan_key(primary) in variants:
                 if pid in assigned and assigned[pid]['id'] != row['id']:
                     errors.append(f'tree_metadata.surname_forms[{i}]: {pid} belongs to conflicting clans')
                 assigned[pid] = row
@@ -182,7 +253,7 @@ def apply(instance, graph, metadata):
     for pid, row in assigned.items():
         person = people[pid]
         original = names(person)
-        first = next((n for n in original if n.get('given')), {})
+        first = next((n for n in shown_first(person) if n.get('given')), {})
         if not first:
             continue  # A literal owner placeholder must remain whole.
         surname = gender_form(row['form'], person.get('sex'), instance.source_language)
@@ -195,7 +266,7 @@ def apply(instance, graph, metadata):
                     (n.get('type') == 'as-written' or any(s.get('kind') in {
                         'archive-record', 'home-paper', 'record', 'document'} for s in sources))):
                 written.append(n['surname'])
-        display = {'clan': row['id'], 'form': surname, 'written': written,
+        display = {'clan': row['id'], 'form': surname, 'written': written, 'variants': row['variants'],
                    'origin': 'clan-decision', 'children': []}
         if pid in inferred:
             display.update(origin='derived-from-children', children=inferred[pid])
@@ -205,12 +276,27 @@ def apply(instance, graph, metadata):
                                                        'provenance': inferred[pid]}})
             person['names'] = original + [derived]
         person['surnameDisplay'] = display
+        if married_surname(person):
+            # She keeps the name the family calls her by; the clan form is her maiden name.
+            person.setdefault('namePresentation', {})['maidenSurname'] = surname
+            continue
+        if (person.get('namePresentation') or {}).get('decided'):
+            continue  # a decided name form (identity decisions) is whole; the clan form does not rebuild it
         person['name'] = full
         person.setdefault('namePresentation', {}).update(display=tree, full=full)
     for person in people.values():
-        first = next((n for n in names(person) if n.get('given')), {})
+        if married := married_surname(person):
+            # A woman's own birth name, even without a clan decision, is the clan she comes from.
+            person.setdefault('namePresentation', {}).setdefault('maidenSurname', next(
+                n['surname'] for n in names(person) if n.get('type') == 'birth' and n.get('surname')))
+        if (person.get('namePresentation') or {}).get('decided'):
+            shown = person['namePresentation']['display']
+            patronymic = next((n['patronymic'] for n in shown_first(person) if n.get('patronymic')), '')
+            person['treeName'] = ' '.join(shown.replace(patronymic, '').split()) if patronymic else shown
+            continue
+        first = next((n for n in shown_first(person) if n.get('given')), {})
         if first:
-            surname = person.get('surnameDisplay', {}).get('form', first.get('surname', ''))
+            surname = married or person.get('surnameDisplay', {}).get('form', first.get('surname', ''))
             person['treeName'] = ' '.join(filter(None, [first['given'], surname]))
     return graph
 
@@ -236,7 +322,7 @@ def findings(graph, metadata, language=''):
         # Gender variants of an explicit single clan are one form.
         clans = {people[pid].get('surnameDisplay', {}).get('clan') for pid in members
                  if any(n.get('surname') for n in own[pid])}
-        forms = {_key(gender_form(s, 'm', language)) for s in spellings}
+        forms = {clan_key(s) for s in spellings}
         if len(forms) > 1 and not (len(clans) == 1 and None not in clans):
             result.append({'location': 'tree_metadata.surname_forms', 'father': parent,
                            'people': sorted(members), 'spellings': sorted(spellings),
@@ -256,8 +342,12 @@ def set_form(instance, ident, form, variants, members=()):
         basis = 'family-memory'
     else:
         form, basis = choose_form(graph, variants, members, instance.source_language)
-    row = {'id': ident, 'form': form, 'variants': list(dict.fromkeys([form, *variants])),
-           'basis': basis}
+    # The command changes what it was asked to: an existing decision keeps its written basis, its people and the rest;
+    # only the command's own marker of how the form was chosen follows the new choice.
+    prior = next((dict(r) for r in decisions(metadata) if r['id'] == ident), {})
+    if prior.get('basis') in (None, 'family-memory', 'document-frequency'):
+        prior['basis'] = basis
+    row = {**prior, 'id': ident, 'form': form, 'variants': list(dict.fromkeys([form, *variants]))}
     if members:
         row['people'] = list(dict.fromkeys(members))
     metadata['surname_forms'] = [r for r in decisions(metadata) if r['id'] != ident] + [row]

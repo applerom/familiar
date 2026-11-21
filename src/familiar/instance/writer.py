@@ -154,7 +154,17 @@ def cached(namespace, identity, dependencies, produce):
 
 def input_digest(path, info=None):
     cache = _BUILD_CACHE.get()
-    return cache.digest(path, info) if cache else hashlib.sha256(path.read_bytes()).hexdigest()
+    if cache:
+        return cache.digest(path, info)
+    from .gate import _FIXED
+    memo = _FIXED.get()
+    if memo is None:
+        return hashlib.sha256(path.read_bytes()).hexdigest()
+    # Within one checked call, like the build cache: unchanged metadata reuses the digest.
+    key = ('digest', str(path), *_metadata(path, info))
+    if key not in memo:
+        memo[key] = hashlib.sha256(path.read_bytes()).hexdigest()
+    return memo[key]
 
 
 def input_projection(path, context, produce):
@@ -341,17 +351,15 @@ def _inputs(instance):
     settings(instance.config)
     for pack in [*instance.packs, *instance.language_pack_data.values()]:
         settings(pack['data'])
-    if instance._display_scope:
-        from .display import dependencies
-        files, refs, presence = dependencies(instance)
-        paths.update(files)
-        presence -= paths
-        return paths | presence, presence, refs
     from .display import dependencies
-    paths.update(instance.path('imports').rglob('*.json'))
-    files, refs, presence = dependencies(instance, public=True)
+    from .gate import shared
+    # Shared within one checked call: a changed reference changes its own file's digest.
+    public = not instance._display_scope
+    if public:
+        paths.update(instance.path('imports').rglob('*.json'))
+    files, refs, presence = shared(instance, ('dependencies', public), lambda: dependencies(instance, public=public))
     paths.update(files)
-    presence -= paths
+    presence = presence - paths
     return paths | presence, presence, refs
 
 
@@ -557,6 +565,7 @@ def snapshot(instance):
         active._display_scope = instance._display_scope
         active._immutable_snapshot = True
         active._snapshot_source_root = instance.root
+        active._snapshot_state = instance.path('state')
         if before != fingerprints(instance):
             raise ValueError('family inputs changed while taking snapshot')
         if instance._display_scope:
@@ -678,6 +687,22 @@ def legacy_exception(registry, text):
         _put(staged / 'exceptions.toml', value)
         Registry(registry.engine, staged)
     _put(path, value)
+
+
+def state_memory(instance, name, value, keep=None):
+    """Engine memory in the state location (in the family or host-mapped); never family data or output.
+
+    keep: also drop all but the newest `keep` JSON files of that folder (a disposable cache)."""
+    base = instance.path('state')
+    path = (base / name).resolve()
+    if not path.is_relative_to(base) or path.suffix != '.json' or any(
+            path.is_relative_to(instance.path(key)) for key in DEFAULTS if key not in {'state', 'build', 'export'}
+            and instance.path(key) != instance.root):
+        raise ValueError('state memory must be a JSON file in the state location')
+    _put(path, encode(value))
+    if keep and path.parent != base:
+        for old in sorted(path.parent.glob('*.json'), key=lambda p: p.stat().st_mtime_ns, reverse=True)[keep:]:
+            old.unlink(missing_ok=True)
 
 
 def diagnostic(instance, name, value):

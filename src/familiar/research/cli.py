@@ -1,5 +1,5 @@
 # START_MODULE_CONTRACT: MOD-RESEARCH-CLI
-# PURPOSE: Expose research forms, offline search replay, bounded packets and research delivery commands.
+# PURPOSE: Expose research forms, search forms by key, the identity score, source coverage, line plans, offline replay, and research delivery.
 # PRD_REF: docs/PRD.md#FORMS
 # INVARIANTS:
 # - packet failures return an error without writing family data [review: engine lead]
@@ -10,6 +10,7 @@
 # - MOD-SOURCE-SEARCH
 # - MOD-SEARCH-LEDGER
 # - MOD-RESEARCH-COVERAGE
+# - MOD-MATCH-SCORE
 # :END_MODULE_CONTRACT
 import json
 import sys
@@ -64,9 +65,24 @@ def register(commands):
     cover.add_argument('--person', help='One person: every source with dates and executors')
     cover.add_argument('--family', action='store_true', help='The whole person-by-source matrix (the default)')
     cover.add_argument('--recheck', nargs='?', type=int, const=15, metavar='N', help='The N most useful cells to look at again (default 15)')
+    cover.add_argument('--line', help='Limit --recheck to one surname line or its starting person ID')
     cover.add_argument('--lines', action='store_true', help='Ancestral chains, open questions and coverage gaps by surname line')
     cover.add_argument('--json', action='store_true', help='JSON instead of markdown')
     cover.add_argument('--save', action='store_true', help='Also store the matrix and full queue in coverage.json in the instance state directory')
+    plan = actions.add_parser('plan', help='Research approaches and next step for each family line')
+    plan.add_argument('--line', help='Surname line or its starting person ID')
+    plan.add_argument('--json', action='store_true', help='JSON instead of markdown')
+    plan.set_defaults(run=run_plan)
+    forms = actions.add_parser('forms', help='Search forms of names or places: dictionary forms, then forms the family wrote that share the key (suggestions)')
+    forms.add_argument('words', nargs='+')
+    forms.add_argument('--kind', choices=['surname', 'place', 'given_name'], default='surname')
+    forms.add_argument('--year', type=int)
+    forms.add_argument('--json', action='store_true')
+    forms.set_defaults(run=run_forms)
+    match = actions.add_parser('compare', help='Score one person or two: {"a", "b"} or {"target", "candidates"}, optional "pool"; never merges')
+    match.add_argument('input', type=Path)
+    match.add_argument('--json', action='store_true')
+    match.set_defaults(run=run_compare)
     parser.set_defaults(run=run)
     migrate.set_defaults(run=run_migrate)
     cover.set_defaults(run=run_coverage)
@@ -111,11 +127,66 @@ def run_migrate(args):
 def run_coverage(args):
     from .coverage import coverage
     try:
-        data, text = coverage(Instance(args.root), person=args.person, queue=args.recheck, lines=args.lines, save=args.save)
+        if args.line is not None and (args.recheck is None or args.lines or args.person):
+            raise ValueError('--line goes with --recheck')
+        data, text = coverage(Instance(args.root), person=args.person, queue=args.recheck, lines=args.lines, save=args.save,
+                              line=args.line)
         print(json.dumps(data, ensure_ascii=False, indent=1) if args.json else text)
         return 0
     except (ValueError, OSError, KeyError, TypeError) as exc:
         print(f'research coverage: {exc}', file=sys.stderr)
+        return 1
+
+
+def run_forms(args):
+    from .search_variants import forms
+    try:
+        data = forms(Instance(args.root), args.words, args.kind, args.year)
+        if args.json:
+            print(json.dumps(data, ensure_ascii=False, indent=1))
+        for word, rows in ({} if args.json else data).items():
+            table = [r['text'] for r in rows if r['via'] in {'word', 'dictionary'}]
+            print(f"{word}: {', '.join(table)}")
+            if clan := [r['text'] for r in rows if r['via'] == 'clan']:
+                print(f"  by clan decision {next(r['from'] for r in rows if r['via'] == 'clan')}: {', '.join(clan)}")
+            for r in rows:
+                if r['via'] == 'key':
+                    print(f"  by key ({r['key']}, {r['from']}): {r['text']}")
+        return 0
+    except (ValueError, OSError, KeyError, TypeError) as exc:
+        print(f'research forms: {exc}', file=sys.stderr)
+        return 1
+
+
+def run_compare(args):
+    from .match_score import compare, rank
+    try:
+        data = json.loads(args.input.read_text(encoding='utf-8-sig'))
+        instance = Instance(args.root)
+        result = (rank(instance, data['target'], data['candidates'], data.get('pool')) if 'target' in data else
+                  compare(instance, data['a'], data['b'], data.get('pool')))
+        if args.json:
+            print(json.dumps(result, ensure_ascii=False, indent=1))
+        elif 'target' in data:
+            for row in result['candidates']:
+                print(f"{row['id']}: share {row['share']:.3f}, weight {row['weight']:.3f}; {row['words']}")
+            print(f"unseen: {result['unseen']['count']} men of the pool {result['pool']}, share {result['unseen']['share']:.3f}")
+        else:
+            print(f"weight {result['weight']:.3f} among {result['pool']} ({result['pool_basis']}); {result['words']}")
+        return 0
+    except (ValueError, OSError, KeyError, TypeError) as exc:
+        print(f'research compare: {exc}', file=sys.stderr)
+        return 1
+
+
+def run_plan(args):
+    from .research_plan import plan
+    try:
+        data, text = plan(Instance(args.root), line=args.line)
+        print(json.dumps(data, ensure_ascii=False, indent=1) if args.json else text)
+        return 0
+    except (ValueError, OSError, KeyError, TypeError) as exc:
+        print(f'research plan: {exc}', file=sys.stderr)
         return 1
 
 

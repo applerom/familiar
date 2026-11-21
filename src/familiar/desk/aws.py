@@ -305,6 +305,12 @@ def publish(instance):
            [('bucket', 'Bucket'), ('distribution', 'Distribution'), ('url', 'Url')]):
         raise ValueError('Desk deployment state differs from the owned stack')
     _anonymous(state)
+    try:
+        waiting = json.loads((instance.path('state') / 'desk-quarantine.json').read_text(encoding='utf-8'))['quarantine']
+        print(f'Quarantine: {len(waiting)} contributions or versions wait for an uncommitted reference '
+              '(not in this desk)', flush=True)
+    except (OSError, ValueError, KeyError):
+        print('Quarantine: unknown (desk built by an earlier engine)', flush=True)
     count = _upload(instance, state, personal=mode(instance) == 'personal')
     return ('Desk published: ' + str(count) + ' delivery files; credentials remain in .secrets/desk.txt'
             + ('; correspondence is not published; enable personal logins to include it'

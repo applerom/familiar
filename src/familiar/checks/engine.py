@@ -96,7 +96,8 @@ def _known_people(instance, *, family_display=False):
     cached = getattr(instance, '_known_cache', {}) if immutable else {}
     if family_display in cached:
         return cached[family_display]
-    graph = _build(instance, family_display=family_display)
+    from familiar.instance.gate import shared
+    graph = shared(instance, ('known-people', family_display), lambda: _build(instance, family_display=family_display))
     # References in immutable imported records remain usable after an explicit
     # merge; every lookup resolves to the active card's canonical id.
     result = people_index(graph)

@@ -2,7 +2,8 @@
 (() => {
   async function start() {
     if (window.familiarDeskUser?.role === 'reader') return;
-    const config = await (await fetch('/desk/words.json')).json(), w = config.correspondence;
+    const config = await (await fetch('/desk/words.json')).json();
+    const w = (config.languages?.[document.documentElement.lang] || config).correspondence;
     const rows = new Map();
     document.querySelectorAll('[data-letter]').forEach(row => {
       const id = row.dataset.letter;

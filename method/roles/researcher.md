@@ -45,6 +45,11 @@ stand as the leading version with its weight; a weaker candidate stays in
 `versions/` and its case (the card hides facts below 0.3). Candidates, the search
 path and coverage belong to the investigation page.
 
+A found branch that probably belongs to a family person goes into the tree, not only
+into the case: a probable identity (`merges[]`, `status: "probable"`) or a
+`possible_ancestor` with the number of missing generations (`docs/PRD.md`, "Probable
+branches in the tree"). Its weight is the version's weight.
+
 ## Deliver
 
 - Updated links on the tree (facts with source and status) and versions with

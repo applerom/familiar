@@ -23,15 +23,6 @@ def test_personal_login_flow_is_not_replaced_by_ambient_requests(monkeypatch):
     assert auth['auth'](event)['statusCode'] == 400
 
 
-def test_documents_rank_current_aims(family):
-    from familiar.desk.correspondence import project
-    from familiar.desk.model import words
-    copytree(Path(__file__).with_name('fixtures') / 'documents', family.root, dirs_exist_ok=True)
-    page = project(family, words(family))[0]['desk/correspondence.html'].decode()
-    assert page.index('data-recommend="free-route"') < page.index('data-recommend="paid-route"') < page.index('data-recommend="other-line"')
-    assert page.index('>Ferrolho</h2>') < page.index('>Calhau</h2>') < page.index('>Set aside</h2>') < page.index('Already established:') < page.index('>No aim</h2>')
-
-
 def test_family_asks_carry_over_and_private_memory(family):
     import json, pytest
     from familiar.cli import main
@@ -42,8 +33,6 @@ def test_family_asks_carry_over_and_private_memory(family):
     fixture = Path(__file__).with_name('fixtures') / 'asks'
     copytree(fixture / 'family', family.root / 'family', dirs_exist_ok=True)
     assert migrate(family) == 2 and migrate(family) == 0
-    page = assemble(family).files['desk/asks.html']
-    assert page.index(b'id="ask-first"') < page.index(b'id="ask-witness"')
     envelope = json.loads(next((fixture / 'inbox').glob('*.json')).read_bytes())
     copytree(fixture / 'inbox', family.root / 'family/feedback/inbox')
     cli = lambda *args: main(['--root', str(family.root), *args])

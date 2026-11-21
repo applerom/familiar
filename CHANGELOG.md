@@ -1,5 +1,199 @@
 # Changelog
 
+## 0.50.0 — 21 November 2026
+
+If you installed 0.41.3, this is what is new for you. A family can be served
+from its last commit, so a file an agent is still writing no longer blocks a
+check or a build; a contribution that refers to something not committed yet
+waits in quarantine and applies by itself once the reference exists. Names,
+surnames and places carry their forms — male and female, Latin and Cyrillic,
+the cases of old acts, the reader's language — and `research compare` weighs
+whether two records are one person from all the arguments together, showing
+what each gave. The tree grows as two crowns, the husband's ancestors and the
+wife's, with open sky between them, and a married woman stands under the
+family she was born to. `familiar instance upgrade` carries a family's stored
+forms over from any older release in one run;
+[docs/upgrading.md](docs/upgrading.md#from-0413-to-0500) says what to run.
+The install steps now point at this release, `instance check` reports
+research in progress in the family's language, and broken links in the docs
+are fixed.
+
+## 0.49.3 — 21 November 2026
+
+- `familiar instance upgrade [--dry-run]` carries a family's stored forms over
+  from any older release in one run: each release that changes a stored form
+  adds a step; it says what it changed or names the file and the decision, and
+  never deletes a file.
+- Data: rows of `media/manifest.json` that export a document page the engine
+  renders itself since 0.41.0 (`sources/<id>.html`) stop the reader build;
+  `instance upgrade` removes those registry rows and keeps the files.
+- A build that stops on colliding names says how many, which, and what to do.
+
+## 0.49.2 — 21 November 2026
+
+- Tree: a wide row of children pans sideways; near rows keep names on a phone.
+- Tree: a probable identity dates the card by the found record's birth.
+- Check: `instance check` names unread contribution keys (links go in `edges`).
+- Fix: `tree surname set` keeps a decision's basis and people.
+
+## 0.49.1 — 21 November 2026
+
+- Tree: a possible child with no missing generation stands in the children
+  row beside the siblings, by seniority (guessed years count), not below them
+  as a grandchild; the way down through missing generations steps aside
+  instead of hanging under one child.
+
+## 0.49.0 — 21 November 2026
+
+- A family can be served from its last commit. `instance check`, `desk build`
+  and the local reader can read the family as it stands in a git commit (a
+  worktree such as `.state/serve`), so a file a researcher is still writing
+  never blocks a release or a build. Record files kept outside git (captures,
+  originals) resolve through `FAMILIAR_HOST_PATHS`. The check of a served
+  commit is paid once per commit.
+- A contribution or a version that refers to something not committed yet is
+  quarantined instead of vetoing the family: it is named with `QUARANTINE` in
+  `instance check`, in `desk build` and before `desk publish`, and
+  applies by itself once the reference exists. A contribution that used to
+  apply and no longer does is still an error.
+- Research lookups (`research forms`, `research compare`, `tree person`) no
+  longer run the family-wide verdict: 2 s instead of 9, and an unfinished
+  record does not block them. The verdict computes its derived data once.
+- Tests keep only what guards family data, privacy and install: five surface
+  tests are gone; the fast run takes 15 s instead of 50, the full run 28 s
+  instead of 86. Every check now answers what it gives the agent of a
+  research application and what that agent pays for it per day.
+
+## 0.48.0 — 21 November 2026
+
+- Search forms by key. `research forms` adds, with a mark, the spellings of a
+  surname or a place that share its key (male and female forms, case endings
+  of acts, Latin and Cyrillic, a regional sound key) and the forms a clan
+  decision names. They are offered for search and are not required coverage.
+  The key rules live in the region and language packs.
+- `research compare` weighs whether two records are one person from
+  likelihood ratios — the rarity of the name, the surname, age, place, rite,
+  the family as one argument — and shows what each argument gave; candidates
+  nobody has seen yet are a line of their own. It decides nothing: the agent
+  does.
+- `instance check` hints at surnames that share a key outside a clan decision.
+- Data: a place record may carry `modern`, `parish` by rite, `manor` and
+  `coords` with their source. No migration is needed.
+
+## 0.47.0 — 21 November 2026
+
+- The families page shows each family once. A wife stands under her father's
+  clan, named by her surname at birth; the male and female forms of one
+  surname are one family; a decided clan is one tile. A clan decision no
+  longer renames a married woman.
+- The documents and investigation pages exist in every reader language; links
+  and the open page follow the chosen language. A letter to an archive keeps
+  its original subject and text.
+- Nested tables and lists in a document's retelling are translated cell by
+  cell; a chapter year written in words is a translation unit; questions on a
+  card and in a feed switch with the language.
+
+## 0.46.0 — 21 November 2026
+
+- The tree grows as two crowns. The ancestors of the husband and of the wife
+  each converge above their own root, with open sky between them all the way
+  up; only a real shared ancestor crosses it. A side that is traced deeper
+  rises higher alone, so the picture shows which lines are known further.
+  Clans of different colours keep a wider gap than neighbours within a clan.
+- One generation is drawn at one size on both sides.
+- The family map keeps the husband's and the wife's halves apart.
+- On a phone the first picture is unchanged: parents and grandparents fill
+  the width with names and years.
+
+## 0.45.0 — 21 November 2026
+
+- The whole page reads in the reader's language. The family title can be
+  given per language; a text with no translation is shown in the family's
+  source language, not in English.
+- Card texts, document pages, research news and questions to relatives are
+  translated through `tree/translations/<lang>.json` (exact text to its
+  translation). A chapter's separate children's text is a translation unit.
+- In Polish a clan is named by its Polish surname.
+- `instance check` hints at a cited record whose image is not on disk.
+- A name form for a person that research has renamed is advice, not a broken
+  tree.
+- Data: `[family].title` may be a table by language; optional
+  `tree/translations/<lang>.json`. No migration is needed.
+
+## 0.44.0 — 21 November 2026
+
+- Each name is shown in the reader's language: a tile and a card take the
+  name form of the language the reader chose, and otherwise the family's main
+  name. A document's spelling never goes to a tile; the card lists how the
+  documents wrote the name, with the document, under "More". A decided name
+  is kept whole when a clan surname form is applied.
+- A text that has no translation yet is shown in the family's source
+  language instead of being left empty.
+- `instance check` hints at a tile that would show pre-reform letters,
+  another script or the grammatical case of an act.
+- Data: optional `name_forms[].by_language` and `names[].lang`. No migration
+  is needed.
+
+## 0.43.2 — 20 November 2026
+
+- A family can take one version of a person's origin as its main line. It is
+  then drawn as the main branch whatever its weight: documents as a solid
+  line, named assumptions as a dashed line with a light haze behind the tile,
+  gaps as haze. A chain of several assumptions does not break the branch. The
+  card's details say it is the family's working version, or an assumption,
+  and what would confirm it; the honest weight stays there.
+- Data: `main_line: true` on `possible_parent`, `possible_ancestor` and on a
+  probable identity. No migration is needed.
+
+## 0.43.1 — 20 November 2026
+
+- When nothing stands above a person and the leading version of their origin
+  is weaker than 0.3, that one branch is still drawn, in the faintest form:
+  pale tiles, thick haze, a barely traced line (from 0.1). The card's details
+  call it one of the possible branches.
+- From the ancestor that anchors a nest the way down is visible: through the
+  missing generations to the family member, and one can step there.
+
+## 0.43.0 — 20 November 2026
+
+- Probable branches are drawn in the main tree. When a found person is
+  probably the same as a family member (weight 0.3–0.5), that person's
+  parents and their line rise above the family member as a dashed branch,
+  with no double beside them. When a person probably descends from a
+  reconstructed nest but the links between are not found, the missing
+  generations are drawn as haze and the ancestor stands on his own
+  generation. The weight and the grounds stay in the card's details.
+- Data: identity decisions accept `merges[].status: "probable"` with a
+  weight, and associations accept `possible_ancestor` with `missing` and
+  `missing_max`. Existing data stays valid without migration;
+  `possible_parent` reads as before.
+
+## 0.42.1 — 20 November 2026
+
+- A twelfth research approach, **surname households by place**: when a line
+  stops at a person known only by name, the plan no longer waits for the
+  missing paper. It rebuilds every household of the surname in the place from
+  the earliest list downwards and counts who could have been that person. The
+  place may come from a weighted origin hypothesis; no bridge to the living
+  family is required. The plan names the place, the earliest open period and
+  the unattached candidates already proposed.
+
+## 0.42.0 — 19 November 2026
+
+- Research approaches are now part of the engine. `familiar research plan`
+  lists, for every family line, eleven ordered ways of searching — who kept
+  the records of the place, how the keeper spells it, a paper on the family's
+  shelf, registry letters, the household fingerprint, the generation's
+  behaviour, databases by surname, graves, neighbours and godparents, forums,
+  inventories in depth — with a state for each: not tried, running, exhausted,
+  or not applicable and what is missing. A family sets `focus` in
+  `[research]` to put its lines first and may switch or reorder approaches.
+- A coverage cell that gave nothing new three times is a ceiling and leaves
+  the recheck queue. Forms of other lines, forms in a script the source does
+  not use, and sources outside a person's epoch no longer count as gaps.
+- Data: search journals accept an optional `play` id. Existing rows stay
+  readable without migration.
+
 ## 0.41.3 — 19 November 2026
 
 - The ring is back, and now it belongs to every family in the tree: the

@@ -1,6 +1,6 @@
 [project]
 name = "familiar"
-version = "0.41.3"
+version = "0.50.0"
 description = "Agent-run engine that researches a family and tells its living history"
 readme = "README.md"
 license = "MIT"

@@ -40,7 +40,11 @@ spellings and explanations belong to the full card; uncertain links remain
 dotted. Long names wrap. An explicit owner placeholder is retained whole.
 `tree_metadata.surname_forms` is the reversible family decision; literal names
 and document contents are unchanged. The full card lists its own documentary
-spellings and explains a father's surname supplied from children.
+spellings and explains a father's surname supplied from children. A name has a
+form per reader language (`namePresentation.byLanguage`, from `name_forms`
+decisions); without one the family's main name stands. Documentary spellings of
+the whole name sit in the card's "More" with their documents
+(`docs/language-checks.md`).
 
 Optional `paths.world_map` declares an atlas (people, homes, places, paths; schema 1). Feed `play.json` attaches spots and panoramas by image asset and games by feed/chapter ID. Panorama assets and game truth.record crops must be registered media. Public map prose is withheld for mixed protected places; hidden stops are removed from paths. The private host atlas retains all places; address fields and protected document rewards remain excluded.
 

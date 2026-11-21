@@ -9,9 +9,13 @@
       return response.ok ? await response.json() : fallback;
     } catch { return fallback; }
   };
-  const [config, links, reminders, user] = await Promise.all([
-    json('words.json', {}), reader ? json('asks-links.json', {}) : {},
-    json('asks-reminders.json', []), window.familiarDeskIdentity
+  const config = await json('words.json', {});
+  // The conversation in the reader's language when the build made one; otherwise the family's own.
+  const suffixOf = lang => lang !== config.source_language && (config.asks_languages || []).includes(lang) ? '.' + lang : '';
+  let suffix = suffixOf(document.documentElement.lang);
+  let [links, reminders, user] = await Promise.all([
+    reader ? json(`asks-links${suffix}.json`, {}) : {},
+    json(`asks-reminders${suffix}.json`, []), window.familiarDeskIdentity
   ]);
   const words = () => (config.languages?.[document.documentElement.lang] || config).asks;
   if (!words()) return;
@@ -26,7 +30,7 @@
   };
   const link = (id, text, kids = false) => {
     const node = el('a', '', text);
-    node.href = path('asks.html') + (kids ? '?mode=kids' : '') + '#ask-' + encodeURIComponent(id);
+    node.href = path(`asks${suffix}.html`) + (kids ? '?mode=kids' : '') + '#ask-' + encodeURIComponent(id);
     return node;
   };
   const recent = id => Date.now() - (responses[id]?.at || 0) < 7 * 86400000;
@@ -163,10 +167,12 @@
         const body = panel.querySelector('.body'), person = panel.dataset.feedbackPerson;
         const old = body?.querySelector('.ask-on-card');
         const items = links.cards?.[person];
-        if (old && (!items || old.dataset.person !== person)) old.remove();
-        if (body && items && (!old || old.dataset.person !== person)) {
+        const shown = old && old.dataset.person === person && old.dataset.suffix === suffix;
+        if (old && (!items || !shown)) old.remove();
+        if (body && items && !shown) {
           const section = el('section', 'ask-on-card group');
           section.dataset.person = person;
+          section.dataset.suffix = suffix;
           // Two asks are an invitation; the whole list lives on the relatives page.
           section.append(el('h3', '', w.on_card), ...items.slice(0, 2).map(item => link(item.id, item.text)));
           if (items.length > 2) { const all = link(items[2].id, w.title + ' →'); all.className = 'ask-all'; section.append(all); }
@@ -184,7 +190,7 @@
         const kids = feed.dataset.feedbackTextMode === 'kids' && !!item?.child;
         const text = kids ? item.child : item?.text;
         const old = body.querySelector('.ask-in-feed');
-        const signature = JSON.stringify([item?.id, text, found]);
+        const signature = JSON.stringify([item?.id, text, found, suffix]);
         if (old && old.dataset.ask !== signature) old.remove();
         if ((item || found) && (!old || !old.isConnected)) {
           const aside = el('aside', 'ask-in-feed');
@@ -203,6 +209,15 @@
     };
     new MutationObserver(schedule).observe(reader, {childList: true, subtree: true, attributes: true,
       attributeFilter: ['data-feedback-feed', 'data-feedback-step', 'data-feedback-text-mode', 'data-feedback-person', 'data-person']});
+    // The reader switched language: the same asks in that language, when the build made them.
+    new MutationObserver(async () => {
+      const next = suffixOf(document.documentElement.lang);
+      if (next === suffix) return;
+      const loaded = await json(`asks-links${next}.json`, null);
+      if (!loaded) return;
+      [links, suffix] = [loaded, next];
+      schedule();
+    }).observe(document.documentElement, {attributes: true, attributeFilter: ['lang']});
     update();
   }
 })();

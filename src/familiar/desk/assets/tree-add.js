@@ -16,9 +16,12 @@ CHANGES_WITH:
   if (!document.querySelector('#root')) return;
   const identity = await window.familiarDeskIdentity;
   if (identity?.role === 'reader') return;
-  const [graph, show, words, profile] = await Promise.all(['/graph.json', '/desk/show.json', '/desk/words.json', '/reader-profile.json']
+  const [graph, show, allWords, profile] = await Promise.all(['/graph.json', '/desk/show.json', '/desk/words.json', '/reader-profile.json']
     .map(async path => (await fetch(path)).json()));
-  const w = words.show, people = graph.people || {}, family = profile.family?.id || document.title;
+  // Words follow the reader's language; the sheet is made in the language shown when it loads.
+  const wordsIn = () => allWords.languages?.[document.documentElement.lang] || allWords;
+  let words = wordsIn(), w = words.show;
+  const people = graph.people || {}, family = profile.family?.id || document.title;
   const storage = 'familiar-desk-pending:' + family;
   const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = text; return n; };
   const display = id => {
@@ -170,6 +173,10 @@ CHANGES_WITH:
   const kin = el('p', 'desk-add-kin'), kinLink = el('button', 'link', '+ ' + w.add_person);
   kinLink.type = 'button'; kinLink.onclick = () => open(kin.dataset.person);
   kin.append(kinLink);
+  new MutationObserver(() => {
+    words = wordsIn(); w = words.show; kinLink.textContent = '+ ' + w.add_person;
+    done.textContent = w.build_done; hint.firstChild.textContent = w.build_hint; controls();
+  }).observe(document.documentElement, {attributes: true, attributeFilter: ['lang']});
   function panelEntry() {
     const panel = document.querySelector('.panel[data-feedback-person]'), body = panel?.querySelector('.body');
     const id = panel?.dataset.feedbackPerson;

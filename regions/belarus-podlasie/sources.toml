@@ -116,7 +116,7 @@ basis = "Existing saved Full-Text journal labels; channel separation only, no ne
 [[source]]
 id = "geneteka"
 search_languages = ["pl", "ru", "be", "la"]
-search_scripts = ["Latn", "Cyrl"]
+search_scripts = ["Latn"]
 planning_requires = "parish"
 title = "Geneteka"
 kind = "index"
@@ -158,6 +158,9 @@ basis = "Start page seen on 2026-11-12: title, image count, list of voivodeships
 
 [[source]]
 id = "eais"
+holder_country = "LT"
+catalogue_languages = ["lt"]
+catalogue_scripts = ["Latn", "Cyrl"]
 title = "EAIS"
 kind = "archive"
 classes = ["parish-register", "census-revision", "inventory"]
@@ -178,6 +181,9 @@ basis = "Прежняя проверка Familiar 29.10.2026: поиск и ск
 
 [[source]]
 id = "epaveldas"
+holder_country = "LT"
+catalogue_languages = ["lt"]
+catalogue_scripts = ["Latn"]
 title = "Epaveldas"
 kind = "library"
 classes = ["inventory", "parish-register"]
@@ -198,6 +204,9 @@ basis = "Search listings of the portal's own pages and its guide on 2026-11-12; 
 
 [[source]]
 id = "aab"
+holder_country = "PL"
+catalogue_languages = ["pl"]
+catalogue_scripts = ["Latn"]
 title = "Archiwum Archidiecezjalne w Białymstoku"
 kind = "archive"
 classes = ["parish-register"]
@@ -218,6 +227,9 @@ basis = "Inventory files read in the pilot; on 2026-11-12 the archive's start pa
 
 [[source]]
 id = "niab"
+holder_country = "BY"
+catalogue_languages = ["be", "ru"]
+catalogue_scripts = ["Cyrl"]
 title = "NIAB"
 kind = "archive"
 classes = ["parish-register", "census-revision", "inventory", "civil-register"]
@@ -282,6 +294,7 @@ basis = "Host signed in; search worked."
 
 [[source]]
 id = "szukajwarchiwach"
+holder_country = "PL"
 search_languages = ["pl"]
 search_scripts = ["Latn"]
 title = "Szukaj w Archiwach"
@@ -304,6 +317,9 @@ basis = "Search used through a pilot recipe."
 
 [[source]]
 id = "agad"
+holder_country = "PL"
+catalogue_languages = ["pl"]
+catalogue_scripts = ["Latn"]
 title = "AGAD"
 kind = "archive"
 classes = ["inventory", "parish-register"]
@@ -406,6 +422,9 @@ basis = "The archive's page on the state archives portal read."
 
 [[source]]
 id = "archives-by"
+holder_country = "BY"
+catalogue_languages = ["be", "ru"]
+catalogue_scripts = ["Cyrl"]
 title = "Архивы Беларуси"
 kind = "reference"
 classes = ["archive-guide"]
@@ -774,7 +793,7 @@ basis = "Used in the pilot as background."
 id = "wilno-churches-1910"
 title = "Forum Rodów Grodzieńskich: churches and chapels of the Vilna diocese in 1910"
 kind = "reference"
-classes = ["parish-register"]
+classes = ["parish-register", "record-keeper"]
 countries = ["BY", "PL", "LT"]
 years = [1832, 1912]
 holds = "Deanery-by-deanery list of Catholic churches and chapels, including suppressions, transfers and temporary worship; a forum transcription attributed to Biskupstwo wileńskie, Wilno 1912."
@@ -1205,7 +1224,7 @@ basis = "ex-ussr-kinship-research v1.44.0, references/seed-sources.md, стро�
 id = "vgd"
 title = "ВГД"
 kind = "finding-aid"
-classes = ["archive-guide"]
+classes = ["archive-guide", "forum"]
 countries = []
 years = []
 holds = "Генеалогический форум: обсуждения, сообщения об архивах и семейные наводки."
@@ -1480,7 +1499,7 @@ basis = "Одна попытка получила HTTP 403; сведения, п
 id = "rody-grodzienskie"
 title = "Forum Rodów Grodzieńskich"
 kind = "finding-aid"
-classes = ["archive-guide", "parish-register"]
+classes = ["archive-guide", "parish-register", "forum"]
 countries = ["BY", "PL", "LT"]
 years = []
 holds = "Форум родов Гродненщины: поиск семей, мест и документов."
@@ -1501,7 +1520,7 @@ basis = "Главная прочитана: разделы поиска фами
 id = "forum-genealodzy"
 title = "Forum Genealodzy.pl"
 kind = "finding-aid"
-classes = ["archive-guide"]
+classes = ["archive-guide", "forum"]
 countries = ["PL"]
 years = []
 holds = "Кандидат: обсуждения польских генеалогов; сообщения не устанавливают полноту актов."

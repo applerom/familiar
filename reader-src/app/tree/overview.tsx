@@ -15,14 +15,22 @@ export function buildOverview(m:Model):Overview|null{
  // 1. ancestors of the two home people form the crown: each one sits above its child, branches share width by size
  const gen=new Map<string,number>(),at=new Map<string,number>();const weight=new Map<string,number>();
  const wt=(id:string,guard:Set<string>=new Set()):number=>{if(weight.has(id))return weight.get(id)!;if(guard.has(id))return 1;guard.add(id);const w=1+m.parents(id).slots.reduce((s,p)=>s+(p?wt(p.id,guard):0),0);weight.set(id,w);return w};
- const put=(id:string,a:number,b:number,g:number)=>{if(gen.has(id))return;gen.set(id,g);at.set(id,(a+b)/2);const [f,mo]=m.parents(id).slots;const fa=f&&!gen.has(f.id)?f.id:'',ma=mo&&!gen.has(mo.id)?mo.id:'';
-  if(fa&&ma){const share=Math.min(.8,Math.max(.2,wt(fa)/(wt(fa)+wt(ma))));const mid=a+(b-a)*share;put(fa,a,mid,g+1);put(ma,mid,b,g+1)}else if(fa||ma)put(fa||ma,a,b,g+1)};
- m.homes.forEach((h,i)=>put(h,i/m.homes.length,(i+1)/m.homes.length,0));
+ // a side for every person: 0 the husband's, 1 the wife's, 2 the seam (the couple's children, an ancestor of both)
+ const two=m.homes.length===2;const side=new Map<string,number>();
+ const put=(id:string,a:number,b:number,g:number,s=0)=>{if(gen.has(id)){if(side.get(id)!==s)side.set(id,2);return}gen.set(id,g);side.set(id,s);m.parents(id).slots.forEach(p=>{if(p&&gen.has(p.id)&&side.get(p.id)!==s)side.set(p.id,2)});at.set(id,(a+b)/2);const [f,mo]=m.parents(id).slots;const fa=f&&!gen.has(f.id)?f.id:'',ma=mo&&!gen.has(mo.id)?mo.id:'';
+  if(fa&&ma){const share=Math.min(.8,Math.max(.2,wt(fa)/(wt(fa)+wt(ma))));const mid=a+(b-a)*share;put(fa,a,mid,g+1,s);put(ma,mid,b,g+1,s)}else if(fa||ma)put(fa||ma,a,b,g+1,s)};
+ m.homes.forEach((h,i)=>put(h,i/m.homes.length,(i+1)/m.homes.length,0,i));
+ // the ancestors of an ancestor of both belong to both as well: they stand on the seam
+ const onSeam=[...side].filter(([,s])=>s===2).map(([id])=>id);
+ for(let i=0;i<onSeam.length;i++)m.parents(onSeam[i]).slots.forEach(p=>{if(p&&gen.has(p.id)&&side.get(p.id)!==2){side.set(p.id,2);onSeam.push(p.id)}});
+ for(const id of onSeam)at.set(id,.5);
  // 2. everyone else hangs next to the nearest placed relative
  const queue=[...gen.keys()];
  for(let i=0;i<queue.length;i++){const c=queue[i];const g=gen.get(c)!;
   const next:[string,number][]=[...ups(c).map(p=>[p,g+1] as [string,number]),...m.children(c).map(k=>[k,g-1] as [string,number]),...m.spouses(c).map(s=>[s,g] as [string,number])];
-  for(const [n,ng] of next){if(!gen.has(n)&&!m.info[n].placeholder){gen.set(n,ng);at.set(n,at.get(c)!);queue.push(n)}}}
+  for(const [n,ng] of next){if(!gen.has(n)&&!m.info[n].placeholder){gen.set(n,ng);at.set(n,at.get(c)!);queue.push(n);
+   // a child of the couple stands on the seam; everyone else on the side of the relative they hang next to
+   side.set(n,two&&m.homes.every(h=>ups(n).includes(h))?2:side.get(c)!)}}}
  const links:[string,string][]=[];const seen=new Set<string>();for(const id of queue)ups(id).forEach(p=>{if(gen.has(p)&&!seen.has(id+'|'+p)){seen.add(id+'|'+p);links.push([id,p])}});
  // 3. years: a known birth year, otherwise the average of parents + 28, children − 28 and partners, settled over a few passes
  const years=new Map<string,number>();const estimated=new Set<string>();
@@ -30,7 +38,7 @@ export function buildOverview(m:Model):Overview|null{
  const free:string[]=[];
  for(const id of queue){const i=m.info[id];const y=i.birth??i.guess?.exact;if(y)years.set(id,y);if(!i.birth)estimated.add(id);if(!y)free.push(id)}
  for(let pass=0;pass<40;pass++){let changed=false;
-  for(const id of free){const c:number[]=[];ups(id).forEach(p=>{const y=years.get(p);if(y!==undefined)c.push(y+STEP)});m.children(id).forEach(k=>{const y=years.get(k);if(y!==undefined)c.push(y-STEP)});m.spouses(id).forEach(s=>{const y=years.get(s);if(y!==undefined)c.push(y)});
+  for(const id of free){const c:number[]=[];m.parents(id).slots.forEach(s=>{const y=s&&years.get(s.id);if(y)c.push(y+STEP*(1+(s.gap||0)))});m.parents(id).extra.forEach(s=>{const y=years.get(s.id);if(y!==undefined)c.push(y+STEP)});m.children(id).forEach(k=>{const y=years.get(k);if(y!==undefined)c.push(y-STEP)});m.spouses(id).forEach(s=>{const y=years.get(s);if(y!==undefined)c.push(y)});
    if(!c.length)continue;const v=Math.round(c.reduce((a,b)=>a+b,0)/c.length);if(years.get(id)!==v){years.set(id,v);changed=true}}
   if(!changed)break}
  const home0=years.get(m.homes[0])??1970;
@@ -43,14 +51,23 @@ export function buildOverview(m:Model):Overview|null{
  const W=Math.max(900,widest*SP*1.15);
  const ys=[...years.values()];const y0=Math.floor((Math.min(...ys)-8)/25)*25,y1=Math.ceil((Math.max(...ys)+6)/25)*25;
  const pos=new Map<string,{x:number;y:number}>();
- for(const k of keys){const row=rowsMap.get(k)!.sort((a,b)=>at.get(a)!-at.get(b)!||a.localeCompare(b));const xs=row.map(id=>at.get(id)!*W);
-  for(let pass=0;pass<60;pass++){let moved=false;for(let i=1;i<xs.length;i++){const d=xs[i]-xs[i-1];if(d<SP){const push=(SP-d)/2;xs[i-1]-=push;xs[i]+=push;moved=true}}if(!moved)break}
-  row.forEach((id,i)=>pos.set(id,{x:xs[i],y:(years.get(id)!-y0)*PPY}))}
- // dots of neighbouring generations can land on the same year: nudge them apart sideways until nobody touches
- const all=[...pos.values()];
- for(let pass=0;pass<14;pass++){all.sort((a,b)=>a.x-b.x);let moved=false;
-  for(let i=0;i<all.length;i++)for(let j=i+1;j<all.length&&all[j].x-all[i].x<SP*.9;j++){const A=all[i],B=all[j];if(Math.abs(A.y-B.y)<16){const push=(SP*.9-(B.x-A.x))/2+.5;A.x-=push;B.x+=push;moved=true}}
+ // the husband's side never crosses to the wife's half and back: a crowded side spreads outwards, not over the other
+ const seam=W/2,sideOf=(id:string)=>two?side.get(id)??2:2;
+ const spread=(xs:number[])=>{for(let pass=0;pass<60;pass++){let moved=false;for(let i=1;i<xs.length;i++){const d=xs[i]-xs[i-1];if(d<SP){const push=(SP-d)/2;xs[i-1]-=push;xs[i]+=push;moved=true}}if(!moved)break}return xs};
+ for(const k of keys){const row=rowsMap.get(k)!.sort((a,b)=>at.get(a)!-at.get(b)!||a.localeCompare(b));
+  const [left,mid,right]=[0,2,1].map(s=>row.filter(id=>sideOf(id)===s));const [xl,xm,xr]=[left,mid,right].map(ids=>spread(ids.map(id=>at.get(id)!*W)));
+  if(two&&xm.length){const c=(xm[0]+xm.at(-1)!)/2;xm.forEach((x,i)=>xm[i]=x-c+seam)}
+  const lo=xm.length?xm[0]-SP:seam-SP,hi=xm.length?xm.at(-1)!+SP:seam+SP;
+  const over=xl.length?Math.max(0,xl.at(-1)!-lo):0,under=xr.length?Math.max(0,hi-xr[0]):0;
+  [...left.map((id,i)=>[id,xl[i]-over]),...mid.map((id,i)=>[id,xm[i]]),...right.map((id,i)=>[id,xr[i]+under])].forEach(([id,x])=>pos.set(id as string,{x:x as number,y:(years.get(id as string)!-y0)*PPY}))}
+ // dots of neighbouring generations can land on the same year: nudge them apart sideways until nobody touches;
+ // a dot of a side only moves outwards, away from the seam
+ const all=[...pos].map(([id,p])=>Object.assign(p,{s:sideOf(id)}));
+ for(let pass=0;pass<30;pass++){all.sort((a,b)=>a.x-b.x);let moved=false;
+  for(let i=0;i<all.length;i++)for(let j=i+1;j<all.length&&all[j].x-all[i].x<SP*.9;j++){const A=all[i],B=all[j];if(Math.abs(A.y-B.y)<16){const push=(SP*.9-(B.x-A.x))/2+.5;
+   if(A.s===0&&B.s===0||A.s===0&&B.s===2)A.x-=push*2;else if(A.s===1&&B.s===1||A.s===2&&B.s===1)B.x+=push*2;else if(A.s===2&&B.s===2){A.x-=push;B.x+=push}else continue;moved=true}}
   if(!moved)break}
+ for(const p of all)delete (p as {s?:number}).s;
  const minX=Math.min(...[...pos.values()].map(p=>p.x));const maxX=Math.max(...[...pos.values()].map(p=>p.x));
  for(const p of pos.values())p.x-=minX;
  const axis:{y:number;label:string;major:boolean}[]=[];for(let y=y0;y<=y1;y+=25)axis.push({y:(y-y0)*PPY,label:String(y),major:y%50===0});

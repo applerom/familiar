@@ -19,6 +19,20 @@ CHANGES_WITH:
   const identity = await window.familiarDeskIdentity;
   const config = await (await fetch('/desk/words.json')).json();
   const words = () => config.languages?.[document.documentElement.lang] || config;
+  // A desk page exists in the source language and in each reader language that has its translation.
+  const localPage = (page, lang = document.documentElement.lang) =>
+    lang !== config.source_language && (config.page_languages?.[page] || []).includes(lang)
+      ? `/desk/${page}.${lang}.html` : `/desk/${page}.html`;
+  const chosenLanguage = () => {
+    const prefix = 'familiar:' + encodeURIComponent(config.family_id) + ':';
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const name = localStorage.key(i);
+        if (name.startsWith(prefix) && name.endsWith(':family-language')) return localStorage.getItem(name);
+      }
+    } catch { /* storage closed: the page keeps its own language */ }
+    return '';
+  };
   const el = (tag, cls, text) => {
     const n = document.createElement(tag); if (cls) n.className = cls;
     if (text !== undefined) n.textContent = text; return n;
@@ -192,6 +206,11 @@ CHANGES_WITH:
     for (const link of nav.children) {
       const label = words()[link.dataset.deskLabel];
       if (label !== undefined && link.textContent !== label) link.textContent = label;
+      const page = {nav_asks: 'asks', nav_correspondence: 'correspondence', nav_progress: 'progress'}[link.dataset.deskLabel];
+      if (page) {
+        const href = localPage(page);
+        if (link.getAttribute('href') !== href) link.setAttribute('href', href);
+      }
       const active = link.pathname === '/' ? location.pathname === '/' && link.hash === '#view=' + view
         : location.pathname === link.pathname;
       if (active) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current');
@@ -203,6 +222,11 @@ CHANGES_WITH:
       }
     }
   }
+  // A desk page shown in one language opens itself in the reader's language when that version exists.
+  const here = location.pathname.match(/^\/desk\/(asks|correspondence|progress)(?:\.[a-z-]+)?\.html$/);
+  const chosen = chosenLanguage();
+  const target = here && chosen && (config.languages || {})[chosen] && localPage(here[1], chosen);
+  if (target && target !== location.pathname) { location.replace(target + location.hash); return; }
   new MutationObserver(update).observe(document.querySelector('#root') || nav, {childList: true, subtree: true});
   new MutationObserver(update).observe(document.documentElement, {attributes: true, attributeFilter: ['lang']});
   update(); document.dispatchEvent(new Event('familiar-desk-ready'));

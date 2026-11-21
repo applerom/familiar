@@ -53,6 +53,40 @@ def candidates(record):
     return tuple(sorted(refs, key=lambda scan: scan.locator.lower().endswith('.pdf')))
 
 
+def missing_images(instance, graph):
+    """Records the tree cites whose named images are neither in the family nor in the source archive.
+
+    Without the image the document page shows its reading alone; a hint, never a blocker.
+    """
+    import json
+    cited = {source.get('record', sid) for sid, source in graph.get('sources', {}).items()}
+    originals, result = instance.path('originals'), []
+    for file in sorted(instance.path('records').rglob('*.json')):
+        try:
+            record = json.loads(file.read_text(encoding='utf-8-sig'))
+        except (OSError, ValueError):
+            continue
+        if not isinstance(record, dict) or record.get('id') not in cited or not (refs := candidates(record)):
+            continue
+        if not any((p := capture_path(instance, r)) and p.is_file() or (originals / r.locator).is_file() for r in refs):
+            # An archive reference whose file sits in the family instead is a wrong prefix, not a lost image.
+            moved = [r.locator[8:] for r in refs if r.locator.startswith('archive:')
+                     and _present(instance, r.locator[8:])]
+            result.append({'location': f"record:{record['id']}", 'images': [r.locator for r in refs][:3],
+                           'message': (f'the image is in the family at {moved[0]}, not in originals; '
+                                       'write that path without archive:') if moved else
+                                      'names an image that is neither in the family nor in originals; '
+                                      'the document page shows the reading without it'})
+    return result
+
+
+def _present(instance, value):
+    try:
+        return instance.local(value).is_file()
+    except ValueError:
+        return False
+
+
 def capture_path(instance, reference, *, resolve=Path.resolve):
     locator = reference.locator
     originals = instance.path('originals')
@@ -63,6 +97,13 @@ def capture_path(instance, reference, *, resolve=Path.resolve):
     source_root = getattr(instance, '_snapshot_source_root', instance.root)
     if Path(locator).is_absolute() and requested.is_relative_to(source_root):
         requested = instance.root / requested.relative_to(source_root)
+    if not Path(locator).is_absolute():
+        try:
+            mapped = instance.local(locator)  # captures/originals kept outside git resolve through the map
+        except ValueError:
+            mapped = None
+        if mapped is not None and not mapped.is_relative_to(instance.root):
+            return mapped
     path = resolve(requested)
     return path if path.is_relative_to(instance.root) or path.is_relative_to(originals) else None
 

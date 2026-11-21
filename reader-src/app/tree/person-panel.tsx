@@ -1,8 +1,8 @@
 'use client';
-import {feedbackEnabled} from '../reader-profile';
+import {feedbackEnabled,inLanguage} from '../reader-profile';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {createPortal} from 'react-dom';
-import {humanText,kinPhrase,relationPhrase,lifeLabel,guessBasis,placeLabel,lifeFactText,translated,type Model,type Row,type Slot} from './model';
+import {humanText,kinPhrase,relationPhrase,lifeLabel,guessBasis,placeLabel,lifeFactText,translated,DOCUMENT_NAME_TYPES,type Model,type Row,type Slot} from './model';
 import {KinshipExplanation} from '../kinship-words';
 import Feedback from './feedback';
 import ConfirmationMark,{confirmationText} from './confirmation';
@@ -63,7 +63,7 @@ export default function PersonPanel({data,model,id,go,showFamily,labels,language
  const meHits=meNeedle?Object.values(model.info).filter(i=>!i.placeholder&&(i.name+' '+i.short).toLocaleLowerCase().includes(meNeedle)).sort((a,b)=>(b.birth??0)-(a.birth??0)).slice(0,8):[];
  const documentary=(f:Row)=>(f.sources||[]).some((sid:string)=>['archive-record','home-paper','record','document','image'].includes(data.sources[sid]?.kind)||data.sources[sid]?.record&&data.sources[sid]?.kind!=='memory'&&data.sources[sid]?.kind!=='gedcom'&&data.sources[sid]?.kind!=='import');
  const weak=(f:Row)=>typeof f.weight==='number'&&f.weight<SHOWN_FROM;
- const facts:Row[]=useMemo(()=>(p.facts||[]).filter((f:Row,i:number,a:Row[])=>!weak(f)&&f.text!==info.fullName&&a.findIndex(g=>g.text===f.text)===i).sort((a:Row,b:Row)=>Number(documentary(b))-Number(documentary(a))||Number(a.scope==='search')-Number(b.scope==='search')),[p,data]);
+ const facts:Row[]=useMemo(()=>(p.facts||[]).filter((f:Row,i:number,a:Row[])=>!weak(f)&&f.text!==info.fullName&&f.text!==p.name&&f.text!==p.namePresentation?.full&&a.findIndex(g=>g.text===f.text)===i).sort((a:Row,b:Row)=>Number(documentary(b))-Number(documentary(a))||Number(a.scope==='search')-Number(b.scope==='search')),[p,data]);
  const ORDER=['Рожд','Крещ','Образ','Брак','Иммигр','Прожив','Смерт','Погреб'];const rankLife=(f:Row)=>{const i=ORDER.findIndex(k=>(f.label||'').startsWith(k));return i<0?ORDER.length:i};
  const lifeFacts=facts.filter(f=>!f.detailOnly&&(f.eventType||LIFE.test(f.label||''))&&f.scope!=='search').sort((a,b)=>Number(documentary(b))-Number(documentary(a))||rankLife(a)-rankLife(b));const other=facts.filter(f=>!f.detailOnly&&!lifeFacts.includes(f));
  const found=other.filter(f=>documentary(f)||f.status==='verified');const memories=other.filter(f=>!found.includes(f));const details=facts.filter(f=>f.detailOnly);
@@ -86,10 +86,13 @@ export default function PersonPanel({data,model,id,go,showFamily,labels,language
  // A story may have a simple part first and details after a line of dashes; illustrations are period pictures, not family documents.
  const paired=(s:Row)=>s.kind==='photo-restoration'||s.ours?.kind==='photo-restoration';
  const restored=[...(p.illustrations||[]),...(p.media||[])].filter(paired);
- const pics:Doc[]=useMemo(()=>(p.illustrations||[]).filter((s:Row)=>s.asset&&!paired(s)).map((s:Row,i:number)=>({sid:'ill:'+i,title:[s.caption?.[language]||s.caption?.en||s.caption?.ru||s.caption,s.credit].filter(Boolean).join(' · '),asset:s.asset,photo:true,href:s.url,hrefLabel:labels.storyPicSource})),[p,language,labels]);
+ const pics:Doc[]=useMemo(()=>(p.illustrations||[]).filter((s:Row)=>s.asset&&!paired(s)).map((s:Row,i:number)=>({sid:'ill:'+i,title:[inLanguage(s.caption,language),s.credit].filter(Boolean).join(' · '),asset:s.asset,photo:true,href:s.url,hrefLabel:labels.storyPicSource})),[p,language,labels]);
  const viewer=[...docs,...pics];
  const known=[...found,...memories];const shown=all?known:known.slice(0,4);
- const {slots,extra}=model.parents(id);const parents=slots.filter(Boolean) as Slot[];
+ const {slots,extra}=model.parents(id);const parents=slots.filter(s=>s&&!s.gap&&!s.weak) as Slot[];const leads=slots.filter(s=>s&&(s.gap||s.weak)) as Slot[];const downs=model.descendantsBelow(id);
+ // a possible ancestor across generations nobody has found yet: the recorded number or range of the missing ones
+ const gapText=(s:Slot)=>{const lo=Number(s.link?.missing)||s.gap||0,hi=Number(s.link?.missing_max)||lo;return String(labels.lineGap||'{n}').replace('{n}',hi>lo?`${lo}–${hi}`:String(lo))};
+ const linked=slots.filter(s=>s?.link&&translated(s.link.basis||s.link.text,language)) as Slot[];const sameAs:Row[]=(p.probableIdentities||[]).filter((x:Row)=>x.basis);
  const spouses=model.spouses(id),kids=model.children(id),sibs=model.siblings(id),spouseLink=(s:string)=>model.spouseConnection(id,s),others=data.associations?.filter((a:Row)=>(a.from===id||a.to===id)&&a.type!=='sibling'&&a.type!=='spouse').map((a:Row)=>({id:a.from===id?a.to:a.from,label:a.label,status:a.status}))||[];
  const married=(p.names||[]).filter((n:Row)=>n.married_name).map((n:Row)=>n.married_name);
  const kin=model.kinship(id).map(k=>kinPhrase(k,labels,language));const {simple,more}=storyParts(storyText(p.story,language));
@@ -103,7 +106,10 @@ export default function PersonPanel({data,model,id,go,showFamily,labels,language
  const evidenceSids=model.relationshipEvidence(id).filter(sid=>data.sources[sid]&&!PLACEHOLDER.test(data.sources[sid].title||''));
  const confirmation=info.confirmation&&info.confirmation.level!=='mention'?confirmationText(info.confirmation,language):'';
  const connection=translated(info.connectionNote,language),dateBasis=translated(info.dateBasis,language),birthGuess=guessBasis(info,model,language);
- const hasEvidence=!!(confirmation||evidenceSids.length||connection||dateBasis||birthGuess);
+ // how a document spelled the name (the old orthography, the case of the act, Latin): with its document, in "More"
+ const writtenNames=[...new Map((p.names||[]).filter((n:Row)=>DOCUMENT_NAME_TYPES.includes(n.type)&&typeof n.display==='string'&&n.display.trim()&&n.display.trim()!==info.fullName&&n.display.trim()!==info.short)
+  .map((n:Row)=>[n.display.trim(),(n.provenance||[]).map((sid:string)=>data.sources[sid]?.title).filter((t:string)=>t&&!PLACEHOLDER.test(t))] as [string,string[]])).entries()];
+ const hasEvidence=!!(confirmation||evidenceSids.length||connection||dateBasis||birthGuess||linked.length||sameAs.length||writtenNames.length);
  const incompleteName=!(p.names||[]).some((n:Row)=>n.given&&n.surname);
  return <aside ref={root} data-feedback-person={id} data-feedback-person-label={info.short} className={'panel'+(expanded?' open':'')} aria-live="polite">
   <div className="panel-peek"><button className="peek" onClick={()=>setExpanded(!expanded)} aria-expanded={expanded}>
@@ -130,7 +136,7 @@ export default function PersonPanel({data,model,id,go,showFamily,labels,language
     <div className="story-simple">{paras(simple)}</div>
     {pics.length>0&&<div className="story-pics">{pics.map((d,i)=><button key={d.sid} onClick={()=>setLb(docs.length+i)}><figure>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={d.asset} alt={d.title} loading="lazy"/><figcaption>{d.title.split(' · ')[0]}</figcaption></figure></button>)}</div>}
     {more&&<details className="story-more"><summary>{labels.storyMore}</summary>{paras(more)}</details>}
-    {feedHits.length>0&&<div className="feed-hits">{feedHits.map(h=><button key={h.feed.id+h.step} onClick={()=>openFeed?.(h.feed.id,h.step)}><small>{labels.feedIn}</small><b>{tr(h.feed.title,language)}</b><span>{h.feed.chapters[h.step].year} · {tr(h.feed.chapters[h.step].title,language)}</span></button>)}</div>}
+    {feedHits.length>0&&<div className="feed-hits">{feedHits.map(h=><button key={h.feed.id+h.step} onClick={()=>openFeed?.(h.feed.id,h.step)}><small>{labels.feedIn}</small><b>{tr(h.feed.title,language)}</b><span>{tr(h.feed.chapters[h.step].year,language)} · {tr(h.feed.chapters[h.step].title,language)}</span></button>)}</div>}
    </section>}
    {connection&&info.connectionShort&&Object.keys(info.connectionShort).length>0&&<p className="connection-lead"><b>{labels.connection}</b><br/>{connection}</p>}
    {(docs.length>0||growth.documents.some(sid=>!dropped.has(sid)))&&<section className="group"><h3>{labels.docs}</h3><div className="strip">{docs.map((d,i)=><button key={d.sid} className={'thumb'+(d.view==='detail'?' record':'')} onClick={()=>setLb(i)}>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={d.asset} alt={d.title} loading="lazy"/><i>{d.view?labels[d.view]:d.kind===3?labels.docGrave:d.kind===2?labels.docMention:d.photo?labels.docPhoto:labels.original}</i><span>{d.title}</span></button>)}</div>{growth.documents.filter(sid=>!dropped.has(sid)&&!docs.some(d=>d.sourceSid===sid||d.asset===data.sources[sid]?.asset)).map(sid=>{const s=data.sources[sid];return <p className="note" key={sid}>{s.asset?<a href={s.asset} target="_blank" rel="noreferrer">{s.title||labels.source} ↗</a>:s.title||labels.source}</p>})}</section>}
@@ -138,6 +144,9 @@ export default function PersonPanel({data,model,id,go,showFamily,labels,language
    {shown.length>0&&<section className="group"><h3>{labels.known}</h3>{shown.map((f:Row,i:number)=><Fact key={`${f.eventKey||'fact'}:${i}`} f={f} data={data} labels={labels} subject={id} language={language} docs={docs} open={setLb}/>)}{known.length>4&&<button className="more wide" onClick={()=>setAll(!all)}>{all?labels.less:labels.showAll}</button>}</section>}
    {lifeFacts.length>0&&<section className="group"><h3>{labels.life}</h3><ul className="life-list">{lifeFacts.map((f,i)=><li key={i}><b>{f.label.replace(/\s*из дерева$/i,'')}</b><span>{lifeFactText(f.text,language)}{f.basis&&<details><summary>{labels.more}</summary><p className="note">{translated(f.basis,language)}</p></details>}{(f.sources||[]).map((sid:string)=>{const s=data.sources[sid];return s?.asset?<a key={sid} className="source-links" href={s.asset} target="_blank" rel="noreferrer">{labels.feedFullDoc} ↗</a>:null})}</span></li>)}</ul></section>}
    {group(labels.parents,parents.map(s=>chip(s.id,model.connectionLevel(s)===3)))}
+   {group(labels.lineLeadsTo,leads.filter(s=>!s.weak).map(s=>chip(s.id,model.connectionLevel(s)===3,gapText(s))))}
+   {group(labels.lineMaybe,leads.filter(s=>s.weak).map(s=>chip(s.id,true,s.gap?gapText(s):'')))}
+   {group(labels.lineDown,downs.map(d=>chip(d.id,model.connectionLevel(d.slot)>1,d.slot.gap?gapText(d.slot):'')))}
    {group(labels.spouses,spouses.map(s=>chip(s,model.connectionLevel(spouseLink(s))===3)))}
    {group(labels.children,kids.map(k=>chip(k)))}
    {group(labels.siblings,sibs.map(s=>chip(s)))}
@@ -146,8 +155,11 @@ export default function PersonPanel({data,model,id,go,showFamily,labels,language
    {(hasEvidence||p.coverage||details.length>0||p.retiredFacts?.length>0)&&<details className="evidence card-more"><summary>{labels.more}</summary>
     {hasEvidence&&<section><h4>{labels.evidence}</h4>
     {confirmation&&<p>{confirmation}</p>}
+    {writtenNames.length>0&&<p className="written-names"><b>{labels.writtenName}</b>{writtenNames.map(([name,titles])=><span key={name}><br/>{name}{titles.length>0&&<small> · {titles.join(' · ')}</small>}</span>)}</p>}
     {evidenceSids.length>0&&<p>{labels.evidenceBy} · {evidenceSids.length} {plural(evidenceSids.length,labels.sourcesCount,language)}:{' '}{evidenceSids.map((sid,i)=>{const source=data.sources[sid];return <span key={sid}>{i>0?' · ':''}{source.asset||source.url?<a href={source.asset||source.url} target="_blank" rel="noreferrer">{source.title}</a>:source.title}</span>})}</p>}
     {connection&&<p><b>{labels.connection}</b><br/>{connection}</p>}
+    {linked.map(s=><p key={'link:'+s.id}><b>{s.main&&s.gap?labels.mainLine:s.main?labels.mainLine+' · '+labels.assumption:s.weak?labels.lineMaybe:s.gap?labels.lineLeadsTo:labels.assumption}: {model.info[s.id]?.short}</b><br/>{translated(s.link!.basis||s.link!.text,language)}</p>)}
+    {sameAs.map((x:Row)=><p key={'same:'+x.alias}><b>{labels.sameAs}: {translated(x.name,language)}</b><br/>{translated(x.basis,language)}</p>)}
     {dateBasis&&<p><b>{labels.dateBasis}</b><br/>{dateBasis}</p>}
     {birthGuess&&<p className="birth-guess"><b>{labels.birthGuess}</b><br/>{birthGuess}</p>}
     </section>}

@@ -1,11 +1,12 @@
 'use client';
 import {useMemo} from 'react';
+import {inLanguage} from './reader-profile';
 import {kinPhrase,lifeLabel,lineTitle,placeLabel,type Model,type Row} from './tree/model';
 import type {Language} from './i18n';
 import {FeedCovers,type Feed} from './feed';
 const GRAVE=/памятник|могил|надгроб|grave|nagrob|· документ$/i;
 /** The simple, child-first part of a story: the text before the `---` line, or the whole story. */
-export function storyText(story:any,language:string){return typeof story==='string'?story:story?.[language]||story?.en||story?.ru||''}
+export function storyText(story:any,language:string){return inLanguage(story,language)}
 export function storyParts(text:string){const [simple,more]=text.split(/\n-{3,}\n/);return {simple:(simple||'').trim(),more:(more||'').trim()}}
 /** The picture that opens a story: a period picture, a family photograph, else the readable crop of the person's own record. */
 export function storyPicture(p:Row):{asset:string;kind:'period'|'photo'|'record'}|null{

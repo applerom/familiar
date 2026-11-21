@@ -5,6 +5,8 @@
 # - public output adapters share the full class-F verdict; private displays validate their selected record inputs [review: engine lead]
 # - chapter media omissions report the host and reader projections as advice [review: engine lead]
 # - every engine function that mutates, publishes or reads family data is a registered boundary and serializes only the sealed projection [review: engine lead]
+# - research lookups (forms, compare, person) are registered boundaries without the family verdict; they publish nothing [review: engine lead]
+# - one verdict or one checked call reads fixed inputs: derived reads are shared inside it; the final fingerprint comparison still rejects any change [review: engine lead]
 # CHANGES_WITH:
 # - MOD-HOST-TEXT (private host views use snapshot and a non-publishable working seal)
 # - MOD-RESEARCH-COVERAGE-DISPLAY (the host-private reader graph gets a person coverage block from the host instance)
@@ -21,6 +23,8 @@ projections produced here; the engine writer enforces own-item validation and
 checked generation commits. Private transforms do not certify their inputs.
 Historical truth and semantic interpretation of prose still require review.
 """
+from contextlib import contextmanager
+from contextvars import ContextVar
 from functools import wraps
 
 from familiar.instance.research_forms import CLEAN, PREVIEW
@@ -28,6 +32,38 @@ from familiar.instance.research_forms import CLEAN, PREVIEW
 from .research_forms import acceptance_error
 
 BOUNDARIES = {}
+QUARANTINE = {}  # family root -> rows the last verdict left waiting; desk build names them, publish counts them
+_FIXED = ContextVar('familiar_fixed_inputs', default=None)
+
+
+@contextmanager
+def fixed_inputs():
+    """One verdict or one checked call reads fixed inputs: derived reads are computed once.
+
+    Checked calls compare input fingerprints before and after, so a change during the
+    scope still fails; writers and transactions never open it.
+    """
+    if _FIXED.get() is not None:
+        yield
+        return
+    token = _FIXED.set({})
+    try:
+        yield
+    finally:
+        _FIXED.reset(token)
+
+
+def shared(instance, name, produce):
+    """produce() once per fixed-inputs scope and family view; callers treat the value as read-only."""
+    memo = _FIXED.get()
+    if memo is None:
+        return produce()
+    key = (name, str(instance.root), repr(sorted(instance.host_paths.items())),
+           *(bool(getattr(instance, flag, False)) for flag in (
+               '_display_scope', '_research_work_scope', '_carry_over_asks', '_immutable_snapshot')))
+    if key not in memo:
+        memo[key] = produce()
+    return memo[key]
 
 
 class GateBlocked(ValueError):
@@ -49,25 +85,33 @@ def boundary(kind):
                 from .writer import fresh
                 instance = fresh(instance)
                 instance._display_scope = False  # A private scope cannot narrow a public adapter.
-            checked_output = kind in {'output', 'research', 'tree-view', 'working'}
-            if checked_output:
-                from .writer import fingerprints
-                before = fingerprints(instance)
+            # Research lookups (forms, compare, person) answer the researcher from what they read and
+            # publish nothing: no family-wide verdict, so a half-written record never blocks them.
+            checked_output = kind in {'output', 'tree-view', 'working'}
             working_tree = (kind == 'working' or (kind == 'tree-view' and kwargs.get('view') == 'working') or
                             kwargs.get('host_private') is True or
                             (fn.__name__ == 'publication' and (args[0] if args else kwargs.get('kind')) in {'host', 'correspondence', 'reader-private'}))
-            if kind not in {'diagnostic', 'transaction', 'writer', 'consume'} and not working_tree:
+            gated = kind not in {'diagnostic', 'transaction', 'writer', 'consume', 'research'} and not working_tree
+
+            def verdict():
                 active = getattr(instance, 'instance', instance)
                 if not (getattr(active, '_legacy_rules', False) and 'schema_version' not in active.config):
                     require(active)
-            if checked_output:
+            if not checked_output:
+                if gated:
+                    verdict()
+                return fn(instance, *args, **kwargs)
+            from .writer import fingerprints
+            with fixed_inputs():
+                before = fingerprints(instance)
+                if gated:
+                    verdict()
                 if before != fingerprints(instance):
                     raise GateBlocked('Family gate blocked: inputs changed during validation')
                 result = fn(instance, *args, **kwargs)
                 if before != fingerprints(instance):
                     raise GateBlocked('Family gate blocked: inputs changed during output')
                 return result
-            return fn(instance, *args, **kwargs)
         BOUNDARIES[fn.__module__ + '.' + fn.__qualname__] = (kind, guarded)
         return guarded
     return decorate
@@ -91,6 +135,11 @@ def require_assertions(value):
 
 
 def evaluate(instance, registry=None):
+    with fixed_inputs():
+        return _evaluate(instance, registry)
+
+
+def _evaluate(instance, registry=None):
     from familiar.checks.engine import _inspect_family
     from familiar.rules.cascade import Registry
     from familiar.rules.roles import method_root
@@ -112,6 +161,7 @@ def evaluate(instance, registry=None):
         return {'valid': not blocked, 'blocked': blocked, 'forms': forms, 'coverage': [],
                 'findings': [configuration]}
     forms = _forms(instance)
+    QUARANTINE[str(getattr(instance, '_snapshot_source_root', instance.root))] = forms.get('quarantine', [])
     try:
         result = _inspect_family(registry)
     except (ValueError, OSError, TypeError, KeyError, AttributeError) as exc:
@@ -271,8 +321,10 @@ def publication(instance, kind, feed=None, *, for_review=False, tree_enrich=None
             family = dict(active.config['family'])
             family.setdefault('fictional', False)
             profile = scan(active, {'schema_version': 1, 'family': family, 'data': 'graph.json', 'reader_names': {}}, 'profile')
-            if media.keys() & documents.keys():
-                raise ValueError('registered media collides with generated documents')
+            if clash := sorted(media.keys() & documents.keys()):
+                raise ValueError(f'{len(clash)} registered media rows in media/manifest.json export a document page '
+                                 f'the engine now generates ({", ".join(clash[:3])}{", ..." if len(clash) > 3 else ""}); '
+                                 'run `familiar instance upgrade` or remove those rows (the files stay)')
             used = dependencies(used_assets(graph, media.keys() | documents.keys()), media, documents)
             files = {'graph.json': encode(graph), 'reader-profile.json': encode(profile),
                      **{key: value for key, value in documents.items() if key in used}}

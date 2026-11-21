@@ -1,11 +1,13 @@
 # START_MODULE_CONTRACT: MOD-SEARCH-VARIANTS
-# PURPOSE: Compare independent candidate fields using shared and family search forms without accepting identity.
+# PURPOSE: Expand a name or a place into the shared and family search forms; mark forms proposed by the key apart.
 # PRD_REF: docs/PRD.md#SOURCE-SEARCH
 # INVARIANTS:
-# - repeated evidence groups cannot promote a candidate to probable [review: engine lead]
+# - forms by key are marked and stay out of the default expansion, so they never become a required search form [review: engine lead]
 # - legacy form annotations remain metadata; sex/person/episode applicability never changes identity [review: engine lead]
 # CHANGES_WITH:
 # - MOD-INSTANCE-PACKS
+# - MOD-NAME-KEY
+# - MOD-MATCH-SCORE (identity score; replaces the former field-count compare)
 # :END_MODULE_CONTRACT
 import json
 import re
@@ -56,25 +58,47 @@ from familiar.instance.gate import boundary
 
 
 @boundary('research')
-def expand(instance, word, kind, year=None):
-    result = [word]
-    for entry in _entries(instance):
+def expand(instance, word, kind, year=None, by_key=False):
+    return _expand(instance, word, kind, year, by_key)
+
+
+@boundary('research')
+def forms(instance, words, kind, year=None):
+    """Marked forms of several words behind one family gate (the gate reads the whole family)."""
+    return {word: _expand(instance, word, kind, year, True) for word in words}
+
+
+def _expand(instance, word, kind, year=None, by_key=False):
+    """Dictionary forms of every entry holding the word. With by_key: marked rows, plus forms the family already
+    wrote whose key matches (via 'key'); those are suggestions, never required forms."""
+    entries = _entries(instance)
+    result, rows = [word], [{'text': word, 'via': 'word'}]
+    for entry in entries:
         if entry['kind'] != kind:
             continue
         forms = [f['text'] for f in entry['forms']
                  if year is None or not f.get('years') or f['years'][0] <= year <= f['years'][1]]
         if norm(word) in {norm(f) for f in forms}:
             result.extend(forms)
-    return list(dict.fromkeys(result))
-
-
-def compare(instance, fields, year=None):
-    """fields: left/right/kind/dependency_group; caller declares independence."""
-    matched, groups = [], set()
-    for field in fields:
-        forms = expand(instance, field['left'], field['kind'], year)
-        if norm(field['right']) in {norm(f) for f in forms}:
-            matched.append(field)
-            groups.add(field['dependency_group'])
-    return {'status': 'probable' if len(groups) >= 2 else 'possible' if groups else 'unmatched',
-                'matched': matched, 'independent_fields': len(groups), 'accepted': False}
+            rows.extend({'text': f, 'via': 'dictionary', 'from': entry.get('id')} for f in forms)
+    result = list(dict.fromkeys(result))
+    if not by_key:
+        return result
+    from .name_key import key_forms
+    seen, marked = set(), []
+    for row in rows:
+        if row['text'] not in seen:
+            seen.add(row['text'])
+            marked.append(row)
+    if kind == 'surname':
+        # A clan decision joins spellings the family decided are one surname: offered, marked, never required.
+        from familiar.tree.builder import read_json
+        from familiar.tree.surnames import clan_key
+        for row in read_json(instance.path('tree_metadata'), {}).get('surname_forms', []):
+            spellings = [row.get('form', ''), *row.get('variants', [])]
+            if clan_key(word) in {clan_key(f) for f in spellings}:
+                for text in spellings:
+                    if text and text not in seen:
+                        seen.add(text)
+                        marked.append({'text': text, 'via': 'clan', 'from': row.get('id')})
+    return marked + key_forms(instance, word, kind, seen, entries)

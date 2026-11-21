@@ -30,10 +30,49 @@ import json
 import math
 import re
 import unicodedata
+from pathlib import Path
 
 from .gate import boundary
 from .research_forms import request_storage_errors
 from familiar.check_policy import decision as check_decision
+
+
+APPLIED = 'contributions-applied.json'
+
+
+def applied_before(instance):
+    """Contributions a full check of this root has seen applied: losing one is an error, not quarantine."""
+    state = Path(getattr(instance, '_snapshot_state', None) or instance.path('state'))
+    root = str(getattr(instance, '_snapshot_source_root', instance.root))
+    try:
+        rows = json.loads((state / APPLIED).read_text(encoding='utf-8')).get('roots', {})
+        return set(rows.get(root, []))
+    except (OSError, ValueError, AttributeError):
+        return set()
+
+
+def remember_applied(instance, report):
+    """After a full check: what applied now, plus what applied before and still waits (stays an error)."""
+    from .writer import state_memory
+    root = str(instance.root)
+    try:
+        rows = json.loads((instance.path('state') / APPLIED).read_text(encoding='utf-8')).get('roots', {})
+    except (OSError, ValueError, AttributeError):
+        rows = {}
+    lost = {e['location'] for e in report.get('errors', []) if 'applied before' in e.get('message', '')}
+    keep = {f for f in rows.get(root, []) if str(instance.root / f) in lost}
+    now = sorted(set(report.get('applied_contributions', [])) | keep)
+    if rows.get(root) != now:
+        state_memory(instance, APPLIED, {'roots': dict(rows, **{root: now})})
+
+
+def _local_file(instance, value):
+    """A record's local file exists in the family or its host-mapped data (kept outside git)."""
+    from .model import InstanceError
+    try:
+        return instance.local(value).is_file()
+    except InstanceError:
+        return False
 
 
 def validate_changes(instance, paths):
@@ -83,8 +122,42 @@ def validate_changes(instance, paths):
         raise ValueError('; '.join(e['message'] for e in errors))
 
 
+def snapshot_key(instance):
+    """A clean git worktree (a family served from its commit): the verdict is a function of the commit's tree,
+    the attestations, the engine code and the host map. Anything else has no key and is checked in full."""
+    import subprocess
+    from familiar import __version__
+    if not (instance.root / '.git').is_file():
+        return None  # only a linked worktree (the serving copy); a working family folder pays nothing here
+    try:
+        def git(*args):
+            return subprocess.run(['git', '-C', str(instance.root), *args], capture_output=True, text=True,
+                                  timeout=30, check=True).stdout
+        if Path(git('rev-parse', '--show-toplevel').strip()).resolve() != instance.root or git('status', '--porcelain').strip():
+            return None
+        tree = git('rev-parse', 'HEAD^{tree}').strip()
+    except (OSError, subprocess.SubprocessError):
+        return None
+    package = Path(__file__).resolve().parents[1]
+    code = sorted((p.relative_to(package).as_posix(), p.stat().st_size, p.stat().st_mtime_ns)
+                  for p in package.rglob('*') if p.suffix in {'.py', '.json', '.md', '.toml'})
+    attestations = instance.path('state') / 'attestations.json'
+    seal = hashlib.sha256(attestations.read_bytes()).hexdigest() if attestations.is_file() else None
+    return hashlib.sha256(json.dumps([tree, seal, __version__, code, sorted(instance.host_paths.items())],
+                                     sort_keys=True).encode()).hexdigest()[:32]
+
+
 @boundary('diagnostic')
 def check(instance, *, paths=None, prefix=None):
+    if not (paths or prefix) and (key := snapshot_key(instance)):
+        memo = instance.path('state') / 'verdicts' / (key + '.json')
+        try:
+            return dict(json.loads(memo.read_text(encoding='utf-8')), verdict_cache='reused')
+        except (OSError, ValueError):
+            result = _full_check(instance)
+            from .writer import state_memory
+            state_memory(instance, 'verdicts/' + key + '.json', result, keep=8)
+            return result
     if paths or prefix:
         selected = set()
         for value in paths or []:
@@ -116,17 +189,27 @@ def check(instance, *, paths=None, prefix=None):
         result = _forms(instance, locations)
         return dict(result, scope='selected-files', files=sorted(str(p.relative_to(instance.root)) for p in selected),
                     unverified=['unselected files, family readiness and publication guarantees'])
+    return _full_check(instance)
+
+
+def _full_check(instance):
     from .gate import evaluate
     verdict = evaluate(instance)
     result = verdict['forms']
     result['valid'] = not verdict['blocked']
     result['errors'] = [{'location': f['location'], 'message': f['message']} for f in verdict['findings'] if f['mode'] == 'block' and f['certainty'] == 'finding']
     result['advice'] = [f for f in verdict['findings'] if f['mode'] != 'block']
+    remember_applied(instance, result)
     if result['valid']:
         from familiar.tree.builder import _build, read_json
-        from familiar.tree.surnames import findings
-        result['surname_findings'] = findings(_build(instance), read_json(instance.path('tree_metadata'), {}),
-                                              instance.source_language)
+        from familiar.tree.surnames import findings, name_findings
+        graph = _build(instance)
+        metadata = read_json(instance.path('tree_metadata'), {})
+        from familiar.research.name_key import findings as key_findings
+        result['surname_findings'] = findings(graph, metadata, instance.source_language) + key_findings(instance, graph, metadata)
+        result['name_findings'] = name_findings(graph, instance.languages, instance.source_language)
+        from familiar.reader.scans import missing_images
+        result['image_findings'] = missing_images(instance, graph)
     return result
 
 
@@ -149,6 +232,7 @@ def _check(instance, selected=None):
     advice = []
     research_work = []
     work_paths = set()
+    waiting = []  # quarantine: a contribution or version waits for a reference not committed yet
     from .display import research_inputs
     adopted = research_inputs(instance) if selected is None else set()
     research_roots = {key: instance.path(key) for key in ('records', 'searches')}
@@ -285,8 +369,21 @@ def _check(instance, selected=None):
         if not getattr(instance, '_immutable_snapshot', False):
             ref(row.get('question'), versions, where)
 
+    def waits(where, value):
+        # A version citing what another wave has not committed yet waits; it never blocks the family.
+        if selected is not None or not isinstance(value, str) or not str(where).startswith(str(instance.path('versions'))):
+            return False
+        file = str(Path(where).relative_to(instance.root)) if Path(where).is_relative_to(instance.root) else str(where)
+        row = next((w for w in waiting if w['file'] == file), None)
+        if row is None:
+            waiting.append(row := {'file': file, 'author': Path(where).stem, 'waits': [],
+                                   'message': 'version argument cites what is not in the family yet'})
+        if value not in row['waits']:
+            row['waits'].append(value)
+        return True
+
     def ref(value, known, where):
-        if value is not None and (not isinstance(value, str) or value not in known):
+        if value is not None and (not isinstance(value, str) or value not in known) and not waits(where, value):
             ids = sorted(known)
             hint = ', '.join(ids[:20]) or '(none declared)'
             if len(ids) > 20:
@@ -316,6 +413,17 @@ def _check(instance, selected=None):
     if selected is None or any(str(path) in selected for path in contribution_files):
         for error in graph['research']['contributions']['errors']:
             fail(instance.root / error['file'], error['error'], 'instance.contribution-not-applied')
+        for item in graph['research']['contributions'].get('unread', []):
+            fail(instance.root / item['file'], f"{item['key']}: {item['message']}", 'instance.contribution-unread-key')
+        shown = applied_before(instance) if selected is None else set()
+        for item in graph['research']['contributions'].get('quarantine', []):
+            if item['file'] in shown:  # it was in the tree; losing it is never quiet
+                fail(instance.root / item['file'], item['error'] + '; applied before, now waits for '
+                     + ', '.join(item['waits']), 'instance.contribution-not-applied')
+            else:
+                waiting.append({'file': item['file'], 'author': item['author'], 'waits': item['waits'],
+                                'message': item['error']})
+    applied_files = [a['file'] for a in graph['research']['contributions']['applied']]
     from familiar.tree.identities import _apply_identities
     from familiar.tree.builder import read_json
     from familiar.tree.life import _assess
@@ -324,6 +432,11 @@ def _check(instance, selected=None):
     for person in graph['people'].values():
         for message in person['life_assessment'].get('conflicts', []):
             advice.append({'location': str(instance.path('identity_decisions')), 'message': message})
+    for item in read_json(instance.path('identity_decisions'), {}).get('name_forms', []):
+        if graph.get('identityAliases', {}).get(item.get('person'), item.get('person')) not in graph['people']:
+            advice.append({'location': str(instance.path('identity_decisions')), 'message':
+                           f"name form for {item.get('person')}: no such person in the tree (renamed or merged?); "
+                           'move the form to the current id or drop it'})
     from familiar.tree.surnames import decision_errors
     metadata_path = instance.path('tree_metadata')
     metadata = load(metadata_path, {})
@@ -350,6 +463,8 @@ def _check(instance, selected=None):
             if pack and isinstance(value, str) and re.fullmatch(r'pack:[^/\s]+/[^\s]+', value):
                 continue
             if search and isinstance(value, str) and value.startswith('search:'):
+                if value[7:] not in search_index and waits(where, value):
+                    continue
                 observation = search_index.get(value[7:], {})
                 hits = observation.get('hits')
                 from familiar.research.coverage import outcome
@@ -440,7 +555,7 @@ def _check(instance, selected=None):
             saved = row['saved_result']
             if not isinstance(saved, str) or not saved.strip():
                 fail(path, 'saved_result must be a local path or null', 'instance.saved-result-must-be-a-local-path')
-            elif not (instance.root / saved).resolve().is_relative_to(instance.root) or not (instance.root / saved).is_file():
+            elif not _local_file(instance, saved):
                 fail(path, 'saved_result file missing or outside instance', 'instance.saved-result-file-missing-or-outside-instance')
         for person in (row.get('people', {}).values() if isinstance(row.get('people'), dict) else []):
             ref(person, people, path)
@@ -705,6 +820,7 @@ def _check(instance, selected=None):
     return {'research_ready': bool(people) and not errors,
             'research_next': 'researcher: memory-first; name one bridge paper before searching indexes' if people and not errors else 'lead: resolve missing people or validation errors',
             'valid': not errors, 'errors': errors, 'advice': advice,
+            'quarantine': waiting, 'applied_contributions': applied_files if selected is None else [],
             'research_in_progress': {'count': len(research_work),
                                      'paths': sorted(work_paths),
                                      'findings': research_work},

@@ -17,6 +17,7 @@
 # - MOD-RULES-SETTINGS-DATA (loaded by file name)
 # - pyproject.toml (method resource packaging)
 # :END_MODULE_CONTRACT
+import pickle
 import re
 import tomllib
 from copy import deepcopy
@@ -38,12 +39,13 @@ TYPES = {'string': str, 'integer': int, 'float': float, 'boolean': bool,
 
 @lru_cache(maxsize=64)
 def _parse(content):
-    return tomllib.loads(content.decode('utf-8'))
+    return pickle.dumps(tomllib.loads(content.decode('utf-8')), pickle.HIGHEST_PROTOCOL)
 
 
 def read(path):
-    # Cache parsing, never filesystem reads or a caller's mutable records.
-    return deepcopy(_parse(Path(path).read_bytes()))
+    # Cache parsing by bytes, never filesystem reads or a caller's mutable records:
+    # each caller gets its own copy (unpickling is a fast deep copy).
+    return pickle.loads(_parse(Path(path).read_bytes()))
 
 
 def require(condition, message):
@@ -90,9 +92,21 @@ def _typed_value(setting, value):
 
 
 def load_engine(directory):
+    # A pure function of the three files' bytes: validate once, hand each caller its own copy.
+    names = ('trust.toml', 'catalog.toml', 'settings.toml')
+    return pickle.loads(_load_engine(tuple(Path(directory, n).read_bytes() for n in names)))
+
+
+@lru_cache(maxsize=8)
+def _load_engine(contents):
+    files = dict(zip(('trust.toml', 'catalog.toml', 'settings.toml'), contents))
+    return pickle.dumps(_validate_engine(lambda name: pickle.loads(_parse(files[name]))), pickle.HIGHEST_PROTOCOL)
+
+
+def _validate_engine(read):
     rules = {}
     for filename in ('trust.toml', 'catalog.toml'):
-        for rule in read(Path(directory) / filename).get('rule', []):
+        for rule in read(filename).get('rule', []):
             require(isinstance(rule, dict), 'rule must be a table')
             for key in ('id', 'kind', 'statement', 'roles', 'serves', 'check', 'mode', 'reads'):
                 require(key in rule, f'missing rule field {key}')
@@ -111,7 +125,7 @@ def load_engine(directory):
             require((filename == 'trust.toml') == (rule['kind'] == 'trust'),
                     'trust rules belong only in trust.toml')
             rules[rule['id']] = rule
-    settings = read(Path(directory) / 'settings.toml').get('setting', {})
+    settings = read('settings.toml').get('setting', {})
     for ident, setting in settings.items():
         require(setting.get('id', ident) == ident, 'setting id differs from table key')
         setting['id'] = ident

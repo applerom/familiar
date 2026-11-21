@@ -1,5 +1,5 @@
 'use client';
-import {readerStorage,profile} from './reader-profile';
+import {readerStorage,profile,inLanguage} from './reader-profile';
 /** Play layer of the feeds (2.11.2026, livelier 3.11.2026, author: «можно веселей и завлекательней»; RULES KIDS-7).
  *  - SpotFrame: «Рассмотри» (marks with a card) and «Найди» (tasks one by one, a burst, a word of praise and a chime on every find,
  *    stars of progress, confetti at the end) over a picture; the button «Зайди … · 360°» opens the picture's panorama.
@@ -15,7 +15,7 @@ import {plural,type Language} from './i18n';
 import type {Row} from './tree/model';
 import type {Feed,Game,GameStep,Picture,Spot} from './feed';
 
-const tr=(x:Row|string|undefined,language:string):string=>typeof x==='string'?x:x?.[language]||x?.en||x?.ru||'';
+const tr=(x:Row|string|undefined,language:string):string=>inLanguage(x,language);
 /** A 360° room behind a picture (`play/*.json` → `panos`, see `scripts/feed-play.py`). */
 export type Pano={asset:string;title?:Row;enter?:Row;yaw?:number;pitch?:number;spots?:Spot[]};
 export type Offer='look'|'find'|'both';
@@ -77,7 +77,7 @@ function feedPrizes(feed:Feed){
  for(const c of feed.chapters){
   const pics=[c.picture,...(c.figures||[]).flatMap(f=>[f,f.ours]),...(c.extras||[]).flatMap(x=>[x.picture,x.picture?.ours])].filter(Boolean) as Picture[];
   for(const p of pics){(p.spots||[]).forEach((s,k)=>s.find&&keys.add(`find:${p.asset}#${k}`));const pn=p.pano;if(pn)(pn.spots||[]).forEach((s,k)=>s.find&&keys.add(`find:${pn.asset}#${k}`))}
-  if(c.game)keys.add(`game:${feed.id}/${c.id||c.year}`);
+  if(c.game)keys.add(`game:${feed.id}/${c.id||inLanguage(c.year,'')}`);
  }
  return keys;
 }

@@ -69,8 +69,11 @@ def review_links(instance, row):
     for saved in row.get('saved', []):
         if not isinstance(saved, str):
             continue
-        path = (instance.root / saved).resolve()
-        if not path.is_relative_to(instance.root) or path.suffix != '.json':
+        try:
+            path = instance.local(saved)
+        except ValueError:
+            continue
+        if path.suffix != '.json':
             continue
         try:
             report = json.loads(path.read_text(encoding='utf-8-sig'))

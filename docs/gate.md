@@ -9,8 +9,18 @@ independent review binding remain core guarantees.
 Tree contributions are adopted family inputs: a rejected package is a blocking
 data finding in whole-instance and selected-file checks, naming its file, claim
 and cause. Source ids resolve across contributions in the same family, including
-mutual references. Packages remain atomic; no working graph or reader/desk output
-can be delivered after any package fails to apply.
+mutual references. Packages remain atomic.
+A package or version that only cites a person, source, record or search another
+writer has not committed yet is **quarantined**, not rejected: it is not applied,
+`instance check` prints `QUARANTINE: file (author): waits for ...`, `desk build`
+names it and `desk publish` counts it, and it applies by itself once the reference
+appears. A package a full check of the same root saw applied before stays a
+blocking finding when it stops applying (`.state/contributions-applied.json`), so
+shown kinship is never lost quietly; no working graph or output is then delivered.
+A family served from its last commit (a git worktree such as `.state/serve`) maps
+its out-of-git locations (`captures`, `originals`, `media_archive`, `state`) to the
+family with `FAMILIAR_HOST_PATHS`; record paths into them resolve through
+`Instance.local`.
 Person references use the working tree (snapshot plus applied contributions), including merged ids resolved to their successors; inspect ids with `tree build --view working` or `tree person ID`.
 In host text an id leaks only when non-alphabetic, explicitly delimited as a reference, part of a path, or immediately qualified by an id/person/version/question/case/record/source type; we hide the reference with a notice and preserve the remaining prose.
 Numeric calendar and folio notation (including Roman months, year ranges and slash years) is prose, never a working path.
@@ -249,7 +259,11 @@ The read-only private `host` view supplies `family requests --text`, `family
 summary`, `family next`, `family confirmation` and `feed pages --text`. It uses
 an immutable snapshot, declared plain text and a final fingerprint check, but
 is not reader publication: the writer refuses its working seal. The host sees
-their own words and papers even beside unrelated publication failures. The family display tells stories about everyone; documents and addresses
+their own words and papers even beside unrelated publication failures.
+
+Research lookups (`research forms`, `research compare`, `tree person` and their Python calls) are registered
+`research` boundaries without the family verdict: they publish nothing, answer the researcher from what they
+read, and are not stopped by a half-written record elsewhere in the family. The family display tells stories about everyone; documents and addresses
 remain excluded. It asks relatives about the past without requesting permission. Host story labels concern reading of those full source bytes.
 
 For readers, narrative blocks are associated with canonical people through

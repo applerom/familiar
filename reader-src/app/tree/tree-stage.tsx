@@ -1,6 +1,6 @@
 'use client';
 import {memo,useCallback,useEffect,useLayoutEffect,useMemo,useRef,useState,type CSSProperties,type ReactNode,type RefObject} from 'react';
-import {STACK_STEP,layoutTree,levelRange,type Layout} from './layout';
+import {STACK_STEP,WHOLE,fitView,layoutTree,levelRange,type Layout} from './layout';
 import {useZoomPan} from './use-zoom-pan';
 import {lifeLabel,type Model,type Row} from './model';
 import {growthWords} from './growth';
@@ -9,10 +9,12 @@ type TileActions = {
   open: (id: string) => void;
   hover: (id: string) => void;
 };
-const uncertain = (status: string) => status === 'hypothesis' || status === 'probable';
+const uncertain = (status: string) => status === 'hypothesis' || status === 'probable' || status === 'weak';
+// One of the possible branches (the leading origin below 0.3): fainter than a probable line.
+const weak = (status: string) => status === 'weak' ? ' weak' : '';
 // What a compact tile can carry at its size on the screen: the whole name with the years,
 // the given name with a year, an initial, or nothing but its colour.
-const WHOLE = .7, SHORT = 40, INITIAL = 13;
+const SHORT = 40, INITIAL = 13;
 
 const TreeTiles = memo(function TreeTiles({layout,model,center,hot,labels,actions,zoom,drawn}: {
   layout: Layout; model: Model; center: string; hot: string; labels: Row;
@@ -24,7 +26,7 @@ const TreeTiles = memo(function TreeTiles({layout,model,center,hot,labels,action
     <svg key={drawn} className="tree-links" width={layout.width} height={layout.height} aria-hidden="true">
       <g transform={`translate(${layout.linkOffset} 0)`}>{layout.links.map(link =>
         <path key={link.key} d={link.d}
-          className={`lk ${link.kind} g${Math.min(link.gen, 4)}${uncertain(link.status) ? ' hyp' : ''}${link.ids.includes(center) || hot && link.ids.includes(hot) ? ' on' : ''}`}
+          className={`lk ${link.kind} g${Math.min(link.gen, 4)}${uncertain(link.status) ? ' hyp' : ''}${weak(link.status)}${link.ids.includes(center) || hot && link.ids.includes(hot) ? ' on' : ''}`}
           style={link.color ? {stroke: `color-mix(in srgb, ${link.color} 58%, var(--tree-paper))`} : undefined}/>
       )}</g>
     </svg>
@@ -37,6 +39,10 @@ const TreeTiles = memo(function TreeTiles({layout,model,center,hot,labels,action
         transform: `translate(${tile.x}px,${tile.y}px)`, width: tile.w, height: tile.h, '--b': tile.color, '--s': tile.scale,
         '--c': Math.min(1.05, Math.max(.62, tile.w / 66)), '--w': tile.w, '--depth-opacity': tile.fade,
       } as CSSProperties;
+      // A generation nobody has found yet: haze with the dotted line running through it, no card and no words.
+      if (tile.gap) return <div key={id} className={`tile-position tile-gap${weak(tile.status)}`} style={style} data-gen={gen} aria-hidden="true">
+        <span className="tree-gap"/>
+      </div>;
       const person = model.info[id];
       const life = !person.connector && (person.birthText || person.deathText) ? lifeLabel(person, labels, lang) : '';
       const year = person.birthText || person.deathText;
@@ -44,11 +50,12 @@ const TreeTiles = memo(function TreeTiles({layout,model,center,hot,labels,action
       const confirmed = growth.confirmed.length > 0;
       const title = [person.fullName, life, confirmed ? words.confirmed : growth.treeMemory ? words.tree : growth.memory ? words.memory : growth.found ? words.found : ''].filter(Boolean).join(' · ');
       return <div key={id} className={`tile-position${distant ? ' tile-distant' : ''}${distant && whole ? ' tile-whole' : ''}${mini ? ' tile-mini' : ''}`} style={style} data-gen={gen}>
+        {tile.assumed && <span className="assumed-haze" aria-hidden="true"/>}
         {Array.from({length: stackLayers}, (_, i) => {
           const offset = (stackLayers - i) * STACK_STEP;
           return <span key={i} className="stack-back" aria-hidden="true" style={{translate: `${offset}px ${-offset}px`}}/>;
         })}
-        <button data-person={id} className={`tree-tile${uncertain(tile.status) ? ' hyp' : ''}${id === center ? ' tree-centre' : ''}`}
+        <button data-person={id} className={`tree-tile${uncertain(tile.status) ? ' hyp' : ''}${weak(tile.status)}${id === center ? ' tree-centre' : ''}`}
           title={title} aria-label={title} aria-current={id === center ? 'true' : undefined}
           onClick={() => actions.current.open(id)}
           onPointerEnter={event => { if (event.pointerType === 'mouse') actions.current.hover(id); }}
@@ -116,13 +123,8 @@ export default function TreeStage({model,id,go,labels,onVisible,children}: {
   const base = useRef(1);
   const fit = useCallback(() => {
     if (!layout || !size.h) return;
-    const oldest = layout.horizon ? 0 : layout.box.y0;
-    const height = layout.box.y1 - oldest;
-    // The whole drawn tree fills the stage: neither a row nor a generation is left outside.
-    const width = layout.box.x1 - layout.box.x0;
-    const k = Math.min(size.w < 560 ? 1.25 : 1.45, Math.max(.5, Math.min((room - 12) / height, (size.w - 12) / width)));
-    const x = size.w / 2 - (layout.box.x0 + layout.box.x1) / 2 * k;
-    const y = Math.min(Math.max(4, (room - height * k) / 2) - oldest * k, room - layout.familyBottom * k);
+    // Every generation fills the stage; a row of children wider than the screen pans sideways instead of shrinking it.
+    const {k, x, y} = fitView(layout, size.w, room);
     base.current = k;
     setT({k,x,y});
   }, [layout,size,room,setT]);

@@ -266,6 +266,11 @@ def copies(instance, value, *, origin=None, reference_roots=()):
             return
         path = Path(raw.split('#')[0])
         options = [path.resolve()] if path.is_absolute() else [(base / path).resolve() for base in roots]
+        if not path.is_absolute():
+            try:
+                options.insert(0, instance.local(path.as_posix()))  # kept outside git: through the map
+            except ValueError:
+                pass
         options = [p for p in options if p.is_relative_to(instance.root) or any(p.is_relative_to(Path(base).resolve()) for base in instance.host_paths.values())]
         if not options:
             found.append({'reference': 'undeclared-host:' + path.name, 'state': 'outside declared roots; not opened'})

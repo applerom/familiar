@@ -287,7 +287,7 @@ def project(active, graph, w, *, asks=()):
             'pending': pending, 'reviewed_pending': reviewed_pending}, inputs, listings
 
 
-def line_section(active, graph, w):
+def line_section(active, graph, w, *, language=None, texts=None):
     from familiar.research.coverage import collect, format_line_chain, line_front, planning_people
 
     try:
@@ -298,19 +298,25 @@ def line_section(active, graph, w):
     people, esc = graph.get('people', {}), html.escape
     historical = people.keys() & set(planning_people(data, data['tree'].people))
     mode = front['collateral_mode']
+    language, texts = language or active.source_language, texts or {}
+    def local_name(pid):
+        shown = (people[pid].get('namePresentation') or {}).get('byLanguage') or {}
+        form = shown.get(language) if language != active.source_language else None
+        return form if isinstance(form, str) and form.strip() else people[pid].get('name') or ''
+    tr = lambda value: texts.get(value.strip(), value) if isinstance(value, str) and value.strip() else value
     rows = []
     for line in front['lines']:
         if not people.keys() >= set(line['people']):
             continue
-        name = line['surname'] or '—'
+        name = tr(line['surname']) or '—'
         if line['secondary']:
             name += f" ({w['lines_secondary']})"
-        chain = [step | {'name': people[step['id']].get('name') or ''} for step in line['chain']]
+        chain = [step | {'name': local_name(step['id'])} for step in line['chain']]
         chain_label = format_line_chain(chain, w['lines_decimal'])
         counts = w['lines_counts'].format(**line)
         if 'living_or_possibly_living' in line:
             counts += ' · ' + w['lines_outside_queue'].format(**line)
-        versions = [f"{public_line(v['label'], w['branch'].format(n=n))} ({v['weight'] * 100:g}%)"
+        versions = [f"{public_line(tr(v['label']), w['branch'].format(n=n))} ({v['weight'] * 100:g}%)"
                     for n, v in enumerate(line['versions'], 1) if historical.issuperset(v['people'])]
         details = ' · '.join(versions) or ('—' if line['versions'] else w['lines_no_versions'])
         rows.append(f'<li><div><strong>{esc(name)}</strong><div>{esc(chain_label)}</div></div>'
@@ -322,13 +328,16 @@ def line_section(active, graph, w):
             + ('<ul>' + ''.join(rows) + '</ul>' if rows else '<p>' + esc(w['lines_empty']) + '</p>') + '</section>')
 
 
-def page(active, w, supplemental=False, *, lines=''):
+def page(active, w, supplemental=False, *, lines='', language=None, data='desk/show.json'):
     esc, s = html.escape, w['show']
+    language = language or active.source_language
     title = active.config['family']['title']
+    title = (title.get(language) or title.get(active.source_language, '')) if isinstance(title, dict) else title
     extras = ('<p class="desk-extra"><a href="/desk/journal.html">' + esc(w['journal'])
               + ' · ' + esc(w['stories']) + '</a></p>') if supplemental else ''
-    return ('<!doctype html><html lang="' + esc(active.source_language) + '"><head>'
+    return ('<!doctype html><html lang="' + esc(language) + '"><head>'
             '<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+            '<meta name="familiar-show-data" content="' + esc(data) + '">'
             '<meta name="robots" content="noindex,nofollow,noarchive"><title>' + esc(s['progress'])
             + ' · ' + esc(title) + '</title><link rel="stylesheet" href="/desk/show.css">'
             '<script defer src="/desk/show.js"></script></head><body class="familiar-show">'

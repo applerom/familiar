@@ -22,7 +22,7 @@ countries = ["BY", "PL", "LT"]
 territory = "Today's Belarus and the Podlaskie borderland of Poland: the old north-west governorates of the Russian Empire, the eastern provinces of interwar Poland, and Minsk as a Soviet city; with the Lithuanian archives that hold their older records."
 years = [1600, 2026]
 record_languages = ["la", "pl", "ru", "be"]
-files = { sources = "sources.toml", custody = "custody.toml", chronology = "chronology.toml", answers = "answers.md", variants = "variants.toml", recipes = "recipes/index.toml" }
+files = { sources = "sources.toml", custody = "custody.toml", chronology = "chronology.toml", answers = "answers.md", variants = "variants.toml", name_key = "name_key.toml", evidence = "evidence.toml", recipes = "recipes/index.toml" }
 answers = ["RP-61", "RP-63", "RP-67", "RP-1", "RP-2", "RP-3", "RP-4", "RP-5", "RP-65"]
 
 [[gap]]

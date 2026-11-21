@@ -20,6 +20,100 @@ researcher's work except naming three things on each row.
 - A zero is worth most with `control` (a known person found by the same query)
   and `coverage.forms` listing every spelling read.
 
+## Forms and the identity score (agents)
+
+`research forms Морецкий Lunografow [--kind surname|place|given_name] [--year Y]`
+lists dictionary forms first, then marked suggestions: `by clan decision` (one
+row of `tree_metadata.surname_forms`) and `by key` — spellings the family has
+already written (dictionary, clan decisions, tree names) whose key matches. The
+key folds scripts, pre-reform letters, -owa/-ówna/-ska/-ая, act cases and
+"z ...ich" to one stem and a sound code (rules: the region pack's `name_key.toml`,
+the language packs' `[language.surname_key]`). Key forms are worth a query; they
+never become required forms, never close or open a plan and never join clans.
+What the key does not settle: a misread village name gets sound
+neighbours, not a correction — a place is told apart by its record, not by sound;
+two real surnames may share a code; a person's other surname (a convert's, a
+step-father's) is about the person. `instance check` lists tree spellings that
+share a key outside any one clan decision (`same-key`, `outside`): decide or ignore.
+
+`research compare FILE` scores "one person or two". `FILE` is
+`{"a": mention, "b": mention, "pool": N}` or `{"target": mention, "candidates":
+{"id": mention}, "pool": N}`; a mention carries what a record already says:
+`given`, `surname`, `sex`, `born` `[lo, hi]` or `born_exact`, `year`, `place` or
+`places`, `parish`, `manor`, `rite` (`latin`, `uniate`, `orthodox`, `revision`),
+`father`, `mother`, `spouse`, `maiden`, `siblings`, `sponsors` (surnames),
+`household` ("1816 No 18"), `class`, `died`. Each argument gives a likelihood
+ratio with its basis; arguments of one group (the family, the place) are damped.
+A name's weight is its rarity among the family tree's people (fallback 1/25
+with few traces). `pool` is how many men of that age the place held (region
+default with its basis); `weight` is one person among them. With candidates,
+`unseen` is its own row: a path's share among the candidates we saw is not its
+identity weight. The score is your objection and instrument: it merges nothing,
+writes nothing and the family never sees it. Where you and the score differ by
+more than two times, say why in the decision.
+
+## Planning approaches
+
+Run `research plan` for all surname lines, or `research plan --line "Example"`
+for one. A starting person's tree ID also selects a line. `--json` shows
+stable approach IDs, which inputs are missing, sources tried, and passes whose
+approach was inferred. Follow the next step on the first applicable, enabled
+approach that still has work. Inventory work requires a place at the frontier
+and a chain to living family with every link at least 0.5.
+
+Use **Surname households by place** (`place-nest`) when a surname and a
+historical place give you a way around a break in the line. A place in an
+origin hypothesis with weight ≥0.3 also works. Start at the earliest register,
+revision, census, inventory or parishioner list and follow the households
+forward, including neighboring parishes. Return a household table by generation
+and decade for which books survive. Record proposed people and their links
+within the nest with weights, then rank the candidates for the person at the
+break with a separate weight and reason for each proposed link to the family.
+A weight below 0.3 is a normal entry in that table. Add a link to the family
+only when there is a reason for it. Inventory work goes deeper from an
+already linked frontier. This approach builds toward the frontier from the
+earliest local records.
+
+Set optional `play` on new journal rows to the method ID, for example
+`"play": "keeper-forms"`. Record the usual query, scope and result. When
+the observation shows the whole scope was covered, `coverage.complete: true`
+can record the closure. Preserve the actual years, forms, reading and control.
+Old rows remain valid. The plan infers an approach only when the source and
+query support it. Other rows are listed under `unrecorded_play`. A draft
+letter is visible in the plan, and a sent letter starts the wait for an answer.
+
+For a nest pass, write the target locality in `query.place`, even when you
+read a neighboring parish. Record the years actually in scope so the plan can
+find the earliest decade, or part of one, still open in the journal. Mark a scope complete once its
+households and applicable candidates have been recorded. A legacy
+`family-reconstitution` query with one household's names counts as a
+household fingerprint. A surname sweep of a locality counts as a place nest.
+The plan counts contributors' people of the same surname and place who have
+no chain of links weighted at least 0.5 to the family.
+
+For place forms, the plan compares the dictionary's `kind: "place"` entries
+with the keepers' countries and catalogue languages/scripts. Add `language`
+when the language of a form is known. An untagged spelling can cover a script
+while its language is still unrecorded.
+
+```toml
+[research]
+focus = ["Example", "Another"]
+
+[research.plays.archive-letters]
+order = 1
+
+[research.plays.surname-place.lines."Example"]
+enabled = false
+```
+
+Focus brings those lines to the top of the plan, `coverage --lines`, and
+`coverage --recheck`. Use `coverage --recheck --line "Example"` to keep
+the queue to that line. Set `enabled` and `order` for a play at the family
+level or override either in its `lines` table. Lower numbers come first,
+with ties in [registry order](../method/research-plays.toml). Without play
+overrides, recheck keeps its existing score order within each line group.
+
 ## Reading it (lead, host)
 
 - `familiar research coverage [--family]`: the matrix. Cells: R result rows, D read record, +F explicitly established identity, Z zero
@@ -29,7 +123,10 @@ researcher's work except naming three things on each row.
   `~` means a surname search in place/period, not an individual search.
 - `--person ID`: one person, every source with passes, dates, executors,
   forms read and surname/given-name dictionary forms not read; and what was never
-  looked at.
+  looked at. A repeat ceiling marks three completed passes without a newly
+  recorded item and removes the cell from recheck. Newly dated or referenced
+  read records restart the count. Access gaps and dubious queries do not
+  count as completed passes.
 - `--recheck [N]`: the N most useful cells to look at again: never looked,
   access gap, only passes weaker than `research.recheck_strength`, zero without
   control, spellings missing, and a source whose catalogue entry carries an
@@ -167,10 +264,13 @@ as a place visit rather than a personal search. A surname with a parent's name
 selects that parent's descendants, not the parent whose name appeared in the query.
 
 `strength` is the strongest model/effort actually recorded, also per executor.
-`plan_complete` separately compares read forms against the dictionary and
-recorded `candidate_forms`/coverage forms, including forms attempted through an
-access gap. An incomplete plan stays in `--recheck` even with positive rows or
-a strong executor. Records alone do not close a search plan. Successful textual
+`plan_complete` separately compares read forms against the person's dictionary
+forms and their recorded `candidate_forms`. The coverage on a shared journal
+row can describe searches for several people. It stays visible as read
+coverage and does not add other people's forms to their requirements.
+An incomplete plan is eligible for `--recheck` even with positive rows or
+a strong executor, subject to the source's scope and the repeat ceiling.
+Records alone do not close a search plan. Successful textual
 controls in `coverage.note` or `meaning` have `control_basis: ["text"]`; they do
 not repair missing years/forms/read scope on an incomplete zero.
 

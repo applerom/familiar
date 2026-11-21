@@ -13,6 +13,7 @@
 # - MOD-INSTANCE-RESEARCH-FORMS (same file containers as the gate)
 # :END_MODULE_CONTRACT
 import copy
+import re
 import json
 from contextvars import ContextVar
 from pathlib import Path
@@ -220,7 +221,10 @@ class _Feed:
 
     def chapter(self, c):
         i = c['id']
-        o = {'id': i, 'year': c.get('year', ''), 'title': row(c.get('title', '')), 'text': row(c.get('text', ''))}
+        year = c.get('year', '')
+        # A year in words ("before 1914") is a translation unit; a bare number stays as written.
+        year = row(year) if isinstance(year, str) and re.search(r'[^\W\d_]', year) else year
+        o = {'id': i, 'year': year, 'title': row(c.get('title', '')), 'text': row(c.get('text', ''))}
         if 'hardships' in c:
             o['hardships'] = copy.deepcopy(c['hardships'])
         if c.get('text_kids'):
@@ -371,10 +375,10 @@ def units(feed):
     g('feed:lead', feed['lead'])
     for c in feed['chapters']:
         i = c['id']
-        for k in ('title', 'text', 'more'):
+        for k in ('title', 'text', 'more', 'text_kids', 'year'):  # text_kids: the chapter's separate text for children
             g(f'{i}:{k}', c.get(k))
         for k in ('title', 'text'):
-            g(f'{i}:kids.{k}', c.get('kids', {}).get(k))
+            g(f'{i}:kids.{k}', (c.get('kids') or {}).get(k))
         g(f'{i}:ask', c.get('ask'))
         for n, r in enumerate(c.get('records', [])):
             g(f'{i}:records.{n}', r.get('title'))

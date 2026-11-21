@@ -30,7 +30,7 @@ DEFAULTS = {
     "card_reviews": "tree/card-reviews.json", "tree_metadata": "tree/metadata.json",
     "tree_snapshot": "tree/snapshot", "imports": "imports",
     "evidence": "tree/evidence.json", "contributions": "tree/contributions",
-    "identity_decisions": "tree/identity-decisions.json", "cases": "cases",
+    "identity_decisions": "tree/identity-decisions.json", "translations": "tree/translations", "cases": "cases",
     "versions": "versions", "asks": "family/asks", "questions": "family/questions", "answers": "family/answers",
     "correspondence": "family/correspondence",
     "memory": "family/memory", "research_permission": "family/research-permission.json",
@@ -67,11 +67,18 @@ class Instance:
             require(not (family.keys() - {"id", "title", "source_language", "languages", "fictional"}),
                     "unknown family keys")
             require(type(family.get("fictional", False)) is bool, "family.fictional must be boolean")
-            for key in ("id", "title", "source_language"):
+            for key in ("id", "source_language"):
                 require(isinstance(family.get(key), str) and bool(family[key].strip()),
                         f"family.{key} must be nonempty text")
             require(self._strings(family.get("languages")) and bool(family["languages"]),
                     "family.languages must be a nonempty array of language tags")
+            # The family's name is one text or a row by reader language that includes the main language.
+            title = family.get("title")
+            require(isinstance(title, str) and bool(title.strip()) or isinstance(title, dict)
+                    and not (title.keys() - set(family["languages"])) and family.get("source_language") in title
+                    and all(isinstance(v, str) and v.strip() for v in title.values()),
+                    "family.title must be nonempty text or a table of nonempty texts by family language "
+                    "including source_language")
         family = config.get("family", {})
         engine = config.get('engine', {})
         require(isinstance(engine, dict) and not (engine.keys() - {'version'}),
@@ -103,7 +110,10 @@ class Instance:
         for value in self.host_paths.values():
             require(isinstance(value, str) and Path(value).is_absolute(),
                     "host paths must be absolute text paths")
-        for key in DEFAULTS:
+        # Configured locations are checked here; default ones resolve on first use (same check).
+        # Each resolves once per instance; fresh() makes a new instance per check.
+        self._paths = {}
+        for key in self.host_paths.keys() | self.overrides.keys():
             self.path(key)
         roots = config.get('media_roots', ['media', 'media_archive'])
         require(self._strings(roots) and bool(roots) and all(key in DEFAULTS for key in roots),
@@ -129,29 +139,41 @@ class Instance:
         return isinstance(value, list) and all(isinstance(v, str) and v.strip() for v in value)
 
     def _inside(self, value):
+        from .gate import _FIXED
+        memo, key = _FIXED.get(), ('inside', str(self.root), str(value))
+        if memo is not None and key in memo:
+            return memo[key]  # one checked call re-creates instances; locations resolve once in it
         path = (self.root / value).resolve()
         require(path.is_relative_to(self.root), f"path leaves family root: {value}")
+        if memo is not None:
+            memo[key] = path
         return path
 
     def path(self, key):
         if key not in DEFAULTS:
             raise InstanceError(f"unknown path key: {key}")
-        if key in self.host_paths:
-            return Path(self.host_paths[key]).resolve()
-        return self._inside(self.overrides.get(key, DEFAULTS[key]))
+        if key not in self._paths:
+            self._paths[key] = (Path(self.host_paths[key]).resolve() if key in self.host_paths
+                                else self._inside(self.overrides.get(key, DEFAULTS[key])))
+        return self._paths[key]
 
-    @boundary('research')
-    def collection(self, key):
-        """Directory entries or decoded JSON; missing optional collections are []."""
-        from .gate import require
-        require(self)
-        path = self.path(key)
-        if not path.exists():
-            return []
-        if path.is_dir():
-            return sorted(p for p in path.iterdir() if p.is_file() and
-                          p.name != "CONTRACT.md" and not p.name.startswith("."))
-        return json.loads(path.read_text(encoding="utf-8"))
+    def local(self, value):
+        """A family-relative file a record names (saved page, frame, raw answer).
+
+        A path that starts in a host-mapped location (captures, originals... kept outside git) resolves
+        through the mapping, so a served commit finds them in the family; everything else stays in the root.
+        """
+        rel = str(value).replace('\\', '/')
+        parts = tuple(p for p in rel.split('/') if p not in ('', '.'))
+        for key in () if rel.startswith('/') or Path(rel).is_absolute() else self.host_paths:
+            base = tuple(p for p in self.overrides.get(key, DEFAULTS[key]).replace('\\', '/').split('/')
+                         if p not in ('', '.'))
+            if parts[:len(base)] == base:
+                root = self.path(key)
+                path = root.joinpath(*parts[len(base):]).resolve()
+                require(path.is_relative_to(root), f"path leaves {key}: {value}")
+                return path
+        return self._inside(rel)
 
     def media_file(self, asset):
         """Resolve a public asset through a permanent manifest, or legacy roots.

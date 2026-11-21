@@ -344,9 +344,17 @@ def record_visits(instance, tree, resolver, reviews=None):
                 # A review cannot silently replace an accepted tree assertion.
                 link['status'] = 'conflict' if (pid in established and status == 'other' or status == 'same' and link['differences']) else status
                 link['review'] = assessment['search']
+        fields = record.get('fields')
+        classes = resolver.catalog.sources.get(sid, {}).get('classes', [])
+        act = (record.get('kind') != 'index-entry' and bool({'parish-register', 'civil-register'}.intersection(classes))
+               or record.get('kind') in {'act', 'baptism', 'birth', 'marriage', 'death', 'burial'})
+        witnesses = (isinstance(fields, dict) and bool(fields.get('witnesses') or fields.get('godparents'))
+                     or any(s.get('role') in {'witness', 'godparent', 'godfather', 'godmother'} and s.get('written')
+                            for s in record.get('subjects', []) if isinstance(s, dict)))
         yield {'source': sid, 'people': sorted(links), 'established': established, 'links': links,
                'by': by, 'at': reading.get('at', '') if isinstance(reading, dict) else '',
-               'planning_events': planning,
+               'planning_events': planning, 'references': keys,
+               'act_names': act and witnesses,
                'record': path.relative_to(instance.root).as_posix()}
 
 

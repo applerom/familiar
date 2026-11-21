@@ -63,6 +63,18 @@ h1,h2{font-family:var(--font-story);font-weight:400;line-height:1.25}
 .history-fog.cut{height:62px;background:linear-gradient(#eee5d7f2 10%,#eee5d7a0 55%,transparent)}
 .tile-position{position:absolute;left:0;top:0;transition:transform .5s cubic-bezier(.2,.75,.2,1),width .5s,height .5s;animation:fade .45s}
 .resizing .tile-position{transition:none;animation:none}
+/* A generation nobody has found yet: a band of haze with the line running through it as dots. */
+.tile-gap{pointer-events:none;opacity:var(--depth-opacity,1)}
+.tree-gap{position:absolute;inset:-4px -12px;border-radius:50%;background:radial-gradient(ellipse 50% 50% at center,#e6dccbf2 22%,#e9e0d0a8 58%,transparent 100%)}
+.tree-gap::after{content:'';position:absolute;left:50%;top:0;bottom:0;margin-left:-1px;border-left:2px dotted color-mix(in srgb,var(--b,#9fb09c) 58%,var(--tree-paper,#fbf8f1));opacity:.75}
+/* One of the possible branches: the line barely drawn, the cards pale, the haze thicker. */
+.lk.weak,.lk.weak.on{stroke-dasharray:1 calc(var(--lw)*4.5);opacity:.38}
+.tree-tile.weak{opacity:.5;filter:saturate(.35);border-style:dotted;box-shadow:none}
+.tree-tile.weak:hover,.tree-tile.weak:focus-visible{opacity:.8}
+.tile-gap.weak .tree-gap{inset:-10px -22px;background:radial-gradient(ellipse 50% 50% at center,#e2d7c4f7 30%,#e6dccbc0 62%,transparent 100%)}
+.tile-gap.weak .tree-gap::after{opacity:.4}
+/* An assumption on the family's main line: the card stands in a light haze, its line dotted. */
+.assumed-haze{position:absolute;inset:-9px -12px;border-radius:16px;background:radial-gradient(ellipse 52% 58% at center,#dfd3bff2 52%,#e4d9c699 76%,transparent 100%);pointer-events:none}
 .tree-tile{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:100%;height:100%;
  margin:0;padding:7px 9px 7px 7px;text-align:center;overflow:hidden;background:#fffdf8;border:1px solid var(--tree-border);
  border-inline-start:4px solid var(--b,#aeb6a8);border-radius:8px;box-shadow:0 2px 7px #46351e15;color:#302820;

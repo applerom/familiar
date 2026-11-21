@@ -196,10 +196,15 @@ Optional coverage-planning fields: `search_languages` (BCP-47), `search_scripts`
 the person's local context provides a relevant clue. These are planning hints,
 never guarantees of indexed coverage. Unknown hints never invent an exclusion.
 
+For place forms, `holder_country` names the country of the keeper. The
+`countries` array still describes the territory covered by the collection.
+Use `catalogue_languages` and `catalogue_scripts` when place-name lookup in
+the catalogue differs from the collection's `search_languages` or `search_scripts`.
+
 The source-class vocabulary lives here: `address-book`, `archive-guide`,
-`award`, `cemetery`, `census-revision`, `civil-register`, `emigration`,
+`award`, `cemetery`, `census-revision`, `civil-register`, `emigration`, `forum`,
 `forced-labour`, `inventory`, `law`, `map`, `military`, `newspaper`,
-`parish-register`, `personnel-file`, `place-reference`, `repression`,
+`parish-register`, `personnel-file`, `place-reference`, `record-keeper`, `repression`,
 `village-council`. Add a class here with a keeper-reviewed use, not in a test.
 
 Pace is not a pack value. The pack states what the site publishes

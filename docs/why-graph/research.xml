@@ -51,6 +51,8 @@
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-SEARCH-READERS"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-SEARCH-HOST"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-SEARCH-VARIANTS"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-NAME-KEY"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-MATCH-SCORE"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RESEARCH-CLI"/>
   </FEATURE_SOURCE_SEARCH>
   <MODULE_SEARCH ID="MOD-SOURCE-SEARCH" FILE="src/familiar/research/source_search.py" STATE="IMPLEMENTED"/>
@@ -59,6 +61,8 @@
   </MODULE_SEARCH>
   <MODULE_SEARCH ID="MOD-SEARCH-HOST" FILE="src/familiar/research/search_host.py" STATE="IMPLEMENTED"/>
   <MODULE_SEARCH ID="MOD-SEARCH-VARIANTS" FILE="src/familiar/research/search_variants.py" STATE="IMPLEMENTED"/>
+  <MODULE_SEARCH ID="MOD-NAME-KEY" FILE="src/familiar/research/name_key.py" STATE="IMPLEMENTED"/>
+  <MODULE_SEARCH ID="MOD-MATCH-SCORE" FILE="src/familiar/research/match_score.py" STATE="IMPLEMENTED"/>
   <FEATURE_SEARCH_COVERAGE ID="FEAT-SEARCH-COVERAGE" STATE="IMPLEMENTED">
     <INTENT>Existing journals and read records describe individual and surname-place visits, result rows and explicitly established identity separately. Explicit people survive dictionary mismatch; principal identity work precedes repeated searches, while contrary dates and other matches remain visible. Latest source refusal and dubious query semantics stay separate from best outcome. Form annotations, sex and episode, source writing and dated family memory orient planning without changing evidence or life status. Controlled zeros support only against arguments. Repeatable carry-over preserves archives and provenance; FamilySearch channels remain independent.</INTENT>
     <PRD_REF>docs/PRD.md#SOURCE-SEARCH</PRD_REF>
@@ -70,10 +74,20 @@
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RESEARCH-COVERAGE-EVIDENCE"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RESEARCH-CLI"/>
   </FEATURE_SEARCH_COVERAGE>
+  <FEATURE_RESEARCH_PLAYS ID="FEAT-RESEARCH-PLAYS" STATE="IMPLEMENTED">
+    <INTENT>Line planning uses ordered approaches, the history already on disk, and family focus. A recorded or weighted origin place can guide a top-down household reconstruction across a break in the line. An ambiguous old query keeps its approach unrecorded. A repeat ceiling removes stalled cells from the recheck queue while preserving their visits.</INTENT>
+    <PRD_REF>docs/PRD.md#SOURCE-SEARCH</PRD_REF>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RESEARCH-PLAN"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-SEARCH-PLAYS"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RESEARCH-COVERAGE"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RESEARCH-CLI"/>
+  </FEATURE_RESEARCH_PLAYS>
+  <MODULE_RESEARCH_PLAN ID="MOD-RESEARCH-PLAN" FILE="src/familiar/research/research_plan.py" STATE="IMPLEMENTED"/>
+  <MODULE_SEARCH_PLAYS ID="MOD-SEARCH-PLAYS" FILE="src/familiar/research/search_plays.py" STATE="IMPLEMENTED"/>
   <MODULE_SEARCH_LEDGER ID="MOD-SEARCH-LEDGER" FILE="src/familiar/research/search_ledger.py" STATE="IMPLEMENTED"/>
   <MODULE_RESEARCH_COVERAGE ID="MOD-RESEARCH-COVERAGE" FILE="src/familiar/research/coverage.py" STATE="IMPLEMENTED">
-    <INVARIANT TEST="tests/research/test_coverage_ledger.py::test_collateral_modes_and_line_fronts">A source birth cohort excludes a cell by epoch when the person's known birth window is entirely outside it.</INVARIANT>
-    <INVARIANT TEST="tests/research/test_coverage_ledger.py::test_collateral_modes_and_line_fronts">Line fronts follow weighted parent hypotheses from 0.30, match questions by surname or explicit people, and honor the family's preferred line order. The recheck queue puts chosen chains and their ancestors' siblings first, then the secondary scope, then enabled collateral descendants, retaining score order within each group.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">A source birth cohort excludes a cell by epoch when the person's known birth window is entirely outside it.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Line fronts follow weighted parent hypotheses from 0.30, match questions by surname or explicit people, and honor the family's preferred line order. The recheck queue puts chosen chains and their ancestors' siblings first, then the secondary scope, then enabled collateral descendants, retaining score order within each group.</INVARIANT>
   </MODULE_RESEARCH_COVERAGE>
   <MODULE_RESEARCH_COVERAGE_DISPLAY ID="MOD-RESEARCH-COVERAGE-DISPLAY" FILE="src/familiar/research/coverage_display.py" STATE="IMPLEMENTED"/>
   <MODULE_RESEARCH_COVERAGE_CONTEXT ID="MOD-RESEARCH-COVERAGE-CONTEXT" FILE="src/familiar/research/coverage_context.py" STATE="IMPLEMENTED"/>

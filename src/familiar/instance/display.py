@@ -93,7 +93,8 @@ def research_inputs(instance):
     """The same adoption closure used by validation, life assessment and snapshots."""
     if getattr(instance, '_immutable_snapshot', False) and hasattr(instance, '_research_inputs'):
         return instance._research_inputs
-    files, _, _ = dependencies(instance, research_only=True)
+    from .gate import shared
+    files = shared(instance, 'research-inputs', lambda: dependencies(instance, research_only=True)[0])
     if getattr(instance, '_immutable_snapshot', False):
         instance._research_inputs = files
     return files
@@ -151,10 +152,11 @@ def dependencies(instance, *, public=False, research_only=False):
             path = resolve(instance.root / value)
             if 'originals' in instance.host_paths and _within(path, originals):
                 target.add(path)
+            elif not _within(path, instance.root):
+                raise ValueError('path leaves family root: ' + value)
             else:
-                if not _within(path, instance.root):
-                    raise ValueError('path leaves family root: ' + value)
-                target.add(path)
+                # Data kept outside git (captures, originals) resolves through the host map.
+                target.add(instance.local(value) if instance.host_paths else path)
 
     context = tuple(sorted(derived))
     def read(path, *, record=False):

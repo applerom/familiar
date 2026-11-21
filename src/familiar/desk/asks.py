@@ -95,7 +95,7 @@ def subjects_for(row, aliases):
     return {aliases.get(pid, pid) for pid in subjects}
 
 
-def project(active, graph, delivery, w, *, today=None, feedback=()):
+def project(active, graph, delivery, w, *, today=None, feedback=(), language=None, texts=None):
     from .model import listing
 
     today = today or date.today()
@@ -106,6 +106,14 @@ def project(active, graph, delivery, w, *, today=None, feedback=()):
     inputs = {p: p.read_bytes() for p in paths}
     listings = {(root, '**/*.json'): names}
     data = HostData(active)
+    # Another reader language: the same conversation with card translations and reader-language names.
+    language, texts = language or active.source_language, texts or {}
+    def tr(value):
+        return texts.get(value.strip(), value) if isinstance(value, str) and value.strip() else value
+    def local_name(pid, fallback):
+        shown = (graph.get('people', {}).get(pid) or {}).get('namePresentation') or {}
+        form = (shown.get('byLanguage') or {}).get(language)
+        return form if language != active.source_language and isinstance(form, str) and form.strip() else fallback
     versions = aim_versions(data.rows['versions'])
     people = data.people
     aliases = graph.get('identityAliases', {})
@@ -134,7 +142,7 @@ def project(active, graph, delivery, w, *, today=None, feedback=()):
         holder = row['holder']
         if isinstance(holder, str):
             holder = aliases.get(holder, holder)
-            name = live.get(holder) or data.name(holder)
+            name = local_name(holder, live.get(holder) or data.name(holder))
         else:
             name = data.text(holder.get('label')) or w['elders'].format(line=data.text(holder.get('line')))
             holder = 'group:' + name
@@ -147,18 +155,18 @@ def project(active, graph, delivery, w, *, today=None, feedback=()):
             opener = opener['text']
         person = aliases.get(about.get('person'), about.get('person'))
         shown = graph.get('people', {}).get(person) if person else None
-        tile = ({'person': person, 'name': shown.get('treeName') or data.name(person), 'years': years(shown)} if shown
+        tile = ({'person': person, 'name': local_name(person, shown.get('treeName') or data.name(person)), 'years': years(shown)} if shown
                 else {'person': '', 'name': data.name(person) if person else data.text(about.get('line') or about.get('place')),
                       'years': data.text(about.get('place')) if about.get('line') and not person else ''})
         item = {'id': identity, 'holder': holder, 'name': name, 'tile': tile,
-                'question': data.text(row['question'], subjects), 'child': data.text(row.get('question_child'), subjects),
-                'opener': data.text(opener, subjects), 'asset': asset,
-                'hints': [s for h in row.get('hints', []) if (s := data.text(h, subjects))],
+                'question': tr(data.text(row['question'], subjects)), 'child': tr(data.text(row.get('question_child'), subjects)),
+                'opener': tr(data.text(opener, subjects)), 'asset': asset,
+                'hints': [tr(s) for h in row.get('hints', []) if (s := data.text(h, subjects))],
                 'wants': [k for k in WANTS if k in row.get('wants', [])], 'tender': bool(row.get('tender')),
-                'photo_note': data.text(row.get('photo_note'), subjects), 'next_hint': data.text(row.get('next_hint'), subjects),
-                'occasion': data.text(row.get('occasion'), subjects), 'context': context(row), 'state': state,
+                'photo_note': tr(data.text(row.get('photo_note'), subjects)), 'next_hint': tr(data.text(row.get('next_hint'), subjects)),
+                'occasion': tr(data.text(row.get('occasion'), subjects)), 'context': context(row), 'state': state,
                 'eligible': last is None or last <= week_ago,
-                'line': data.text(aim.get('line') or about.get('line')), 'settles': data.text(aim.get('settles'), subjects),
+                'line': tr(data.text(aim.get('line') or about.get('line'))), 'settles': tr(data.text(aim.get('settles'), subjects)),
                 'score': 0, 'cost': 'free', 'shelved': False, 'relevance': ''}
         if item['question'] and item['name']:
             entries.append((row, item))
@@ -192,7 +200,7 @@ def project(active, graph, delivery, w, *, today=None, feedback=()):
                   'lane': (row['aim'].get('version') or '')} for row, item in ranked if item['state'] in VISIBLE][:3]
     links = {'cards': dict(cards), 'steps': dict(steps), 'child_steps': {k: sorted(v) for k, v in child_steps.items()}}
     require_displayable(active, [list(groups.values()), reminders, links])
-    return render(active.source_language, groups, w), links, reminders, summaries, inputs, listings
+    return render(language, groups, w), links, reminders, summaries, inputs, listings
 
 
 def render(language, groups, w):

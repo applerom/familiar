@@ -1,5 +1,6 @@
 'use client';
-import {readerStorage,profile,siteURL} from './reader-profile';
+import {readerStorage,profile,siteURL,inLanguage} from './reader-profile';
+import {localizeGraph} from './localize';
 import {useEffect,useMemo,useState} from 'react';
 import KinshipWords from './kinship-words';
 import {kinshipLexicon} from './tree/kinship';
@@ -23,7 +24,7 @@ ICONS.world=<><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry=
 const Icon=({name}:{name:string})=><svg viewBox="0 0 24 24" aria-hidden="true">{ICONS[name]}</svg>;
 const GRAVE=/памятник|могил|надгроб|grave|nagrob|· документ$/i;
 export default function Family({initialData}:{initialData:Row}){
- const data=initialData;const [id,select]=useState(()=>typeof location==='undefined'?'':new URLSearchParams(location.hash.slice(1)).get('person')||'');const [picked,setPicked]=useState('');const [view,V]=useState('tree');const [language,L]=useState<Language>(profile().family.source_language);const [expanded,Expand]=useState(false);const [map,Map_]=useState(false);const [visible,setVisible]=useState<Set<string>>(new Set());const [me,setMeState]=useState(initialData.defaultViewer||initialData.narrator||'');const [feed,setFeed]=useState<{id:string;step:number}|null>(null);const [finding,Find]=useState(false);const base=translations[language];const title=profile().family.title;const t={...base,...(language===profile().family.source_language?data.readerLabels:{}),title:typeof title==='string'?title:title[language]||base.title,homeGenitive:profile().reader_names?.[language]||{}};
+ const [id,select]=useState(()=>typeof location==='undefined'?'':new URLSearchParams(location.hash.slice(1)).get('person')||'');const [picked,setPicked]=useState('');const [view,V]=useState('tree');const [language,L]=useState<Language>(profile().family.source_language);const data=useMemo(()=>localizeGraph(initialData,language),[initialData,language]);const [expanded,Expand]=useState(false);const [map,Map_]=useState(false);const [visible,setVisible]=useState<Set<string>>(new Set());const [me,setMeState]=useState(initialData.defaultViewer||initialData.narrator||'');const [feed,setFeed]=useState<{id:string;step:number}|null>(null);const [finding,Find]=useState(false);const base=translations[language];const title=profile().family.title;const t={...base,...(language===profile().family.source_language?data.readerLabels:{}),title:typeof title==='string'?title:title[language]||title[profile().family.source_language]||base.title,homeGenitive:profile().reader_names?.[language]||{}};
  // "me" is who is looking at the tree: from a personal link (#person=…&me=…) or chosen in the panel, remembered in this browser
  const setMe=(pid:string)=>{setMeState(pid);try{readerStorage.setItem('family-me',pid)}catch{}};
  const [undo,setUndo]=useState<{name:string}|null>(null);
@@ -54,7 +55,7 @@ export default function Family({initialData}:{initialData:Row}){
  const kinOf=(pid:string)=>{const from=me&&model.info[me]?me:'';const r=from&&from!==pid?model.relation(from,pid):null;if(r)return relationPhrase(r,labels,language);const k=model.kinship(pid)[0];return k?kinPhrase(k,labels,language):''};
  // pictures attached to people: family photographs, gravestones and the editorial period pictures from the stories
  const album=(()=>{const byPic=new Map<string,{asset:string;title:string;people:string[];grave:boolean}>();for(const p of Object.values<Row>(people)){for(const m of p.media||[]){if(!m.photo||!m.asset)continue;const e=byPic.get(m.asset)||byPic.set(m.asset,{asset:m.asset,title:m.title||'',people:[],grave:m.type==='grave'||GRAVE.test(m.title||'')}).get(m.asset)!;if(!e.people.includes(p.id))e.people.push(p.id)}}return [...byPic.values()]})();
- const period=(()=>{const seen=new Set<string>();const out:{asset:string;caption:string;person:string}[]=[];for(const p of Object.values<Row>(people))for(const s of p.illustrations||[]){if(!s.asset||seen.has(s.asset))continue;seen.add(s.asset);out.push({asset:s.asset,caption:s.caption?.[language]||s.caption?.en||s.caption?.ru||s.caption||'',person:p.id})}return out})();
+ const period=(()=>{const seen=new Set<string>();const out:{asset:string;caption:string;person:string}[]=[];for(const p of Object.values<Row>(people))for(const s of p.illustrations||[]){if(!s.asset||seen.has(s.asset))continue;seen.add(s.asset);out.push({asset:s.asset,caption:inLanguage(s.caption,language),person:p.id})}return out})();
  const albumGrid=(items:typeof album)=><div className="album">{items.map(a=><button key={a.asset} onClick={()=>a.people[0]&&go(a.people[0])}>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={a.asset} alt={a.people.map(p=>model.info[p].short).join(', ')} loading="lazy"/><p>{a.people.map(p=>model.info[p].short).join(', ')||a.title}</p></button>)}</div>;
  const hasStories=(data.feeds||[]).some((f:Feed)=>f.chapters?.length)||Object.values(model.info).some(p=>p.story&&!p.placeholder);
  const hasPhotos=album.length>0||period.length>0;

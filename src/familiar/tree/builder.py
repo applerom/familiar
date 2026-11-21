@@ -97,6 +97,11 @@ def _build_pre_identity(instance):
         raise TypeError('snapshot must use the people[] object form')
     graph = _snapshot_graph(instance, raw, apply_identity=False)
     errors = graph['research']['contributions']['errors']
+    if waiting := graph['research']['contributions'].get('quarantine'):
+        # Waiting for another wave's commit is quarantine; a package the tree showed before is never quietly lost.
+        from familiar.instance.validation import applied_before
+        shown = applied_before(instance)
+        errors = errors + [e for e in waiting if e['file'] in shown]
     if errors:
         raise ValueError('Contributions were not applied: ' + '; '.join(
             error['file'] + ': ' + error['error'] for error in errors))

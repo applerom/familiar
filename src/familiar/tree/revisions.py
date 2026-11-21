@@ -12,17 +12,24 @@ import copy
 
 
 def apply(pack, people, edges, families, sources, check_fact, author, record_ids):
+    from .contributions import Waiting
+
     def person(pid):
         if pid not in people:
-            raise ValueError('Unknown revision person: ' + pid)
+            raise Waiting('Unknown revision person: ' + pid, [pid])
         return people[pid]
 
     def grounds(row, key='sources'):
         refs = row.get(key)
-        if not isinstance(refs, list) or not refs or any(s not in sources for s in refs):
+        if not isinstance(refs, list) or not refs:
             raise ValueError('Revision needs resolved sources')
+        if missing := [s for s in refs if s not in sources]:
+            raise Waiting('Revision needs resolved sources', missing)
         if not any(sources[s].get('record') in record_ids and sources[s].get('kind') in
                    {'archive-record', 'home-paper', 'record', 'document'} for s in refs):
+            records = [sources[s].get('record') for s in refs if sources[s].get('record') not in record_ids]
+            if records and all(isinstance(r, str) for r in records):
+                raise Waiting('Documentary revision needs a record source', records)
             raise ValueError('Documentary revision needs a record source')
         return refs
 

@@ -246,9 +246,66 @@ def _assemble(instance, *, for_review=False, host_private=False):
     # after the restriction: hidden dates cannot anchor a guess, protected people receive none
     from familiar.tree.birth_guess import apply as guess_births
     guess_births(instance, graph, host_private=host_private)
+    translate_cards(instance, graph)
     for key in ('originalPeople', 'originalEdges', 'workingVersion', 'gallerySelection', 'distinct', 'plan', 'validation', 'context'):
         graph.pop(key, None)
     return graph
+
+
+def card_memory(instance):
+    """{language: {exact main-language text: translation}} from tree/translations/<lang>.json."""
+    memory = {}
+    for lang in instance.languages:
+        if lang != instance.source_language:
+            data = read_json(instance.path('translations') / f'{lang}.json', {})
+            texts = data.get('texts') if isinstance(data, dict) else None
+            if isinstance(texts, dict):
+                memory[lang] = {k: v for k, v in texts.items() if isinstance(v, str) and v.strip()}
+    return {lang: texts for lang, texts in memory.items() if texts}
+
+
+def translate_cards(instance, graph):
+    """Card texts in the family's other languages (docs/language-checks.md#card-translations).
+
+    `tree/translations/<lang>.json` holds `texts`: an exact source-language text and its translation. A matching
+    field becomes a language row; a changed source text shows the family's language until translated again.
+    """
+    memory = card_memory(instance)
+
+    def one(value, lang):
+        hit = memory[lang].get(value.strip())
+        if hit is None and ' · ' in value:  # a generated "date · place" line: translate its parts
+            parts = [memory[lang].get(part.strip(), part) for part in value.split(' · ')]
+            hit = ' · '.join(parts) if parts != value.split(' · ') else None
+        return hit
+
+    def row(value):
+        if not memory or not isinstance(value, str) or not value.strip():
+            return value
+        hits = {lang: hit for lang in memory if (hit := one(value, lang))}
+        return {instance.source_language: value, **hits} if hits else value
+
+    for person in graph['people'].values():
+        for key in ('summary',):
+            if key in person:
+                person[key] = row(person[key])
+        for fact in person.get('facts', []) + person.get('retiredFacts', []):
+            for key in ('label', 'text', 'basis'):
+                if key in fact:
+                    fact[key] = row(fact[key])
+        for event in person.get('events', []):
+            if 'place' in event:
+                event['place'] = row(event['place'])
+        if isinstance(person.get('cardPresentation'), dict) and 'place' in person['cardPresentation']:
+            person['cardPresentation']['place'] = row(person['cardPresentation']['place'])
+    for source in graph.get('sources', {}).values():
+        if 'title' in source:
+            source['title'] = row(source['title'])
+    research = graph.get('research') or {}
+    for fact in research.get('updates', []) + research.get('highlights', []):
+        for key in ('label', 'text'):
+            if key in fact:
+                fact[key] = row(fact[key])
 
 
 def _protect_people(instance, graph):

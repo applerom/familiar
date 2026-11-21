@@ -1,13 +1,31 @@
+import {inLanguage} from '../reader-profile';
 import {termPhrase,kinshipLexicon,kinshipTerm} from './kinship';
 import {growth} from './growth';
+import {searchKey} from '../search';
 import type {Confirmation} from './confirmation';
 export type Row=Record<string,any>;
-export type Info={connector?:boolean;connectorNote?:string;connectorBasis?:Row;growth:ReturnType<typeof growth>;confirmation?:Confirmation;id:string;name:string;short:string;treeName:string;givenName?:string;clanSurname?:string;alt:string;note:string;fullName:string;providedName?:string;maidenSurname?:string;maidenShown:string;showMaiden:boolean;unknownSurname:boolean;isWoman:boolean;placeholder:boolean;unnamed?:boolean;story:boolean;surnameKey:string;birth?:number;death?:number;approx:boolean;guess?:BirthGuess;sex:'m'|'f'|'';place:string;life:string;placeRole:string;birthText:string;deathText:string;birthKind:string;deathKind:string;connectionNote:Row;connectionShort:Row;dateBasis:Row;dateReference:Row};
+export type Info={connector?:boolean;connectorNote?:string;connectorBasis?:Row;growth:ReturnType<typeof growth>;confirmation?:Confirmation;id:string;name:string;short:string;treeName:string;givenName?:string;clanSurname?:string;clan?:string;alt:string;note:string;fullName:string;providedName?:string;maidenSurname?:string;maidenShown:string;showMaiden:boolean;unknownSurname:boolean;isWoman:boolean;placeholder:boolean;unnamed?:boolean;story:boolean;surnameKey:string;birth?:number;death?:number;approx:boolean;guess?:BirthGuess;sex:'m'|'f'|'';place:string;life:string;placeRole:string;birthText:string;deathText:string;birthKind:string;deathKind:string;connectionNote:Row;connectionShort:Row;dateBasis:Row;dateReference:Row};
 /** An orientation year the engine gives a person nobody recorded a birth for (setting tree.first_child_age); never a fact. */
 export type BirthGuess={year:number;exact:number;relation:'child'|'parent'|'spouse'|'sibling';anchors:{id:string;year:number;guessed:boolean;age:number;offset:number}[]};
 export type Kin={home:string;homeId:string;kind:'ancestor'|'spouse'|'child';n:number;g:'m'|'f'|'';sure:boolean};
 export type Relation={kind:'self'|'spouse'|'ancestor'|'descendant'|'collateral';n1:number;n2:number;g:'m'|'f'|'';branchG?:'m'|'f'|'';collateralG?:'m'|'f'|'';cousinG?:'m'|'f'|'';sure:boolean;path?:string[];viewerG?:'m'|'f'|'';special?:string;spouseOf?:Relation;spouseG?:'m'|'f'|'';viaSpouse?:'m'|'f'|''};
-export type Slot={id:string;status:string;role:string;likelihood?:string;weight?:number;sources?:string[]};
+/** A parent slot. `gap` > 0: the person's line leads to this ancestor through that many generations nobody has found
+ *  yet (association possible_ancestor); `link` is the association, with its basis for "More". */
+export type Slot={id:string;status:string;role:string;likelihood?:string;weight?:number;sources?:string[];gap?:number;link?:Row;weak?:boolean;
+ /** On the family's main line (`main_line` on the link): drawn as the main branch whatever its weight. */
+ main?:boolean};
+/** Below 0.3 a link is not drawn, except the leading origin of a person with nobody above: one weak branch from 0.1. */
+export const WEAK_FLOOR=.1;
+/** Associations that place an ancestor above a person: possible_parent (no missing generations) and possible_ancestor. */
+const DESCENT=['possible_parent','possible_ancestor'];
+/** Generations missing between a person and a possible ancestor: the recorded number, or within a recorded range
+ *  the one the birth years suggest (about 30 years a generation), else the middle of the range. */
+export function missingGenerations(link:Row,below?:number,above?:number){
+ const lo=link.type==='possible_parent'?0:Math.max(0,Math.round(Number(link.missing)||0)),hi=Math.max(lo,Math.round(Number(link.missing_max)||lo));
+ if(lo===hi)return lo;
+ if(below!==undefined&&above!==undefined&&below>above)return Math.min(hi,Math.max(lo,Math.round((below-above)/30)-1));
+ return Math.round((lo+hi)/2);
+}
 /** Visitor confidence is independent of the research workflow status. */
 export function connectionLevel(edge:{status?:string;likelihood?:string;weight?:number}){
  if(typeof edge.weight==='number')return edge.weight<.3?3:edge.weight<.5?2:1;
@@ -49,7 +67,7 @@ const spanText=([a,b]:[number,number])=>`${a}/${Math.floor(a/100)===Math.floor(b
 /** Birth and death joined by a dash; spaced when a side is itself a span ("≈1925 – 1941/45"). */
 const lifeSpan=(b:string,d:string)=>/\//.test(b+d)?`${b||'…'} – ${d||'…'}`:`${b||'…'}–${d||'…'}`;
 function compactDate(date:string){const y=year(date);if(y===undefined)return '';const q=(date||'').trim();const span=yearSpan(q);if(span)return spanText(span);return APPROX_DATE.test(q)?'≈'+y:/^(BEF|до)/i.test(q)?'BEF '+y:/^(AFT|после)/i.test(q)?'AFT '+y:String(y)}
-export const translated=(value:any,lang:string)=>typeof value==='string'?value:value?.[lang]||value?.en||value?.ru||'';
+export const translated=(value:any,lang:string)=>inLanguage(value,lang);
 /** "1974–…" for the dead or the long-ago born; "род. 1974" for someone born in living memory with no death recorded. */
 export function lifeLabel(p:Info,labels:Row,lang:string){const b=p.birthText?humanText(p.birthText,lang):'',d=p.deathText?humanText(p.deathText,lang):'';if(b&&!d&&labels.born)return `${labels.born} ${b}`;return b||d?lifeSpan(b,d):translated(p.dateReference,lang)}
 type GuessWords={rel:Record<BirthGuess['relation'],[string,string,string]>;age:(g:string,n:number)=>string;spouse:(g:string,n:number)=>string;sibling:string;guessed:string;later:string};
@@ -89,6 +107,14 @@ const cleanSurname=(s:string)=>String(s||'').replace(/\s*[(\[].*$/,'').replace(/
 function tileName(tree:string,short:string,maiden:string,clan:boolean){const t=String(tree||'').replace(/\s*\([^)]*\)/g,'').replace(/\?/g,'').replace(/\s+/g,' ').trim();if(!t||clan)return t;
  const last=t.split(' ').pop()!.toLocaleLowerCase();return short.toLocaleLowerCase().includes(last)||cleanSurname(maiden).toLocaleLowerCase()===last?t:short}
 const SURNAME=/^\p{Lu}[\p{L}'’-]+$/u;// a real surname, not a note such as "записано" or "[предварительное]"
+/** Regular gendered endings by the script a surname is written in (the engine's surnames.GENDER_PAIRS):
+ *  Корнеева and Корнеев, Korniejewa and Korniejew are one family. Invariant surnames stay intact. */
+const GENDER_PAIRS:[string,string][][]=[[['ский','ская'],['цкий','цкая'],['ской','ская'],['цкой','цкая'],['ов','ова'],['ев','ева'],['ёв','ёва'],['ин','ина'],['ын','ына'],['ый','ая']],[['ski','ska'],['cki','cka'],['dzki','dzka'],['ow','owa'],['ew','ewa'],['in','ina'],['yn','yna']]];
+export function genderForm(s:string,sex:'m'|'f'){for(const [m,f] of GENDER_PAIRS[/[Ѐ-ӿ]/.test(s)?0:1]){if(sex==='f'&&s.endsWith(m))return s.slice(0,-m.length)+f;if(sex==='m'&&s.endsWith(f))return s.slice(0,-f.length)+m}return s}
+/** One key for a clan's male, female and Polish maiden (-ówna) forms of one spelling. */
+export function clanKey(s:string){const k=genderForm(s.toLocaleLowerCase().trim(),'m');const m=k.match(/^(.{3,})(ówna|owna|увна)$/);return m?m[1]:k}
+// A person whose written names carry no surname at all (only a patronymic, or "z Kowalów") belongs to no family group.
+const noSurname=(p:Row)=>(p.names||[]).length>0&&!(p.names as Row[]).some(n=>SURNAME.test(cleanSurname(n.surname||'')));
 function surnameKey(np:Row,short:string){if(np.maidenSurname){const s=cleanSurname(np.maidenSurname);return SURNAME.test(s)?s:''}if(np.surnameUnknown||(np.isWoman&&np.isWife&&!np.maidenSurname))return '';const parts=short.split(' ').filter(x=>/\p{L}/u.test(x));const s=parts.length>1?parts[parts.length-1]:'';return SURNAME.test(s)?s:''}
 /** A relation word joined with a home person's name in the right order for the language. */
 /** An ancestor line is named by its surname, not by the reader. */
@@ -98,7 +124,12 @@ export function clanGenitive(s:string){if(!/^[А-ЯЁ][а-яё-]+$/.test(s))retu
  if(/(ский|цкий|ской|цкой|ская|цкая)$/.test(s))return s.replace(/(ий|ой|ая)$/,'их');
  if(/(ов|ев|ёв|ин|ын)$/.test(s))return s+'ых';if(/(ова|ева|ёва|ина|ына)$/.test(s))return s.slice(0,-1)+'ых';
  if(/(ич|ш|ж|щ|ч)$/.test(s))return s+'ей';return s}
-export function lineTitle(l:{id:string},model:Model,labels:Row){const i=model.info[l.id];const s=i?.surnameKey||i?.short?.split(' ').pop()||'';const t=String(labels.lineOf||'{s}');return t.replace('{s}',t.startsWith('Род ')?clanGenitive(s):s)}
+export function lineTitle(l:{id:string},model:Model,labels:Row){const i=model.info[l.id];const s=i?.surnameKey||i?.short?.split(' ').pop()||'';const t=String(labels.lineOf||'{s}');return t.replace('{s}',t.startsWith('Род ')?clanGenitive(s):t.startsWith('Ród ')?clanGenitivePl(s):s)}
+/** «Ród …» in Polish takes the family in the genitive plural: Korniejew → Korniejewów, Wrona → Wronów. */
+export function clanGenitivePl(s:string){if(!/^\p{Lu}[\p{Ll}-]+$/u.test(s))return s;
+ if(/(ski|cki|dzki)$/.test(s))return s.slice(0,-1)+'ich';if(/(ska|cka|dzka)$/.test(s))return s.slice(0,-1)+'ich';
+ if(/(owa|ewa|ina|yna)$/.test(s))return s.slice(0,-1)+'ów';if(/a$/.test(s))return s.slice(0,-1)+'ów';
+ if(/(ow|ew|in|yn|icz|ycz|ko|j|k|n|r|t|ł|z|c|sz|cz|rz)$/.test(s))return s.replace(/o$/,'')+'ów';return s}
 // English and Swedish mark the possessor on the name itself: Amaro's wife, Amaros fru.
 // A Russian given name in the genitive: жена Андрея, дочь Марии, сын Игоря.
 const nameGenitive=(s:string)=>!/^[А-ЯЁ][а-яё]+$/.test(s)?s:/ия$/.test(s)?s.slice(0,-1)+'и':/[гкхжчшщ]а$/.test(s)?s.slice(0,-1)+'и':/а$/.test(s)?s.slice(0,-1)+'ы':
@@ -212,10 +243,16 @@ export function humanText(text:string,lang:string){
   .replace(/≈ /g,'≈').replace(/\s+·\s+·\s+/g,' · ').trim();
 }
 export type Model=ReturnType<typeof buildModel>;
+/** A document's own spelling of a name: it lives in the card's "More" with its source, never on a tile. */
+export const DOCUMENT_NAME_TYPES=['recorded','as-written','indexed'];
+/** The name in the reader's language, when the family has one for this person; otherwise the family's main name. */
+const localName=(np:Row,lang:string)=>{const v=lang&&np.byLanguage?.[lang];return typeof v==='string'?v.replace(/\s+/g,' ').trim():''};
 export function buildModel(data:Row,labels:Row={}){
  const info:Record<string,Info>={};
  for(const [id,p] of Object.entries<Row>(data.people)){
-  const {main,note}=splitName(p.name||'');const np={...p.namePresentation};
+  const {main,note}=splitName(p.name||'');const np={...p.namePresentation};const local=localName(np,labels.languageCode);
+  const mainShort=String(np.display||main).replace(/\s*\([^)]*\)/g,'').replace(/\s+/g,' ').trim();
+  if(local){np.display=local;np.full=local}
   const ownerLabel=typeof p.placeholder==='string'&&p.placeholder.trim()?p.placeholder:'';
   const connector=!!ownerLabel&&!(p.names||[]).some((n:Row)=>n.given?.trim());
   // Explicit display decisions win; otherwise use sex or the recorded family role.
@@ -234,8 +271,12 @@ export function buildModel(data:Row,labels:Row={}){
   const ownerSurname=cleanSurname(p.names?.find((n:Row)=>n.surname)?.surname||ownerLabel.split('(')[0]);
   const story=typeof p.story==='string'?p.story.trim():!!(p.story?.ru||p.story?.pl||p.story?.en||p.story?.sv);
   const g=growth(data,id,connector);if(connector&&!g.documents.length&&!g.hasMedia){g.found=false;g.confirmed=[]}const basis=g.confirmed.map(s=>data.sources[s]?.title).filter(Boolean).join(' · ');
-  info[id]={connector,connectorNote:connector?ownerLabel:undefined,growth:g,confirmation:g.confirmed.length?{level:'document',basis:{ru:basis,en:basis,pl:basis,sv:basis},sources:g.confirmed}:p.confirmation,id,name:full,treeName:ownerLabel||tileName(p.treeName,short,np.maidenSurname,!!p.surnameDisplay?.form)||short,clanSurname:p.surnameDisplay?.form,providedName:ownerLabel||undefined,story:!!story,fullName:full,maidenSurname:np.maidenSurname||undefined,maidenShown,showMaiden:!ownerLabel&&!!(np.isWoman&&(np.isWife||np.maidenSurname)),unknownSurname:!!np.surnameUnknown,isWoman:!!np.isWoman,placeholder,surnameKey:p.surnameDisplay?.form|| (ownerLabel?(SURNAME.test(ownerSurname)?ownerSurname:''):main?surnameKey(np,short):''),short,alt,note:ownerLabel?'':note,birth,death,approx:approx||!!guess,guess,sex:/^m$/i.test(p.sex||'')?'m':/^f$/i.test(p.sex||'')||np.isWoman?'f':(data.families||[]).some((f:Row)=>f.husband===id)?'m':'',place:shortPlace(cp.place??(b?.status==='hypothesis'?'':b?.place)),life,placeRole:cp.placeRole||'birth',birthText,deathText,birthKind:cp.birthKind||'source',deathKind:cp.deathKind||'source',connectionNote:cp.connectionNote||{},connectionShort:cp.connectionShort||{},dateBasis:cp.dateBasis||{},dateReference:cp.dateReference||{}}
-  if (!ownerLabel) info[id].givenName = p.names?.[0]?.given?.trim() || undefined;
+  info[id]={connector,connectorNote:connector?ownerLabel:undefined,growth:g,confirmation:g.confirmed.length?{level:'document',basis:{ru:basis,en:basis,pl:basis,sv:basis},sources:g.confirmed}:p.confirmation,id,name:full,treeName:ownerLabel||(local?short:tileName(p.treeName,short,np.maidenSurname,!!p.surnameDisplay?.form))||short,clanSurname:p.surnameDisplay?.form,clan:p.surnameDisplay?.clan,providedName:ownerLabel||undefined,story:!!story,fullName:full,maidenSurname:np.maidenSurname||undefined,maidenShown,showMaiden:!ownerLabel&&!!(np.isWoman&&(np.isWife||np.maidenSurname)),unknownSurname:!!np.surnameUnknown,isWoman:!!np.isWoman,placeholder,surnameKey:noSurname(p)&&!ownerLabel?'':(local&&main&&!np.surnameUnknown&&!(np.isWoman&&np.isWife&&!np.maidenSurname)&&surnameKey({},local.replace(/\s*\([^)]*\)/g,'')))||p.surnameDisplay?.form|| (ownerLabel?(SURNAME.test(ownerSurname)?ownerSurname:''):main?surnameKey(np,mainShort||short):''),short,alt,note:ownerLabel?'':note,birth,death,approx:approx||!!guess,guess,sex:/^m$/i.test(p.sex||'')?'m':/^f$/i.test(p.sex||'')||np.isWoman?'f':(data.families||[]).some((f:Row)=>f.husband===id)?'m':'',place:shortPlace(cp.place??(b?.status==='hypothesis'?'':b?.place)),life,placeRole:cp.placeRole||'birth',birthText,deathText,birthKind:cp.birthKind||'source',deathKind:cp.deathKind||'source',connectionNote:cp.connectionNote||{},connectionShort:cp.connectionShort||{},dateBasis:cp.dateBasis||{},dateReference:cp.dateReference||{}}
+  // the tile's given name: from the reader-language form, else the first name that is not a document's spelling
+  const own=(p.names||[]).find((n:Row)=>n.given?.trim()&&!DOCUMENT_NAME_TYPES.includes(n.type))||p.names?.[0];
+  // (a decided or reader-language display that does not start with it gives its own first words)
+  const given=own?.given?.trim()||'',shown=info[id].short,rest=shown.split(' ').slice(0,-1).join(' ')||shown;
+  if (!ownerLabel) info[id].givenName = (given?((shown+' ').startsWith(given+' ')?given:rest):local?rest:'') || undefined;
  }
  // An unnamed connector is shown by the placeholder the family data carries, literally; the engine never builds
  // a replacement (no child's surname, no transliteration, no feminine form).
@@ -255,15 +296,33 @@ export function buildModel(data:Row,labels:Row={}){
  const byYear=(a:string,b:string)=>(info[a].birth??9999)-(info[b].birth??9999)||info[a].name.localeCompare(info[b].name,'ru');
  const treeOrder = new Map(Object.keys(info).map((id, index) => [id, index]));
  const bySeniority = (a: string, b: string) =>
-  (info[a].birth ?? Infinity) - (info[b].birth ?? Infinity) || treeOrder.get(a)! - treeOrder.get(b)!;
+  (yearOf(a) ?? Infinity) - (yearOf(b) ?? Infinity) || treeOrder.get(a)! - treeOrder.get(b)!;
  const roleOf=(pid:string)=>{const s=String(data.people[pid]?.sex||'').toLowerCase();return s==='m'||(s!=='f'&&!info[pid]?.isWoman&&(data.families||[]).some((f:Row)=>f.husband===pid))?'отец':s==='f'||info[pid]?.isWoman?'мать':''};
  const parentCache=new Map<string,{slots:[Slot|null,Slot|null];extra:Slot[]}>();
+ // A parent link that is an assumption, not a document, carries its own words for "More".
+ const assumption=(e:Row)=>connectionLevel(e)>1&&(e.basis||e.text)?e:undefined;
+ // A possible ancestor from 0.3 takes a free parent slot; below 0.3 it is not drawn (it still joins the islands).
+ const descents=new Map<string,Row[]>();
+ for(const a of data.associations||[])if(DESCENT.includes(a.type)&&!REJECTED.includes(a.status)&&info[a.from]&&info[a.to]&&a.from!==a.to&&!info[a.from].placeholder&&!info[a.to].placeholder&&(connectionLevel(a)<3||a.weight>=WEAK_FLOOR||a.main_line===true))push(descents,a.to,a);
+ const below=new Map<string,string[]>();
+ const yearOf=(pid:string)=>info[pid]?.birth??info[pid]?.guess?.exact;
  function parents(id:string){
   let r=parentCache.get(id);if(r)return r;
   const edges=(up.get(id)||[]).map(e=>e.role==='отец'||e.role==='мать'?e:{...e,role:roleOf(e.parent)});const father=edges.find(e=>e.role==='отец'),mother=edges.find(e=>e.role==='мать');
-  const rest=edges.filter(e=>e!==father&&e!==mother);const slots:[Slot|null,Slot|null]=[father?{id:father.parent,status:firmStatus(father),likelihood:info[father.parent]?.connector||info[id]?.connector?undefined:father.likelihood,sources:father.sources,weight:father.weight,role:'отец'}:null,mother?{id:mother.parent,status:firmStatus(mother),likelihood:info[mother.parent]?.connector||info[id]?.connector?undefined:mother.likelihood,sources:mother.sources,weight:mother.weight,role:'мать'}:null];
+  const rest=edges.filter(e=>e!==father&&e!==mother);const slots:[Slot|null,Slot|null]=[father?{id:father.parent,status:firmStatus(father),likelihood:info[father.parent]?.connector||info[id]?.connector?undefined:father.likelihood,sources:father.sources,weight:father.weight,role:'отец',main:father.main_line===true,link:assumption(father)}:null,mother?{id:mother.parent,status:firmStatus(mother),likelihood:info[mother.parent]?.connector||info[id]?.connector?undefined:mother.likelihood,sources:mother.sources,weight:mother.weight,role:'мать',main:mother.main_line===true,link:assumption(mother)}:null];
   const extra:Slot[]=[];
-  for(const e of rest){const s={id:e.parent,status:firmStatus(e),likelihood:info[e.parent]?.connector||info[id]?.connector?undefined:e.likelihood,sources:e.sources,weight:e.weight,role:e.role==='отец'||e.role==='мать'?e.role:''};if(e.role==='отец'||e.role==='мать'){extra.push(s);continue}if(!slots[0])slots[0]=s;else if(!slots[1])slots[1]=s;else extra.push(s)}
+  for(const e of rest){const s={id:e.parent,status:firmStatus(e),likelihood:info[e.parent]?.connector||info[id]?.connector?undefined:e.likelihood,sources:e.sources,weight:e.weight,role:e.role==='отец'||e.role==='мать'?e.role:'',main:e.main_line===true,link:assumption(e)};if(e.role==='отец'||e.role==='мать'){extra.push(s);continue}if(!slots[0])slots[0]=s;else if(!slots[1])slots[1]=s;else extra.push(s)}
+  const links=descents.get(id)||[];
+  const descend=(a:Row,weak:boolean)=>{const role=roleOf(a.from);const i=role==='мать'?1:role==='отец'?0:slots[0]?1:0;
+   if(slots[i]||slots.some(s=>s?.id===a.from))return;
+   slots[i]={id:a.from,status:a.status||'hypothesis',likelihood:a.likelihood,weight:a.weight,sources:a.sources,role:role||(i?'мать':'отец'),gap:missingGenerations(a,yearOf(id),yearOf(a.from)),link:a,weak,main:a.main_line===true};push(below,a.from,id)};
+  // The family's main line first, whatever its weight; then every origin from 0.3.
+  for(const a of links)if(a.main_line===true)descend(a,false);
+  for(const a of links)if(connectionLevel(a)<3)descend(a,false);
+  // A free line and no origin from 0.3 for it: the leading version alone is drawn, as one of the possible branches.
+  // A chain of such links above one another is drawn link by link, so it never breaks.
+  const lead=links.filter(a=>!slots.some(s=>s?.link===a)).reduce<Row|undefined>((best,a)=>!best||a.weight>best.weight?a:best,undefined);
+  if(lead)descend(lead,true);
   // alternative candidates for a taken slot are kept as extras, one per person
   r={slots,extra:extra.filter((s,i,a)=>a.findIndex(x=>x.id===s.id)===i&&s.id!==slots[0]?.id&&s.id!==slots[1]?.id)};parentCache.set(id,r);return r
  }
@@ -278,7 +337,16 @@ export function buildModel(data:Row,labels:Row={}){
   for(const [x,y] of [[a,b],[b,a]]){let m=partners.get(x);if(!m)partners.set(x,m=new Map());const o=m.get(y);m.set(y,{kids:(o?.kids||0)+kids,family:(o?.family||false)||family})}};
  (data.families||[]).forEach((f:Row)=>addPartner(f.husband,f.wife,0,true,f));
  (data.associations||[]).filter((a:Row)=>a.type==='spouse').forEach((a:Row)=>addPartner(a.from,a.to,0,true,a));
- Object.keys(info).forEach(c=>{const [f,m]=parents(c).slots;if(f&&m)addPartner(f.id,m.id,1,false,{status:'hypothesis'})});
+ Object.keys(info).forEach(c=>{const [f,m]=parents(c).slots;if(f&&m&&!f.gap&&!m.gap)addPartner(f.id,m.id,1,false,{status:'hypothesis'})});
+ // A woman's maiden surname is told in the script of her shown name: in a Polish page her father's Polish surname
+ // (Ludmiła Sokołowa z d. Korniejewa), in a Russian page the Russian spelling of an act's Latin one. The family she
+ // was born to is her clan, whichever language the page is read in.
+ const script=(s:string)=>/[Ѐ-ӿ]/.test(s)?'c':'l';const same=(a:string,b:string)=>!!a&&!!b&&searchKey(clanKey(a))===searchKey(clanKey(b));
+ Object.values(info).forEach(i=>{const maiden=cleanSurname(i.maidenSurname||'');if(!maiden)return;const local=!!localName(data.people[i.id]?.namePresentation||{},labels.languageCode);
+  if(!local&&script(maiden)===script(i.short))return;const f=parents(i.id).slots[0];const father=f&&!f.gap?info[f.id]?.surnameKey||'':'';const last=i.short.split(' ').pop()||'';
+  const found=[father,last,i.surnameKey,maiden].filter(c=>SURNAME.test(c)&&same(c,maiden));// her father's surname is her birth surname even where two scripts spell it apart (Корнеева, Korniejew)
+  const key=found.find(c=>script(c)===script(i.short))||(SURNAME.test(father)&&script(father)===script(i.short)&&script(maiden)!==script(father)?father:found[0]);if(!key)return;
+  i.surnameKey=key;const shown=genderForm(key,'f');i.maidenShown=i.short.toLocaleLowerCase().endsWith(shown.toLocaleLowerCase())?'':shown});
  const spouseConnection=(a:string,b:string):Row=>unionLinks.get(unionKey(a,b))||{status:'hypothesis'};
  const husbands=new Set<string>((data.families||[]).map((f:Row)=>f.husband));
  const spouses=(id:string)=>[...(partners.get(id)||new Map()).entries()].sort((a,b)=>b[1].kids-a[1].kids||Number(b[1].family)-Number(a[1].family)||byYear(a[0],b[0])).map(([pid])=>pid);
@@ -296,14 +364,14 @@ export function buildModel(data:Row,labels:Row={}){
  for (const a of data.associations || []) {
   if (REJECTED.includes(a.status)) continue;
   if (a.type === 'sibling') join(statedSiblings, a.from, a.to);
-  if (a.type === 'sibling' || a.type === 'possible_parent') join(adjacent, a.from, a.to);
+  if (a.type === 'sibling' || DESCENT.includes(a.type)) join(adjacent, a.from, a.to);
  }
  function connectedFrom(roots: string[]) {
   const seen = new Set(roots.filter(id => info[id] && !info[id].placeholder));
   for (const id of seen) for (const next of adjacent.get(id) || []) seen.add(next);
   return seen;
  }
- const siblings=(id:string)=>{const set=new Set(statedSiblings.get(id));parents(id).slots.forEach(s=>s&&(down.get(s.id)||[]).forEach(c=>set.add(c)));set.delete(id);return [...set].sort(byYear)};
+ const siblings=(id:string)=>{const set=new Set(statedSiblings.get(id));parents(id).slots.forEach(s=>s&&!s.gap&&(down.get(s.id)||[]).forEach(c=>set.add(c)));set.delete(id);return [...set].sort(byYear)};
  const stackCache = new Map<string, number>();
  function siblingLayers(id: string) {
   const saved = stackCache.get(id);
@@ -325,7 +393,7 @@ export function buildModel(data:Row,labels:Row={}){
  homes.forEach(h=>parents(h).slots.forEach(s=>{if(!s)return;const idx=lines.length;lines.push({id:s.id,color:BRANCH_COLORS[idx%4],home:h,role:s.role,status:connectionStatus(s)});const todo=[s.id];while(todo.length){const x=todo.pop()!;if(branch.has(x))continue;branch.set(x,idx);parents(x).slots.forEach(p=>p&&todo.push(p.id))}}));
  // relationships to a home person: ancestors by distance, partner, child; honest about candidate links
  const reach=new Map<string,Map<string,{n:number;g:'m'|'f'|'';sure:boolean;path?:string[]}>>();
- homes.forEach(h=>{const m=new Map<string,{n:number;g:'m'|'f'|'';sure:boolean;path?:string[]}>();const q=[h];m.set(h,{n:0,g:'',sure:true});for(let i=0;i<q.length;i++){const x=q[i];const cur=m.get(x)!;parents(x).slots.forEach(s=>{if(s&&!m.has(s.id)){m.set(s.id,{n:cur.n+1,g:s.role==='отец'?'m':s.role==='мать'?'f':'',sure:cur.sure&&connectionLevel(s)<3});q.push(s.id)}})}reach.set(h,m)});
+ homes.forEach(h=>{const m=new Map<string,{n:number;g:'m'|'f'|'';sure:boolean;path?:string[]}>();const q=[h];m.set(h,{n:0,g:'',sure:true});for(let i=0;i<q.length;i++){const x=q[i];const cur=m.get(x)!;parents(x).slots.forEach(s=>{if(s&&!m.has(s.id)){m.set(s.id,{n:cur.n+1+(s.gap||0),g:s.role==='отец'?'m':s.role==='мать'?'f':'',sure:cur.sure&&connectionLevel(s)<3});q.push(s.id)}})}reach.set(h,m)});
  const kinship=(id:string):Kin[]=>{const out:Kin[]=[];
   for(const h of homes){if(h===id)continue;const r=reach.get(h)!.get(id);const hn=info[h].short.split(' ')[0];const s=String(data.people[id]?.sex||'').toLowerCase();const g:'m'|'f'|''=s==='m'||s==='f'?s:'';
    if(r){out.push({home:hn,homeId:h,kind:'ancestor',n:r.n,g:r.g,sure:r.sure});continue}
@@ -334,7 +402,7 @@ export function buildModel(data:Row,labels:Row={}){
   return out};
  // all ancestors of one person with the distance, the sex of the ancestor and whether every link on the way is firm
  const ancCache=new Map<string,Map<string,{n:number;g:'m'|'f'|'';sure:boolean;path?:string[]}>>();
- const ancestorsOf=(id:string)=>{let m=ancCache.get(id);if(m)return m;m=new Map();const q=[id];m.set(id,{n:0,g:'',sure:true,path:[id]});for(let i=0;i<q.length;i++){const x=q[i];const cur=m.get(x)!;parents(x).slots.forEach(s=>{if(s&&!m!.has(s.id)){m!.set(s.id,{n:cur.n+1,g:s.role==='отец'?'m':s.role==='мать'?'f':'',sure:cur.sure&&connectionLevel(s)<3,path:[...(cur.path||[]),s.id]});q.push(s.id)}})}ancCache.set(id,m);return m};
+ const ancestorsOf=(id:string)=>{let m=ancCache.get(id);if(m)return m;m=new Map();const q=[id];m.set(id,{n:0,g:'',sure:true,path:[id]});for(let i=0;i<q.length;i++){const x=q[i];const cur=m.get(x)!;parents(x).slots.forEach(s=>{if(s&&!m!.has(s.id)){m!.set(s.id,{n:cur.n+1+(s.gap||0),g:s.role==='отец'?'m':s.role==='мать'?'f':'',sure:cur.sure&&connectionLevel(s)<3,path:[...(cur.path||[]),s.id]});q.push(s.id)}})}ancCache.set(id,m);return m};
  // blood kin of exactly one line who are not its direct ancestors: brothers and sisters of ancestors and their descendants.
  // Anyone who descends from two or more lines (the home couple's children, brothers and sisters) and every in-law stays neutral.
  const kin=new Map<string,number>();
@@ -356,7 +424,7 @@ export function buildModel(data:Row,labels:Row={}){
   for(const s of spouses(me)){const r=blood(s,id);if(r)return {...r,viaSpouse:sex(s),path:[me,...(r.path||[])],sure:r.sure&&connectionLevel(spouseConnection(me,s))<3}}
   // Parents of a child's spouse; husbands of sisters. These require two marriage links.
   for(const child of children(me))for(const partner of spouses(child)){
-   const parent=parents(partner).slots.find(p=>p?.id===id);
+   const parent=parents(partner).slots.find(p=>p?.id===id&&!p.gap);
    if(parent){const own=parents(child).slots.find(p=>p?.id===me);return {kind:'collateral',n1:0,n2:0,g:sex(id),special:'coParentInLaw',path:[me,child,partner,id],sure:!!own&&connectionLevel(own)<3&&connectionLevel(parent)<3&&connectionLevel(spouseConnection(child,partner))<3}}
   }
   if(sex(me)==='m'&&sex(id)==='m')for(const wife of spouses(me).filter(p=>sex(p)==='f'))for(const sister of siblings(wife).filter(p=>sex(p)==='f')){
@@ -401,5 +469,7 @@ export function buildModel(data:Row,labels:Row={}){
   Object.assign(info[pid],{name,short:name,fullName:name,alt:'',note:'',unnamed:true});
  }
  return {connectionLevel,connectionStatus,relationshipEvidence,info,parents,children,spouses,spouseConnection,siblings,
-  siblingLayers, bySeniority, connectedFrom, familyPeople: connectedFrom(homes), husbands,branch,kin,tone,lines,homes,kinship,relation,ancestorsOf};
+  siblingLayers, bySeniority, connectedFrom,
+  /** People whose line leads up to `id` across a possible-ancestor link: the way down from a nest's anchor. */
+  descendantsBelow:(id:string)=>{Object.keys(info).forEach(parents);return (below.get(id)||[]).map(c=>({id:c,slot:parents(c).slots.find(s=>s?.id===id&&s.link)!})).filter(x=>x.slot)}, familyPeople: connectedFrom(homes), husbands,branch,kin,tone,lines,homes,kinship,relation,ancestorsOf};
 }

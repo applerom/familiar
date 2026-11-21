@@ -11,7 +11,10 @@ from .pages import journal_date, page
 STATE_ICON = {'draft': '○', 'ready': '●', 'sent': '◷', 'answered': '✓', 'closed': '✓', 'not_needed': '−'}
 
 
-def project(instance, w):
+def project(instance, w, *, language=None, texts=None, local_names=None):
+    """The letters page; another reader language translates the family's notes, never the letter itself."""
+    language, texts, local_names = language or instance.source_language, texts or {}, local_names or {}
+    tr = lambda value: texts.get(value.strip(), value) if isinstance(value, str) and value.strip() else value
     root = instance.path('correspondence')
     paths, names = listing(root, '*.json')
     listings = {(root, '*.json'): names}
@@ -31,6 +34,12 @@ def project(instance, w):
     result = publication(instance, 'correspondence')
     result.check(instance)
     items, c = result.data()['items'], w['correspondence']
+    if language != instance.source_language:
+        shown = ('settles', 'title', 'why_now', 'relevance', 'recipient', 'context', 'cost_note', 'how', 'sender', 'line')
+        # The letter keeps its own subject: the translated title never becomes the subject sent to an archive.
+        items = [row | {k: tr(row.get(k)) for k in shown if k in row} | {'subject': row.get('subject') or row.get('title')}
+                 | {'people': [p | {'name': local_names.get(p.get('id')) or tr(p.get('name'))} for p in row.get('people') or []]}
+                 for row in items]
     e = lambda v: html.escape(str(v), quote=True)
     def text(value, cls='desk-prose'):
         return '<p class="' + cls + '">' + e(value) + '</p>' if value else ''
@@ -118,4 +127,5 @@ def project(instance, w):
         content += text(c['empty'])
     content += '</div><aside class="mail-pane" aria-label="' + e(c['letter']) + '"></aside></div>'
     content += '<script defer src="/desk/correspondence.js"></script><link rel="stylesheet" href="/desk/correspondence.css">'
-    return {'desk/correspondence.html': page(c['title'], content, instance.source_language)}, inputs, listings
+    name = 'desk/correspondence.html' if language == instance.source_language else f'desk/correspondence.{language}.html'
+    return {name: page(c['title'], content, language)}, inputs, listings

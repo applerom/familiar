@@ -10,16 +10,23 @@
 # :END_MODULE_CONTRACT
 import json
 import os
+import pickle
 import re
 import tomllib
+from functools import lru_cache
 from pathlib import Path
 
 from .model import require
 
 
 def read(path):
-    with path.open('rb') as stream:
-        return tomllib.load(stream)
+    return pickle.loads(_parse(path.read_bytes()))
+
+
+@lru_cache(maxsize=64)
+def _parse(content):
+    # Every new instance reads its packs; parse each distinct content once per process.
+    return pickle.dumps(tomllib.loads(content.decode('utf-8')), pickle.HIGHEST_PROTOCOL)
 
 
 def bundled_root():

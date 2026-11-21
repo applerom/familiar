@@ -1,0 +1,23 @@
+# START_MODULE_CONTRACT: MOD-REGION-BP-NAME-KEY
+# PURPOSE: Say in which script the region's surnames and places share one search key and which sound values its clerks used.
+# PRD_REF: docs/PRD.md#SOURCE-SEARCH
+# INVARIANTS:
+# - the key only proposes search forms and hints; it never merges, renames or decides identity [review: pack keeper]
+# CHANGES_WITH:
+# - MOD-NAME-KEY
+# - regions/pl/pack.toml, regions/ru/pack.toml ([language.surname_key])
+# :END_MODULE_CONTRACT
+schema_version = 1
+semantics = "search-candidates"
+# Cyrillic acts are written into Polish orthography (the language packs' surname_key letters), then keyed.
+script = "pl"
+basis = "Daitch-Mokotoff with the values of Polish and Belarusian orthography; tested on one family's 160 surname forms: 0 false pairs of 5188 between different surnames, 338 of 807 pairs inside one surname found"
+
+# Daitch-Mokotoff codes its German and Spanish alternatives for j, c, ch and ck; here j is always [j], c is [ts],
+# ch is [x]. rz keeps r: Russian clerks wrote Polish rz as р (Grzegorz - Григорий).
+[sound]
+j = "1"
+c = "4"
+ch = "5"
+ck = "45"
+rz = "94|4|9"

@@ -1,5 +1,5 @@
 'use client';
-import {readerStorage,profile} from './reader-profile';
+import {readerStorage,profile,inLanguage} from './reader-profile';
 import {useEffect,useRef,useState} from 'react';
 import {lifeLabel,relationPhrase,type Model,type Relation,type Row} from './tree/model';
 import {plural,type Language} from './i18n';
@@ -39,7 +39,7 @@ export type Clan={parents:string[];families:{head:string;spouse?:string;kids:str
 /** `facts` are short documented facts shown as chips inside the story ("кнопки фактов"); `figures` are extra period pictures inside the text;
  *  `records` are document crops shown full-width inside the text with a link to the whole page; `tree` draws a small family diagram
  *  (a couple, their children, and lines of descent from one child down to the family of today). */
-export type Chapter={id?:string;part?:Row;year:string;title:Row;text:Row;more?:Row;kind?:ChapterKind;variants?:{title:Row;text:Row;more?:Row}[];places?:{name:Row;note?:Row;url?:string}[];picture?:Picture;figures?:Picture[];facts?:{text:Row;record?:string}[];tree?:{parents:TreeNode[];children:TreeNode[];highlight?:string[];descend?:TreeNode[];descendLabel?:Row;right?:TreeNode[];rightLabel?:Row};person?:string;people?:string[];record?:Rec;records?:Rec[];kids?:{title?:Row;text:Row};kidsRecords?:boolean;kidsSelection?:boolean;flow?:{after:number;figure?:number;record?:number}[];extras?:Extra[];gen?:{at:number[];who?:string|Row;where?:string|Row};clan?:Clan;links?:{label:Row;url:string;kind?:'video'|'read'|'map'}[];tone?:string;ask?:Row;game?:Game};
+export type Chapter={id?:string;part?:Row;year:string|Row;title:Row;text:Row;more?:Row;kind?:ChapterKind;variants?:{title:Row;text:Row;more?:Row}[];places?:{name:Row;note?:Row;url?:string}[];picture?:Picture;figures?:Picture[];facts?:{text:Row;record?:string}[];tree?:{parents:TreeNode[];children:TreeNode[];highlight?:string[];descend?:TreeNode[];descendLabel?:Row;right?:TreeNode[];rightLabel?:Row};person?:string;people?:string[];record?:Rec;records?:Rec[];kids?:{title?:Row;text:Row};kidsRecords?:boolean;kidsSelection?:boolean;flow?:{after:number;figure?:number;record?:number}[];extras?:Extra[];gen?:{at:number[];who?:string|Row;where?:string|Row};clan?:Clan;links?:{label:Row;url:string;kind?:'video'|'read'|'map'}[];tone?:string;ask?:Row;game?:Game};
 /** A side story attached to a chapter: folded under its own heading, so it does not take a card of its own in the line of the feed.
  *  In the children's mode only extras with a `kids` text are shown. */
 export type Extra={title:Row;text:Row;kids?:Row;more?:Row;picture?:Picture;records?:Rec[]};
@@ -50,7 +50,7 @@ export type Feed={id:string;title:Row;lead:Row;cover:string;period:string|Row;li
 /** A person's name as the feed writes it in the reader's language (feed.names, RULES LANG-2); else the tree card's short name. */
 const feedName=(feed:Feed,pid:string,language:string,short=false):string|undefined=>{const r=feed.names?.[pid] as (Record<string,string>&{short?:Record<string,string>})|undefined;if(!r||typeof r!=='object')return undefined;return (short?r.short?.[language]:undefined)||r[language]||undefined};
 const personName=(feed:Feed,model:Model,pid:string,language:string)=>model.info[pid]?.clanSurname?model.info[pid].short:feedName(feed,pid,language)||model.info[pid]?.short||pid;
-export const tr=(x:any,language:string):string=>typeof x==='string'?x:x?.[language]||x?.en||x?.ru||'';
+export const tr=(x:any,language:string):string=>inLanguage(x,language);
 /** Covers of every feed for the Stories page. */
 export function FeedCovers({feeds,labels,language,open}:{feeds:Feed[];labels:Row;language:Language;open:(id:string)=>void}){
  if(!feeds.length)return null;
@@ -135,7 +135,7 @@ export function FeedViewer({feed,step,setStep,onClose,go,model,labels,language,c
    <ChestChip feed={feed} labels={labels} language={language}/>
    <LanguagePicker languages={profile().family.languages} language={language} label={labels.language} onChange={changeLanguage}/>
    <button className="feed-x" onClick={onClose} aria-label={labels.close}>×</button></div>
-  {toc&&<nav className="feed-toc" aria-label={labels.feedContents}>{feed.chapters.map((x,k)=><div key={k}>{x.part&&<small>{tr(x.part,language)}</small>}<button className={k===i?'on':''} aria-current={k===i?'step':undefined} onClick={()=>{setStep(k);setToc(false)}}><span>{x.year}</span>{tr((kidsMode&&x.kids?.title)||x.title,language)}</button></div>)}</nav>}
+  {toc&&<nav className="feed-toc" aria-label={labels.feedContents}>{feed.chapters.map((x,k)=><div key={k}>{x.part&&<small>{tr(x.part,language)}</small>}<button className={k===i?'on':''} aria-current={k===i?'step':undefined} onClick={()=>{setStep(k);setToc(false)}}><span>{tr(x.year,language)}</span>{tr((kidsMode&&x.kids?.title)||x.title,language)}</button></div>)}</nav>}
   {pick&&setMe&&<div className="feed-reader-pick">
    <p>{labels.feedReaderHint}</p>
    <input autoFocus aria-label={labels.feedReaderSearch} placeholder={labels.feedReaderSearch} value={query} onChange={e=>setQuery(e.target.value)}/>
@@ -143,8 +143,8 @@ export function FeedViewer({feed,step,setStep,onClose,go,model,labels,language,c
    {reader&&<div className="feed-reader-actions"><button onClick={share}>{copied?labels.feedCopied:labels.feedShare}</button><button onClick={()=>{setMe('');setPick(false)}}>{labels.meReset}</button></div>}
   </div>}
   <PlayFeed.Provider value={feed.id}><div ref={body} className="feed-body">
-   {c.picture?.ours||['photo-treatment','photo-restoration'].includes(c.picture?.kind||'')?<><FeedFigure key={feed.id+'-'+i} f={c.picture!} labels={labels} language={language} {...play}/><p className="feed-year">{c.year}</p></>:<div className={c.picture?'feed-pic-mat':undefined}><SpotFrame key={feed.id+'-'+i} className={'feed-pic'+(c.picture?'':' empty')} spots={c.picture?.spots} asset={c.picture?.asset} pano={c.picture?.pano} labels={labels} language={language} {...play}>{c.picture?/* eslint-disable-next-line @next/next/no-img-element */<img key={c.picture.asset} src={c.picture.asset} alt={tr(c.picture.caption,language)}/>:null}
-    <span className="feed-year" style={c.tone?{background:c.tone}:undefined}>{c.year}</span>
+   {c.picture?.ours||['photo-treatment','photo-restoration'].includes(c.picture?.kind||'')?<><FeedFigure key={feed.id+'-'+i} f={c.picture!} labels={labels} language={language} {...play}/><p className="feed-year">{tr(c.year,language)}</p></>:<div className={c.picture?'feed-pic-mat':undefined}><SpotFrame key={feed.id+'-'+i} className={'feed-pic'+(c.picture?'':' empty')} spots={c.picture?.spots} asset={c.picture?.asset} pano={c.picture?.pano} labels={labels} language={language} {...play}>{c.picture?/* eslint-disable-next-line @next/next/no-img-element */<img key={c.picture.asset} src={c.picture.asset} alt={tr(c.picture.caption,language)}/>:null}
+    <span className="feed-year" style={c.tone?{background:c.tone}:undefined}>{tr(c.year,language)}</span>
     {c.picture&&<button className="feed-credit-btn" onClick={()=>setCredit(v=>!v)} aria-expanded={credit}>i</button>}
     {credit&&c.picture&&<p className="feed-credit">{[tr(c.picture.caption,language),c.picture.credit].filter(Boolean).join(' · ')}{c.picture.url&&<> · <a href={c.picture.url} target="_blank" rel="noreferrer">{labels.storyPicSource} ↗</a></>}{c.picture.orig&&<> · <a href={typeof c.picture.orig==='string'?c.picture.orig:c.picture.orig.asset} target="_blank" rel="noreferrer">{labels.feedRealTab} ↗</a></>}</p>}
    </SpotFrame></div>}
@@ -161,7 +161,7 @@ export function FeedViewer({feed,step,setStep,onClose,go,model,labels,language,c
     <div className="feed-simple">{storyBody()}</div>
     {/* one text for all ages (author, 25.10.2026): a short question or "did you know" for a child reading with an adult */}
     {c.ask&&<aside className="feed-ask"><b>{labels.feedAsk}</b>{paras(tr(c.ask,language))}</aside>}
-    {c.game&&<GameCard key={feed.id+'-'+i} id={feed.id+'/'+(c.id||c.year)} game={c.game} kids={kidsMode} labels={labels} language={language} doc={(a:string)=>{const r=allRecs.find(x=>x.asset===a);return r?record(r,-1):null}}/>}
+    {c.game&&<GameCard key={feed.id+'-'+i} id={feed.id+'/'+(c.id||tr(c.year,''))} game={c.game} kids={kidsMode} labels={labels} language={language} doc={(a:string)=>{const r=allRecs.find(x=>x.asset===a);return r?record(r,-1):null}}/>}
     {!kidsMode&&c.facts&&c.facts.length>0&&<div className="feed-facts">{c.facts.map((f,k)=><span key={k} className="feed-fact">{f.record?<a href={f.record} target="_blank" rel="noreferrer">◆ {tr(f.text,language)}</a>:<>◆ {tr(f.text,language)}</>}</span>)}</div>}
     {(c.figures||[]).map((f,k)=>placedF.has(k)?null:figure(f,k))}
     {(more||srcDocs.length>0||srcPics.length>0)&&<details className="story-more" open={open} onToggle={e=>setOpen((e.target as HTMLDetailsElement).open)}><summary>{kind==='truth'?labels.feedMoreTruth:labels.feedMore}</summary>{more&&paras(more)}{srcList(labels.feedSrcDocs,srcDocs)}{srcList(labels.feedSrcPics,srcPics)}</details>}
@@ -178,13 +178,13 @@ export function FeedViewer({feed,step,setStep,onClose,go,model,labels,language,c
      {(c.links||[]).map((l,k)=><a key={k} className={'feed-chip '+(l.kind||'read')} href={l.url} target="_blank" rel="noreferrer">{l.kind==='video'?'▶ ':l.kind==='map'?'◎ ':'↗ '}{tr(l.label,language)}</a>)}
     </div>}
     {following&&<button className="feed-next" onClick={next}>
-     <small>{labels.feedNextChapter} · {following.year} →</small>
+     <small>{labels.feedNextChapter} · {tr(following.year,language)} →</small>
      <strong>{tr((kidsMode&&following.kids?.title)||following.title,language)}</strong>
      <span>{tr((kidsMode&&following.kids?.text)||following.text,language).split(/\n/)[0].replace(/\*\*/g,'')}</span>
     </button>}
    </div>
   </div></PlayFeed.Provider>
-  <div className="feed-foot"><button onClick={prev} disabled={i===0}>‹ {labels.prev}</button><span>{c.year}</span>{i<n-1?<button onClick={next}>{labels.next} ›</button>:<button onClick={onClose}>{labels.feedEnd}</button>}</div>
+  <div className="feed-foot"><button onClick={prev} disabled={i===0}>‹ {labels.prev}</button><span>{tr(c.year,language)}</span>{i<n-1?<button onClick={next}>{labels.next} ›</button>:<button onClick={onClose}>{labels.feedEnd}</button>}</div>
  </div>
 }
 
