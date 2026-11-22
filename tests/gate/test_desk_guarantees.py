@@ -43,3 +43,26 @@ def test_family_asks_carry_over_and_private_memory(family):
     shared = hosted_files(assemble(family).files, personal=False, feedback_ids={envelope['id']})
     reader = publication(family, 'reader', for_review=True).files()
     assert all(envelope['text'].encode() not in raw for raw in (*shared.values(), *reader.values()))
+
+
+def test_closed_horizon_tells_the_story_without_asking(family):
+    import json, pytest
+    from familiar.desk.asks import project
+    from familiar.desk.model import words
+    from familiar.instance.asks import change, set_horizon
+    from familiar.instance.validation import check
+    from familiar.research.research_plan import plan
+    change(family, 'update', {'state': 'open'}, 'rosa-death-paper')
+    page = lambda: project(family, {}, {}, words(family))[0].decode()
+    assert 'ask-rosa-death-paper' in page()
+    set_horizon(family, 'Ferrolho', {'since': '2026-11-22', 'by': 'the narrator'})
+    ask = next(p for p in plan(family, line='Ferrolho')[0]['lines'][0]['plays'] if p['id'] == 'ask-family')
+    assert 'ask-rosa-death-paper' not in page() and ask['state'] == 'closed' and 'next' not in ask
+    with pytest.raises(ValueError, match='despite-horizon'):
+        change(family, 'create', json.loads((family.path('asks') / 'rosa-death-paper.json').read_bytes()) | {'id': 'rosa-2'})
+    path = family.path('versions') / 'rosa-birthplace.json'
+    row = json.loads(path.read_bytes())
+    row['versions'][1]['weight'], row['unknown_weight'] = .2, .3
+    row['story_choice'] = {'version': 'ponta-das-garcas', 'by': 'interest', 'basis': 'An island bride.', 'date': '2026-11-22'}
+    path.write_text(json.dumps(row), encoding='utf-8')
+    assert any('weaker than half' in e['message'] for e in check(family)['errors'])

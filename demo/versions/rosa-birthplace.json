@@ -11,6 +11,12 @@
   "updated": "2026-11-12",
   "summary": "The baptism certificate of her daughter says Rosa was 'native of Ponta d' and the rest is torn off. Two places fit; the family remembers only 'near his village'.",
   "unknown_weight": 0.2,
+  "story_choice": {
+    "version": "ponta-do-moinho",
+    "by": "weight",
+    "basis": "The torn word and the family's 'near his village' both point to the parish an hour from Lajedo do Vento.",
+    "date": "2026-11-12"
+  },
   "versions": [
     {
       "id": "ponta-do-moinho",

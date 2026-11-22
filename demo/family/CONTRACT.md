@@ -16,3 +16,6 @@ CHANGES_WITH:
   `witness` (how the teller could know it: saw it, heard it, holds the paper).
 - `privacy.json`: `closed_topics[]`, `living[]` (objects with id, allowed[] and consent {by, at}; null consent and empty allowed mean name and kinship only), `living_rule`.
   Named by the setting `privacy.closed_topics_file` in `familiar.toml`.
+- `horizons.json`: `lines{}` keyed by line name — a line nobody in the family can be asked
+  about any more: `since`, `by`, optional `known` (what is known indirectly) and `reopen_when`.
+  Written by `family horizon close|open`; the demo closes Rosa's own line, Calhau.

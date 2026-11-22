@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.51.0 — 22 November 2026
+
+- A family can tell us that on a line nobody is left to ask, or nobody will
+  answer: `family horizon close LINE --by WHO [--known TEXT] [--reopen-when EVENT]`.
+  From then on unanswered questions on that line leave the Relatives page, the
+  cards and the feeds; the research plan marks asking relatives "nobody left to
+  ask", starts from indirect signs (faith and parish, staying put, a name from
+  grandfather to grandson, the parents' age, a rare set of names, godparents and
+  marriages) and keeps archive letters and deep inventories as options. A new
+  question on such a line needs `--despite-horizon`. `family horizon open LINE`
+  brings the questions back. Weights do not change: silence is not an argument.
+- A version question may name the version its story tells, chosen by weight or
+  by interest. Interest chooses only among versions of at least half the weight
+  of the first and never moves a weight or the 0.5 and 0.3 drawing thresholds;
+  `instance check` refuses a choice that breaks this and names the versions and
+  their weights. On a closed line it hints to name the leading version, and it
+  says when the tree's main line hangs a person of another version.
+- The method has a chapter "When the family can say no more" in
+  `docs/research-coverage.md`; the demo family closes Rosa's own line, Calhau.
+- Data: new optional `family/horizons.json` (path key `horizons`) and optional
+  `story_choice` in `versions/*.json`. Older families have nothing to carry over.
+
 ## 0.50.2 — 22 November 2026
 
 - On the Relatives page a question about a family line or a place, with no person

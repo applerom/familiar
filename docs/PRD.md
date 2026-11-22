@@ -166,6 +166,7 @@ cases = "cases"
 versions = "versions"
 asks = "family/asks"
 answers = "family/answers"
+horizons = "family/horizons.json"  # lines nobody in the family can be asked about
 memory = "family/memory"
 privacy = "family/privacy.json"            # closed topics and people: data, not rules
 variant_overrides = "family/variants.json" # the family's own name and place forms
@@ -883,6 +884,7 @@ research metadata and has no reader projection. `research form record.json`,
 | `versions[]` | R | id, label, weight, for/against arrays of text and sources; optional state, people, place, reading | never (research only) |
 | `tests[]` | R | Next discriminating tests: text, where, would | never (research only) |
 | `updated, summary, advice[]` | O | Revision date, orientation and recommendations | never (research only) |
+| `story_choice` | O | The version the story tells: version, by (`weight`, or `interest` among versions of at least half the heaviest weight), basis, date; never a weight ([method](research-coverage.md#when-the-family-can-say-no-more)) | never (research only) |
 
 **Search and coverage (`searches/*.jsonl`)**
 

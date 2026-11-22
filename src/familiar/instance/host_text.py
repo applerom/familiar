@@ -28,15 +28,16 @@ def _letter(data, request):
 def _next(data, today):
     w = data.words
     hints = []
-    from .asks import current, latest_feedback, rows
+    from .asks import closed_line, current, horizons, latest_feedback, row_lines, rows, waiting
     latest = latest_feedback(r for _, r in rows(data.instance._inside('family/feedback/inbox')))
+    closed = horizons(data.instance)
     for request in data.rows['asks']:
         case = data.find('cases', request.get('case'))
         question = data.find('versions', request['aim'].get('version'))
         subjects = request['aim'].get('people', [])
         paper = data.text(request.get('photo_note') or request['question'], subjects)
         state, _, _ = current(request, latest.get(request['id']))
-        if not paper or state in {'closed', 'private'}:
+        if not paper or state in {'closed', 'private'} or waiting(state) and closed_line(data.instance, row_lines(request), closed):
             continue
         holder = request['holder']
         who = data.name(holder) if isinstance(holder, str) else data.text(holder.get('label') or holder.get('line')) or w('relative')
@@ -91,7 +92,9 @@ def _next(data, today):
 
 
 def _summary(data, page_titles):
+    from .asks import closed_line, horizons, row_lines, waiting
     w = data.words
+    closed = horizons(data.instance)
     sections = []
     records = {r['id']: r for r in data.rows['records'] if 'id' in r}
     documented = []
@@ -145,7 +148,8 @@ def _summary(data, page_titles):
             questions.append(w('withheld'))
             continue
         ask = next((r for r in data.rows['asks'] if r['aim'].get('version') == question['id']
-                    and r['state'] not in {'private', 'closed'}), {})
+                    and r['state'] not in {'private', 'closed'}
+                    and not (waiting(r['state']) and closed_line(data.instance, row_lines(r), closed))), {})
         paper = data.text(ask.get('photo_note') or ask.get('question'), data.subjects(question))
         questions.append(w('open_question', question=title, paper=paper or w('test_missing')))
     sections.append(w('questions') + '\n' + ('\n'.join(questions) or w('none')))

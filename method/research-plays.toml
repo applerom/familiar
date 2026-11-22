@@ -137,3 +137,17 @@ classes = ["archive-guide", "inventory", "census-revision", "consistory"]
 exhaustion = {en = "The relevant inventories were read and the case numbers recorded.", ru = "Нужные описи прочитаны, номера дел записаны."}
 cost = {en = "medium", ru = "средняя"}
 next = {en = "Use the finding aid to identify the older files for the village at the linked frontier.", ru = "По путеводителю выпиши ранние дела для деревни на ближайшем связанном звене."}
+
+# A line whose relatives can say no more (`family horizon close`): the plan does not ask them first.
+# Indirect plays come first; offline letters and deep inventories stay options the host may choose.
+[closed_horizon]
+first = ["household-fingerprint", "place-nest", "neighbors-godparents", "generation-events"]
+options = ["archive-letters", "deep-inventories"]
+signs = [
+  {en = "Faith and parish (`rite`, `parish` in research compare): which books hold the family; namesakes of another rite fall away.", ru = "Вера и приход (`rite`, `parish` в research compare): в каких книгах искать семью; однофамильцы другого обряда отпадают."},
+  {en = "Staying put (`place`, `pool`): rural families married and stayed in their parish; a candidate at home outweighs a namesake far away.", ru = "Оседлость (`place`, `pool`): сельские семьи женились и жили в своём приходе; кандидат дома весомее однофамильца издалека."},
+  {en = "A name from grandfather to grandson (`father`, `given`): a given name repeated two generations apart ties households of one line.", ru = "Имя от деда к внуку (`father`, `given`): имя, повторённое через поколение, связывает дворы одного рода."},
+  {en = "Parents' age (`born`): a candidate too young or too old to be the parent drops out.", ru = "Возраст родителей (`born`): кандидат слишком молодой или старый для родителя отпадает."},
+  {en = "A rare set of names (name shares, `siblings`): parents and children together are a fingerprint of one household.", ru = "Редкость сочетания имён (доли имён, `siblings`): родители и дети вместе — отпечаток одного двора."},
+  {en = "Godparents and marriages (`sponsors`, `spouse`, `maiden`): the same circle in two acts joins them into one family.", ru = "Крёстные и браки (`sponsors`, `spouse`, `maiden`): один круг в двух актах соединяет их в одну семью."},
+]

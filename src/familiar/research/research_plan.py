@@ -368,7 +368,7 @@ def closed_sources(pid, observations, gaps):
     return closed
 
 
-def plan_line(data, line, entries, asks_on_disk, letters_on_disk, lang):
+def plan_line(data, line, entries, asks_on_disk, letters_on_disk, lang, horizon=None):
     chain, surname, forms = line.chain, line.surname, line.forms
     members = line_members(data, chain)
     people = data['tree'].graph['people']
@@ -420,15 +420,18 @@ def plan_line(data, line, entries, asks_on_disk, letters_on_disk, lang):
             states = {row.get('state') for row in local_asks}
             tried |= bool(states - {'proposed'})
             exhausted = bool(states) and states <= {'answered', 'dont_know'}
+        if pid == 'ask-family' and horizon:
+            missing, state = [], 'closed'  # the family said nobody is left to ask: not a missing input, a decision
         if pid == 'archive-letters' and letters:
             states = {row.get('state') for row in letters}
             draft_count = sum(r.get('state') in {'draft', 'ready'} for r in letters)
             tried |= bool(states & {'sent', 'answered'}) or any(row.get('replies') for row in letters)
             exhausted = all(row.get('state') == 'answered' or row.get('state') == 'closed' and row.get('replies')
                             for row in letters)
-        state = ('disabled' if not enabled else 'exhausted' if exhausted and pid == 'ask-family'
-                 else 'not-applicable' if missing else 'exhausted' if exhausted
-                 else 'in-progress' if tried else 'untried')
+        if not (pid == 'ask-family' and horizon):
+            state = ('disabled' if not enabled else 'exhausted' if exhausted and pid == 'ask-family'
+                     else 'not-applicable' if missing else 'exhausted' if exhausted
+                     else 'in-progress' if tried else 'untried')
         result = {'id': pid, 'title': play['title'][lang], 'purpose': play['purpose'][lang], 'order': order,
                   'state': state, 'missing': missing, 'needs': [registry()['inputs'][key][lang] for key in missing],
                   'source_classes': play['classes'], 'sources_tried': searched, 'ceiling_sources': ceilings,
@@ -456,12 +459,22 @@ def plan_line(data, line, entries, asks_on_disk, letters_on_disk, lang):
                                   f'{nest_place} · Start with {years} and trace the households to the break, '
                                   'checking neighboring parishes.')
         plays.append(result)
+    found = {}
+    if horizon:
+        # Gathered material is the story now: indirect signs first, letters and inventories as options.
+        closed = registry()['closed_horizon']
+        for play in plays:
+            play['option'] = play['id'] in closed['options']
+        rank = {pid: n for n, pid in enumerate(closed['first'])}
+        plays.sort(key=lambda p: (p['id'] == 'ask-family', p['option'], rank.get(p['id'], len(rank))))
+        found = {'horizon': {k: data['text'](v) for k, v in horizon[1].items()} | {'line': horizon[0]},
+                 'signs': [sign[lang] for sign in closed['signs']]}
     next_play = next((p for p in plays if p['state'] in {'untried', 'in-progress'}), None)
     for play in plays:
         if play is not next_play:
             play.pop('next')
     return {'surname': surname, 'start': chain[0], 'frontier': chain[-1], 'people': chain, 'plays': plays,
-            'unrecorded_play': unknown}
+            'unrecorded_play': unknown} | found
 
 
 @boundary('diagnostic')
@@ -472,9 +485,30 @@ def plan(instance, *, line=None):
     entries = place_entries(instance)
     local_asks, letters = home_and_archive(instance)
     lang = 'ru' if instance.source_language == 'ru' else 'en'
-    lines = [plan_line(data, row, entries, local_asks, letters, lang) for row in selected_lines(data, line)]
+    closed = asks.horizons(instance)
+    data['text'] = lambda value: value if isinstance(value, str) else (value or {}).get(instance.source_language) or next(
+        iter((value or {}).values()), '')
+    lines = [plan_line(data, row, entries, local_asks, letters, lang,
+                       next(((name, entry) for name, entry in closed.items() if surname_keys(name, data['language'])
+                             & row.forms), None))
+             for row in selected_lines(data, line)]
     view = {'schema': 1, 'lines': lines}
     return view, markdown_plan(view, lang)
+
+
+def horizon_lines(horizon, signs, lang):
+    ru = lang == 'ru'
+    head = (f"**Семья больше ничего не скажет** с {horizon['since']} ({horizon['by']}). Вопросы родным не ставим; "
+            'историю составляем из собранного, ведущую версию называем в `story_choice`.' if ru else
+            f"**The family can say no more** since {horizon['since']} ({horizon['by']}). We ask relatives nothing; "
+            'the story is told from what we gathered, its leading version named in `story_choice`.')
+    out = [head]
+    if horizon.get('known'):
+        out.append(('Косвенно известно: ' if ru else 'Known indirectly: ') + horizon['known'])
+    if horizon.get('reopen_when'):
+        out.append(('Открыть снова: ' if ru else 'Open again when: ') + horizon['reopen_when'])
+    out.extend(['', 'Косвенные признаки:' if ru else 'Indirect signs:', *(f'- {sign}' for sign in signs), ''])
+    return out
 
 
 def period_label(period):
@@ -486,18 +520,23 @@ def markdown_plan(view, lang):
     heading = 'План поиска' if lang == 'ru' else 'Research plan'
     table = '| Подход | Состояние | Журнал |' if lang == 'ru' else '| Approach | State | Journal |'
     states = {'disabled': 'выключен', 'not-applicable': 'не применим', 'exhausted': 'исчерпан',
-              'in-progress': 'идёт', 'untried': 'не пробовали'} if lang == 'ru' else {
+              'in-progress': 'идёт', 'untried': 'не пробовали', 'closed': 'спросить некого'} if lang == 'ru' else {
               'disabled': 'disabled', 'not-applicable': 'not applicable', 'exhausted': 'exhausted',
-              'in-progress': 'in progress', 'untried': 'untried'}
+              'in-progress': 'in progress', 'untried': 'untried', 'closed': 'nobody left to ask'}
     write_next = 'Следующий шаг' if lang == 'ru' else 'Next step'
     no_play = 'Подход не записан' if lang == 'ru' else 'Approach not recorded'
     out = [f'# {heading}', '']
     for line in view['lines']:
-        out.extend([f"## {line['surname'] or line['start']}", '', table, '|---|---|---|'])
+        out.extend([f"## {line['surname'] or line['start']}", ''])
+        if horizon := line.get('horizon'):
+            out.extend(horizon_lines(horizon, line['signs'], lang))
+        out.extend([table, '|---|---|---|'])
         for play in line['plays']:
             state = states[play['state']]
             if play['state'] == 'not-applicable':
                 state += ' · ' + ', '.join(play['needs'])
+            if play.get('option'):
+                state += ' · ' + ('опция' if lang == 'ru' else 'option')
             activity = str(play['journal_passes'])
             if play['ceiling_sources']:
                 activity += ' · ' + ('потолок ' if lang == 'ru' else 'ceiling ') + ', '.join(play['ceiling_sources'])

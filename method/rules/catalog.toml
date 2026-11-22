@@ -77,7 +77,7 @@ reads = ["voice.parallel_versions"]
 [[rule]]
 id = "CRAFT-PROBABILISTIC"
 kind = "craft"
-statement = "The best weighted version is the working one; go on from it without waiting for confirmation, and doubt documents, family memory and your own agents alike. Ask relatives only what a living witness could have seen or been told; beyond the witness horizon decide with a weight and name the record that would test it."
+statement = "The best weighted version is the working one; go on from it without waiting for confirmation, and doubt documents, family memory and your own agents alike. Ask relatives only what a living witness could have seen or been told; beyond the witness horizon decide with a weight and name the record that would test it. On a line the family closed (family horizon close) ask nobody and do not wait: tell the story from what was gathered, name its leading version in story_choice (by weight, or by interest among versions at least half as heavy as the first; interest never moves a weight) and recount when new material comes."
 roles = ["researcher", "second-look", "lead"]
 serves = "UC-RESEARCH"
 check = ""

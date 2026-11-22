@@ -1,9 +1,10 @@
 # START_MODULE_CONTRACT: MOD-FAMILY-ASKS
-# PURPOSE: Store family conversation prompts, carry over old requests and derive state from feedback.
+# PURPOSE: Store family conversation prompts and the lines nobody can be asked about, carry over old requests and derive state from feedback.
 # PRD_REF: docs/PRD.md#FAMILY-DESK
 # INVARIANTS:
 # - only a living tree person or a named group of relatives holds an ask [review: engine lead]
 # - carry-over preserves old question IDs, literal replies and correspondence originals [review: engine lead]
+# - a closed horizon hides and refuses only unanswered asks of its line; it never changes a weight [review: engine lead]
 # CHANGES_WITH:
 # - MOD-CORRESPONDENCE
 # - MOD-DESK-FEEDBACK
@@ -13,7 +14,7 @@ import hashlib
 import json
 import re
 import sys
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 from .correspondence import aim_versions, no_knowledge, now, validate as validate_letter
@@ -23,6 +24,7 @@ WANTS = ('name', 'patronymic', 'maiden', 'place', 'date', 'photo', 'story')
 STATES = {'proposed', 'open', 'answered', 'dont_know', 'private', 'closed'}
 VISIBLE = {'open', 'dont_know'}
 FEEDBACK = {'ask_answer', 'ask_state'}
+HORIZON = {'since', 'by', 'known', 'reopen_when'}
 
 
 def key(value):
@@ -87,6 +89,87 @@ def validate(row, people=None, versions=None):
             raise ValueError('Ask will_ask state needs a living witness')
 
 
+def waiting(state):
+    """An ask nobody has answered yet: the family is still expected to say something."""
+    return state in {'proposed', 'open', 'dont_know'} or state.startswith('will_ask:')
+
+
+def validate_horizons(data):
+    if not isinstance(data, dict) or set(data) - {'lines'} or not isinstance(data.get('lines', {}), dict):
+        raise ValueError('horizons: expected {"lines": {line: {since, by, known, reopen_when}}}')
+    for line, entry in data.get('lines', {}).items():
+        if not wording(line) or not isinstance(entry, dict) or set(entry) - HORIZON:
+            raise ValueError(f'horizon {line!r}: expected since, by, known, reopen_when')
+        try:
+            date.fromisoformat(entry.get('since'))
+        except (TypeError, ValueError):
+            raise ValueError(f'horizon {line}: since must be a date YYYY-MM-DD') from None
+        if not text(entry.get('by')):
+            raise ValueError(f'horizon {line}: by names who said that nobody can be asked')
+        for name in ('known', 'reopen_when'):
+            if entry.get(name) and not text(entry[name]):
+                raise ValueError(f'horizon {line}: {name} must be text')
+    return data.get('lines', {})
+
+
+def horizons(instance, raw=None):
+    """Lines closed for questions to relatives: {line: entry}. The family said nobody is left to ask."""
+    path = instance.path('horizons')
+    if raw is None:
+        raw = path.read_bytes() if path.is_file() else None
+    return validate_horizons(json.loads(raw)) if raw else {}
+
+
+def row_lines(row):
+    aim, about, holder = row.get('aim') or {}, row.get('about') or {}, row.get('holder')
+    return [v for v in (aim.get('line'), about.get('line'), row.get('line'),
+                        holder.get('line') if isinstance(holder, dict) else None) if wording(v)]
+
+
+def closed_line(instance, names, lines=None):
+    """(line, entry) of a closed horizon matching any of these line names by surname form, else None."""
+    from familiar.research.coverage import surname_keys
+    lines = horizons(instance) if lines is None else lines
+    language = instance.source_language
+    for name in names if lines else ():
+        keys = surname_keys(name, language)
+        for line, entry in lines.items():
+            if keys & surname_keys(line, language):
+                return line, entry
+    return None
+
+
+def horizon_note(line, entry):
+    note = f"line {line}: the family closed its horizon on {entry['since']} ({entry['by']}), nobody is left to ask"
+    if entry.get('known'):
+        note += f"; known: {entry['known']}"
+    if entry.get('reopen_when'):
+        note += f"; reopen when: {entry['reopen_when']}"
+    return note
+
+
+@boundary('transaction')
+def set_horizon(instance, line, entry=None):
+    """Close a line for questions (entry) or open it again (None). Weights and answered asks stay as they are."""
+    from .writer import mutate
+    path = instance.path('horizons')
+    before = json.loads(path.read_bytes()) if path.is_file() else None
+    lines = dict(validate_horizons(before or {}))
+    if not wording(line):
+        raise ValueError('A horizon needs a line name')
+    if entry is None:
+        if line not in lines:
+            raise ValueError(f'line {line} has no closed horizon')
+        lines.pop(line)
+    else:
+        lines[line] = {k: v for k, v in entry.items() if v}
+    data = {'lines': lines}
+    validate_horizons(data)
+    mutate(instance, {path: data}, expect={path: before} if before is not None else None,
+           exclusive=[] if before is not None else [path])
+    return path
+
+
 def rows(folder):
     for path in sorted(folder.rglob('*.json')):
         yield path, json.loads(path.read_bytes())
@@ -139,7 +222,7 @@ def current(row, latest):
 
 
 @boundary('transaction')
-def change(instance, action, value, identity=None):
+def change(instance, action, value, identity=None, *, despite_horizon=False):
     from familiar.tree.builder import _build, people_index
 
     from .writer import mutate
@@ -156,6 +239,11 @@ def change(instance, action, value, identity=None):
     row = {'state': 'proposed'} | before | value | {'id': identity}
     if 'state' in value:
         row['state_since'] = now()
+    if (waiting(row['state']) and not despite_horizon and (action == 'create' or not waiting(before.get('state', '')))
+            and (closed := closed_line(instance, row_lines(row)))):
+        raise ValueError(horizon_note(*closed) + '. The story is told from what we gathered; '
+                         'record this ask anyway with --despite-horizon (say why in next_hint), '
+                         'or open the line again with family horizon open')
     versions = aim_versions([r for _, r in rows(instance.path('versions'))])
     validate(row, people_index(_build(instance)), versions)
     target = path or instance.path('asks') / (identity + '.json')
@@ -278,7 +366,35 @@ def register(actions):
             command.add_argument('identity')
         if name != 'migrate':
             command.add_argument('input', type=Path)
+            command.add_argument('--despite-horizon', action='store_true',
+                                 help='Record an unanswered ask on a line whose horizon the family closed')
     parser.set_defaults(run=execute)
+    horizon = actions.add_parser('horizon', help='A line nobody in the family can be asked about any more')
+    steps = horizon.add_subparsers(dest='horizon_action', required=True)
+    close = steps.add_parser('close', help='Close the line for questions to relatives')
+    close.add_argument('line')
+    close.add_argument('--by', required=True, help='Who said so: a tree ID or words')
+    close.add_argument('--since', default=None, help='Date YYYY-MM-DD (default today)')
+    close.add_argument('--known', default='', help='What is known indirectly; it becomes arguments of versions')
+    close.add_argument('--reopen-when', default='', help='The event that opens the line again')
+    reopen = steps.add_parser('open', help='Open the line again: new answers can come')
+    reopen.add_argument('line')
+    horizon.set_defaults(run=execute_horizon)
+
+
+def execute_horizon(args):
+    from .model import Instance
+    try:
+        instance = Instance(args.root)
+        if args.horizon_action == 'open':
+            print(set_horizon(instance, args.line))
+        else:
+            print(set_horizon(instance, args.line, {'since': args.since or date.today().isoformat(), 'by': args.by,
+                                                    'known': args.known, 'reopen_when': args.reopen_when}))
+        return 0
+    except (OSError, TypeError, ValueError, KeyError) as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
 
 
 def execute(args):
@@ -288,7 +404,8 @@ def execute(args):
         if args.ask_action == 'migrate':
             print(f'Moved {migrate(instance)} asks')
         else:
-            print(change(instance, args.ask_action, json.loads(args.input.read_bytes()), getattr(args, 'identity', None)))
+            print(change(instance, args.ask_action, json.loads(args.input.read_bytes()), getattr(args, 'identity', None),
+                         despite_horizon=args.despite_horizon))
         return 0
     except (OSError, TypeError, ValueError, KeyError) as exc:
         print(str(exc), file=sys.stderr)

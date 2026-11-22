@@ -5,7 +5,8 @@ from collections import defaultdict
 from datetime import UTC, date, datetime, timedelta
 from html import escape
 
-from familiar.instance.asks import VISIBLE, WANTS, context, current, latest_feedback, validate
+from familiar.instance.asks import (VISIBLE, WANTS, closed_line, context, current, horizons, latest_feedback, row_lines,
+                                    validate, waiting)
 from familiar.instance.correspondence import aim_versions
 from familiar.instance.correspondence_view import rank
 from familiar.instance.host_language import HostData
@@ -105,6 +106,10 @@ def project(active, graph, delivery, w, *, today=None, feedback=(), language=Non
     paths, names = listing(root, '**/*.json')
     inputs = {p: p.read_bytes() for p in paths}
     listings = {(root, '**/*.json'): names}
+    horizon_path = active.path('horizons')
+    if horizon_path.is_file():
+        inputs[horizon_path] = horizon_path.read_bytes()
+    closed = horizons(active, inputs.get(horizon_path))
     data = HostData(active)
     # Another reader language: the same conversation with card translations and reader-language names.
     language, texts = language or active.source_language, texts or {}
@@ -122,6 +127,8 @@ def project(active, graph, delivery, w, *, today=None, feedback=(), language=Non
     feedback = latest_feedback(feedback)
     entries, found_by_child, stale, seen = [], [], set(), set()
     for path, raw in inputs.items():
+        if path == horizon_path:
+            continue
         row = json.loads(raw)
         validate(row, people, versions)
         identity = row['id']
@@ -135,6 +142,8 @@ def project(active, graph, delivery, w, *, today=None, feedback=(), language=Non
             found_by_child.append(row)
         if state not in VISIBLE and not state.startswith('will_ask:'):
             continue
+        if waiting(state) and closed_line(active, row_lines(row), closed):
+            continue  # the family said nobody is left to ask on this line: no page, card or feed prompt
         if expired:
             stale.add(identity)
         aim, about = row['aim'], row['about']

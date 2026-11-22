@@ -114,6 +114,88 @@ level or override either in its `lines` table. Lower numbers come first,
 with ties in [registry order](../method/research-plays.toml). Without play
 overrides, recheck keeps its existing score order within each line group.
 
+## When the family can say no more
+
+Not every family can ask its relatives. A teller may say that on a line —
+a wife's parents' families, a side where nobody is left or nobody talks — no
+more will come, now or later. Then what we have gathered is the material, and
+the story is ours to put together from the whole of the indirect evidence.
+
+**Closing a line.** The family's words go into `family/horizons.json`, one
+entry per line, the line named as in `[research] focus` and the versions:
+
+```
+familiar family horizon close Calhau --by "the host" --since 2026-11-12 \
+  --known "Nobody on Rosa's side is left to ask; she came from near Amaro's village." \
+  --reopen-when "a Calhau descendant on the islands writes back"
+familiar family horizon open Calhau
+```
+
+From then on unanswered questions on that line leave the Relatives page, the
+cards and the feeds; asks already answered stay as they are. `family ask
+create` refuses a new unanswered ask on the line unless `--despite-horizon`
+says it was meant (write why in `next_hint`). `research plan` marks the
+home-document approach "nobody left to ask", puts the indirect approaches first
+and the offline letters and deep inventories last, as options the host may
+choose. `--known` is a lead, not a fact: turn it into arguments `for` and
+`against` of the versions with `kind: "family"`.
+
+**Silence is not an argument.** A weight moves only by an argument — a
+document, a count over households and names, an indirect sign. That nobody can
+be asked moves no weight. It changes the decision: we stop waiting with the
+story.
+
+**Indirect signs.** Each is an argument of a version, and each tells apart
+something of its own; most are fields of `research compare`:
+
+- faith and parish (`rite`, `parish`): which books hold the family; a namesake
+  of another rite falls away;
+- staying put (`place`, the region's `pool`): rural families married and stayed
+  in their parish; a candidate at home outweighs a namesake far away;
+- a name from grandfather to grandson (`father`, `given`): a name repeated a
+  generation apart ties households of one line;
+- the parents' age (`born`): a candidate too young or too old to be a parent drops out;
+- a rare set of names (name shares, `siblings`): parents and children together
+  are a household's fingerprint;
+- godparents and marriages (`sponsors`, `spouse`, `maiden`): one circle in two
+  acts makes them one family.
+
+**Three layers of certainty.** We speak of each in its own way. The land and
+the faith — which parish, which estate, under which rule the family lived — is
+usually the firmest. The line, or the nest of one village, is a version. The
+people in it are the actors of that version. In the demo, that the Calhau family
+lived on the islands and went to a Catholic parish is firm; which parish Rosa
+came from is a version (Ponta do Moinho 0.5, Ponta das Garças 0.3); the father
+we would give her there is an actor of the version. A layer from 0.5 is told
+plainly; below, as our version, without a caveat in every sentence: the form
+carries the doubt (a dotted line and rings in the tree, the "our version" line),
+not the words.
+
+**The leading version is named.** An open question on a closed line gets a
+`story_choice` in its `versions/*.json`:
+
+```json
+"story_choice": {"version": "ponta-das-garcas", "by": "interest",
+                 "basis": "A bride from another island gives the family a crossing to tell.",
+                 "date": "2026-11-22"}
+```
+
+By default the story tells the heaviest version (`by: "weight"`). When rivals
+are close — at least half the weight of the first — interest may choose: a
+lively story, documents with frames, the history of the land (the version's
+`interest`). Interest never enters a weight, never lifts a version weaker than
+half of the first, and never changes the thresholds for drawing a link (0.5 and
+0.3). `instance check` refuses a choice that breaks this, names the versions
+with their weights, and hints "name the leading version" for an open question
+on a closed line. A version told on the main line of the tree should be the one
+drawn there: where `main_line` hangs a person of another version, the check says so.
+
+**The story is reversible.** When new material comes — an archive, someone
+else's pedigree, a chance answer — weights are recounted, the choice is
+revisited and the story is corrected. So chapters hang on the household, the
+place and the event rather than on a chain of fathers. `family horizon open`
+brings the questions back.
+
 ## Reading it (lead, host)
 
 - `familiar research coverage [--family]`: the matrix. Cells: R result rows, D read record, +F explicitly established identity, Z zero

@@ -16,3 +16,6 @@ One question per file, `<id>.json`: `id`, `title`, `line`, `people[]`, `status`
 `versions[]` (`id`, `label`, `weight`, `state`: leading, alternative, weak,
 refuted; `place`, `for[]` and `against[]` with `kind`, `text`, `sources[]`,
 optional `reading`), `tests[]` (`text`, `where`, `would`), `advice[]`.
+Optional `story_choice` names the version the story tells: `version`, `by`
+(`weight`, or `interest` among versions of at least half the heaviest weight),
+`basis` (one sentence), `date`. It never changes a weight.

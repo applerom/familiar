@@ -5,6 +5,7 @@
 # - ask storage diagnostics respect the instance asks override [review: engine lead]
 # - accepted assertions at every ingestion surface need strong status and auditable grounds [review: engine lead]
 # - optional interest stays separate from probability and reports malformed fields [review: engine lead]
+# - a story choice by interest is allowed only among versions of at least half the heaviest weight [review: engine lead]
 # - unknown numeric metadata is allowed; nonfinite numbers and invalid probabilities are refused [review: engine lead]
 # - file container errors name the file, expected shape and complete form command [review: engine lead]
 # CHANGES_WITH:
@@ -14,6 +15,7 @@
 # :END_MODULE_CONTRACT
 import math
 import tomllib
+from datetime import date
 
 from familiar.rules.roles import method_root
 
@@ -97,6 +99,53 @@ def interest_errors(row):
             yield field + '.level', 'must be a finite number in [0,1] or null'
         if tell is not None and not isinstance(tell, str):
             yield field + '.tell', 'must be text or null'
+
+
+STORY_BY = ('weight', 'interest')
+CLOSED_VERSIONS = {'refuted', 'rejected', 'disproved'}
+
+
+def story_leader(row):
+    """(id, weight) of the heaviest open version: the one told by default."""
+    options = [(v['weight'], v['id']) for v in row.get('versions', []) if isinstance(v, dict)
+               and type(v.get('weight')) in (int, float) and v.get('state') not in CLOSED_VERSIONS and v.get('id')]
+    return max(options, key=lambda item: item[0])[::-1] if options else (None, None)
+
+
+def story_errors(row):
+    """The version the story tells. Interest chooses only among close rivals and never touches a weight."""
+    choice = row.get('story_choice')
+    if choice is None:
+        return
+    if not isinstance(choice, dict) or set(choice) - {'version', 'by', 'basis', 'date'}:
+        yield 'story_choice: expected version, by, basis, date'
+        return
+    options = {v.get('id'): v for v in row.get('versions', []) if isinstance(v, dict)}
+    chosen = options.get(choice.get('version'))
+    if chosen is None:
+        yield f"story_choice.version {choice.get('version')!r} is not a version of this question"
+        return
+    if choice.get('by') not in STORY_BY:
+        yield 'story_choice.by must be weight or interest'
+    if not isinstance(choice.get('basis'), str) or not choice['basis'].strip():
+        yield 'story_choice.basis: one sentence on why this version leads the story'
+    try:
+        date.fromisoformat(choice.get('date'))
+    except (TypeError, ValueError):
+        yield 'story_choice.date must be YYYY-MM-DD'
+    if chosen.get('state') in CLOSED_VERSIONS:
+        yield f"story_choice: {chosen['id']} is {chosen['state']}; a story never tells a refuted version"
+        return
+    top, heaviest = story_leader(row)
+    weight = chosen.get('weight')
+    if top is None or type(weight) not in (int, float):
+        return
+    if choice.get('by') == 'weight' and weight < heaviest:
+        yield (f"story_choice: {chosen['id']} ({weight:g}) is chosen by weight, but {top} weighs {heaviest:g}; "
+               f"tell {top}, or choose by interest among versions of at least {heaviest / 2:g}")
+    if choice.get('by') == 'interest' and weight < heaviest / 2:
+        yield (f"story_choice: {chosen['id']} ({weight:g}) is chosen by interest, but it is weaker than half of "
+               f"{top} ({heaviest:g}); interest chooses only among versions of at least {heaviest / 2:g}")
 
 
 def acceptance_error(fact):

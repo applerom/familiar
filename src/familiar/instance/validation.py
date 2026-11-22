@@ -224,6 +224,40 @@ def _forms(instance, selected=None):
                 'unverified': ['readiness withheld after malformed form']}
 
 
+def story_hints(instance, versions_rows, evidence, graph, chosen, fail):
+    """Where the family can say no more, the story does not wait: name its leading version; keep the tree with it."""
+    from .asks import closed_line, horizons
+    path = instance.path('horizons')
+    try:
+        closed = horizons(instance)
+    except (ValueError, TypeError) as exc:
+        fail(path, str(exc), 'instance.message')
+        closed = {}
+    # A weak link drawn on the main line (evidence association, edge or probable identity) is the tree's own choice.
+    drawn = [(e.get('to') or e.get('child'), e.get('from') or e.get('parent'))
+             for e in [*evidence.get('associations', []), *evidence.get('edges', []), *graph.get('edges', [])]
+             if isinstance(e, dict) and e.get('main_line') is True]
+    for where, row in versions_rows:
+        if not chosen(where) or not isinstance(row.get('versions'), list):
+            continue
+        choice = row.get('story_choice')
+        if not choice and row.get('status') in {'open', 'leaning'} and len(row['versions']) > 1 and isinstance(
+                row.get('line'), str) and (hit := closed_line(instance, [row['line']], closed)):
+            fail(where, f"line {hit[0]}: the family can say no more (horizon closed {hit[1]['since']}); name the "
+                 'leading version for the story: story_choice {version, by: weight|interest, basis, date}')
+        if not isinstance(choice, dict):
+            continue
+        options = {v.get('id'): set(v.get('people') or []) for v in row['versions'] if isinstance(v, dict)}
+        told = options.get(choice.get('version'))
+        if not told:
+            continue
+        for person, other in drawn:
+            if person in row.get('people', []) and other not in told and any(
+                    other in people for vid, people in options.items() if vid != choice.get('version')):
+                fail(where, f"story_choice tells {choice['version']}, but the tree draws {other} above {person} "
+                     'on the main line from another version; move main_line or the choice')
+
+
 def _check(instance, selected=None):
     from familiar.rules.cascade import Registry
     from familiar.rules.roles import method_root
@@ -586,6 +620,9 @@ def _check(instance, selected=None):
             fail(path, 'weights must be numbers in [0,1]', 'instance.weights-must-be-numbers-in-0-1')
         elif abs(sum(weights) - 1) > 1e-8:
             fail(path, 'version weights plus unknown_weight must sum to one', 'instance.version-weights-plus-unknown-weight-must-sum')
+        from .research_forms import story_errors
+        for message in story_errors(row):
+            fail(path, message, 'instance.story-choice')
         for version in row.get('versions', []):
             required(version, 'id label weight for against', path)
             for side in ('for', 'against'):
@@ -755,6 +792,7 @@ def _check(instance, selected=None):
         ref(edge.get('from'), people, 'evidence')
         ref(edge.get('to'), people, 'evidence')
         provenance(edge.get('sources'), 'evidence')
+    story_hints(instance, versions_rows, evidence, graph, chosen, fail)
     chapter_count = 0
     feeds = instance.path('feeds')
     feed_ids = set()
