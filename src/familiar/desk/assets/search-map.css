@@ -4,6 +4,7 @@ PURPOSE: Draw the search map: read years as filled ink, open years as empty pape
 PRD_REF: docs/PRD.md#FAMILY-DESK
 INVARIANTS:
 - a decade is one row of ten years on every width; the page never scrolls sideways on a phone [review: browser walk]
+- a place is one row, a lane per kind of book on one time axis; colour alone carries the state in a lane [review: browser walk]
 CHANGES_WITH:
 - MOD-DESK-SEARCH-MAP (classes)
 :END_MODULE_CONTRACT
@@ -31,28 +32,68 @@ CHANGES_WITH:
 .y.s-full.w,.y.s-archive.w,.y.s-login.w{box-shadow:0 3px 0 -1px var(--ember)}
 .y.s-online.w{box-shadow:inset 0 0 0 1.5px var(--ink-soft),0 3px 0 -1px var(--ember)}
 
-.series-list{display:grid;gap:var(--s3)}
-@media(min-width:900px){.series-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.series{background:var(--sheet);border-radius:var(--r-md);box-shadow:var(--lift-1);padding:var(--s3) var(--s4) var(--s4);min-width:0}
-.series header{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s3)}
-.series header strong{font:500 var(--t-md)/1.25 var(--font-story)}
-.series .tally{font-size:var(--t-sm);color:var(--ink-mute);white-space:nowrap;font-variant-numeric:tabular-nums}
-.series .tally b{font:500 var(--t-lg)/1 var(--font-story);color:var(--ink)}
-.series small{display:block;color:var(--ink-mute);font-size:var(--t-xs);margin-top:2px;overflow-wrap:anywhere}
-.strip{display:grid;gap:4px;margin-top:var(--s3)}
+/* A line folds to one row: its name and tallies; the lines the family works on are open */
+.map-line>summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--s1) var(--s3)}
+.map-line>summary::-webkit-details-marker{display:none}
+.map-line>summary h2{margin:0}
+.map-line>summary::after{content:"";width:.5em;height:.5em;border:solid var(--ink-mute);border-width:0 2px 2px 0;transform:rotate(-45deg);margin-left:auto;align-self:center}
+.map-line[open]>summary::after{transform:rotate(45deg)}
+.line-tally{font-size:var(--t-sm);color:var(--ink-mute);font-variant-numeric:tabular-nums}
+.map-line:not([open]){padding:var(--s3) 0}
+.series-unknown{margin:var(--s3) 0}
+
+/* Series on one time axis: a row of years each, the decade grid behind a tap */
+.timeline{display:grid;gap:2px;--kind-w:5.2em}
+.ticks{position:relative;height:1.2em;margin-left:var(--kind-w);font-size:var(--t-xs);color:var(--ink-mute);font-variant-numeric:tabular-nums}
+.ticks span{position:absolute;left:var(--at)}
+.timeline .series>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 var(--s2);align-items:baseline;padding:2px 0;line-height:1.2}
+@media(max-width:599px){.map-line .counts{display:none}}
+.timeline .series>summary::-webkit-details-marker{display:none}
+.timeline .label{font-size:var(--t-xs);color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.timeline .tally{font-size:var(--t-xs);color:var(--ink-mute);font-variant-numeric:tabular-nums}
+.timeline .tally b{color:var(--ink);font-weight:600}
+.lanes{grid-column:1/-1;display:grid;gap:2px;margin-top:2px}
+.lane{display:grid;grid-template-columns:var(--kind-w) minmax(0,1fr);align-items:center}
+.lane .kind{font-size:10px;line-height:1;color:var(--ink-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:4px}
+.axis{display:block;min-width:0}
+.yrs{display:flex;margin-left:var(--from);width:var(--width);height:8px;box-shadow:0 0 0 1px var(--rule)}
+.yrs .y{flex:1 1 0;width:auto;aspect-ratio:auto;border-radius:0;box-shadow:none;outline:none;height:100%}
+.yrs .y.s-full{background:var(--act)}
+.yrs .y.s-surname{background:color-mix(in srgb,var(--act) 70%,var(--sheet))}
+.yrs .y.s-named{background:color-mix(in srgb,var(--act) 38%,var(--sheet))}
+.yrs .y.s-index{background:var(--version-soft)}
+.yrs .y.s-unknown{background:color-mix(in srgb,var(--act) 22%,var(--sheet))}
+.yrs .y.s-online{background:var(--sheet)}
+.yrs .y.s-login{background:color-mix(in srgb,var(--ink-mute) 22%,var(--sheet))}
+.yrs .y.s-archive{background:var(--paper-deep)}
+.yrs .y.s-missing{background:none}
+.yrs .y.s-blocked{background:var(--ember-soft)}
+.yrs .y.w{box-shadow:inset 0 -2px 0 var(--ember)}
+.timeline .series[open]{padding-bottom:var(--s2)}
+.timeline .one{margin-top:var(--s2)}
+.timeline .series small{display:block;color:var(--ink-mute);font-size:var(--t-xs);overflow-wrap:anywhere}
+.strip{display:grid;gap:4px;margin-top:var(--s2);max-width:320px}
 .decade{display:grid;grid-template-columns:3.2em repeat(10,minmax(0,1fr));gap:4px;align-items:center}
 .decade span{font-size:var(--t-xs);color:var(--ink-mute);font-variant-numeric:tabular-nums}
-@media(min-width:900px){.decade{grid-template-columns:3.2em repeat(10,minmax(0,22px))}}
 
-/* Name bases: a field of tiles, the fill is the share of the family's forms read */
-.bases{list-style:none;margin:0;padding:0;display:grid;gap:var(--s2);grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
-.base{position:relative;display:grid;gap:2px;align-content:start;padding:var(--s2) var(--s3) var(--s3);border-radius:var(--r-sm);background:var(--sheet);box-shadow:inset 0 0 0 1px var(--rule);overflow-wrap:anywhere;font-size:var(--t-sm)}
+/* Name bases: a field of small tiles, the fill is the share of the family's forms read; numbers behind a tap */
+.bases{list-style:none;margin:0;padding:0;display:grid;gap:6px;grid-template-columns:repeat(auto-fill,minmax(112px,1fr))}
+@media(min-width:768px){.bases{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
+.base{position:relative;border-radius:var(--r-sm);background:var(--sheet);box-shadow:inset 0 0 0 1px var(--rule);font-size:var(--t-xs);min-width:0}
+.base summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:4px;padding:6px 8px 8px}
+.base summary::-webkit-details-marker{display:none}
+.base strong{flex:1;min-width:0;font-weight:600;line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
+.base .share{color:var(--ink-mute);font-variant-numeric:tabular-nums;white-space:nowrap}
+.base small{display:block;color:var(--ink-mute);padding:0 8px 6px;overflow-wrap:anywhere}
+.base details[open]{padding-bottom:6px}
+.base details[open] strong{-webkit-line-clamp:unset}
 .base.opened{box-shadow:inset 0 0 0 1px var(--act)}
-.base.opened::after{content:"";position:absolute;left:0;bottom:0;height:4px;width:var(--f,0%);background:var(--act);border-radius:0 0 0 var(--r-sm)}
+.base.opened::after{content:"";position:absolute;left:0;bottom:0;height:3px;width:var(--f,0%);background:var(--act);border-radius:0 0 0 var(--r-sm)}
 .base.never{background:none;box-shadow:none;outline:1.5px dashed var(--ink-mute);outline-offset:-1.5px}
-.base.fit-unknown{opacity:.85}
-.base strong{font-weight:600;font-size:var(--t-sm)}
-.base span,.base small{color:var(--ink-mute);font-size:var(--t-xs)}
+.doubt{font-size:var(--t-xs);color:var(--ink-mute);margin:var(--s2) 0 0}
+.rest{margin-top:var(--s2)}
+.rest>summary{cursor:pointer;font-size:var(--t-sm);color:var(--ink-mute);padding:var(--s1) 0}
+.rest .bases{opacity:.8}
 
 /* What to read next */
 .next{list-style:none;margin:0;padding:0;counter-reset:n}
@@ -66,3 +107,4 @@ CHANGES_WITH:
 .legend{list-style:none;margin:var(--s5) 0 0;padding:var(--s3) 0 0;border-top:1px solid var(--rule);display:flex;flex-wrap:wrap;gap:var(--s2) var(--s4);font-size:var(--t-xs);color:var(--ink-mute)}
 .legend li{display:flex;align-items:center;gap:6px}
 .legend .y{width:14px}
+@media(max-width:599px){.next li strong{font-size:var(--t-sm)}.next li span{font-size:var(--t-xs)}}

@@ -28,6 +28,14 @@ KINDS = (('birth', r'bapt|birth|christ|рожд|крещ|chrzt|urodz|nasc'),
          ('marriage', r'marri|banns|wedd|брак|венч|оглаш|ślub|slub|małż|malz|casam'),
          ('death', r'death|burial|buri|смерт|погреб|умер|zgon|pogrz|óbit|obit'))
 LOGIN = {'host-login', 'login', 'paid', 'request'}
+# What a person's own records say of their community: a faith, a rite, a parish or a baptism. A catalogue base
+# that declares `communities` holds only those; it fits a line whose people are recorded in one of them.
+COMMUNITIES = {
+    'jewish': r'jew|jüd|juif|евре|иуде|синагог|кагал|kahal|kahał|żyd|zyd|izraelit|mojżesz|mosaic|старозакон',
+    'christian': r'cathol|католи|костел|костёл|kości|kosci|rzymsk|orthodox|правосл|церк|cerk|prawosł|prawosl|'
+                 r'uniat|униат|грекокат|greckokat|lutheran|лютер|ewangel|евангел|protestant|parafi|parish|'
+                 r'приход|chrzest|chrzt|chrzcz|baptis|крещ|крест',
+}
 
 
 def years_of(value):
@@ -147,8 +155,21 @@ def series_sources(series, resolver):
     return ids
 
 
+def place_names(value):
+    """The names a place is written with: "Parish (village, village)" gives each of them."""
+    return [n for n in (re.sub(r'\s+', ' ', part).strip().casefold().replace('ё', 'е')
+                        for part in re.split(r'[,;()/]+', str(value or ''))) if n]
+
+
 def place_match(a, b):
-    return bool(a and b) and (contains(a, b) or contains(b, a))
+    """Two places are one when one of their names is the same word, allowing a case ending; never a substring."""
+    for x in place_names(a):
+        for y in place_names(b):
+            short, long = sorted((x, y), key=len)
+            if x == y or (len(short) >= 5 and long.startswith(short) and len(long) - len(short) <= 2
+                          and ' ' not in long[len(short):]):
+                return True
+    return False
 
 
 def year_grid(series, observations, resolver):
@@ -210,21 +231,31 @@ def line_questions(data, line, people):
         matches_line(line, people, data, q) or any(aliases.get(p, p) in people for p in q.get('people', [])))]
 
 
+# How much a year can move the line's open question: the frontier person's own years first, then the people
+# of the open versions about him, then anyone else an open question of the line names.
+FRONTIER, ABOUT_FRONTIER, OTHER_QUESTION = 1.0, 0.6, 0.3
+
+
 def line_windows(data, line, people):
-    """Birth windows of the frontier person and of the people of the line's open questions."""
+    """Birth windows, weighted: the frontier person, the people of open questions about him, other question people."""
     from .coverage_context import planning_windows
     graph = data['tree'].graph['people']
-    members = {line.chain[-1]}
+    aliases = data['tree'].aliases
+    frontier = line.chain[-1]
+    weights = {frontier: FRONTIER}
     for question in line_questions(data, line, people):
-        members.update(data['tree'].aliases.get(p, p) for p in question.get('people', []))
+        named = [aliases.get(p, p) for p in question.get('people', [])]
+        weight = ABOUT_FRONTIER if frontier in named else OTHER_QUESTION
+        for pid in named:
+            weights[pid] = max(weights.get(pid, 0), weight)
     windows = []
-    for pid in sorted(members):
+    for pid, weight in sorted(weights.items()):
         if pid in data.get('living', ()) or pid not in graph:
             continue
         person = graph[pid]
         (lo, hi), _ = planning_windows(person | {'events': person.get('events', []) + data['planning_events'].get(pid, [])})
         if lo is not None:
-            windows.append({'person': pid, 'born': [lo, hi]})
+            windows.append({'person': pid, 'born': [lo, hi], 'weight': weight})
     return windows
 
 
@@ -241,8 +272,18 @@ def in_window(year, kind, windows):
     return any(a <= year <= b for a, b in spans(kind, windows))
 
 
-def nearness(year, kind, windows):
-    return min((abs(year - (a + b) / 2) for a, b in spans(kind, windows)), default=0)
+def window_weight(year, kind, windows):
+    """The weight of the most telling window this year of this kind of record falls in; 0 outside all."""
+    return max((w.get('weight', FRONTIER) for w, (a, b) in zip(windows, spans(kind, windows)) if a <= year <= b), default=0)
+
+
+CORE = 12  # years either side of the most telling birth: his own baptism, his parents' marriage, his siblings
+
+
+def nearness(year, windows):
+    """Distance to the middle of the most telling person's birth window, whatever the kind of record."""
+    top = max((w.get('weight', FRONTIER) for w in windows), default=0)
+    return min((abs(year - sum(w['born']) / 2) for w in windows if w.get('weight', FRONTIER) == top), default=0)
 
 
 def leading_places(data, line, people):
@@ -273,7 +314,9 @@ def empty_cells(series, grid, online, windows, leading):
     for year, state in grid.items():
         if state in {'full', 'surname'} and not (state == 'surname' and kind == 'marriage'):
             continue
-        value = 2 * in_window(year, kind, windows) + lead
+        weight = window_weight(year, kind, windows)
+        near = nearness(year, windows)
+        value = round(weight * (1.5 if weight and near <= CORE else 1) + .25 * lead, 2)
         cost = {'online': 0, 'login': 1, 'unknown': 0, 'index': 0, 'named': 0, 'surname': 0,
                 'blocked': 1, 'archive': 2, 'missing': 2}[state]
         if state in {'unknown', 'index', 'named', 'surname'}:
@@ -281,12 +324,13 @@ def empty_cells(series, grid, online, windows, leading):
         gap = {'online': 3, 'login': 3, 'archive': 3, 'missing': 3, 'blocked': 3, 'unknown': 2, 'index': 2,
                'named': 2, 'surname': 1}[state]
         cells.append({'series': series['id'], 'year': year, 'state': state, 'value': value, 'cost': cost, 'gap': gap,
-                      'near': nearness(year, kind, windows),
+                      'in_window': weight >= ABOUT_FRONTIER,
+                      'near': near,
                       'where': online[year][0] if year in online else series.get('holder')})
     return cells
 
 
-def ranked(cells, limit=8):
+def ranked(cells, limit=10):
     """Runs of neighbouring empty years of one series and state, by value, then cost, then how unread."""
     groups = {}
     for cell in sorted(cells, key=lambda c: (c['series'], c['state'], c['value'], c['cost'], c['year'])):
@@ -297,15 +341,35 @@ def ranked(cells, limit=8):
             bucket[-1]['near'] = min(bucket[-1]['near'], cell['near'])
         else:
             bucket.append({'series': cell['series'], 'state': cell['state'], 'value': cell['value'],
+                           'in_window': cell['in_window'],
                            'cost': cell['cost'], 'gap': cell['gap'], 'where': cell['where'], 'near': cell['near'],
                            'years': [cell['year'], cell['year']]})
     flat = [run for bucket in groups.values() for run in bucket]
-    flat.sort(key=lambda r: (-r['value'], r['cost'], -r['gap'], r['near'], -(r['years'][1] - r['years'][0]), r['years'][0]))
+    flat.sort(key=lambda r: (-r['value'], r['cost'], r['near'], -r['gap'], -(r['years'][1] - r['years'][0]), r['years'][0]))
     return flat[:limit] if limit else flat
 
 
-def name_bases(data, line, observations, people_places):
-    """Catalogue name bases that fit the line's places and period, opened or not, with forms and rows."""
+def line_communities(data, members):
+    """Communities the line's people are recorded in, from their own records' words; empty when none says."""
+    from .coverage_context import person_text
+    graph = data['tree'].graph['people']
+    found = set()
+    for pid in members:
+        person = graph.get(pid)
+        if not person:
+            continue
+        words = ' '.join(str(person.get(k) or '') for k in ('religion', 'faith', 'rite', 'confession'))
+        raw = (person_text(person | {'events': person.get('events', []) + data['planning_events'].get(pid, [])})
+               + ' ' + words).casefold()
+        found |= {name for name, pattern in COMMUNITIES.items() if re.search(pattern, raw)}
+    return found
+
+
+def name_bases(data, line, observations, people_places, communities=frozenset()):
+    """Catalogue name bases that fit the line's places, period and community, opened or not, with forms and rows.
+
+    A base that holds one community's records fits only a line recorded in it; where nobody's community is
+    recorded, its fit is unknown (None), never a hole."""
     from .coverage import applicability
     from .research_plan import recorded_places
     from .search_plays import query_places
@@ -314,7 +378,13 @@ def name_bases(data, line, observations, people_places):
     graph = data['tree'].graph['people']
     instance = data['instance']
     dead = [pid for pid in line.chain if pid not in data.get('living', ()) and recorded_places(graph[pid])]
-    known = list(dict.fromkeys(_expand(instance, line.surname, 'surname'))) if line.surname else []
+    known = []
+    # The line's name may be a plural ("the Smiths"); the forms come from the surname its people were born with.
+    for name in [line.surname, *(n for pid in line.chain for n in data['tree'].people[pid]['surnames'])] if line.surname else []:
+        if len(forms := list(dict.fromkeys(_expand(instance, name, 'surname')))) > len(known):
+            known = forms
+        if len(known) > 1:
+            break
     rows = {}
     for obs in observations:
         sid = obs['source']
@@ -340,14 +410,19 @@ def name_bases(data, line, observations, people_places):
     for sid, source in catalogue.items():
         if source.get('kind') in {'archive', 'finding-aid', 'registry'}:
             continue
-        fits = any(not applicability(data, pid, sid, data['contexts'].get(pid)) for pid in dead)
+        fits = any(not applicability(data, pid, sid, data['contexts'].get(pid)) for pid in dead) if dead else None
+        held = set(source.get('communities') or ())
+        doubt = bool(dead and fits is not False and held and not communities)
+        if held and fits is not False:
+            fits = None if doubt else fits if held & communities else False
         opened = rows.get(sid)
-        if not fits and not opened:
+        if not fits and not opened and not doubt:
             continue
         if source.get('kind') != 'index' and not opened:
             continue
         read_forms = {norm(f) for f in (opened or {}).get('forms', ())}
         item = {'source': sid, 'title': source.get('title') or sid, 'fits': fits, 'access': source.get('access'),
+                'catalogued': True, 'communities': sorted(held), 'community_unknown': doubt,
                 'opened': bool(opened), 'forms_known': known,
                 'forms_missing': [f for f in known if norm(f) not in read_forms]}
         if opened:
@@ -367,35 +442,54 @@ def name_bases(data, line, observations, people_places):
                     'forms_read': [f for f in known if norm(f) in read_forms], 'words_read': len(opened['forms']),
                     'places': sorted(opened['places']),
                     'places_missing': [p for p in people_places if not any(place_match(p, q) for q in opened['places'])]})
-    out.sort(key=lambda b: (b['fits'] is False, b['opened'], -b.get('rows', 0), b['title']))
+    out.sort(key=lambda b: (b['fits'] is not True, b['opened'], -b.get('rows', 0), b['title']))
     return out, len(dead)
 
 
-def map_line(data, line, series_rows):
+def map_line(data, group, series_rows):
+    """One section for every chain of one surname: their people, searches and series together."""
     from .research_plan import line_observations, recorded_places, variants_for_place
     from .coverage import line_members
     from .search_ledger import row_digest
-    members = line_members(data, line.chain)
+    group = group if isinstance(group, list) else [group]  # the plan maps one chain
+    line = group[0]
+    if len(group) > 1:
+        chain = list(dict.fromkeys(pid for one in group for pid in one.chain))
+        line = line._replace(chain=chain, forms=set().union(*(one.forms for one in group)),
+                             main_order=min(one.main_order for one in group),
+                             secondary=all(one.secondary for one in group),
+                             focus_order=min(one.focus_order for one in group))
+    members = set().union(*(line_members(data, one.chain) for one in group))
     graph = data['tree'].graph['people']
     places = list(dict.fromkeys(p for pid in line.chain for p in recorded_places(graph[pid])))
     entries = data['place_entries']
     names = {form for entry in entries for form in entry['names']}
-    leading = leading_places(data, line, members)
+    leading = list(dict.fromkeys(p for one in group for p in leading_places(data, one, members)))
     known_places = places + leading
     for entry in variants_for_place(known_places, entries):
         known_places.extend(f['text'] for f in entry['forms'])
-    groups, unplayed, _ = line_observations(data, line, members, names, set())
-    observations = [obs for rows in groups.values() for obs in rows]
-    unplayed = set(unplayed)
-    observations += [obs for obs in data['observations']
-                     if (obs['row'].get('id_as_written') or obs['row'].get('id') or row_digest(obs['row'])) in unplayed]
+    observations, seen, unplayed = [], set(), set()
+    for one in group:
+        groups, unknown, _ = line_observations(data, one, members, names, set())
+        unplayed.update(unknown)
+        for obs in (obs for rows in groups.values() for obs in rows):
+            if id(obs['row']) not in seen:
+                seen.add(id(obs['row']))
+                observations.append(obs)
+    observations += [obs for obs in data['observations'] if id(obs['row']) not in seen
+                     and (obs['row'].get('id_as_written') or obs['row'].get('id') or row_digest(obs['row'])) in unplayed]
     # Rows that name a series belong to the line of that series, whatever their people say.
     mine = [s for s in series_rows or [] if series_for_line(s, line, data, known_places)]
     ids = {s['id'] for s in mine}
     seen = {id(obs['row']) for obs in observations}
     observations += [obs for obs in data['observations'] if id(obs['row']) not in seen
                      and any(r[0] in ids for r in row_readings(obs['row']))]
-    windows = line_windows(data, line, members)
+    windows = {}
+    for one in group:
+        for window in line_windows(data, one, members):
+            if window['weight'] > windows.get(window['person'], {}).get('weight', 0):
+                windows[window['person']] = window
+    windows = list(windows.values())
     view_series, cells = [], []
     for series in mine:
         grid, basis, online = year_grid(series, observations, data['resolver'])
@@ -407,16 +501,37 @@ def map_line(data, line, series_rows):
                             'title': series.get('title'), 'holder': series.get('holder'),
                             'online': [item['source'] for item in series.get('online', [])],
                             'years': {str(y): s for y, s in grid.items()}, 'counts': counts,
-                            'window': sorted(y for y in grid if in_window(y, kind, windows)),
+                            'window': sorted(y for y in grid if window_weight(y, kind, windows) >= ABOUT_FRONTIER),
                             'read_by': {str(y): rows for y, rows in basis.items()}, 'note': series.get('note')})
         cells += empty_cells(series, grid, online, windows, leading)
-    bases, fit_people = name_bases(data, line, observations, places)
-    window_open = [c for c in cells if c['value'] >= 2 and c['cost'] == 0 and c['state'] in {'online', 'unknown', 'index', 'named'}]
-    return {'surname': line.surname, 'start': line.chain[0], 'frontier': line.chain[-1], 'windows': windows,
+    communities = line_communities(data, members)
+    bases, fit_people = name_bases(data, line, observations, places, communities)
+    # Online with the host's login is online: FamilySearch years count.
+    window_open = [c for c in cells if c['in_window'] and c['cost'] <= 1
+                   and c['state'] in {'online', 'login', 'unknown', 'index', 'named'}]
+    questions = {q.get('id') or n for one in group for n, q in enumerate(line_questions(data, one, members))}
+    return {'surname': line.surname, 'start': line.chain[0], 'frontier': group[0].chain[-1],
+            'chains': len(group), 'main': not line.secondary, 'order': (line.focus_order, line.main_order),
+            'questions': len(questions), 'last': max((str(o['row'].get('at') or '')[:10] for o in observations), default=''),
+            'communities': sorted(communities), 'windows': windows,
             'leading_places': leading, 'series': view_series, 'bases': bases, 'fit_people': fit_people,
             'open_online_in_window': len(window_open), 'next': ranked(cells),
             'totals': {state: sum(s['counts'].get(state, 0) for s in view_series)
                        for state in (*RANK, *EMPTY_STATES)}}
+
+
+def line_groups(lines):
+    """Chains of one surname are one line of the family; a chain without a surname stays alone."""
+    groups = {}
+    for line in lines:
+        groups.setdefault(line.surname.casefold() or id(line), []).append(line)
+    return list(groups.values())
+
+
+def working_first(lines):
+    """The lines the family works on now open the map: its main lines, then open questions, then recent searches."""
+    return sorted(lines, key=lambda l: (not l['main'], not l['questions'], l['order'],
+                                        not l['last'], [-ord(c) for c in l['last']], not l['surname']))
 
 
 def prepare(instance, data=None):
@@ -442,15 +557,42 @@ def build(instance, *, line=None):
     from .coverage import selected_lines
     path, series_rows, problems = read_series(instance)
     data = prepare(instance)
-    lines = [map_line(data, row, series_rows) for row in selected_lines(data, line)]
+    lines = working_first([map_line(data, group, series_rows) for group in line_groups(selected_lines(data, line))])
     view = {'schema': 1, 'series_file': path.relative_to(instance.root).as_posix() if path.is_relative_to(instance.root) else str(path),
             'series_list': series_rows is not None, 'problems': [{'series': w, 'message': m} for w, m in problems],
             'lines': lines}
     return view
 
 
+def base_groups(line):
+    """The field of a line: bases that fit (holes first, then the least read); the rest sits behind a tap."""
+    known = bool(line['fit_people'])
+    field = [b for b in line['bases'] if b['fits'] is True or (not known and b.get('catalogued') and not b.get('communities'))]
+    rest = [b for b in line['bases'] if b not in field]
+
+    def share(b):
+        return len(b.get('forms_read', [])) / len(b['forms_known']) if b['forms_known'] else 1
+    field.sort(key=lambda b: (b['opened'], share(b) if b['opened'] else 0, -b.get('rows', 0), b['title']))
+    return field, rest
+
+
+def line_name(line, w):
+    return line['surname'] or w['no_surname']
+
+
+def line_counts(line):
+    read = sum(line['totals'].get(s, 0) for s in ('full', 'surname'))
+    years = sum(sum(s['counts'].values()) for s in line['series'])
+    return {'opened': sum(b['opened'] for b in line['bases']), 'read': read, 'years': years}
+
+
+def working(line):
+    """A line the family works on now: a main line with a surname, or one with open questions."""
+    return line['main'] and bool(line['surname'] or line['questions'])
+
+
 WORDS = {
-    'en': {'title': 'Search map', 'no_list': 'No series list yet ({file}): record series are unknown. Write one with `research form series`.',
+    'en': {'title': 'Search map', 'no_list': 'No series list yet ({file}): which books exist is unknown; list them with `research form series`.',
            'series': 'Record series', 'bases': 'Name bases', 'next': 'Where to read next', 'none': 'nothing',
            'states': {'full': 'read in full', 'surname': 'surname column', 'named': 'named entries', 'index': 'index only',
                       'unknown': 'depth unknown', 'online': 'online, unread', 'login': 'online with login, unread',
@@ -458,8 +600,13 @@ WORDS = {
            'window': 'window', 'opened': 'opened', 'never': 'fits, never opened', 'rows': 'returned {hits} · read {read}',
            'forms': 'forms', 'missing_forms': 'not read', 'open_online': 'Open online years in the window, unread: {n}',
            'fit_unknown': 'Which bases fit is unknown: no person of the line has a recorded place.',
+           'field': 'fit and opened {opened} of {fit}', 'holes': 'never opened', 'partial': 'not every form',
+           'rest': 'also opened, outside the catalogue or not for this line: {n}',
+           'community': 'only if the line was {c}: {names}', 'no_surname': 'Line without a surname',
+           'others': 'Other lines', 'questions': 'open questions', 'last': 'last search',
+           'one_row': 'bases opened {opened} · years read {read} of {years}',
            'cost': {0: 'online now', 1: 'needs the host login', 2: 'needs a letter to the archive'}},
-    'ru': {'title': 'Карта поиска', 'no_list': 'Списка рядов книг ещё нет ({file}): что существует — неизвестно. Форма: `research form series`.',
+    'ru': {'title': 'Карта поиска', 'no_list': 'Списка рядов книг ещё нет ({file}): что существует — неизвестно; составить: `research form series`.',
            'series': 'Ряды книг', 'bases': 'Базы имён', 'next': 'Что читать дальше', 'none': 'ничего',
            'states': {'full': 'целиком', 'surname': 'графа фамилий', 'named': 'по именам', 'index': 'только индекс',
                       'unknown': 'глубина неизвестна', 'online': 'онлайн, не читано', 'login': 'онлайн со входом, не читано',
@@ -467,8 +614,15 @@ WORDS = {
            'window': 'окно', 'opened': 'открыта', 'never': 'подходит, не открывали', 'rows': 'выдано {hits} · прочитано {read}',
            'forms': 'формы', 'missing_forms': 'не читали', 'open_online': 'Открытых онлайн-лет в окне не прочитано: {n}',
            'fit_unknown': 'Какие базы подходят, неизвестно: ни у кого в линии не записано место.',
+           'field': 'подходят и открыты {opened} из {fit}', 'holes': 'не открывали', 'partial': 'не все формы',
+           'rest': 'ещё открывали, вне каталога или не для этой линии: {n}',
+           'community': 'только если линия — {c}: {names}', 'no_surname': 'Линия без фамилии',
+           'others': 'Другие линии', 'questions': 'открытых вопросов', 'last': 'последний поиск',
+           'one_row': 'баз открыто {opened} · лет прочитано {read} из {years}',
            'cost': {0: 'онлайн сейчас', 1: 'нужен вход хозяина', 2: 'нужно письмо в архив'}},
 }
+COMMUNITY_WORDS = {'en': {'jewish': 'Jewish', 'christian': 'Christian'},
+                   'ru': {'jewish': 'еврейская', 'christian': 'христианская'}}
 
 
 def cell_words(run, series, w):
@@ -478,12 +632,12 @@ def cell_words(run, series, w):
 
 
 def strip_text(grid):
+    """One row per series: the first decade, then ten marks a decade, decades apart."""
     marks = {'full': '█', 'surname': '▓', 'named': '▒', 'index': '░', 'unknown': '?', 'online': '·', 'login': ':',
              'archive': 'a', 'missing': 'x', 'blocked': '!'}
-    out = []
-    for decade in sorted({int(y) // 10 * 10 for y in grid}):
-        out.append(f'{decade} ' + ''.join(marks[grid[str(y)]] if str(y) in grid else ' ' for y in range(decade, decade + 10)))
-    return out
+    decades = sorted({int(y) // 10 * 10 for y in grid})
+    return f'{decades[0]} ' + ' '.join(''.join(marks[grid[str(y)]] if str(y) in grid else ' ' for y in range(d, d + 10))
+                                      for d in range(decades[0], decades[-1] + 10, 10)) if decades else ''
 
 
 def markdown_map(view, lang):
@@ -493,35 +647,49 @@ def markdown_map(view, lang):
         out += [w['no_list'].format(file=view['series_file']), '']
     for problem in view['problems']:
         out.append(f"- {problem['series']}: {problem['message']}")
-    for line in view['lines']:
-        out += [f"## {line['surname'] or line['start']}", '']
+    shown = [line for line in view['lines'] if line['series'] or line['bases']]
+    main = [line for line in shown if working(line)] or shown[:1]
+    for line in main:
+        facts = [f"{w['questions']} {line['questions']}" if line['questions'] else '',
+                 f"{w['last']} {line['last']}" if line['last'] else '']
+        out += [f"## {line_name(line, w)}" + ''.join(f' · {f}' for f in facts if f), '']
         if line['series']:
-            out += [f"### {w['series']}", '']
+            out += [f"### {w['series']}", '', '```']
             for series in line['series']:
-                counts = ', '.join(f"{w['states'][k]} {v}" for k, v in series['counts'].items())
-                out += [f"**{series.get('title') or series['kind'] + ' · ' + series['place']}** — {counts}", '```',
-                        *strip_text(series['years']), '```']
-            out += ['█ ' + w['states']['full'] + ' · ▓ ' + w['states']['surname'] + ' · ▒ ' + w['states']['named']
-                    + ' · ░ ' + w['states']['index'] + ' · ? ' + w['states']['unknown'] + ' · · ' + w['states']['online']
-                    + ' · : ' + w['states']['login'] + ' · a ' + w['states']['archive'] + ' · x ' + w['states']['missing']
-                    + ' · ! ' + w['states']['blocked'], '']
-        out += [f"### {w['bases']}", '']
+                read = sum(series['counts'].get(k, 0) for k in ('full', 'surname'))
+                out += [f"{series.get('title') or series['kind'] + ' · ' + series['place']} · {read}/{sum(series['counts'].values())}",
+                        strip_text(series['years'])]
+            out.append('```')
+            out += [' · '.join(f'{m} {w["states"][k]}' for k, m in (
+                ('full', '█'), ('surname', '▓'), ('named', '▒'), ('index', '░'), ('unknown', '?'), ('online', '·'),
+                ('login', ':'), ('archive', 'a'), ('missing', 'x'), ('blocked', '!'))), '']
+        field, rest = base_groups(line)
         if not line['fit_people']:
             out.append(w['fit_unknown'])
-        for base in line['bases']:
-            if base['opened']:
-                rows = w['rows'].format(read=base['read'], hits=base['hits'])
-                missing = f" · {w['missing_forms']}: {', '.join(base['forms_missing'])}" if base['forms_missing'] else ''
-                forms = f"{w['forms']} {len(base['forms_read'])}/{len(base['forms_known'])}" if base['forms_known'] else ''
-                out.append(f"- {base['title']} · {w['opened']} · {rows} · {forms}{missing}")
-            else:
-                out.append(f"- {base['title']} · {w['never']}")
-        if not line['bases']:
-            out.append(f"- {w['none']}")
-        out += ['', f"### {w['next']}", '']
+        out.append(f"{w['bases']}: {w['field'].format(opened=sum(b['opened'] for b in field), fit=len(field))}")
+        if holes := [b['title'] for b in field if not b['opened']]:
+            out.append(f"- {w['holes']}: {', '.join(holes)}")
+        if partial := [f"{b['title']} {len(b.get('forms_read', []))}/{len(b['forms_known'])}" for b in field
+                       if b['opened'] and b['forms_missing']]:
+            out.append(f"- {w['partial']}: {', '.join(partial)}")
+        doubt = {}
+        for b in rest:
+            if b.get('community_unknown') and not b['opened']:
+                doubt.setdefault(tuple(b['communities']), []).append(b['title'])
+        for held, names in doubt.items():
+            c = ', '.join(COMMUNITY_WORDS[lang].get(x, x) for x in held)
+            out.append(f"- {w['community'].format(c=c, names=', '.join(names))}")
+        if opened_rest := [b for b in rest if b['opened']]:
+            out.append(f"- {w['rest'].format(n=len(opened_rest))}")
         by_id = {s['id']: s for s in line['series']}
-        out += [f"{n}. {cell_words(run, by_id[run['series']], w)}" for n, run in enumerate(line['next'], 1)] or [f"- {w['none']}"]
+        if line['next']:
+            out += ['', f"### {w['next']}", '']
+            out += [f"{n}. {cell_words(run, by_id[run['series']], w)}" for n, run in enumerate(line['next'], 1)]
         if line['open_online_in_window']:
             out += ['', w['open_online'].format(n=line['open_online_in_window'])]
+        out.append('')
+    if others := [line for line in shown if line not in main]:
+        out += [f"## {w['others']}", '']
+        out += [f"- {line_name(line, w)}: {w['one_row'].format(**line_counts(line))}" for line in others]
         out.append('')
     return '\n'.join(out)

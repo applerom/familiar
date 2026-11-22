@@ -196,6 +196,11 @@ Optional coverage-planning fields: `search_languages` (BCP-47), `search_scripts`
 the person's local context provides a relevant clue. These are planning hints,
 never guarantees of indexed coverage. Unknown hints never invent an exclusion.
 
+Optional `communities` (`jewish`, `christian`) marks a base that holds only one
+community's records. The search map counts it as a hole only for a line whose
+people's records name that community (a faith, a rite, a parish or a baptism);
+another community makes it unfit, none recorded makes its fit unknown.
+
 For place forms, `holder_country` names the country of the keeper. The
 `countries` array still describes the territory covered by the collection.
 Use `catalogue_languages` and `catalogue_scripts` when place-name lookup in

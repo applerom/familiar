@@ -5,6 +5,7 @@
 # - the page is the host's: the shared hosted projection omits it and its navigation link [review: engine lead]
 # - meaning is carried by form; where the map cannot tell, the page says unknown [review: browser walk]
 # - no person's name and no external link leaves the map; years, places and source titles only [review: engine lead]
+# - the lines the family works on come first and open; the rest fold to one row; detail is one tap away [review: browser walk]
 # CHANGES_WITH:
 # - MOD-SEARCH-MAP (the view)
 # - MOD-DESK-BUILD (page and navigation)
@@ -34,16 +35,53 @@ def strip(series, w):
     return '<div class="strip" role="group">' + ''.join(rows) + '</div>'
 
 
-def series_card(series, w):
+def timeline(line, w):
+    """Every series of the line on one time axis, a row of years each; its decade grid is one tap away."""
     esc = html.escape
-    title = series.get('title') or f"{series['kind']} · {series['place']}"
-    counts = series['counts']
-    read = sum(counts.get(s, 0) for s in ('full', 'surname'))
-    total = sum(counts.values())
-    meta = ' · '.join(v for v in (series.get('holder'), ', '.join(series['online'])) if v)
-    return (f'<article class="series"><header><strong>{esc(title)}</strong>'
-            f'<span class="tally"><b>{read}</b>/{total}</span></header>'
-            + (f'<small>{esc(meta)}</small>' if meta else '') + strip(series, w) + '</article>')
+    years = [int(y) for s in line['series'] for y in s['years']]
+    first, last = min(years) // 10 * 10, max(years)
+    span = last - first + 1
+    step = 50 if span > 150 else 20 if span > 60 else 10
+    ticks = ''.join(f'<span style="--at:{(d - first) / span * 100:.2f}%">{d}</span>'
+                    for d in range(first, last + 1, step) if d == first or (d - first) / span < .92)
+    from familiar.research.search_map import kind_class
+    places = {}
+    for series in line['series']:
+        places.setdefault(series['place'], {}).setdefault(kind_class(series['kind']), []).append(series)
+    rows = []
+    for place, lanes in places.items():
+        every = [s for kind in lanes.values() for s in kind]
+        read = sum(s['counts'].get(k, 0) for s in every for k in ('full', 'surname'))
+        total = sum(sum(s['counts'].values()) for s in every)
+        bars = []
+        for kind in sorted(lanes, key=LANES.index):
+            # Books of one kind in one place, period after period, on one lane; where two overlap, the better reading shows.
+            own, window = {}, set()
+            for series in lanes[kind]:
+                window.update(series['window'])
+                for year, state in series['years'].items():
+                    if ORDER.index(state) < ORDER.index(own.get(int(year), 'missing')):
+                        own[int(year)] = state
+                    own.setdefault(int(year), state)
+            lo, hi = min(own), max(own)
+            cells = ''.join(f'<i class="y s-{own[y]}{" w" if y in window else ""}"></i>' if y in own
+                            else '<i class="y none"></i>' for y in range(lo, hi + 1))
+            bars.append(f'<span class="lane"><span class="kind">{esc(lanes[kind][0]["kind"])}</span><span class="axis">'
+                        f'<span class="yrs" style="--from:{(lo - first) / span * 100:.2f}%;'
+                        f'--width:{(hi - lo + 1) / span * 100:.2f}%">{cells}</span></span></span>')
+        detail = ''.join(
+            f'<div class="one"><small><b>{esc(s.get("title") or s["kind"] + " · " + s["place"])}</b>'
+            + ''.join(f' · {esc(v)}' for v in (s.get('holder'), ', '.join(s['online'])) if v) + '</small>'
+            + strip(s, w) + '</div>' for s in every)
+        rows.append(f'<details class="series"{" open" if len(line["series"]) <= 3 else ""}><summary><span class="label">{esc(place)}</span>'
+                    f'<span class="tally"><b>{read}</b>/{total}</span><span class="lanes" aria-hidden="true">'
+                    f'{"".join(bars)}</span></summary>{detail}</details>')
+    return f'<div class="timeline"><div class="ticks" aria-hidden="true">{ticks}</div>{"".join(rows)}</div>'
+
+
+FEW = 8  # a line with this few bases shows every one as a tile
+LANES = ['birth', 'marriage', 'death', 'life']
+ORDER = ['full', 'surname', 'named', 'index', 'unknown', 'online', 'login', 'blocked', 'archive', 'missing']
 
 
 def legend(w):
@@ -53,25 +91,28 @@ def legend(w):
 
 
 def base_tile(base, w):
+    """A base as a tile: its name and the share of the family's forms read; the numbers behind a tap."""
     esc = html.escape
     state = 'opened' if base['opened'] else 'never'
-    if base['fits'] is None:
-        state += ' fit-unknown'
-    parts = []
+    known = len(base['forms_known'])
+    share = len(base.get('forms_read', []))
+    filled = share / known if base['opened'] and known else 0
+    detail = []
     if base['opened']:
-        parts.append(w['returned_read'].format(hits=base['hits'], read=base['read']))
-        if base['unknown_counts']:
-            parts.append(w['uncounted'].format(n=base['unknown_counts']))
+        detail.append(w['returned_read'].format(hits=base['hits'], read=base['read'])
+                      + (' · ' + w['uncounted'].format(n=base['unknown_counts']) if base['unknown_counts'] else ''))
+        if known:
+            detail.append(w['forms'].format(read=share, known=known))
+        if base['forms_missing']:
+            detail.append(f'{w["not_read"]} {", ".join(base["forms_missing"])}')
+        if base.get('last'):
+            detail.append(base['last'])
     else:
-        parts.append(w['never'])
-    if base['forms_known']:
-        share = len(base.get('forms_read', []))
-        parts.append(w['forms'].format(read=share, known=len(base['forms_known'])))
-    missing = (f'<small>{esc(w["not_read"])} {esc(", ".join(base["forms_missing"][:6]))}'
-               + ('…' if len(base['forms_missing']) > 6 else '') + '</small>') if base['opened'] and base['forms_missing'] else ''
-    filled = len(base.get('forms_read', [])) / len(base['forms_known']) if base['opened'] and base['forms_known'] else 0
-    return (f'<li class="base {state}" style="--f:{filled * 100:.0f}%"><strong>{esc(base["title"])}</strong>'
-            f'<span>{esc(" · ".join(parts))}</span>{missing}</li>')
+        detail.append(w['never'])
+    mark = f'{share}/{known}' if base['opened'] and known else ''
+    return (f'<li class="base {state}" style="--f:{filled * 100:.0f}%"><details><summary>'
+            f'<strong>{esc(base["title"])}</strong>' + (f'<span class="share">{esc(mark)}</span>' if mark else '')
+            + '</summary>' + ''.join(f'<small>{esc(d)}</small>' for d in detail) + '</details></li>')
 
 
 def next_item(run, titles, w):
@@ -83,41 +124,70 @@ def next_item(run, titles, w):
             f'{years}</strong><span>{esc(w["states"][run["state"]])} · {esc(w["cost"][str(run["cost"])])}{where}</span></div></li>')
 
 
-def line_section(line, w):
+def field(line, w):
+    """Bases that fit the line as tiles; those that fit only another community's line, or were opened off it, one tap away."""
+    from familiar.research.search_map import base_groups
+    esc = html.escape
+    tiles, rest = base_groups(line)
+    if len(tiles) + len(rest) <= FEW:
+        tiles, rest = tiles + [b for b in rest if b['opened']], [b for b in rest if not b['opened']]
+    out = []
+    if tiles:
+        out.append('<ul class="bases">' + ''.join(base_tile(b, w) for b in tiles) + '</ul>')
+    groups = {}
+    for b in rest:
+        if b.get('community_unknown') and not b['opened']:
+            groups.setdefault(', '.join(w.get(c, c) for c in b['communities']), []).append(b['title'])
+    for c, names in groups.items():
+        out.append(f'<p class="doubt">{esc(w["fit_doubt"].format(c=c, n=", ".join(names)))}</p>')
+    if opened := [b for b in rest if b['opened']]:
+        out.append(f'<details class="rest"><summary>{esc(w["rest"].format(n=len(opened)))}</summary><ul class="bases">'
+                   + ''.join(base_tile(b, w) for b in opened) + '</ul></details>')
+    return ''.join(out)
+
+
+def line_section(line, w, *, open_):
+    from familiar.research.search_map import base_groups
     esc = html.escape
     totals = line['totals']
     read = totals.get('full', 0) + totals.get('surname', 0)
     touched = sum(totals.get(s, 0) for s in ('named', 'index', 'unknown'))
     open_online = totals.get('online', 0) + totals.get('login', 0)
     archive = totals.get('archive', 0) + totals.get('missing', 0)
-    out = [f'<section class="map-line"><h2 class="h2">{esc(line["surname"] or line["start"])}</h2>']
+    years = sum(sum(s['counts'].values()) for s in line['series'])
+    tiles = base_groups(line)[0]
+    tally = [w['tally_years'].format(read=read, years=years) if years else '',
+             w['tally_bases'].format(opened=sum(b['opened'] for b in tiles), fit=len(tiles)) if tiles else '']
+    out = [f'<details class="map-line"{" open" if open_ else ""}><summary><h2 class="h2">'
+           f'{esc(line["surname"] or w["no_surname"])}</h2><span class="line-tally">'
+           f'{esc(" · ".join(t for t in tally if t))}</span></summary>']
     if line['series']:
         counts = [(read, w['count_read']), (touched, w['count_touched']), (open_online, w['count_online']),
                   (archive, w['count_archive'])]
         out.append('<div class="counts" style="--counter-count:4">' + ''.join(
             f'<div><b>{n}</b><span>{esc(label)}</span></div>' for n, label in counts) + '</div>')
-        out.append(f'<h3>{esc(w["series"])}</h3><div class="series-list">'
-                   + ''.join(series_card(s, w) for s in line['series']) + '</div>')
-    else:
-        out.append(f'<p class="sub">{esc(w["series_unknown"])}</p>')
+        out.append(f'<h3>{esc(w["series"])}</h3>' + timeline(line, w))
+    titles = {s['id']: s.get('title') or f"{s['kind']} · {s['place']}" for s in line['series']}
+    if line['next']:
+        out.append(f'<h3>{esc(w["next"])}</h3><ol class="next">'
+                   + ''.join(next_item(r, titles, w) for r in line['next'][:5]) + '</ol>')
     if line['bases'] or not line['fit_people']:
         out.append(f'<h3>{esc(w["bases"])}</h3>')
     if not line['fit_people']:
         out.append(f'<p class="sub">{esc(w["fit_unknown"])}</p>')
-    if line['bases']:
-        out.append('<ul class="bases">' + ''.join(base_tile(b, w) for b in line['bases']) + '</ul>')
-    titles = {s['id']: s.get('title') or f"{s['kind']} · {s['place']}" for s in line['series']}
-    if line['next']:
-        out.append(f'<h3>{esc(w["next"])}</h3><ol class="next">'
-                   + ''.join(next_item(r, titles, w) for r in line['next']) + '</ol>')
-    out.append('</section>')
+    out.append(field(line, w) + '</details>')
     return ''.join(out)
 
 
 def page(active, w, view, *, language=None):
+    from familiar.research.search_map import working
     esc = html.escape
     language = language or active.source_language
-    body = ''.join(line_section(line, w) for line in view['lines'] if line['series'] or line['bases'])
+    shown = [line for line in view['lines'] if line['series'] or line['bases']]
+    main = [line for line in shown if working(line)] or shown[:1]
+    body = ''.join(line_section(line, w, open_=line in main) for line in shown)
+    if body and not view['series_list']:
+        body = f'<p class="sub series-unknown">{esc(w["series_unknown"])}</p>' + body
     if view['series_list'] and any(line['series'] for line in view['lines']):
         body += legend(w)
     return ('<!doctype html><html lang="' + esc(language) + '"><head><meta charset="utf-8">'

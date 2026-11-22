@@ -512,7 +512,7 @@ def open_record(line, record_map, lang):
         if any(p['state'] == 'exhausted' for p in line['plays']):
             line['record_map'] = 'unknown'  # no series list: whether the open record is read is not known
         return
-    runs = [r for r in record_map['next'] if r['value'] >= 2 and r['cost'] == 0]
+    runs = [r for r in record_map['next'] if r['in_window'] and r['cost'] <= 1]
     if not record_map['open_online_in_window']:
         return
     titles = {s['id']: s.get('title') or f"{s['kind']} · {s['place']}" for s in record_map['series']}

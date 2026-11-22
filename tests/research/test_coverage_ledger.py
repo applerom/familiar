@@ -28,3 +28,7 @@ def test_search_map_tells_reading_depth_and_keeps_line_open(family, capsys):
     assert (series['ponta-do-moinho-baptisms']['1900'], series['ponta-do-moinho-baptisms']['1903'], series['ponta-das-garcas-baptisms']['1901']) == ('full', 'surname', 'unknown')
     plan = run('plan')['lines'][0]
     assert plan['open_record']['years'] > 0 and 'Ponta do Moinho' in plan['open_record']['read_first'][0]['title'] and not any(p['state'] == 'exhausted' for p in plan['plays'])
+    from familiar.research.coverage import SearchLine
+    from familiar.research.search_map import line_groups
+    lines = [SearchLine([p], s, {s}, 0, False, 0) for p, s in (('a', 'Calhau'), ('b', 'Calhau'), ('c', ''), ('d', ''))]
+    assert [len(g) for g in line_groups(lines)] == [2, 1, 1]  # one surname is one section; a nameless chain stays alone

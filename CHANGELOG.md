@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.52.1 — 22 November 2026
+
+- The search map reads at a glance on a real family, not only on the demo. A
+  line is one section however many chains carry its surname; the lines the
+  family works on now come first and open, the others fold to one row with
+  their counts. Books of one place stand on one row of the line's time axis, a
+  lane each for births, marriages and deaths, and a tap opens them year by
+  year. Name bases are small tiles: never opened first, then the least read;
+  numbers and the forms not yet read wait behind a tap. On one family's page
+  this took the phone height from about 46,000 pixels to under 5,000.
+- A base that holds only one community's records (the region's Jewish indexes)
+  no longer looks like a hole on a line whose records say its people were
+  baptised in a parish. Where nobody's community is recorded, the map says
+  "only if the line was ..." instead. The region's catalogue marks these bases
+  with `communities`.
+- `research map` in text is short enough to paste into a brief: one row per
+  series, the bases as "opened N of M", the ones never opened and the ones with
+  forms missing, and one line for each other line.
+- A line with no recorded place no longer calls every base unfit; its fit is
+  unknown.
+- Data: nothing to carry over.
+
 ## 0.52.0 — 22 November 2026
 
 - The search map: what of the open record has been read for a line, and what

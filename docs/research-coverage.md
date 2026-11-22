@@ -229,6 +229,14 @@ brings the questions back.
 record has been read, and what has not. The desk shows the same as the host's
 page "Search map" (left out of the copy the family reads).
 
+All chains of one surname are one line. The lines the family works on (its
+`research.main_lines`, or, without them, lines with open questions) come first
+and open; the rest fold to one row with their tallies. On the page a place is
+one row on the line's time axis, a lane per kind of book; a tap opens each
+series year by year. Name bases are small tiles, holes first, then the least
+read; the numbers and the forms not read are behind a tap, and bases opened
+off the line's fit sit behind one more.
+
 - **Record series**, year by year, the best reading reached: in full; surname
   column; named entries; someone's index; depth unknown; and for unread years
   online (open or with the host's login), archive only (no online copy: where
@@ -242,9 +250,13 @@ page "Search map" (left out of the copy the family reads).
   `episodes` and `planning_requires` admit at least one dead person of the line
   with a recorded place — the same applicability as `coverage --recheck`. A
   base that cannot hold these people is not a hole and is not listed. Where
-  nobody on the line has a place, the map says fit is unknown. A catalogue
-  entry that says nothing of a community (a faith, an emigration) cannot rule
-  itself out: give it `episodes` or `planning_requires`.
+  nobody on the line has a place, the map says fit is unknown. A base that
+  holds one community's records says so with `communities` (`jewish`,
+  `christian`); it is a hole only for a line whose people's own records name
+  that community (a faith, a rite, a parish, a baptism). Another community
+  rules it out; none recorded leaves it as "only if the line was ...", never a
+  hole. An emigration or other episode still needs `episodes` or
+  `planning_requires`.
 - **Read next**: the empty cells, as runs of years, ranked by value — the
   years in which a record of that kind can name the people of the line's open
   questions and its frontier (their birth windows; marriages 15–45 years
