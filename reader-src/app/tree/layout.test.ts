@@ -166,6 +166,18 @@ test('the husband and the wife grow two crowns with open sky between them, cross
   expect(Math.min(...xs(wife))).toBeGreaterThan(ov.pos.get('kid')!.x);
   expect(ov.pos.get('common')!.x).toBeGreaterThan(Math.max(...xs(husband)));
   expect(ov.pos.get('common')!.x).toBeLessThan(Math.min(...xs(wife)));
+  // A crowded line keeps to its own band: a cousin's large family never lies over the mother's line beside it.
+  const nest = ['he-ff', 'he-f', 'u'];
+  add('u', 1934); parent('u', 'he-ff', 'отец');
+  for (let i = 0; i < 6; i++) for (let j = 0; j < 3; j++) {
+    const c = 'u' + i, g = c + '-' + j;
+    if (!j) { add(c, 1955 + i * 3); parent(c, 'u', 'отец'); nest.push(c); }
+    add(g, 1975 + i * 3 + j); parent(g, c, 'отец'); nest.push(g);
+  }
+  const crowded = buildOverview(buildModel({root: 'he', people, edges, families: [{husband: 'he', wife: 'she'}]}))!;
+  const at = (ids: string[]) => ids.map(id => crowded.pos.get(id)!.x);
+  expect(Math.max(...at(nest))).toBeLessThan(Math.min(...at(['he-m', 'he-mf', 'he-mm'])));
+  expect(Math.max(...at([...nest, 'he-m', 'he-mf', 'he-mm']))).toBeLessThan(crowded.pos.get('kid')!.x);
 });
 
 // A phone drew a couple with seven children so small that their parents turned to initials.

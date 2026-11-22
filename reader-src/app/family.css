@@ -170,6 +170,8 @@ blockquote small{color:var(--muted)}blockquote p{margin:4px 0 0}
 .person-undo{position:fixed;bottom:calc(max(var(--tab),var(--desk-footer-height,0px)) + var(--peek) + 12px);left:50%;transform:translateX(-50%);z-index:71;min-height:44px;max-width:calc(100% - 32px);padding:8px 16px;border:1px solid var(--line);border-radius:8px;background:var(--sheet);color:var(--ink);box-shadow:0 6px 24px #1e32283a;font-weight:600}
 @media(min-width:820px){.person-undo{bottom:calc(var(--desk-footer-height,0px) + 86px)}}
 .ov-foot{margin:0;padding:8px 18px calc(10px + env(safe-area-inset-bottom));font-size:12px;color:var(--muted)}
+.ov-legend{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;margin-left:auto;padding:0 4px;font-size:12px}.ov-legend>span{display:inline-flex;align-items:center;gap:2px;color:#41544a;font-weight:500}.ov-legend svg{flex:none}
+.ov-card small.ov-hold{display:flex;align-items:center;gap:6px;margin-top:3px}
 
 /* other pages */
 .page{width:100%;max-width:880px;margin:0 auto;padding:26px 16px 60px}

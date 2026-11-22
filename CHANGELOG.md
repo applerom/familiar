@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.50.1 — 22 November 2026
+
+- The whole tree gives every ancestor line a band of its own. A line with many
+  brothers, sisters and cousins widens its own band and no longer lies over the
+  neighbouring line, where it looked as if the two families were related.
+- Opened on the whole page, the picture takes the shape of the screen: on a wide
+  screen the lines stand apart instead of leaving empty margins. The corner
+  picture fills its box the same way; a phone still opens on the current person.
+- The picture shows how firmly each branch holds to the family, in three steps
+  — from records and family memory, probably, our version. A link is drawn
+  whole, dashed or dotted by its own weight; a person is a filled dot, a pale
+  dot in a rim or an empty ring by the links on the way down to the family. So
+  the place where a well-gathered branch hangs on a guess is visible at a glance,
+  together with everything above it. A short legend sits by the lines.
+- Choosing a person draws their way down to the family and marks the link on it
+  that holds least; the card says in one line how they are tied to the family.
+- The part of the tree on screen is now marked by one soft frame instead of a
+  glow around each dot, so size and fill of a dot keep their own meaning.
+
 ## 0.50.0 — 21 November 2026
 
 If you installed 0.41.3, this is what is new for you. A family can be served
