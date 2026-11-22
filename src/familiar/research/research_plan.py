@@ -488,12 +488,52 @@ def plan(instance, *, line=None):
     closed = asks.horizons(instance)
     data['text'] = lambda value: value if isinstance(value, str) else (value or {}).get(instance.source_language) or next(
         iter((value or {}).values()), '')
+    chosen = selected_lines(data, line)
     lines = [plan_line(data, row, entries, local_asks, letters, lang,
                        next(((name, entry) for name, entry in closed.items() if surname_keys(name, data['language'])
                              & row.forms), None))
-             for row in selected_lines(data, line)]
+             for row in chosen]
+    from .search_map import map_line, prepare, read_series
+    _, series_rows, _ = read_series(instance)
+    if series_rows:
+        prepare(instance, data)
+    for view_line, row in zip(lines, chosen):
+        open_record(view_line, map_line(data, row, series_rows) if series_rows else None, lang)
     view = {'schema': 1, 'lines': lines}
     return view, markdown_plan(view, lang)
+
+
+RECORD_PLAYS = {'ask-family', 'archive-letters'}
+
+
+def open_record(line, record_map, lang):
+    """Exhausted is a statement about the search map: open online years in the window keep the line open."""
+    if record_map is None:
+        if any(p['state'] == 'exhausted' for p in line['plays']):
+            line['record_map'] = 'unknown'  # no series list: whether the open record is read is not known
+        return
+    runs = [r for r in record_map['next'] if r['value'] >= 2 and r['cost'] == 0]
+    if not record_map['open_online_in_window']:
+        return
+    titles = {s['id']: s.get('title') or f"{s['kind']} · {s['place']}" for s in record_map['series']}
+    line['open_record'] = {'years': record_map['open_online_in_window'],
+                           'read_first': [{'series': r['series'], 'title': titles[r['series']], 'years': r['years'],
+                                           'state': r['state']} for r in runs[:3]]}
+    for play in line['plays']:
+        if play['state'] == 'exhausted' and play['id'] not in RECORD_PLAYS:
+            play['state'] = 'in-progress'
+            play['reopened_by'] = 'search-map'
+        if play['ceiling_sources']:
+            play['repeat_ceiling'], play['ceiling_sources'] = play['ceiling_sources'], []
+    current = next((p for p in line['plays'] if 'next' in p), None)
+    if runs and (current is None or current['id'] in RECORD_PLAYS):
+        first = runs[0]
+        years = period_label(first['years'])
+        if current:
+            current.pop('next')
+        line['next'] = (f"Прочитать {titles[first['series']]} {years} целиком: книги онлайн, в окне вопроса."
+                        if lang == 'ru' else
+                        f"Read {titles[first['series']]} {years} in full: the books are online, in the question's window.")
 
 
 def horizon_lines(horizon, signs, lang):
@@ -558,7 +598,18 @@ def markdown_plan(view, lang):
             out.append(f"| {play['title']} | {state} | {activity} |")
         out.extend(['', f"{no_play} · {len(line['unrecorded_play'])}"])
         next_play = next((p for p in line['plays'] if 'next' in p), None)
-        if next_play:
+        if record := line.get('open_record'):
+            first = ', '.join(f"{r['title']} {period_label(r['years'])}" for r in record['read_first'])
+            out.extend(['', (f"**Открытые книги** · в окне вопроса не прочитано онлайн-лет: {record['years']}; "
+                             f"сначала {first} (`research map`)" if lang == 'ru' else
+                             f"**Open record** · online years unread in the question's window: {record['years']}; "
+                             f"first {first} (`research map`)")])
+        elif line.get('record_map') == 'unknown':
+            out.extend(['', 'Ряды книг не описаны: прочитано ли открытое, неизвестно (`research map`).' if lang == 'ru'
+                        else 'No series list: whether the open record is read is unknown (`research map`).'])
+        if line.get('next'):
+            out.extend(['', f"**{write_next}** · {line['next']}"])
+        elif next_play:
             out.extend(['', f"**{write_next}** · {next_play['next']}"])
         if any(play.get('place_form_gaps') for play in line['plays']):
             out.extend(['', 'Формы места у хранителя' if lang == 'ru' else 'Place forms by keeper'])

@@ -17,10 +17,12 @@
 # - fictional demo exports use portable links and omit server-backed editing controls [review: engine lead]
 # - public-reader demos consume the public, independently read seal instead of the host-private projection [review: engine lead]
 # - the desk line front uses checked reader names and watches the research inputs from which its counts are derived [review: browser walk]
+# - the search map is the host's page: the shared hosted projection omits it with its link [review: engine lead]
 # CHANGES_WITH:
 # - MOD-READER-SERVER (packaged shell manifest)
 # - MOD-FAMILY-WRITER (checked reader consumption and desk output)
 # - MOD-RESEARCH-COVERAGE (line front)
+# - MOD-DESK-SEARCH-MAP (host page)
 # :END_MODULE_CONTRACT
 import html
 import json
@@ -41,10 +43,10 @@ from .model import decision, listing, relative, settings, sha, source, words
 
 def hosted_files(files, *, personal, feedback_ids=()):
     result = {name: raw for name, raw in files.items()
-              if personal or not name.startswith('desk/correspondence.')}
+              if personal or not name.startswith(('desk/correspondence.', 'desk/search-map.'))}
     for name, raw in result.items():
         if not personal and name.endswith('.html'):
-            result[name] = re.sub(rb'<a data-desk-label="nav_correspondence"[^>]*>.*?</a>', b'', raw)
+            result[name] = re.sub(rb'<a data-desk-label="nav_(?:correspondence|search_map)"[^>]*>.*?</a>', b'', raw)
     if 'desk/feedback.json' in result:
         result['desk/feedback.json'] = encode({k: v for k, v in json.loads(result['desk/feedback.json']).items()
                                                if k in feedback_ids})
@@ -190,6 +192,9 @@ def _assemble_checked(instance, active, config, delivered, watch, stamp, *, publ
                      if isinstance(form := ((person.get('namePresentation') or {}).get('byLanguage') or {}).get(lang), str)
                      and form.strip()}
             pages.update(project_correspondence(active, words(instance, lang), language=lang, texts=texts, local_names=names)[0])
+    from .search_map import PAGE as SEARCH_MAP, project as project_map
+    if (search_map := project_map(active, w)) is not None:
+        pages[SEARCH_MAP] = search_map
     from .feedback import owner_only, receipt, research_feedback
     def read_mark(path):
         raw = path.read_bytes() if path.is_file() else None
@@ -205,7 +210,7 @@ def _assemble_checked(instance, active, config, delivered, watch, stamp, *, publ
     files.update(pages)
     assets = package_files('familiar.desk').joinpath('assets')
     files.update({'desk/' + name: assets.joinpath(name).read_bytes()
-                  for name in ('desk.js', 'desk.css', 'session.js', 'show.js', 'show.css', 'tree-add.js', 'tree-add.css', 'access.js', 'access.css', 'correspondence.js', 'correspondence.css')})
+                  for name in ('desk.js', 'desk.css', 'session.js', 'show.js', 'show.css', 'tree-add.js', 'tree-add.css', 'access.js', 'access.css', 'correspondence.js', 'correspondence.css', 'search-map.css')})
     if not public_reader:
         for name in ('asks.js', 'asks.css'):
             files['desk/' + name] = assets.joinpath(name).read_bytes()
@@ -233,6 +238,8 @@ def _assemble_checked(instance, active, config, delivered, watch, stamp, *, publ
            or any(i.get('asset') for i in p.get('illustrations', [])) for p in people):
         navigation.append(('nav_photos', '/#view=photos'))
     navigation.append(('nav_progress', '/desk/progress.html'))
+    if SEARCH_MAP in pages:
+        navigation.append(('nav_search_map', '/' + SEARCH_MAP))
     if not public_reader:
         navigation[1:1] = [('nav_asks', '/desk/asks.html'), ('nav_correspondence', '/desk/correspondence.html')]
     links = ''.join('<a data-desk-label="' + label + '" href="' + href + '">'

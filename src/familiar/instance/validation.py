@@ -224,6 +224,30 @@ def _forms(instance, selected=None):
                 'unverified': ['readiness withheld after malformed form']}
 
 
+def series_check(instance, searches, chosen, fail):
+    """The series list and the rows that name a series: advice only, the map shows what it can read."""
+    from familiar.research.search_map import DEPTHS, read_series, row_readings
+    path, rows, problems = read_series(instance)
+    if chosen(path):
+        for where, message in problems:
+            fail(path, f'series {where}: {message}')
+    known = {row['id'] for row in rows or []}
+    for where, row in searches:
+        if not chosen(where) or not isinstance(row, dict):
+            continue
+        coverage = row.get('coverage') if isinstance(row.get('coverage'), dict) else {}
+        named = coverage.get('series')
+        for item in named if isinstance(named, list) else [named] if named else []:
+            depth = item.get('depth', coverage.get('depth')) if isinstance(item, dict) else coverage.get('depth')
+            if depth is not None and depth not in DEPTHS:
+                fail(where, f"{row.get('id')}: coverage depth {depth!r} is one of {', '.join(DEPTHS)}")
+        for sid, years, _, _ in row_readings(row):
+            if sid not in known:
+                fail(where, f"{row.get('id')}: coverage.series {sid!r} is not in {path.name}; research form series")
+            elif not years:
+                fail(where, f"{row.get('id')}: coverage.series {sid}: which years were read (coverage.years)")
+
+
 def story_hints(instance, versions_rows, evidence, graph, chosen, fail):
     """Where the family can say no more, the story does not wait: name its leading version; keep the tree with it."""
     from .asks import closed_line, horizons
@@ -730,6 +754,7 @@ def _check(instance, selected=None):
         from familiar.research.search_ledger import findings as ledger_findings
         for where, message in ledger_findings(instance, ledger_rows):
             fail(where, message, 'instance.search-ledger')  # advice: the matrix reads these fields, nothing refuses without them
+    series_check(instance, searches, chosen, fail)
     from .gate import assertions
     from .model import DEFAULTS
     def nonstandard(value):

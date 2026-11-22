@@ -1,0 +1,19 @@
+{
+  "_about": "Save as sources/series.json (path key series). A series is one kind of record for one place over a run of years: the baptisms of one parish 1865-1900, the 1858 revision of one estate. Required: id (lower-case slug), kind (baptisms, marriages, burials, revision, census, inventory, parishioners, civil, or your own word), place (as the family writes it; forms in research forms --kind place), years (which exist: \"1865-1900\", [[1865, 1876], 1880] or \"1795, 1811, 1816\"). Optional: title (how the map names it), lines (line surnames; without it the series belongs to lines whose places or leading versions name its place), holder (archive and call number), missing (years absent from the copy you can read), online (where the copy is: {source: a catalogue id or site, years (default all), access: open|login|paid|request; default from the catalogue}), note. Years not online are 'archive only'. A journal row says which series it read in coverage: series (id), years, depth (full = every entry and column of the year; surname = only the surname column or one letter of an index; named = looked for named entries; index = someone else's index, page not opened). For several series: coverage.series = [{id, years, depth, entries}]. Rows without depth stay valid and show as 'depth unknown'. See research map and docs/research-coverage.md.",
+  "series": [
+    {
+      "id": "example-parish-baptisms",
+      "kind": "baptisms",
+      "place": "Example Parish",
+      "title": "Baptisms of Example Parish",
+      "lines": ["Example"],
+      "holder": "Example diocesan archive, fond 1, books 3-6",
+      "years": "1865-1900",
+      "missing": "1876",
+      "online": [
+        {"source": "familysearch-records", "years": "1865-1890", "access": "login"}
+      ],
+      "note": "1891-1900 only in the archive."
+    }
+  ]
+}

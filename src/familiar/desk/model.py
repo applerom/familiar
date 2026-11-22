@@ -84,7 +84,8 @@ def words(instance, language=None):
     local = pack.get('desk', {})
     result = base | local | {'show': base['show'] | local.get('show', {}),
                             'correspondence': base['correspondence'] | local.get('correspondence', {}),
-                            'asks': base['asks'] | local.get('asks', {})}
+                            'asks': base['asks'] | local.get('asks', {}),
+                            'search_map': base['search_map'] | local.get('search_map', {})}
     return result
 
 

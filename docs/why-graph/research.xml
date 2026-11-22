@@ -82,6 +82,16 @@
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RESEARCH-COVERAGE"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RESEARCH-CLI"/>
   </FEATURE_RESEARCH_PLAYS>
+  <FEATURE_SEARCH_MAP ID="FEAT-SEARCH-MAP" STATE="IMPLEMENTED">
+    <INTENT>A line is exhausted only on the map: record series list what exists year by year, journal rows name the series, years and depth they read, and the map ranks unread years by the open question's window, the leading place and the cost of reaching them. A year read for one name or in someone's index is not a read year; where data cannot tell, the map says unknown.</INTENT>
+    <PRD_REF>docs/PRD.md#SOURCE-SEARCH</PRD_REF>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-SEARCH-MAP"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RESEARCH-PLAN"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DESK-SEARCH-MAP"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-RESEARCH-CLI"/>
+  </FEATURE_SEARCH_MAP>
+  <MODULE_SEARCH_MAP ID="MOD-SEARCH-MAP" FILE="src/familiar/research/search_map.py" STATE="IMPLEMENTED"/>
+  <MODULE_DESK_SEARCH_MAP ID="MOD-DESK-SEARCH-MAP" FILE="src/familiar/desk/search_map.py" STATE="IMPLEMENTED"/>
   <MODULE_RESEARCH_PLAN ID="MOD-RESEARCH-PLAN" FILE="src/familiar/research/research_plan.py" STATE="IMPLEMENTED"/>
   <MODULE_SEARCH_PLAYS ID="MOD-SEARCH-PLAYS" FILE="src/familiar/research/search_plays.py" STATE="IMPLEMENTED"/>
   <MODULE_SEARCH_LEDGER ID="MOD-SEARCH-LEDGER" FILE="src/familiar/research/search_ledger.py" STATE="IMPLEMENTED"/>

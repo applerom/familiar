@@ -1097,6 +1097,7 @@ def coverage_inputs(instance):
             paths.update(p for p in base.rglob('*') if p.suffix in {'.json', '.jsonl'})
     paths.update((instance.root / 'research' / 'team').glob('**/corpus/records/*.json'))
     paths.add(instance.path('variant_overrides'))
+    paths.add(instance.path('series'))
     found = {}
     for p in sorted(paths):
         try:

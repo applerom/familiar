@@ -1,5 +1,5 @@
 # START_MODULE_CONTRACT: MOD-RESEARCH-CLI
-# PURPOSE: Expose research forms, search forms by key, the identity score, source coverage, line plans, offline replay, and research delivery.
+# PURPOSE: Expose research forms, search forms by key, the identity score, source coverage, line plans, the search map, offline replay, and research delivery.
 # PRD_REF: docs/PRD.md#FORMS
 # INVARIANTS:
 # - packet failures return an error without writing family data [review: engine lead]
@@ -11,6 +11,7 @@
 # - MOD-SEARCH-LEDGER
 # - MOD-RESEARCH-COVERAGE
 # - MOD-MATCH-SCORE
+# - MOD-SEARCH-MAP
 # :END_MODULE_CONTRACT
 import json
 import sys
@@ -73,6 +74,10 @@ def register(commands):
     plan.add_argument('--line', help='Surname line or its starting person ID')
     plan.add_argument('--json', action='store_true', help='JSON instead of markdown')
     plan.set_defaults(run=run_plan)
+    smap = actions.add_parser('map', help='The search map: record series year by year, name bases, and the empty cells ranked')
+    smap.add_argument('--line', help='Surname line or its starting person ID')
+    smap.add_argument('--json', action='store_true', help='JSON instead of markdown')
+    smap.set_defaults(run=run_map)
     forms = actions.add_parser('forms', help='Search forms of names or places: dictionary forms, then forms the family wrote that share the key (suggestions)')
     forms.add_argument('words', nargs='+')
     forms.add_argument('--kind', choices=['surname', 'place', 'given_name'], default='surname')
@@ -187,6 +192,17 @@ def run_plan(args):
         return 0
     except (ValueError, OSError, KeyError, TypeError) as exc:
         print(f'research plan: {exc}', file=sys.stderr)
+        return 1
+
+
+def run_map(args):
+    from .search_map import search_map
+    try:
+        data, text = search_map(Instance(args.root), line=args.line)
+        print(json.dumps(data, ensure_ascii=False, indent=1) if args.json else text)
+        return 0
+    except (ValueError, OSError, KeyError, TypeError) as exc:
+        print(f'research map: {exc}', file=sys.stderr)
         return 1
 
 

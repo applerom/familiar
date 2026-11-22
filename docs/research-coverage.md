@@ -20,6 +20,33 @@ researcher's work except naming three things on each row.
 - A zero is worth most with `control` (a known person found by the same query)
   and `coverage.forms` listing every spelling read.
 
+## Naming the series and depth on a row (agents)
+
+When you read frames of a book — a parish register, a revision, a census — say
+which book, which years and how deep, in `coverage`; nothing else changes:
+
+```json
+"coverage": {"series": "ponta-do-moinho-baptisms", "years": "1900-1902",
+             "depth": "full", "forms": ["Calhau"], "read": 212, "note": "..."}
+```
+
+- `series`: an `id` of the family's series list (`sources/series.json`, form
+  `research form series`). No series for the book yet? Add it: `id`, `kind`,
+  `place`, `years` that exist, `holder`, `online` (where the copy is, which
+  years, `access`), `missing` (years absent from the copy).
+- `depth`: `full` — every entry of the year, all columns; `surname` — only
+  the surname column or one letter of an index; `named` — you looked for named
+  entries; `index` — someone else's index, page not opened. A year read for one
+  name is not a read year for another question, so say `named` when that is
+  what you did.
+- Several books in one pass: `"series": [{"id": ..., "years": ..., "depth": ...,
+  "entries": "No 6-47"}, ...]`; `entries` is optional text.
+
+Rows without `series` stay valid. Rows without `depth` show on the map as "depth
+unknown"; a row that does not name its series but used a series' online source
+for its place counts as "depth unknown" there too. `instance check` advises on
+an unknown series id or depth; it never refuses.
+
 ## Forms and the identity score (agents)
 
 `research forms Морецкий Lunografow [--kind surname|place|given_name] [--year Y]`
@@ -195,6 +222,42 @@ else's pedigree, a chance answer — weights are recounted, the choice is
 revisited and the story is corrected. So chapters hang on the household, the
 place and the event rather than on a chain of fathers. `family horizon open`
 brings the questions back.
+
+## The search map (lead, host)
+
+`research map [--line NAME] [--json]` answers for a line: what of the open
+record has been read, and what has not. The desk shows the same as the host's
+page "Search map" (left out of the copy the family reads).
+
+- **Record series**, year by year, the best reading reached: in full; surname
+  column; named entries; someone's index; depth unknown; and for unread years
+  online (open or with the host's login), archive only (no online copy: where
+  it is, from `holder`), missing from the copy, did not open (an access gap).
+  A series belongs to a line by its `lines`, otherwise by its place — the
+  places of the line's people and of its leading versions.
+- **Name bases**: for every catalogue base that fits the line, whether it was
+  opened, how many rows it returned and how many were read, which of the
+  family's surname forms (`research forms`) were read and which not. A base
+  fits when the catalogue's `years`, `born`, `countries`, `regions`, `parishes`,
+  `episodes` and `planning_requires` admit at least one dead person of the line
+  with a recorded place — the same applicability as `coverage --recheck`. A
+  base that cannot hold these people is not a hole and is not listed. Where
+  nobody on the line has a place, the map says fit is unknown. A catalogue
+  entry that says nothing of a community (a faith, an emigration) cannot rule
+  itself out: give it `episodes` or `planning_requires`.
+- **Read next**: the empty cells, as runs of years, ranked by value — the
+  years in which a record of that kind can name the people of the line's open
+  questions and its frontier (their birth windows; marriages 15–45 years
+  after; deaths up to 90), and the place of the leading version — then by cost:
+  online now, the host's login, a letter to the archive.
+
+"Exhausted" is a statement about the map. While open online years in the
+question's window remain unread, `research plan` reports no play as exhausted
+and no repeat ceiling for the line (the old count stays in JSON as
+`repeat_ceiling`); it shows **Open record** with the first runs to read, and
+where the next step would have been a question to relatives or a letter, the
+next step is to read those books. Without a series list the plan says the open
+record is unknown rather than read.
 
 ## Reading it (lead, host)
 

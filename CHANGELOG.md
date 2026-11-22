@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.52.0 — 22 November 2026
+
+- The search map: what of the open record has been read for a line, and what
+  has not. A family keeps a list of record series in `sources/series.json`
+  (`research form series`): one kind of record for one place over a run of
+  years, with who holds it, where it is online and which years the copy lacks.
+  A journal row may say which series it read, which years and how deep: the
+  whole year, only the surname column, named entries, or someone else's index.
+  `research map [--line NAME]` draws every series year by year with the best
+  reading reached, the field of name bases that fit the line (opened or not,
+  rows returned and read, the family's forms read and missed), and the empty
+  cells ranked: the years of the open question first, the place of the leading
+  version, then what is online now before what needs a login or a letter.
+- "Exhausted" is now a statement about the map: while online years in the
+  question's window are unread, `research plan` calls no approach on that line
+  exhausted, shows the open record first and, instead of a question to the
+  family, sends us to read those books. Without a series list it says the open
+  record is unknown.
+- The host sees it in the desk: a "Search map" page with the strips by year,
+  the bases as tiles and the next years to read in plain words. The page is the
+  host's: the copy the family reads leaves it out. The demo family has three
+  invented series, so the demo site shows the page.
+- Data: nothing to carry over. The series list is a new optional file; rows
+  without `coverage.series` or `coverage.depth` stay valid and show as "depth
+  unknown".
+
 ## 0.51.1 — 22 November 2026
 
 - The whole tree no longer draws a long line copied from one book as firmly as a

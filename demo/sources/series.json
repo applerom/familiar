@@ -1,0 +1,38 @@
+{
+  "_about": "Invented for the Familiar demo: the record series of the islands that could hold the Ferrolho and Calhau families. A series is one kind of record for one place over a run of years.",
+  "fictional": true,
+  "series": [
+    {
+      "id": "ponta-do-moinho-baptisms",
+      "kind": "baptisms",
+      "place": "Ponta do Moinho, Ilha Vaqueira",
+      "title": "Baptisms of Ponta do Moinho",
+      "lines": ["Calhau"],
+      "holder": "Invented diocesan archive of Ilha Vaqueira, books 3-6",
+      "years": "1880-1915",
+      "missing": "1896-1897",
+      "online": [{"source": "invented island parish books online", "years": "1880-1910", "access": "open"}],
+      "note": "Books 1896-1897 were lost before filming; the archive keeps a later copy."
+    },
+    {
+      "id": "ponta-das-garcas-baptisms",
+      "kind": "baptisms",
+      "place": "Ponta das Garcas, Ilha Alvarinha",
+      "title": "Baptisms of Ponta das Garcas",
+      "lines": ["Calhau"],
+      "holder": "Invented diocesan archive of Ilha Alvarinha",
+      "years": "1885-1915",
+      "online": [{"source": "invented island parish books online", "years": "1885-1915", "access": "login"}]
+    },
+    {
+      "id": "lajedo-do-vento-marriages",
+      "kind": "marriages",
+      "place": "Lajedo do Vento, Ilha Vaqueira",
+      "title": "Marriages of Lajedo do Vento",
+      "lines": ["Ferrolho", "Calhau"],
+      "holder": "Invented diocesan archive of Ilha Vaqueira",
+      "years": "1905-1930",
+      "online": [{"source": "invented island parish books online", "years": "1905-1919", "access": "open"}]
+    }
+  ]
+}

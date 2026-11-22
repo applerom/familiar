@@ -178,6 +178,7 @@ originals = "originals"                    # documents as received, read-only af
 captures = "captures"                      # pages saved while searching
 media = "media"                            # cut-outs and pictures, with a manifest
 searches = "searches"                      # what was searched and what it covered
+series = "sources/series.json"             # record series: what exists, where, which years (research map)
 state = ".state"
 build = ".build"
 export = "export"                          # regenerated; never the only copy of anything

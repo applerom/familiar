@@ -38,7 +38,7 @@ DEFAULTS = {
     "privacy": "family/privacy.json", "archive_rights": "family/archive-rights.json", "variant_overrides": "family/variants.json",
     "feeds": "feeds", "edition": "edition/cards.json", "gallery": "edition/gallery.json",
     "records": "records", "originals": "originals", "captures": "captures", "media": "media",
-    "searches": "searches", "state": ".state", "build": ".build", "export": "export",
+    "searches": "searches", "series": "sources/series.json", "state": ".state", "build": ".build", "export": "export",
 }
 
 

@@ -20,3 +20,11 @@ def test_old_journals_carry_over_and_coverage_stays_private(family, capsys):
     from familiar.instance.gate import publication
     graph = lambda kind: json.loads(publication(family, kind, for_review=True).files()['graph.json'])['people']
     assert graph('reader-private')['p-rosa']['coverage']['found'] >= 1 and not any('coverage' in p for p in graph('reader').values())
+
+
+def test_search_map_tells_reading_depth_and_keeps_line_open(family, capsys):
+    run = lambda *a: (main(['--root', str(family.root), 'research', *a, '--line', 'Calhau', '--json']), json.loads(capsys.readouterr().out))[1]
+    line = run('map')['lines'][0]; series = {s['id']: s['years'] for s in line['series']}
+    assert (series['ponta-do-moinho-baptisms']['1900'], series['ponta-do-moinho-baptisms']['1903'], series['ponta-das-garcas-baptisms']['1901']) == ('full', 'surname', 'unknown')
+    plan = run('plan')['lines'][0]
+    assert plan['open_record']['years'] > 0 and 'Ponta do Moinho' in plan['open_record']['read_first'][0]['title'] and not any(p['state'] == 'exhausted' for p in plan['plays'])
