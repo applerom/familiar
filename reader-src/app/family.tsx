@@ -37,7 +37,7 @@ export default function Family({initialData}:{initialData:Row}){
  // the open picture takes the shape of the screen: a wide one spreads the lines out, a phone keeps the natural width
  const overview=useMemo(()=>model&&map?buildOverview(model,{aspect:innerWidth/Math.max(320,innerHeight-200)}):null,[model,map]);
  // the corner picture is wide and low: its lines spread out to fill it
- const mini=useMemo(()=>model&&view==='tree'?buildOverview(model,{aspect:2.6}):null,[model,view]);
+ const mini=useMemo(()=>model&&view==='tree'?buildOverview(model,{aspect:3.4}):null,[model,view]);
  function changeLanguage(value:Language){L(value);try{readerStorage.setItem('family-language',value)}catch{}}
  // open a person in the tree; `details` opens the card itself (the story) on a phone, where the card starts folded
  function go(pid:string,details=false){Find(false);V('tree');select(pid);setPicked('');location.hash='person='+encodeURIComponent(pid)+(details?'&details=1':'');Expand(details)}

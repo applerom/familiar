@@ -15,13 +15,13 @@
     "size": 1069
   },
   "files": {
-    "assets/index-CFwRPGPg.js": {
-      "sha256": "3e07707ba16a314a1a883f4c41131e3582b91a2a29473a20ce0c651c62f02eac",
-      "size": 220668
-    },
     "assets/index-D1gi64ZH.css": {
       "sha256": "d48e2b0b4e2ad93aa3046923a158accd13b1770d92e15cd184a0b98125f953f3",
       "size": 83954
+    },
+    "assets/index-mzorz1IH.js": {
+      "sha256": "f03994fd103cb0d7694221dd36b2663074fdea4f4ed2ca273f004a4318469f3b",
+      "size": 220957
     },
     "assets/Literata-CuqrGnnX.woff2": {
       "sha256": "fbf8199381bc34ce9318bef1f612ecd58fac5ece5225c637dcbb7fd79866e15e",
@@ -52,7 +52,7 @@
       "size": 2204
     },
     "index.html": {
-      "sha256": "6663539565a8d49db7eb11d458a27a796d986da6d7392fd7f7d0c5447047c6b8",
+      "sha256": "666c2e7c86eb9ca0791241716a68fb2ab32c6128af15241e746f29644a82b712",
       "size": 610
     },
     "THIRD_PARTY_NOTICES.txt": {

@@ -89,7 +89,11 @@ export function buildOverview(m:Model,opt:{aspect?:number}={}):Overview|null{
  const pos=new Map<string,{x:number;y:number}>();const lanes:{key:string;x0:number;x1:number}[]=[];let cursor=0,last='';
  for(const key of order){const ids=queue.filter(id=>lane.get(id)===key);if(!ids.length)continue;
   const dots=new Map<string,{x:number;y:number}>();
-  for(const k of keys){const row=ids.filter(id=>gen.get(id)===k).sort((a,b)=>at.get(a)!-at.get(b)!||a.localeCompare(b));spread(row.map(id=>at.get(id)!*W0)).forEach((x,i)=>dots.set(row[i],{x,y:(years.get(row[i])!-y0)*PPY}))}
+  // the band is as wide as its own widest row needs, not as the whole family's: the crown keeps its shape, scaled down
+  const ats=ids.map(id=>at.get(id)!),a0=Math.min(...ats),span=Math.max(...ats)-a0;
+  const most=Math.max(...keys.map(k=>ids.filter(id=>gen.get(id)===k).length));
+  const scale=span>0?Math.min(W0,Math.max(SP*2,most*SP*1.15)/span):W0;
+  for(const k of keys){const row=ids.filter(id=>gen.get(id)===k).sort((a,b)=>at.get(a)!-at.get(b)!||a.localeCompare(b));if(!row.length)continue;spread(row.map(id=>(at.get(id)!-a0)*scale)).forEach((x,i)=>dots.set(row[i],{x,y:(years.get(row[i])!-y0)*PPY}))}
   // dots of neighbouring generations can land on the same year: nudge them apart sideways, inside the band
   const all=[...dots.values()];
   for(let pass=0;pass<30;pass++){all.sort((a,b)=>a.x-b.x);let moved=false;
@@ -109,7 +113,7 @@ const PAD=30,PADL=78,PAPER='#f8f5ec';
 /** A hue mixed with the paper: `t` of the hue. */
 const pale=(hex:string,t:number)=>{const h=(s:string,i:number)=>parseInt(s.slice(i,i+2),16);const p=[1,3,5].map(i=>h(PAPER,i)),c=[1,3,5].map(i=>h(hex,i));return '#'+c.map((v,i)=>Math.round(v*t+p[i]*(1-t)).toString(16).padStart(2,'0')).join('')};
 /** The line of a link by its hold: whole, dashed, dotted. */
-export const holdDash=(l:Hold,detail=true)=>l===1?undefined:l===2?(detail?'5 3.5':'16 11'):(detail?'.1 4.4':'.1 14');
+export const holdDash=(l:Hold,detail=true,s=1)=>l===1?undefined:l===2?(detail?`${5*s} ${3.5*s}`:'16 11'):(detail?`.1 ${4.4*s}`:'.1 14');
 /** A dot by how firmly the person holds to the family: filled, pale inside a rim, an empty ring. */
 export function HoldDot({cx,cy,r,color,hold,opacity}:{cx:number;cy:number;r:number;color:string;hold:Hold;opacity?:number}){
  if(hold===1)return <circle cx={cx} cy={cy} r={r} fill={color} opacity={opacity} pointerEvents="none"/>;
@@ -122,7 +126,8 @@ function Dots({ov,model,visible,center,selected,onPick,onHover,detail,k,names}:{
  const linkTone=(child:string,parent:string)=>{const p=model.tone(parent);if(!p)return null;if(!p.kin&&(homes.has(child)||model.tone(child)?.kin===false))return {color:p.color,kin:false};const c=model.tone(child);return c&&c.line===p.line?{color:c.color,kin:true}:null};
  const tones=ov.links.map(([a,b])=>linkTone(a,b));
  const dim=(id:string)=>{const tn=model.tone(id);return tn?(tn.kin?.8:.85):.55};
- const r=detail?7:20;const fs=11/Math.max(k,.3);
+ // a whole large family seen from afar: dots and lines keep a readable size on screen instead of shrinking with it
+ const s=detail?Math.max(1,.7/k):1;const r=detail?7*Math.max(1,.45/k):20;const fs=11/Math.max(k,.3);
  const label=(id:string)=>{const i=model.info[id];if(i.providedName)return i.providedName;const sur=i.short.split(' ').filter(x=>/\p{L}/u.test(x)).slice(-1)[0]||i.short;return k>=3?i.short:k>=1.7?sur.slice(0,10):names.has(id)?i.short:''};
  const grid=detail?ov.axis.filter(a=>a.major||k>=1.8):ov.axis.filter(a=>Number(a.label)%100===0);
  // the part of the tree on screen now: one soft amber frame around it, so size and colour of a dot keep their own meaning
@@ -131,16 +136,16 @@ function Dots({ov,model,visible,center,selected,onPick,onHover,detail,k,names}:{
  // the chosen person's way down to the family, and the link on it that holds least
  const path=new Set<number>();let weakest=-1;
  if(selected){let x=selected,low=1;const guard=new Set<string>();while(ov.down.has(x)&&!guard.has(x)){guard.add(x);const d=ov.down.get(x)!;if(d.link>=0){path.add(d.link);if(d.f<low-1e-9){low=d.f;weakest=d.link}}x=d.to}}
- const line=(i:number,props:Record<string,unknown>)=>{const [a,b]=ov.links[i];const A=ov.pos.get(a)!,B=ov.pos.get(b)!;const l=ov.level[i];return <line key={i} x1={A.x} y1={A.y} x2={B.x} y2={B.y} strokeDasharray={holdDash(l,detail)} strokeLinecap={l===3?'round':undefined} {...props}/>};
+ const line=(i:number,props:Record<string,unknown>)=>{const [a,b]=ov.links[i];const A=ov.pos.get(a)!,B=ov.pos.get(b)!;const l=ov.level[i];return <line key={i} x1={A.x} y1={A.y} x2={B.x} y2={B.y} strokeDasharray={holdDash(l,detail,s)} strokeLinecap={l===3?'round':undefined} {...props}/>};
  return <>
   <g className="ov-grid">{grid.map(a=><line key={'l'+a.label} x1={-PADL+(detail?6:0)} x2={ov.w+PAD} y1={a.y} y2={a.y} stroke={a.major?'#c9cfbf':'#dde1d4'} strokeWidth={detail?1/Math.max(k,.5):4} strokeDasharray={a.major?undefined:'4 6'}/>)}</g>
   {detail?grid.map(a=><text key={'t'+a.label} x={-PADL+8} y={a.y+fs*.35} fontSize={fs*1.15} fill="#8a9488" fontWeight={a.major?700:500}>{a.label}</text>)
    :grid.map(a=><text key={'t'+a.label} x={-PADL+4} y={a.y-10} fontSize={Math.min(90,ov.h/6)} fill="#8a9488" fontWeight={700}>{a.label}</text>)}
   {frame&&<rect x={frame.x} y={frame.y} width={frame.w} height={frame.h} rx={detail?14:44} fill="#f0c36b" fillOpacity={.08} stroke="#e8a63b" strokeOpacity={.7} strokeWidth={detail?1.4:6}/>}
-  <g stroke="#9fb39a" strokeWidth={detail?1.4:3} opacity={detail?.45:.5}>{ov.links.map((_,i)=>tones[i]?null:line(i,{}))}</g>
-  <g>{ov.links.map((_,i)=>{const tn=tones[i];return tn?line(i,{stroke:tn.color,strokeWidth:tn.kin?(detail?1.3:3):(detail?1.9:5),opacity:tn.kin?(detail?.6:.6):(detail?.75:.75)}):null})}</g>
-  {weakest>=0&&line(weakest,{stroke:'#233a31',strokeWidth:detail?11:30,opacity:.15,strokeDasharray:undefined,strokeLinecap:'round'})}
-  <g stroke="#233a31" strokeWidth={detail?2.2:6} opacity=".8">{[...path].map(i=>line(i,{}))}</g>
+  <g stroke="#9fb39a" strokeWidth={detail?1.4*s:3} opacity={detail?.45:.5}>{ov.links.map((_,i)=>tones[i]?null:line(i,{}))}</g>
+  <g>{ov.links.map((_,i)=>{const tn=tones[i];return tn?line(i,{stroke:tn.color,strokeWidth:tn.kin?(detail?1.3*s:3):(detail?1.9*s:5),opacity:tn.kin?(detail?.6:.6):(detail?.75:.75)}):null})}</g>
+  {weakest>=0&&line(weakest,{stroke:'#233a31',strokeWidth:detail?11*s:30,opacity:.15,strokeDasharray:undefined,strokeLinecap:'round'})}
+  <g stroke="#233a31" strokeWidth={detail?2.2*s:6} opacity=".8">{[...path].map(i=>line(i,{}))}</g>
   {[...ov.pos].map(([id,p])=>{const here=id===center;const sel=id===selected;const rr=here?r*1.7:sel?r*1.35:r;
    return <g key={id}>{here?<circle cx={p.x} cy={p.y} r={rr} fill="#d98a1f" stroke="#fff" strokeWidth={detail?2:3} pointerEvents="none"/>:<HoldDot cx={p.x} cy={p.y} r={rr} color={col(id)} hold={ov.hold.get(id)??1} opacity={sel||visible.has(id)?1:dim(id)}/>}
     {sel&&<circle cx={p.x} cy={p.y} r={rr+(detail?2.6:6)} fill="none" stroke="#233a31" strokeWidth={detail?1.8:4} pointerEvents="none"/>}
@@ -157,14 +162,14 @@ export function MiniMap({ov,model,visible,center,onOpen,label,caption}:{ov:Overv
  return <button className="minimap" onClick={onOpen} aria-label={label} title={label}><svg viewBox={`${-PADL} ${-PAD} ${ov.w+PADL+PAD} ${ov.h+PAD*2}`} preserveAspectRatio="xMidYMid meet" aria-hidden="true"><Dots ov={ov} model={model} visible={visible} center={center} detail={false} k={1} names={new Set()}/></svg>{caption&&<small>{caption}</small>}</button>
 }
 export function OverviewDialog({ov,model,visible,center,go,onClose,labels,language,me}:{ov:Overview;model:Model;visible:Set<string>;center:string;go:(id:string)=>void;onClose:()=>void;labels:Row;language:string;me?:string}){
- const box=useRef<HTMLDivElement>(null);const cw=ov.w+PAD+PADL,ch=ov.h+PAD*2;const content=useRef({w:cw,h:ch});
+ const box=useRef<HTMLDivElement>(null);const cw=ov.w+PAD+PADL+80,ch=ov.h+PAD*2;const content=useRef({w:cw,h:ch});
  const {t,setT,moving,zoomBy}=useZoomPan(box,{min:.3,max:9,content,margin:120});
  const [selected,setSelected]=useState('');
  const fitK=()=>{const el=box.current;return el?Math.min(el.clientWidth/cw,el.clientHeight/ch):1};
  const fit=useCallback(()=>{const el=box.current;if(!el)return;const k=Math.min(el.clientWidth/cw,el.clientHeight/ch);setT({k,x:(el.clientWidth-cw*k)/2,y:(el.clientHeight-ch*k)/2})},[cw,ch,setT]);
  const focusAt=useCallback((id:string,k:number)=>{const el=box.current,p=ov.pos.get(id);if(!el||!p)return;setT({k,x:el.clientWidth/2-(p.x+PADL)*k,y:el.clientHeight/2-(p.y+PAD)*k})},[ov,setT]);
- // wide maps on a narrow screen open on the current person; otherwise show everything at once
- useLayoutEffect(()=>{if(fitK()<.55)focusAt(center,1.1);else fit()},[]);// eslint-disable-line react-hooks/exhaustive-deps
+ // a wide screen always opens on the whole family, a phone on the current person when the whole would be too small
+ useLayoutEffect(()=>{if(fitK()<((box.current?.clientWidth||0)>=900?.2:.55))focusAt(center,1.1);else fit()},[]);// eslint-disable-line react-hooks/exhaustive-deps
  useEffect(()=>{const key=(e:KeyboardEvent)=>{if(e.key==='Escape')onClose()};addEventListener('keydown',key);return()=>removeEventListener('keydown',key)},[onClose]);
  const heads=new Set<string>([center,...model.lines.map(l=>l.id),...model.homes]);
  const focus=(id:string)=>{setSelected(id);focusAt(id,Math.max(t.k,1.4))};
