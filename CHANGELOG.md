@@ -18,6 +18,8 @@
   that holds least; the card says in one line how they are tied to the family.
 - The part of the tree on screen is now marked by one soft frame instead of a
   glow around each dot, so size and fill of a dot keep their own meaning.
+- On the family desk the opened picture ends above the desk footer: its buttons
+  and the card of the chosen person are no longer hidden under it.
 
 ## 0.50.0 — 21 November 2026
 

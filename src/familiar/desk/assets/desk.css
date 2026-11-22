@@ -25,6 +25,7 @@ body:has(#desk-footer) .shell .tabs-top, body:has(#desk-footer) .shell .tabs-bot
 #desk-feedback-entry button[data-draft=true] { color: var(--ember-text); opacity: 1; }
 #desk-nav { display: flex; flex-wrap: nowrap; align-items: center; gap: 4px; font: 13px var(--font-ui,system-ui); min-width: 0; max-width: 100%; overflow-x: auto; }
 .feed-viewer { bottom: var(--desk-footer-height) !important; }
+.overview { bottom: var(--desk-footer-height) !important; }
 #desk-nav a { flex: none; display: flex; align-items: center; min-height: 44px; box-sizing: border-box; border: 0; border-radius: 8px; padding: 8px 10px; color: var(--ink); background: transparent; font: inherit; text-decoration: none; white-space: nowrap; }
 #desk-nav a[aria-current] { box-shadow: inset 0 -2px var(--ember); border-radius: 0; }
 .desk-page button, #desk-feedback button { border: 1px solid #b29a7c; border-radius: 8px; padding: 8px 10px; color: #3c2d20; background: #fffaf1; font: inherit; cursor: pointer; text-decoration: none; }
