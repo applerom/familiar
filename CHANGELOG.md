@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.51.1 — 22 November 2026
+
+- The whole tree no longer draws a long line copied from one book as firmly as a
+  grandfather the family remembers. How firmly a person holds to the family is
+  now every link on the way down multiplied, not only the weak ones: a book line
+  of links at 0.7 turns probable after two links and our version after four, and
+  the place where it changes step is a bend you can see. A link without a weight
+  counts by its status: a record 0.98 (a line of records stays firm for some
+  thirty generations), an imported tree or family memory 0.95, a probable version
+  0.4, an assumption 0.2. Of two ways down (father's and mother's) the better
+  one counts; the family's main line is always drawn, its step is as honest as
+  any other. A link's own line still shows only that link.
+- When the data admit a second way up, it is shown, at most one a person: when a
+  possible ancestor may be a father or a grandfather and has a son of a fitting
+  age in the tree, a pale haze on the tree link carries that son's name, the whole
+  tree draws a thin pale line to him, and the card says it in one quiet line
+  ("A — father or grandfather; if grandfather, the father is B"). A second
+  candidate recorded with its own weight from 0.1 gets the same pale line on the
+  whole tree and the same line in the card. No new data form.
+
 ## 0.51.0 — 22 November 2026
 
 - A family can tell us that on a line nobody is left to ask, or nobody will

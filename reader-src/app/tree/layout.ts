@@ -5,6 +5,8 @@ export type Tile = {
   gen: number; status: string; scale: number; compact: boolean; fade: number; color?: string; stackLayers: number;
   /** A generation nobody has found yet, between a person and a possible ancestor: drawn as haze, not as a card. */
   gap?: boolean;
+  /** On a missing generation: who in the tree may stand there (the possible ancestor's own child of a fitting age). */
+  hint?: string;
   /** On the family's main line, reached by an assumption rather than a document: a light haze behind the card. */
   assumed?: boolean;
 };
@@ -18,7 +20,7 @@ export type Layout = {
   axis: number; rootBottom: number; familyBottom: number; horizon: boolean; cut: boolean; linkOffset: number;
   visible: Set<string>; peopleCount: number; tightest: number;
 };
-type Ancestor = {id: string; gen: number; status: string; x: number; weight: number; parents: Ancestor[]; gap?: boolean; color?: string; main?: boolean; assumed?: boolean};
+type Ancestor = {id: string; gen: number; status: string; x: number; weight: number; parents: Ancestor[]; gap?: boolean; hint?: string; color?: string; main?: boolean; assumed?: boolean};
 const DOUBT: Record<string, number> = {probable: 1, hypothesis: 2, weak: 3};
 /** A branch is as firm as its weakest link below: ancestors above a probable link stay probable. */
 const weaker = (a: string, b: string) => (DOUBT[a] || 0) >= (DOUBT[b] || 0) ? a : b;
@@ -77,8 +79,10 @@ function ancestorRows(m: Model, roots: string[], level: number) {
         if (gap && gen + 1 + gap > level) continue;
         // Missing generations keep their rows, so the ancestor and everyone above stand at their own generation.
         let below = child;
+        const second = m.secondWay(child.id);
         for (let i = 1; i <= gap; i++) {
-          const haze: Ancestor = {...person(`gap:${child.id}:${slot.id}:${i}`, gen + i, status), gap: true, color: m.tone(slot.id)?.color, main};
+          const haze: Ancestor = {...person(`gap:${child.id}:${slot.id}:${i}`, gen + i, status), gap: true, color: m.tone(slot.id)?.color, main,
+            hint: i === gap && second?.kind === 'between' && second.above === slot.id ? second.via : undefined};
           links.push({child: below, parent: haze, status});
           below.parents.push(haze);
           row(gen + i).push(haze);
@@ -231,7 +235,7 @@ export function layoutTree(m: Model, center: string, viewport: number, level = d
       const cards = ordered.map(n => {
         const tile = card(n.gap ? '' : n.id, gen, n.status, w, gen >= HISTORY_LEVEL || fit < 1);
         if (n.assumed) tile.assumed = true;
-        return n.gap ? {...tile, id: n.id, w: Math.min(w, Math.max(10, Math.round(GAP_W * Math.min(1, depth)))), stackLayers: 0, color: n.color, gap: true} : tile;
+        return n.gap ? {...tile, id: n.id, w: Math.min(w, Math.max(10, Math.round(GAP_W * Math.min(1, depth)))), stackLayers: 0, color: n.color, gap: true, hint: n.hint} : tile;
       });
       // A couple whose parents are drawn stands apart, each under the own parents, so the branches rise evenly;
       // with nobody above, the two stand close.
@@ -345,6 +349,13 @@ export function layoutTree(m: Model, center: string, viewport: number, level = d
       const to = tileById.get(parent.id)!;
       const d = to.gen > child.gen ? curve(x, ring ? ring - r : child.y, midX(to), to.y + to.h) : curve(x, child.y, midX(to), to.y);
       links.push({key: JSON.stringify([childId, parent.id]), d, gen: to.gen, status, kind: 'parent', color: to.color, ids: [childId, parent.id]});
+      // Son or grandson, drawn as a son: a little haze halfway up the link says who may stand between, by name.
+      const second = child.gap || to.gap || to.gen <= child.gen ? undefined : m.secondWay(childId);
+      if (second?.kind === 'between' && second.above === parent.id && !tileById.has(second.via)) {
+        const top = to.y + to.h, h = Math.min(30, (child.y - top) * .5);
+        if (h >= 14) tiles.push({id: `gap-hint:${childId}`, gen: child.gen, status, w: GAP_W, h, scale: child.scale, compact: true, fade: child.fade,
+          x: (x + midX(to)) / 2 - GAP_W / 2, y: (top + (ring ? ring - r : child.y)) / 2 - h / 2, stackLayers: 0, color: to.color, gap: true, hint: second.via});
+      }
     }
     if (ring) links.push({key: 'ring:' + childId, gen: child.gen + 1, status: 'export', kind: 'union', ids: [childId, ...above.map(to => to.id)],
       d: `M${x - r},${ring} a${r},${r} 0 1,0 ${r * 2},0 a${r},${r} 0 1,0 ${-r * 2},0 M${x},${ring + r} V${child.y}`});
@@ -432,8 +443,10 @@ export function layoutTree(m: Model, center: string, viewport: number, level = d
     downs.push([x, x + w]);
     let from = {x: midX(centerTile), y: centerTile.y + centerTile.h};
     let y = lower;
+    const second = m.secondWay(id);
     for (let i = 1; i <= (slot.gap || 0); i++) {
-      const haze: Tile = {id: `gap-down:${id}:${i}`, gen: -1, status, w: GAP_W, h: 34, scale: 1, compact: true, fade: 1, x: x + w / 2 - GAP_W / 2, y, stackLayers: 0, color, gap: true};
+      const haze: Tile = {id: `gap-down:${id}:${i}`, gen: -1, status, w: GAP_W, h: 34, scale: 1, compact: true, fade: 1, x: x + w / 2 - GAP_W / 2, y, stackLayers: 0, color, gap: true,
+        hint: i === 1 && second?.kind === 'between' && second.above === center ? second.via : undefined};
       links.push({key: haze.id, d: curve(from.x, from.y, x + w / 2, y), gen: 1, status, kind: 'child', color, ids: [center, id]});
       tiles.push(haze);
       from = {x: x + w / 2, y: y + haze.h};

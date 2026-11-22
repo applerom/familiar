@@ -11,6 +11,9 @@ export type Kin={home:string;homeId:string;kind:'ancestor'|'spouse'|'child';n:nu
 export type Relation={kind:'self'|'spouse'|'ancestor'|'descendant'|'collateral';n1:number;n2:number;g:'m'|'f'|'';branchG?:'m'|'f'|'';collateralG?:'m'|'f'|'';cousinG?:'m'|'f'|'';sure:boolean;path?:string[];viewerG?:'m'|'f'|'';special?:string;spouseOf?:Relation;spouseG?:'m'|'f'|'';viaSpouse?:'m'|'f'|''};
 /** A parent slot. `gap` > 0: the person's line leads to this ancestor through that many generations nobody has found
  *  yet (association possible_ancestor); `link` is the association, with its basis for "More". */
+/** A second way up: `via` may be the parent instead of the drawn one (`between`: a child of the possible ancestor `above`
+ *  in the generation the link may skip; `other`: another candidate with its own weight). */
+export type Second={via:string;role:string;kind:'between'|'other';above?:string;weight?:number};
 export type Slot={id:string;status:string;role:string;likelihood?:string;weight?:number;sources?:string[];gap?:number;link?:Row;weak?:boolean;
  /** On the family's main line (`main_line` on the link): drawn as the main branch whatever its weight. */
  main?:boolean};
@@ -468,7 +471,21 @@ export function buildModel(data:Row,labels:Row={}){
   const name=n?.surname?`${n.surname} (${kin})`:kin;
   Object.assign(info[pid],{name,short:name,fullName:name,alt:'',note:'',unnamed:true});
  }
- return {connectionLevel,connectionStatus,relationshipEvidence,info,parents,children,spouses,spouseConnection,siblings,
+ // A second way up that the data already admit, at most one a person: the possible ancestor's own child of a fitting age
+ // when the link allows a missing generation (son or grandson), else a second candidate from WEAK_FLOOR not drawn as a parent.
+ const secondCache=new Map<string,Second|null>();
+ const second=(id:string):Second|undefined=>{
+  if(secondCache.has(id))return secondCache.get(id)||undefined;
+  const {slots,extra}=parents(id);const taken=new Set([id,...slots.filter(Boolean).map(s=>s!.id),...extra.map(s=>s.id)]);const y=yearOf(id);let r:Second|null=null;
+  for(const s of slots){if(!s?.link||!DESCENT.includes(s.link.type)||r)continue;
+   const hi=Math.round(Number(s.link.missing_max)||0),lo=s.link.type==='possible_parent'?0:Math.round(Number(s.link.missing)||0);if(hi<=lo||hi<1||y===undefined)continue;
+   const want=s.role==='мать'?'f':'m';
+   const fit=children(s.id).filter(c=>!taken.has(c)&&!info[c].placeholder&&(sex(c)||want)===want).map(c=>({c,d:y-(yearOf(c)??NaN)})).filter(x=>x.d>=16&&x.d<=55).sort((a,b)=>Math.abs(a.d-30)-Math.abs(b.d-30));
+   if(fit.length)r={via:fit[0].c,above:s.id,role:s.role,kind:'between'}}
+  if(!r){const alt=(descents.get(id)||[]).filter(a=>!taken.has(a.from)&&typeof a.weight==='number'&&a.weight>=WEAK_FLOOR).sort((a,b)=>b.weight-a.weight)[0];
+   if(alt)r={via:alt.from,role:roleOf(alt.from)||'отец',kind:'other',weight:alt.weight}}
+  secondCache.set(id,r);return r||undefined};
+ return {connectionLevel,connectionStatus,relationshipEvidence,info,parents,children,spouses,spouseConnection,siblings,secondWay:second,
   siblingLayers, bySeniority, connectedFrom,
   /** People whose line leads up to `id` across a possible-ancestor link: the way down from a nest's anchor. */
   descendantsBelow:(id:string)=>{Object.keys(info).forEach(parents);return (below.get(id)||[]).map(c=>({id:c,slot:parents(c).slots.find(s=>s?.id===id&&s.link)!})).filter(x=>x.slot)}, familyPeople: connectedFrom(homes), husbands,branch,kin,tone,lines,homes,kinship,relation,ancestorsOf};

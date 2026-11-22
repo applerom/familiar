@@ -40,8 +40,10 @@ const TreeTiles = memo(function TreeTiles({layout,model,center,hot,labels,action
         '--c': Math.min(1.05, Math.max(.62, tile.w / 66)), '--w': tile.w, '--depth-opacity': tile.fade,
       } as CSSProperties;
       // A generation nobody has found yet: haze with the dotted line running through it, no card and no words.
-      if (tile.gap) return <div key={id} className={`tile-position tile-gap${weak(tile.status)}`} style={style} data-gen={gen} aria-hidden="true">
+      // When the tree holds someone of a fitting age for that generation, the haze carries the name, quietly.
+      if (tile.gap) return <div key={id} className={`tile-position tile-gap${weak(tile.status)}`} style={style} data-gen={gen} aria-hidden={tile.hint ? undefined : 'true'}>
         <span className="tree-gap"/>
+        {tile.hint && <button className="gap-hint" title={model.info[tile.hint].short} onClick={() => actions.current.open(tile.hint!)}>{model.info[tile.hint].givenName || model.info[tile.hint].short.split(' ')[0]}</button>}
       </div>;
       const person = model.info[id];
       const life = !person.connector && (person.birthText || person.deathText) ? lifeLabel(person, labels, lang) : '';

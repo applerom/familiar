@@ -207,3 +207,20 @@ test('a wide row of children pans sideways and never shrinks the parents to init
   const tree = layoutTree(kids(6), 'he', 1040, 2, 760), all = fitView(tree, 1040, 760);
   expect(all.k).toBeCloseTo(Math.min(1.45, (760 - 12) / (tree.box.y1 - tree.box.y0), (1040 - 12) / (tree.box.x1 - tree.box.x0)));
 });
+
+// A line copied link by link from one book (0.7 each) was drawn as firm as a line of records all the way up.
+test('the whole tree fades a line by every link on the way down; records stay firm', () => {
+  const people: Record<string, Row> = {}, edges: Row[] = [];
+  const add = (id: string, birth: number) => { people[id] = {id, sex: 'M', name: 'Person ' + id, events: [{tag: 'BIRT', date: String(birth)}]}; };
+  add('home', 1990);
+  for (let i = 1; i <= 12; i++) {
+    add('b' + i, 1990 - i * 30); add('r' + i, 1990 - i * 30);
+    edges.push({child: i === 1 ? 'home' : 'b' + (i - 1), parent: 'b' + i, role: 'отец', status: 'export', weight: .7});
+  }
+  for (let i = 1; i <= 12; i++) edges.push({child: i === 1 ? 'b0' : 'r' + (i - 1), parent: 'r' + i, role: i === 1 ? 'мать' : 'отец', status: 'verified'});
+  add('b0', 1992); edges.push({child: 'b0', parent: 'home', role: 'отец', status: 'verified'});
+  const ov = buildOverview(buildModel({root: 'b0', people, edges}))!;
+  // 0.98 · 0.7 = 0.69 firm; · 0.7 = 0.48 probable; four links down 0.24: our version
+  expect(['b1', 'b2', 'b4', 'b12'].map(id => ov.hold.get(id))).toEqual([1, 2, 3, 3]);
+  expect(ov.hold.get('r12')).toBe(1);
+});

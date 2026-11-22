@@ -1,5 +1,6 @@
 'use client';
 import {feedbackEnabled,inLanguage} from '../reader-profile';
+import {SecondWay} from './second-way';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {createPortal} from 'react-dom';
 import {humanText,kinPhrase,relationPhrase,lifeLabel,guessBasis,placeLabel,lifeFactText,translated,DOCUMENT_NAME_TYPES,type Model,type Row,type Slot} from './model';
@@ -145,6 +146,7 @@ export default function PersonPanel({data,model,id,go,showFamily,labels,language
    {lifeFacts.length>0&&<section className="group"><h3>{labels.life}</h3><ul className="life-list">{lifeFacts.map((f,i)=><li key={i}><b>{f.label.replace(/\s*из дерева$/i,'')}</b><span>{lifeFactText(f.text,language)}{f.basis&&<details><summary>{labels.more}</summary><p className="note">{translated(f.basis,language)}</p></details>}{(f.sources||[]).map((sid:string)=>{const s=data.sources[sid];return s?.asset?<a key={sid} className="source-links" href={s.asset} target="_blank" rel="noreferrer">{labels.feedFullDoc} ↗</a>:null})}</span></li>)}</ul></section>}
    {group(labels.parents,parents.map(s=>chip(s.id,model.connectionLevel(s)===3)))}
    {group(labels.lineLeadsTo,leads.filter(s=>!s.weak).map(s=>chip(s.id,model.connectionLevel(s)===3,gapText(s))))}
+   <SecondWay model={model} id={id} labels={labels} go={go}/>
    {group(labels.lineMaybe,leads.filter(s=>s.weak).map(s=>chip(s.id,true,s.gap?gapText(s):'')))}
    {group(labels.lineDown,downs.map(d=>chip(d.id,model.connectionLevel(d.slot)>1,d.slot.gap?gapText(d.slot):'')))}
    {group(labels.spouses,spouses.map(s=>chip(s,model.connectionLevel(spouseLink(s))===3)))}

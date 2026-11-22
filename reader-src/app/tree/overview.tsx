@@ -1,6 +1,7 @@
 'use client';
 import {useCallback,useEffect,useLayoutEffect,useRef,useState} from 'react';
 import {KinshipExplanation} from '../kinship-words';
+import {SecondWay} from './second-way';
 import {NEUTRAL,kinPhrase,relationPhrase,lifeLabel,lineTitle,placeLabel,type Model,type Row} from './model';
 import {useZoomPan} from './use-zoom-pan';
 /** How firmly a link or a person holds to the family: 1 records or family memory, 2 probable, 3 our version. */
@@ -8,15 +9,21 @@ export type Hold=1|2|3;
 export type Overview={pos:Map<string,{x:number;y:number}>;links:[string,string][];
  /** each link by its own weight, with the same thresholds 0.5 and 0.3 as the whole engine */
  level:Hold[];
- /** each person by the not-firm links on the way down to the family, their weights multiplied */
+ /** each person by all the links on the way down to the family, their weights multiplied (the best way of several) */
  hold:Map<string,Hold>;
  /** the next step down to the family: a link index (-1 across a marriage) and what that step weighs */
  down:Map<string,{to:string;link:number;f:number}>;
+ /** a second way up that the data admit (model.second), person and the one who may be the parent instead: drawn thin and pale */
+ seconds:[string,string][];
  /** one band of width per ancestor line, the home people's own kin and the couple's children in between */
  lanes:{key:string;x0:number;x1:number}[];
  w:number;h:number;rows:number;axis:{y:number;label:string;major:boolean}[];years:Map<string,number>;estimated:Set<string>;y0:number;y1:number};
 const SP=26,PPY=2.6,STEP=28,GAP=SP*1.7;
 export const holdOf=(v:number):Hold=>v>=.5?1:v>=.3?2:3;
+/** What a link weighs on the way down: its own weight, else by status: a record 0.98, an imported tree or family memory 0.95,
+ *  a probable version 0.4, an assumption 0.2. */
+export const LINK_DEFAULT={verified:.98,firm:.95,probable:.4,assumed:.2};
+export const linkFactor=(s:{status?:string;weight?:number},l:Hold)=>typeof s.weight==='number'?Math.min(1,Math.max(0,s.weight)):l===1?s.status==='verified'?LINK_DEFAULT.verified:LINK_DEFAULT.firm:l===2?LINK_DEFAULT.probable:LINK_DEFAULT.assumed;
 /**
  * One picture of the whole connected family on a time scale: the vertical position is the year of birth
  * (estimated from parents, children and partners when unknown), left-to-right every ancestor line keeps a band of its own.
@@ -46,8 +53,9 @@ export function buildOverview(m:Model,opt:{aspect?:number}={}):Overview|null{
    side.set(n,two&&m.homes.every(h=>ups(n).includes(h))?2:side.get(c)!)}}}
  const links:[string,string][]=[];const level:Hold[]=[];const factor:number[]=[];const seen=new Set<string>();
  for(const id of queue){const ps=m.parents(id);for(const s of [...ps.slots,...ps.extra]){if(!s||!gen.has(s.id)||seen.has(id+'|'+s.id))continue;seen.add(id+'|'+s.id);links.push([id,s.id]);
-  // a firm link counts whole, so a long documented line never fades by its own length; a probable or assumed one by its weight
-  const l=m.connectionLevel(s) as Hold;level.push(l);factor.push(l===1?1:typeof s.weight==='number'?Math.min(s.weight,.49):l===2?.4:.2)}}
+  // every link counts by its weight: a line copied link after link from one book fades with its length, a line of records
+  // (0.98 a link) stays firm for some thirty generations; a link without a weight by its status
+  const l=m.connectionLevel(s) as Hold;level.push(l);factor.push(linkFactor(s,l))}}
  // how firmly each person holds: the best way down to a home person, the weights of its links multiplied
  const adj=new Map<string,{to:string;f:number;link:number}[]>();const edge=(a:string,e:{to:string;f:number;link:number})=>(adj.get(a)||adj.set(a,[]).get(a)!).push(e);
  links.forEach(([c,p],i)=>{edge(c,{to:p,f:factor[i],link:i});edge(p,{to:c,f:factor[i],link:i})});
@@ -56,6 +64,7 @@ export function buildOverview(m:Model,opt:{aspect?:number}={}):Overview|null{
  const work=m.homes.filter(h=>gen.has(h));work.forEach(h=>best.set(h,1));
  for(let i=0;i<work.length;i++){const x=work[i],v=best.get(x)!;for(const e of adj.get(x)||[]){const nv=v*e.f;if(nv>(best.get(e.to)??-1)+1e-9){best.set(e.to,nv);down.set(e.to,{to:x,link:e.link,f:e.f});work.push(e.to)}}}
  const hold=new Map<string,Hold>(queue.map(id=>[id,holdOf(best.get(id)??1)]));
+ const seconds:[string,string][]=[];for(const id of queue){const r=m.secondWay(id);if(r&&gen.has(r.via))seconds.push([id,r.via])}
  // 3. years: a known birth year, otherwise the average of parents + 28, children − 28 and partners, settled over a few passes
  const years=new Map<string,number>();const estimated=new Set<string>();
  // the engine's guess (tree.first_child_age) places people nobody dated; only those without one are settled here
@@ -107,7 +116,7 @@ export function buildOverview(m:Model,opt:{aspect?:number}={}):Overview|null{
  const h=(y1-y0)*PPY;const stretch=opt.aspect?Math.min(3,Math.max(1,(opt.aspect*(h+60)-230)/Math.max(cursor,1))):1;
  if(stretch>1){for(const p of pos.values())p.x*=stretch;for(const l of lanes){l.x0*=stretch;l.x1*=stretch}}
  const axis:{y:number;label:string;major:boolean}[]=[];for(let y=y0;y<=y1;y+=25)axis.push({y:(y-y0)*PPY,label:String(y),major:y%50===0});
- return {pos,links,level,hold,down,lanes,w:cursor*stretch,h,rows:keys.length,axis,years,estimated,y0,y1};
+ return {pos,links,level,hold,down,seconds,lanes,w:cursor*stretch,h,rows:keys.length,axis,years,estimated,y0,y1};
 }
 const PAD=30,PADL=78,PAPER='#f8f5ec';
 /** A hue mixed with the paper: `t` of the hue. */
@@ -144,6 +153,7 @@ function Dots({ov,model,visible,center,selected,onPick,onHover,detail,k,names}:{
   {frame&&<rect x={frame.x} y={frame.y} width={frame.w} height={frame.h} rx={detail?14:44} fill="#f0c36b" fillOpacity={.08} stroke="#e8a63b" strokeOpacity={.7} strokeWidth={detail?1.4:6}/>}
   <g stroke="#9fb39a" strokeWidth={detail?1.4*s:3} opacity={detail?.45:.5}>{ov.links.map((_,i)=>tones[i]?null:line(i,{}))}</g>
   <g>{ov.links.map((_,i)=>{const tn=tones[i];return tn?line(i,{stroke:tn.color,strokeWidth:tn.kin?(detail?1.3*s:3):(detail?1.9*s:5),opacity:tn.kin?(detail?.6:.6):(detail?.75:.75)}):null})}</g>
+  <g strokeWidth={detail?1.1*s:2.5} opacity={detail?.5:.4} strokeLinecap="round">{ov.seconds.map(([a,b])=>{const A=ov.pos.get(a),B=ov.pos.get(b);return A&&B?<line key={'2:'+a} x1={A.x} y1={A.y} x2={B.x} y2={B.y} stroke={col(b)} strokeDasharray={holdDash(3,detail,s)}/>:null})}</g>
   {weakest>=0&&line(weakest,{stroke:'#233a31',strokeWidth:detail?11*s:30,opacity:.15,strokeDasharray:undefined,strokeLinecap:'round'})}
   <g stroke="#233a31" strokeWidth={detail?2.2*s:6} opacity=".8">{[...path].map(i=>line(i,{}))}</g>
   {[...ov.pos].map(([id,p])=>{const here=id===center;const sel=id===selected;const rr=here?r*1.7:sel?r*1.35:r;
@@ -184,7 +194,7 @@ export function OverviewDialog({ov,model,visible,center,go,onClose,labels,langua
   <div ref={box} className={'ov-stage'+(moving?' moving':'')} onClick={e=>{if((e.target as Element).tagName==='svg'||(e.target as Element).classList.contains('ov-stage'))setSelected('')}}>
    <svg width={cw} height={ch} className="ov-svg" style={{transform:`translate(${t.x}px,${t.y}px) scale(${t.k})`}}><g transform={`translate(${PADL},${PAD})`}><Dots ov={ov} model={model} visible={visible} center={center} selected={selected} detail onPick={pick} onHover={setSelected} k={t.k} names={heads}/></g></svg>
    <div className="controls"><button aria-label={labels.zoomIn} onClick={()=>zoomBy(1.4)}>+</button><button aria-label={labels.zoomOut} onClick={()=>zoomBy(1/1.4)}>−</button><button aria-label={labels.recenter} title={labels.recenter} onClick={()=>focusAt(center,1.4)}>⌖</button><button aria-label={labels.showWhole} title={labels.showWhole} onClick={fit}>⤢</button></div>
-   {sel&&<div className="ov-card"><div><strong>{sel.short}</strong><small>{[lifeLabel(sel,labels,language)||sel.note||when,placeLabel(sel,labels)].filter(Boolean).join(' · ')}</small>{hold&&<small className="ov-hold"><svg width="14" height="14" aria-hidden="true"><HoldDot cx={7} cy={7} r={5.5} color={model.tone(selected)?.color||NEUTRAL} hold={hold}/></svg>{labels.overviewHoldLead}: {labels.overviewHold?.[hold-1]}</small>}{selected&&me&&model.relation(me,selected)?<KinshipExplanation relation={model.relation(me,selected)!} model={model} labels={labels} language={language}/>:kin.length>0&&<small className="rel">{kin.join(' · ')}</small>}</div></div>}
+   {sel&&<div className="ov-card"><div><strong>{sel.short}</strong><small>{[lifeLabel(sel,labels,language)||sel.note||when,placeLabel(sel,labels)].filter(Boolean).join(' · ')}</small>{hold&&<small className="ov-hold"><svg width="14" height="14" aria-hidden="true"><HoldDot cx={7} cy={7} r={5.5} color={model.tone(selected)?.color||NEUTRAL} hold={hold}/></svg>{labels.overviewHoldLead}: {labels.overviewHold?.[hold-1]}</small>}{selected&&<SecondWay model={model} id={selected} labels={labels} go={focus}/>}{selected&&me&&model.relation(me,selected)?<KinshipExplanation relation={model.relation(me,selected)!} model={model} labels={labels} language={language}/>:kin.length>0&&<small className="rel">{kin.join(' · ')}</small>}</div></div>}
   </div>
   <p className="ov-foot">{labels.overviewFoot}</p>
  </div>
