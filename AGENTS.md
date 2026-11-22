@@ -42,6 +42,9 @@ The engine and method live here; real families live elsewhere. Pin
   scripts/check_release.py --deny-root <each-family-root> --wheel-dir <outside-repo>`.
   It checks the archive, denied roots and required wheel files. Optional
   `--rebuild-shell` only advises and never changes delivered bytes.
+- The public demo follows every release: before delivering, `uv run python -X utf8 scripts/build_demo_site.py
+  --out <empty dir>` passes at the tip (a changed demo page needs a new independent reading first); after
+  the push, the "Demo site" action is green.
 - Optional, nonblocking: `python -X utf8 scripts/validate_why.py` and
   `uv run ruff check --exit-zero`. Skill/role/text/style lint is removed.
 - Core paths in the registry require a contract and graph node with the code in

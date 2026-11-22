@@ -198,6 +198,18 @@ Node permissions and only prints reproducibility advice; it never changes the
 wheel's committed source. This is an accidental-dependency check, not a sandbox
 for hostile build code. Pass each local family root with its own `--deny-root`.
 
+The public demo site is built from `main` on every push and must follow the release.
+Check it at the tip before delivering (a few seconds):
+
+```powershell
+Remove-Item -Recurse -Force "$env:TEMP\familiar-demo-site" -ErrorAction SilentlyContinue
+uv run python -X utf8 scripts/build_demo_site.py --out "$env:TEMP\familiar-demo-site"
+```
+
+`Unreviewed reader pages: ...` means a demo page changed since its last independent
+reading: in that demo family prepare it with `feed review FEED --kind reader --out NEW-DIR`,
+read the pages in a browser, and confirm the ticket with `feed accept` before the release.
+
 ## Files
 
 - `reader-profile.json`: profile v1, relative `data: graph.json`; family metadata
