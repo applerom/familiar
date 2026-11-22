@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.50.2 — 22 November 2026
+
+- On the Relatives page a question about a family line or a place, with no person
+  named, shows that line and place in the reader's language like the rest of the card.
+
 ## 0.50.1 — 22 November 2026
 
 - The whole tree gives every ancestor line a band of its own. A line with many

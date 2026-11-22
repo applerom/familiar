@@ -156,8 +156,8 @@ def project(active, graph, delivery, w, *, today=None, feedback=(), language=Non
         person = aliases.get(about.get('person'), about.get('person'))
         shown = graph.get('people', {}).get(person) if person else None
         tile = ({'person': person, 'name': local_name(person, shown.get('treeName') or data.name(person)), 'years': years(shown)} if shown
-                else {'person': '', 'name': data.name(person) if person else data.text(about.get('line') or about.get('place')),
-                      'years': data.text(about.get('place')) if about.get('line') and not person else ''})
+                else {'person': '', 'name': data.name(person) if person else tr(data.text(about.get('line') or about.get('place'))),
+                      'years': tr(data.text(about.get('place'))) if about.get('line') and not person else ''})
         item = {'id': identity, 'holder': holder, 'name': name, 'tile': tile,
                 'question': tr(data.text(row['question'], subjects)), 'child': tr(data.text(row.get('question_child'), subjects)),
                 'opener': tr(data.text(opener, subjects)), 'asset': asset,
