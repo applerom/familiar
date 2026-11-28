@@ -56,16 +56,17 @@ accepts available chapters even when the planned sequence is incomplete.
 
 Step 9 of the method. One reader who wrote none of the feed opens
 `feed storyboard` at 390 px, reads it whole in "Adults" and "Kids" as the
-owner would read aloud to a seven-year-old, then chapter by chapter, and
-asks of each:
+owner would read aloud to a seven-year-old, then chapter by chapter: would
+the child ask what happened to this person next, would the grandfather learn
+something of his own? Then of each:
 
 1. **True?** A sentence a sceptical adult stops at: a link too neat, a
    coincidence told as a link, a number without a ground, a general fact of
    the epoch dressed as this village's. The facts were checked; the reader
    looks for a true fact used to suggest an untrue thing.
 2. **About us?** Swap in the neighbouring surname or village: does the title,
-   game or paragraph still fit? And the opposite: a chapter with no family in
-   it, a lecture on the place.
+   game or paragraph still fit? And the hero absent from his own chapter, a
+   neighbour's memory, the place or the war filling it.
 3. **Who is speaking?** Weights, "version", "we are still looking" beyond what
    the story bears; a sheet or a scribe as the subject; a warning or a verdict
    where the house should speak as a home.
@@ -74,14 +75,18 @@ asks of each:
 5. **Kin and names.** One person named two ways across the feeds, a word from
    the wrong seat, a living person told beyond name and kinship, anything in
    an in-law's line that reads as a question to that family.
-6. **The whole.** A wonder or a war repeated across the family's feeds; the
-   one chapter the child would ask for twice and the one skipped.
+6. **The whole.** A wonder, a war or a gesture (a wife waiting for letters)
+   repeated across the family's feeds; possible kin at the opening or the
+   end; the chapter the child would ask for twice and the one skipped.
 
-The reader hands in a table and changes no chapter:
+The reader hands in a table, a row a chapter, the dead and weak first, and
+changes no chapter:
 
-| Chapter | Sentence or beat, quoted | Question | What to do, a line | How sure |
-|---|---|---|---|---|
+| Chapter | Alive, weak, dead | Why, quoted | Keep word for word | Mend, a line | How sure |
+|---|---|---|---|---|---|
 
-"How sure" is *certainly* (the owner stops here), *probably* or *taste*. The
-writer carries out *certainly*, carries out *probably* unless one line says
-why not, decides *taste*, and keeps a ledger: the line, done or not and why.
+What is alive is said as plainly as what is not: the writer mends around it.
+A mend is advice on what the reader felt; the writer answers that feeling,
+his own way if better. "How sure" is *certainly* (the owner stops here),
+*probably* or *taste*: *certainly* is answered, *probably* unless one line
+says why not, *taste* is the writer's. His ledger: the line, how answered.

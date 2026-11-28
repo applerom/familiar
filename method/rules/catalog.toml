@@ -37,7 +37,7 @@ reads = ["host.correspondence_voice"]
 [[rule]]
 id = "CRAFT-RESEARCH-BEFORE-TEXT"
 kind = "craft"
-statement = "Before the plan of a feed, gather the cast: who the feed follows, each life as dated events with the paper under each and the link's weight once, the turns (what the person wanted, what stood in the way, what he did), how such a step was actually done there and then (papers, fares, prices, conscription), the neighbours who did the same that year, and the holes with where their paper should lie. Then the place as what these people saw: its names under every authority with distances and sources, and its wonders by decade against the cast's years, firm or still to check, peaceful ones well ahead of wars. Written against: a place, a river of records and a list of wonders handed to the writer with no people in them, from which only the place could be told."
+statement = "Before the plan of a feed, gather the cast: who the feed follows, each life as dated events with the paper under each and the link's weight once, the turns (what the person wanted, what stood in the way, what he did), each person's age at each event, how such a step was actually done there and then under each scene a turn needs (papers, fares, prices, conscription), the people of the family's records left outside the cast, each cut cropped to its line, the neighbours who did the same that year, and the holes with where their paper should lie. Then the place as what these people saw: its names under every authority with distances and sources, and its wonders by decade against the cast's years, firm or still to check, peaceful ones well ahead of wars. Written against: a place, a river of records and a list of wonders handed to the writer with no people in them, from which only the place could be told."
 roles = ["researcher", "lead"]
 serves = "UC-STORY"
 check = ""
@@ -319,7 +319,7 @@ reads = []
 [[rule]]
 id = "TASTE-CHAPTER-UNIT"
 kind = "taste"
-statement = "By default a chapter is a moment of one person's fate and a wonder of its place in the same scene, with a custom or a thing of daily life, told as short paragraphs between things to look at and to do; papers are the pins that confirm it. A time of the line with no family paper held yet is still a chapter: the place carries it and the family is an honest version."
+statement = "By default a chapter is a moment of one person's fate and a wonder of its place in the same scene, with a custom or a thing of daily life, told as short paragraphs between things to look at and to do; papers are the pins that confirm it. A person of ours with no paper held yet is still told by his version, in a chapter he holds; where a neighbour's memory, the place or the war would fill it, the chapter merges into its neighbour or leaves the feed, and he waits in 'More' or the plan's 'waiting for a paper'. Written against: chapters of people without a paper that told someone else, the hero gone; not against the land in chapters that live, never for invented life."
 roles = ["feed-author", "lead"]
 serves = "UC-STORY"
 check = "review:reviewer"

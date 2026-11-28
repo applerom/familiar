@@ -41,7 +41,7 @@ the main viewer only without a placeholder; never "mother of the narrator".
 
 | Mode | Skill | Delivers | Next |
 |---|---|---|---|
-| scenario | `story-scenario` | from the researcher's cast and its fates, then the place and its wonders: three chapters shown, then the plan of the whole and every chapter as a strip file (paragraphs, things to look at, the hero's paper, a game, children's text, question, "More"), read as one | researcher's check, mechanics, then text |
+| scenario | `story-scenario` | from the researcher's cast and its fates, then the place and its wonders: three chapters shown, then the plan of the whole and every chapter as a strip file (paragraphs, things to look at, the hero's paper, a game, children's text, question, "More"), read as one; mended by one hand after the reader | researcher's check, a reader as the family, mechanics, then text |
 | text | `story-text` | after the family's reading, the voice and people pass on the strip: chapters whose children’s layer follows `kids.layer` (block by default, separate text when selected), "More" per scene, document cut-outs placed in the flow | shot director, reviewer |
 | game | `game` | one small game for a page: a choice or a detail to find, with an honest "truth" note | reviewer |
 

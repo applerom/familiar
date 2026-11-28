@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.66.1 — 28 November 2026
+
+- A feed is made in the order its first whole use showed. After the fact
+  check, a reader goes through the whole feed as the family will and says
+  which chapters live, which are dead and which sentences to keep word for
+  word; then one writer mends the whole around what lives, and a short check
+  covers only what the mending added. The check had passed a dead chapter in
+  every feed. The family first sees a rough whole feed, with described frames
+  where pictures are wanted; nothing is drawn before it reads.
+- A person without a paper is still told, but in a chapter he holds. A
+  chapter filled by a neighbour's memory, the place or the war merges into
+  its neighbour or leaves the feed, and the person waits in "More" or under
+  "waiting for a paper" in the plan. A feed opens and closes on people the
+  family itself remembers; possible kin stand inside, named so at once.
+- The cast gives each person's age at each event, the family's people left
+  outside it, and cuts already cropped to their line. The table of shared
+  events carries gestures too, so two feeds do not tell the same waiting.
+- The scenario method answers its open questions: a namesake below 0.3 is a
+  neighbour, never a hero; one "our version" a link; weights multiply along
+  a chain; a hero with no choice turns on what he held on to; "ask
+  grandmother" only where the family said she lives. `feed rhythm` advises
+  on a chapter above 330 words instead of 200.
+
 ## 0.66.0 — 28 November 2026
 
 - We show dated archival papers beyond the family horizon in home chapters.

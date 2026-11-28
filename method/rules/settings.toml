@@ -134,8 +134,8 @@ scopes = ["family", "feed"]
 [setting."story.max_words"]
 type = "integer"
 minimum = 1
-default = 200
-help = "Advise on a full chapter above this many words."
+default = 330
+help = "Advise on a full chapter above this many words; a whole fate takes about 300."
 serves = "UC-STORY"
 scopes = ["family", "feed"]
 

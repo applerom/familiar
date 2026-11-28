@@ -1,8 +1,8 @@
 # Living history: what the rules are for
 
-Read this once before you plan, write, research for, check or review anything
-a family will read. Your rules come by command (`familiar rules for <role>`);
-this page says what they are *for*. We learned it by getting it wrong.
+Read this once before you plan, write, research for, check or review what a
+family will read. Your rules come by command (`familiar rules for <role>`);
+this page says what they are *for*.
 
 ## What the family came for
 
@@ -61,14 +61,13 @@ its time, or tells a living person beyond name and kinship.
 
 ## Pictures: alive, not tinted
 
-The same bias in images. A tinted copy of a blurred frame keeps everything
-and improves nothing; a child will not look twice. **The old picture is the
-evidence** of what stood there. **The new picture is that place on a living
-day of its time**: sharp, in full colour, with the people, carts and smoke of
-that decade, the building as it stood in use. If the ruin is the subject, it
-stays a ruin and the life is around it. **The original is one tap away**,
-under a caption saying the picture is drawn from it; what was invented is in
-the recipe.
+The same bias in images: a tint keeps everything and improves nothing; a
+child will not look twice. **The old picture is the evidence** of what stood
+there. **The new picture is that place on a living day of its time**: sharp,
+in full colour, with the people, carts and smoke of that decade, the building
+as it stood in use. If the ruin is the subject, it stays a ruin and the life
+is around it. **The original is one tap away**, under a caption saying the
+picture is drawn from it; what was invented is in the recipe.
 
 Unchanged: nothing impossible for that place and year; a portrait stays the
 same person; no living person and no child goes to a generator; a drawn
@@ -78,9 +77,8 @@ later.
 
 ## The pendulum
 
-Each rule was written against one failure (the feed rules say "Written
-against: ..."). The commonest way to break a rule is to obey the previous one
-too hard:
+Each rule was written against one failure (its "Written against: ...");
+the commonest way to break one is to obey the previous one too hard:
 
 - Chapters told papers -> scenario first; a paper is a pin, not the plot.
 - Papers went behind buttons, chapters followed a place -> the hero is a
@@ -92,11 +90,15 @@ too hard:
 - The site spoke in warnings -> a home, not a court.
 - Photographs were tinted -> draw the place alive; the original is the proof.
 - Feeds of one family told one century several times -> each feed takes a
-  shared event from its own hero's side.
+  shared event, and a gesture, from its own hero's side.
+- People without a paper were told, and a neighbour, the place, the war
+  filled their chapters -> a chapter its hero cannot hold merges or leaves.
 
 **The next swing to expect.** Told to follow people, a careful agent retells
 a person's papers in date order, a sentence per record. That is the first row
-again, with a name on it. A fate has a want, a turn and a choice.
+again, with a name on it. A fate has a want, a turn and a choice. Told to
+merge a chapter its hero left, he strips the land from living ones or pads a
+thin one with invention: either way the person is lost.
 
 When corrected, do not run to the opposite wall. Ask what the correction
 protects (always the reader's experience of *his own people*) and keep what
@@ -105,13 +107,13 @@ you misread it: find what it was written against.
 
 ## Before you show anything
 
-- In how many chapters is the hero a named person of the family from the
-  first line, and in how many does his paper stand? (`feed rhythm` counts.)
+- In how many chapters does a named person of ours open the first line, and
+  in how many does his paper stand?
 - Is there a want, an obstacle and a choice?
-- Could this chapter go to the neighbouring family unchanged?
 - Is each "probably" ours, said once, resting on named neighbours?
 - Does any sentence describe a sheet, issue a verdict or apologise?
-- Have you shown **three chapters** before writing thirty?
+- Have you shown **three chapters** before writing thirty, and the rough
+  whole before any picture?
 
 In the invented family: not "the island's men left for the mills", but Amaro
 on the path above the harbour with his cousin's address in his pocket, and
@@ -119,27 +121,26 @@ the ship's list holding that address right under the paragraph.
 
 ## By role
 
-- **Researcher.** Hand a writer fates, not records: the cast; each life as
-  dated events with its paper; the turns; how such a thing was done there and
-  then; the neighbours who did the same; the holes and where their paper lies.
-- **Writer.** The plan begins with the cast. A chapter of the place alone is
-  written only where no person of ours is known yet, and it is short.
+- **Researcher.** Hand a writer fates, not records (`story-scenario` step 1).
+- **Writer.** The plan begins with the cast; the feed opens and closes on
+  people the family remembers; of several hands, one mends the whole.
 - **Fact checker.** Correct facts and readings; do not rewrite a scene into
   the paper's voice. A hat in a hand, the tool of a trade, a figure of speech
   are the writer's staging and stay unless a source contradicts them. Hand
   doubts about joints and staging to the writer as a list.
 - **Reader, reviewer, second look.** Look for what a fact checker cannot see:
-  a true fact suggesting an untrue thing; a chapter the family is absent from;
-  a fate told as a list of its papers.
-- **Artist, shot director.** The old picture is your evidence, not your
-  frame. Never brief or accept "nothing added".
+  a true fact suggesting an untrue thing; a hero absent from his chapter; a
+  fate told as its papers. Say what is alive as plainly; your remedies are
+  advice.
+- **Artist, shot director.** The old picture is your evidence: never brief
+  or accept "nothing added".
 - **Lead.** Count before you show. A brief carries the meaning and the reason
-  of what the family asked, short, in your own words. When the family
-  corrects the work, record the *why* and what it was against.
+  of the family's ask, in your own words, and names what is not the role's:
+  so named, a checker leaves the scenes whole.
 
 ## Erring
 
 We erred at every step of this page. Being wrong is no disaster; not drawing
-the conclusion is. A conclusion is never only a new rule: it is a sentence a
-future agent understands without having been there. *What we did, why it
-seemed right, what it cost the reader, what we do instead.*
+the conclusion is. A conclusion is a sentence a future agent understands
+without having been there: *what we did, why it seemed right, what it cost
+the reader, what we do instead.*
