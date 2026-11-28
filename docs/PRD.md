@@ -483,6 +483,11 @@ established twelve-year minimum. A child's direct recorded event bounds a
 recorded parent link. Existing weighted tentative links can supply only the
 family age horizon. The public horizon requires recorded participation.
 A citation for a hypothesis cannot place an unmentioned child at the father's signing.
+At home, a chapter can show an archival paper with a recorded date beyond the
+family horizon even when the corpus has no tree links for its subjects. The
+chapter's cast is not evidence of who appears on the paper. Protected records
+and papers with identified protected participants stay closed. The outside
+reader still requires structured attribution independently of the paper's age.
 A paper names its recorded participants and their accepted identity aliases.
 A probable identity keeps separate cards and can suggest kinship, with its
 explanation on the private card. A doubtful identity, proposed event or date

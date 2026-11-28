@@ -541,7 +541,7 @@ def private_graph(instance, graph, *, host_private=True, withheld=(), amendments
             return True
         resolved = closure(instance, node, shape=shape, people=known)
         attributed = (resolved.people or shape == 'image' and period_pair(node)
-                      or host_private and chapter and historical_records(resolved))
+                      or host_private and chapter and historical_records(instance, resolved))
         unsafe = (not attributed or any(not dead(p) for p in resolved.people)
                   or any(map(protected_record, resolved.records.values())))
         if not unsafe and shape == 'document' and node.get('excerpt'):

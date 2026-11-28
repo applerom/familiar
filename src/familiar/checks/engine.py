@@ -165,9 +165,9 @@ def _inspect(ctx, chapter, documents, pictures, instance, people):
                 yield f'records[{n}]', 'Document reference has no entry in documents.json.'
                 continue
             record = doc.get('record')
-            if not record:
+            if not record and doc.get('kind') != 'studio-cut':
                 yield f'records[{n}]', 'Document/cut-out has no corpus record reference; existence is unverified.'
-            else:
+            if record:
                 path = record_path(instance, record)
                 allowed = path.is_relative_to(instance.root) or path.is_relative_to(instance.path('records'))
                 if not allowed or not path.is_file():

@@ -125,6 +125,7 @@
     <REL TYPE="DEPENDS_ON" TARGET="MOD-SUBJECT-CLOSURE"/>
   </MODULE_FAMILY_GATE>
   <MODULE_FAMILY_WRITER ID="MOD-FAMILY-WRITER" FILE="src/familiar/instance/writer.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Studio imports bind the selected feed and the dependencies of its catalogues through the atomic save.</INVARIANT>
     <INVARIANT REVIEW="engine lead">The relative-letter move verifies the source in the staged family and restores both sides if the write fails.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Generation exclusions resolve merged person references.</INVARIANT>
     <!-- Hosted upload stages the verified delivery, excluding correspondence for shared login; local feedback carries an explicit origin. -->
@@ -164,6 +165,7 @@
     <REL TYPE="DEPENDS_ON" TARGET="MOD-PHOTO-RESTORATIONS"/>
     <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_f2_record_subject_cannot_be_omitted">Declared cut-out subjects agree with corpus subjects; chapter context is only a fallback, while protected shared scans retain their full closure.</INVARIANT>
     <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_f2_record_subject_cannot_be_omitted">A complete corpus list separates inferred relatives from participants. Public census and annex papers require complete attribution.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">A dated historical paper in a home chapter uses its actual subjects in place of the chapter cast.</INVARIANT>
     <!-- Structured gallery, chapter and fact attachments accumulate across shared document identities before either reader projection. -->
   </MODULE_SUBJECT_CLOSURE>
   <MODULE_PHOTO_RESTORATIONS ID="MOD-PHOTO-RESTORATIONS" FILE="src/familiar/instance/restorations.py" STATE="IMPLEMENTED">

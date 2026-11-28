@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.66.0 — 28 November 2026
+
+- We show dated archival papers beyond the family horizon in home chapters.
+  Their own participants govern access. Outside readers keep the existing
+  document protections.
+- Children can open the cuts placed in the story and read their captions.
+  The archive references and More stay in the adult view.
+- Chapter imports check the selected studio, its paper and image inputs
+  and its catalogue destinations through the save.
+- Data: A file on an `R:` line imports as a cut with its reading and optional
+  corpus link. Existing catalogues stay readable. `instance upgrade` names
+  feeds whose older file cuts are still placeholders and can be reimported.
+
 ## 0.65.0 — 28 November 2026
 
 - We start research coverage with the books and sources still open to read from home, by line.

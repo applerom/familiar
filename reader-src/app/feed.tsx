@@ -149,8 +149,6 @@ export function FeedViewer({feed,step,setStep,onClose,go,model,labels,language,c
  const fallsBack=(row:Row)=>language!==source&&(typeof row==='string'||!row?.[language])&&!!tr(row,source);
  const originalText=fallsBack(bodyText),originalIntro=!!v&&fallsBack(c.text);
  const allRecs=[...(c.record?[c.record]:[]),...(c.records||[])];
- const markedRecs=allRecs.filter(r=>r.kids===true);let remaining=4;
- const recs=!kidsMode?allRecs:c.kidsRecords===false?[]:(c.kidsSelection||markedRecs.length)?markedRecs.flatMap(r=>{if(!remaining)return [];const parts=(r.parts||[]).slice(0,remaining-1);remaining-=1+parts.length;return [{...r,parts}]}):allRecs.slice(0,1).map(r=>({...r,parts:(r.parts||[]).slice(0,1)}));
  const paperId=(r:Rec)=>[r.full,r.asset].map(h=>h&&paper?.(h)).find(Boolean) as string|undefined;
  const chapterPapers=allRecs.map(paperId).filter((x):x is string=>!!x);
  const record=(r:Rec,k:number)=><figure key={k} className={'feed-record'+(r.kind==='index'||!r.asset?' feed-index':'')}>{[{asset:r.asset,read:r.read},...(r.parts||[])].map((p,j)=><div key={j} className="feed-snip">{/* eslint-disable-next-line @next/next/no-img-element */}{p.asset&&(paperId(r)?<button className="feed-paper" onClick={()=>openPaper?.(paperId(r)!,chapterPapers)} aria-label={labels.feedOpenDoc}><img src={p.asset} alt={tr(r.title,language)} loading="lazy"/></button>:<img src={p.asset} alt={tr(r.title,language)} loading="lazy"/>)}{p.read&&<q className="feed-read">{marked(p.read)}</q>}</div>)}<figcaption>{r.title&&tr(r.title,language)&&<b>{tr(r.title,language)}</b>}{r.kind==='index'&&<em>{labels.feedIndexOnly}</em>}{r.kind==='home-paper'&&<em>{labels.feedHomePaper}</em>}{r.kind==='archive-scan'&&<em>{labels.feedArchiveScan}</em>}{paperId(r)?<button className="link" onClick={()=>openPaper?.(paperId(r)!,chapterPapers)}>{labels.feedOpenDoc}</button>:(r.full||r.asset)&&<a href={r.full||r.asset} target="_blank" rel="noreferrer">{r.full?labels.feedFullDoc:labels.feedOpenDoc} ↗</a>}</figcaption></figure>;
@@ -161,6 +159,11 @@ export function FeedViewer({feed,step,setStep,onClose,go,model,labels,language,c
  const visibleFlow=kt?[...flow].sort((a,b)=>a.after-b.after):flow.filter(f=>f.after<fullParagraphs.length);
  const placedF=new Set(visibleFlow.filter(f=>f.after>=0).map(f=>f.figure));
  const placedR=new Set(visibleFlow.filter(f=>f.after>=0).map(f=>f.record));
+ const unplaced=allRecs.map((r,k)=>({r,k})).filter(({k})=>!placedR.has(k));
+ const markedRecs=unplaced.filter(({r})=>r.kids===true);let remaining=4;
+ const unplacedRecords=!kidsMode?unplaced:c.kidsRecords===false?[]:(c.kidsSelection||markedRecs.length)
+  ?markedRecs.flatMap(({r,k})=>{if(!remaining)return [];const parts=(r.parts||[]).slice(0,remaining-1);remaining-=1+parts.length;return [{r:{...r,parts},k}]})
+  :unplaced.slice(0,1).map(({r,k})=>({r:{...r,parts:(r.parts||[]).slice(0,1)},k}));
  const moved=(kind:Activity['kind'],key?:string)=>visibleFlow.some(f=>f.do?.kind===kind&&f.do.key===key&&
   (f.do.kind==='game'||f.do.picture));
  const staticPicture=(p:Picture):Picture=>({...p,spots:moved('spots',p.asset)?undefined:p.spots,
@@ -190,7 +193,7 @@ export function FeedViewer({feed,step,setStep,onClose,go,model,labels,language,c
  const unplacedFigures=(c.figures||[]).flatMap((f,k)=>placedF.has(k)?[]:[figure(f,k)]);
  const beats=visibleFlow.flatMap((beat,j)=>[
    beat.after>=0&&beat.figure!==undefined&&c.figures?.[beat.figure]?figure(c.figures[beat.figure],beat.figure):null,
-   beat.after>=0&&!kidsMode&&beat.record!==undefined&&allRecs[beat.record]?record(allRecs[beat.record],beat.record):null,
+   beat.after>=0&&beat.record!==undefined&&allRecs[beat.record]?record(allRecs[beat.record],beat.record):null,
    beat.placeholder?.ratio&&<DraftFrame key={'placeholder'+j} frame={beat.placeholder} language={language}/>,
    beat.do&&activity(beat.do,j)
   ].filter(Boolean).map(node=>({after:beat.after,node})));
@@ -245,7 +248,7 @@ export function FeedViewer({feed,step,setStep,onClose,go,model,labels,language,c
     {!kt&&unplacedFigures}
     {(more||srcDocs.length>0||srcPics.length>0)&&<details className="story-more" open={open} onToggle={e=>setOpen((e.target as HTMLDetailsElement).open)}><summary>{kind==='truth'?labels.feedMoreTruth:labels.feedMore}</summary>{more&&paras(more)}{srcList(labels.feedSrcDocs,srcDocs)}{srcList(labels.feedSrcPics,srcPics)}</details>}
     {c.places&&c.places.length>0&&<div className="feed-places"><small>{labels.feedPlaces}</small>{c.places.map((p,k)=><div key={k} className="feed-place"><b>{tr(p.name,language)}</b>{p.note&&<span>{tr(p.note,language)}</span>}{p.url&&<a href={p.url} target="_blank" rel="noreferrer">◎ {labels.feedOnMap} ↗</a>}</div>)}</div>}
-    {recs.map((r,k)=>!kidsMode&&placedR.has(k)?null:record(r,k))}
+    {unplacedRecords.map(({r,k})=>record(r,k))}
     {(c.extras||[]).filter(x=>!kidsMode||x.kids).map((x,k)=><details key={i+'-'+k} className="story-more feed-extra"><summary>{labels.feedExtra}: {tr(x.title,language)}</summary>
      {x.picture&&<FeedFigure f={staticPicture(x.picture)} labels={labels} language={language} {...play}/>}
      <div className="feed-simple">{paras(tr(kidsMode?x.kids:x.text,language))}</div>

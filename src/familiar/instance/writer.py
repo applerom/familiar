@@ -7,6 +7,7 @@
 # - upload staging excludes owner correspondence for shared login; loopback feedback origin is explicit [review: engine lead]
 # - carrying over relative letters verifies the source and rolls back both sides of an interrupted in-process move [review: engine lead]
 # - unadopted collector records and journals never enter output snapshots; selected-input race rejection remains complete [review: engine lead]
+# - studio import binds one feed and its tree and paper dependencies across the staged save [review: engine lead]
 # - changed inputs cannot commit a clean generation [review: engine lead]
 # - saved photo restoration versions are append-only across family transactions [review: engine lead]
 # - a pinned reader snapshot is invalidated by input additions, removals or metadata changes [review: engine lead]
@@ -316,12 +317,15 @@ def _input_paths(instance):
     return _inputs(instance)[0]
 
 
-def _inputs(instance):
+def _inputs(instance, studio=None):
     """(all paths, presence-only paths, record refs); see display.dependencies."""
     from familiar.rules.roles import method_root
     instance = fresh(instance)
     paths = {instance.root / 'familiar.toml', instance.root / 'exceptions.toml'}
     for key in DEFAULTS:
+        if studio is not None and key not in {'tree_snapshot', 'identity_decisions', 'evidence',
+                                               'contributions', 'privacy'}:
+            continue
         if key in {'build', 'state', 'export', 'access'} | _SELECTED_ROOTS:
             continue  # The access ledger is no output's input: a verdict never makes a reading stale.
         if key == 'questions' and not getattr(instance, '_carry_over_asks', False):
@@ -332,7 +336,7 @@ def _inputs(instance):
                 continue
         base = instance.path(key)
         paths.update([base] if not base.is_dir() else (p for p in base.rglob('*') if p.is_file()))
-    if instance._research_work_scope:
+    if instance._research_work_scope and studio is None:
         # Own-item transactions may adopt another working record in this edit.
         # Output adapters never request this scope.
         paths.update(p for key in ('records', 'searches')
@@ -353,6 +357,29 @@ def _inputs(instance):
     settings(instance.config)
     for pack in [*instance.packs, *instance.language_pack_data.values()]:
         settings(pack['data'])
+    if studio is not None:
+        folder, changes = studio
+        from .display import _references
+        refs, presence = set(), set()
+        paths.update(folder / name for name in ('feed.json', 'chapters.json', 'pictures.json', 'documents.json'))
+        for path in paths:
+            if not path.is_file() or path.suffix != '.json':
+                continue
+            found, _, local, _ = _references(path, False, set())
+            refs.update(found)
+            if path.is_relative_to(instance.path('contributions')):
+                for name, _ in local:
+                    target = (instance.root / name).resolve()
+                    if target.is_relative_to(instance.root):
+                        presence.add(target)
+        from .subjects import normalized
+        docs = changes.get(folder / 'documents.json')
+        if docs:
+            refs.update(normalized(doc['record']) for doc in json.loads(docs).values() if doc.get('record'))
+        paths.update(p for p in instance.path('records').rglob('*.json') if normalized(p.stem) in refs)
+        paths.update(changes)
+        return paths | presence, presence - paths, refs
+
     from familiar.tree.amendments import answer_files
     paths.update(answer_files(instance))
     from .display import dependencies
@@ -370,13 +397,13 @@ def _inputs(instance):
 PRESENT = 'present:'
 
 
-def fingerprints(instance):
+def fingerprints(instance, *, studio=None):
     """Reload config and packs; names and bytes, including absence, are dependencies.
 
     A presence dependency of a private display binds name, size and time only:
     the reader tests that a research original exists and never reads it.
     """
-    paths, presence, _ = _inputs(instance)
+    paths, presence, _ = _inputs(instance, studio)
     def digest(p):
         try:
             info = p.stat()
@@ -387,7 +414,7 @@ def fingerprints(instance):
         if not stat.S_ISREG(info.st_mode):
             return None
         if p in presence:
-            return f'{PRESENT}{info.st_size}:{info.st_mtime_ns}'
+            return PRESENT if studio is not None else f'{PRESENT}{info.st_size}:{info.st_mtime_ns}'
         return input_digest(p, info)
     return {str(p): digest(p) for p in sorted(paths)}
 
@@ -526,10 +553,10 @@ def _output_root(instance, out):
 
 
 @contextmanager
-def snapshot(instance):
+def snapshot(instance, *, studio=None):
     """Private input copy. Its fingerprint is checked before it is used and committed."""
     instance = fresh(instance)
-    before = fingerprints(instance)
+    before = fingerprints(instance, studio=studio)
     reap_snapshots(instance)
     scratch = instance.path('state') / 'snapshots'
     scratch.mkdir(parents=True, exist_ok=True)
@@ -570,7 +597,7 @@ def snapshot(instance):
         active._immutable_snapshot = True
         active._snapshot_source_root = instance.root
         active._snapshot_state = instance.path('state')
-        if before != fingerprints(instance):
+        if before != fingerprints(instance, studio=studio):
             raise ValueError('family inputs changed while taking snapshot')
         if instance._display_scope:
             from .validation import _forms
@@ -583,7 +610,8 @@ def snapshot(instance):
 
 
 @boundary('transaction')
-def mutate(instance, changes=None, *, exclusive=(), working_journals=False, remove=None, expect=None):
+def mutate(instance, changes=None, *, exclusive=(), working_journals=False, remove=None, expect=None,
+           studio=None, verify_inputs=None):
     """Validate the changed items before touching a destination file.
 
     working_journals: a carry-over of search journals, which are working research; the
@@ -618,7 +646,8 @@ def mutate(instance, changes=None, *, exclusive=(), working_journals=False, remo
     transaction = fresh(instance)
     transaction._research_work_scope = True
     transaction._carry_over_asks = any(p.is_relative_to(instance.path('questions')) for p in remove)
-    with snapshot(transaction) as (staged, before):
+    selection = (studio, changes) if studio is not None else None
+    with snapshot(transaction, studio=selection) as (staged, before):
         if any(Path(p).exists() for p in exclusive):
             raise ValueError('refusing to replace existing family data')
         for path, expected in (dict(expect or {}) | remove).items():
@@ -635,8 +664,10 @@ def mutate(instance, changes=None, *, exclusive=(), working_journals=False, remo
         from .validation import validate_changes
         if not working_journals:
             validate_changes(staged, [staged.root / p.relative_to(instance.root) for p in changes])
-        if fingerprints(transaction) != before:
+        if fingerprints(transaction, studio=selection) != before:
             raise ValueError('family inputs changed before mutation')
+        if verify_inputs is not None:
+            verify_inputs()
         old = {p: p.read_bytes() if p.exists() else None for p in targets}
         try:
             for path, value in changes.items():
@@ -725,9 +756,9 @@ def diagnostic(instance, name, value):
 
 
 @contextmanager
-def _publisher(out):
+def _publisher(out, *, name='.publish.lock'):
     out.mkdir(parents=True, exist_ok=True)
-    lock = out / '.publish.lock'
+    lock = out / name
     try:
         stream = lock.open('xb')
     except FileExistsError as exc:
@@ -740,23 +771,35 @@ def _publisher(out):
 
 
 @boundary('writer')
-def write_studio(instance, changes, *, out=None):
+def write_studio(instance, changes, *, out=None, feed=None, verify_inputs=None):
     """Save authored catalogs or write a private draft to a separate output."""
     if out is None:
-        mutate(instance, {p: content for p, content in changes.items()
-                          if not p.is_file() or p.read_bytes() != content})
+        with _publisher(instance.path('state'), name='studio.lock'):
+            if verify_inputs is not None:
+                verify_inputs()
+            mutate(instance, {p: content for p, content in changes.items()
+                              if not p.is_file() or p.read_bytes() != content},
+                   studio=feed, verify_inputs=verify_inputs)
         return
     root = _output_root(instance, out)
     with _publisher(root), tempfile.TemporaryDirectory(prefix='studio-', dir=root) as tmp:
         staged = Path(tmp)
+        pending = {}
         for path, content in changes.items():
-            target = _relative(root, path.name)
+            base = Path(out).absolute()
+            rel = path.absolute().relative_to(base)
+            target = _relative(root, rel)
             if path.is_symlink() or target != path.resolve():
                 raise ValueError(f'Invalid draft output: {path}')
             if not target.is_file() or target.read_bytes() != content:
-                _put(staged / path.name, content)
-        for path in staged.iterdir():
-            os.replace(path, root / path.name)
+                source = staged / rel
+                _put(source, content)
+                pending[source] = target
+        if verify_inputs is not None:
+            verify_inputs()
+        for source, target in pending.items():
+            target.parent.mkdir(parents=True, exist_ok=True)
+            os.replace(source, target)
 
 
 def publish(instance, out, publication):

@@ -22,10 +22,6 @@ LABELS = {
 }
 
 
-def read_json(path, default=None):
-    return json.loads(path.read_bytes()) if path.is_file() else default
-
-
 def relative(value):
     if not isinstance(value, str) or any(c in value for c in '\\:') or any(
             bit in ('', '.', '..') for bit in value.split('/')):
@@ -38,6 +34,8 @@ class Sources:
 
     def __init__(self, instance, ref):
         self.root = instance.root
+        self.reads = {}
+        self.listings = {}
         self.commit = self.git('rev-parse', '--verify', '--end-of-options', ref + '^{commit}').strip() if ref else None
 
     def git(self, *args):
@@ -51,19 +49,42 @@ class Sources:
         if not folder.is_relative_to(self.root):
             raise ValueError(f'Studio input leaves the family: {folder}')
         if not self.commit:
-            return sorted(folder.glob(pattern))
+            listing = sorted(folder.glob(pattern))
+            self.listings[folder, pattern] = listing
+            return listing
         names = self.git('ls-tree', '-r', '--name-only', '-z', self.commit, '--',
                          folder.relative_to(self.root).as_posix())
         return sorted(self.root / n for n in names.split('\0')
                       if n and (self.root / n).parent == folder and Path(n).match(pattern))
 
     def text(self, path):
-        path = path.resolve()
-        if not path.is_relative_to(self.root):
+        resolved = path.resolve()
+        if not resolved.is_relative_to(self.root):
             raise ValueError(f'Studio input leaves the family: {path}')
         if not self.commit:
-            return path.read_text(encoding='utf-8-sig')
-        return self.git('show', f'{self.commit}:{path.relative_to(self.root).as_posix()}').removeprefix('\ufeff')
+            raw = self.data(path)
+            if raw is None:
+                raise ValueError(f'Missing studio input: {path}')
+            return raw.decode('utf-8-sig')
+        return self.git('show', f'{self.commit}:{resolved.relative_to(self.root).as_posix()}').removeprefix('\ufeff')
+
+    def data(self, path):
+        raw = path.read_bytes() if path.is_file() else None
+        digest = sha256(raw).digest() if raw is not None else None
+        if self.reads.setdefault(path, digest) != digest:
+            raise ValueError(f'Studio input changed during import: {path}')
+        return raw
+
+    def json(self, path, default=None):
+        raw = self.data(path)
+        return default if raw is None else json.loads(raw)
+
+    def verify(self):
+        for path in self.reads:
+            self.data(path)
+        for (folder, pattern), listing in self.listings.items():
+            if sorted(folder.glob(pattern)) != listing:
+                raise ValueError(f'Studio input list changed during import: {folder / pattern}')
 
 
 def fields(text, forms, where):
@@ -134,7 +155,7 @@ def parse(path, source):
                 rest = picture(rest, where)
             elif tag == 'R':
                 rest = fields(rest, [('record', 'cut', 'reading', 'caption'), ('record', 'cut', 'reading'),
-                                     ('file', 'caption', 'reading')], where)
+                                     ('file', 'caption', 'reading'), ('file', 'record', 'caption', 'reading')], where)
                 if 'record' in rest and not re.fullmatch(r'[A-Za-z0-9_-][A-Za-z0-9._-]*', rest['record']):
                     raise ValueError(f'{where}: invalid record id')
             elif tag == 'D':
@@ -165,13 +186,20 @@ def load(instance, feed, studio=None, config=None, source_ref=None, *, draft=Fal
     else:
         folder, = folders(instance, feed)
     sources = Sources(instance, source_ref)
+    from familiar.instance.model import load_config
+    sources.data(instance.root / 'familiar.toml')
+    if load_config(instance.root) != instance.config:
+        raise ValueError('Family configuration changed before studio import')
     studio = instance._inside(studio) if studio else folder / 'studio'
     default = studio / 'import.json'
     if config is not None:
-        config = json.loads(config.read_bytes())
+        config = sources.json(config.resolve())
+        if config is None:
+            raise ValueError('Studio import configuration is missing')
+    elif sources.commit:
+        config = json.loads(sources.text(default)) if default in sources.files(studio, 'import.json') else {}
     else:
-        has_config = (default in sources.files(studio, 'import.json') if sources.commit else default.is_file())
-        config = json.loads(sources.text(default)) if has_config else {}
+        config = sources.json(default, {})
     chapters = [parse(path, sources.text(path)) for path in sources.files(studio / 'chapters', '[0-9]*.md')]
     chapters.sort(key=lambda chapter: chapter['n'])
     if not chapters:
@@ -183,7 +211,7 @@ def load(instance, feed, studio=None, config=None, source_ref=None, *, draft=Fal
         raise ValueError('Invalid chapter id in studio settings')
     if len({ch['id'] for ch in chapters}) != len(chapters) or len({ch['n'] for ch in chapters}) != len(chapters):
         raise ValueError('Duplicate chapter id or number')
-    meta = read_json(folder / 'feed.json')
+    meta = sources.json(folder / 'feed.json')
     if meta is None and draft:
         readme = folder / 'README.md'
         heading = next((line[2:].strip() for line in sources.text(readme).splitlines()
@@ -250,21 +278,22 @@ def part_starts(config, meta, raw, old, language):
 
 class Importer:
     def __init__(self, instance, sources, feed, config):
-        self.instance, self.config = instance, config
+        self.instance, self.sources, self.config = instance, sources, config
         self.line = feed.name
         self.lang = instance.source_language
         self.labels = LABELS.get(self.lang, LABELS['en'])
         self.media = instance.path('media')
         self.manifest_path = self.media / 'manifest.json'
-        self.manifest = read_json(self.manifest_path, {'assets': []})
+        self.manifest = sources.json(self.manifest_path, {'assets': []})
         self.assets = {row['export']: row for row in self.manifest['assets']}
-        self.gallery = read_json(instance.path('gallery'), {}).get('family_photographs', {})
+        self.gallery = sources.json(instance.path('gallery'), {}).get('family_photographs', {})
         self.credits = credits(sources, config.get('credits', []), config.get('supplemental_credits', {}))
-        self.old_pictures = read_json(feed / 'pictures.json', {})
-        self.old_documents = read_json(feed / 'documents.json', {})
-        old_play = read_json(feed / 'play.json', {})
+        self.old_pictures = sources.json(feed / 'pictures.json', {})
+        self.old_documents = sources.json(feed / 'documents.json', {})
+        old_play = sources.json(feed / 'play.json', {})
         self.play = {'spots': {}, 'games': {}, 'panos': old_play.get('panos', {})}
         self.pictures, self.documents, self.notes = {}, {}, []
+        self.new_media = {}
 
     def people(self, raw, passage):
         matches = []
@@ -310,7 +339,7 @@ class Importer:
             local = (self.media / rel).resolve()
             if local.is_relative_to(self.media.resolve()) and local.is_file():
                 row = {'id': f'{self.line}-strip-' + local.stem, 'kind': 'period-picture',
-                       'file': rel, 'export': rel, 'sha256': sha256(local.read_bytes()).hexdigest(),
+                       'file': rel, 'export': rel, 'sha256': sha256(self.sources.data(local)).hexdigest(),
                        'origin': {'description': credit['Что на изображении'],
                                   'holder': credit['Хранитель'], 'source': credit['Страница']}}
                 self.manifest['assets'].append(row)
@@ -350,40 +379,107 @@ class Importer:
         self.pictures[key] = result
         return {'picture': key}
 
+    def cut_asset(self, source, where):
+        from familiar.reader.assets import publication_bytes
+
+        rel = self.export(source)
+        if local := self.media_file(rel):
+            self.sources.data(local)
+            return rel
+        if self.media / rel in self.new_media:
+            return rel
+        if rel in self.assets:
+            raise ValueError(f'{where}: registered cut file is missing: {source}')
+        path = self.instance._inside(source)
+        suffix = path.suffix.lower()
+        if not path.is_file() or suffix not in {'.png', '.jpg', '.jpeg', '.webp'}:
+            raise ValueError(f'{where}: cut must name a PNG, JPEG or WebP file: {source}')
+        data = self.sources.data(self.instance.root / source)
+        digest = sha256(data).hexdigest()
+        # A registered derivative may have stripped metadata from the studio original.
+        matches = [key for key, row in self.assets.items() if row.get('kind') in {'crop', 'document-scan'}
+                   and digest in (row.get('sha256'), row.get('source_sha256'))]
+        if len(matches) > 1:
+            named = [key for key in matches if PurePosixPath(key).name == path.name]
+            if len(named) != 1:
+                raise ValueError(f'{where}: set exports in studio/import.json for this cut: {source}')
+            matches = named
+        if matches:
+            rel, = matches
+            if local := self.media_file(rel):
+                self.sources.data(local)
+                return rel
+            raise ValueError(f'{where}: registered cut file is missing: {source}')
+
+        publication_bytes(data, path.name.lower())
+        rel = f'documents/{self.line}/cuts/{digest}{suffix}'
+        target = self.media / rel
+        if target in self.new_media:
+            return rel
+        existing = self.sources.data(target)
+        if existing is not None and existing != data:
+            raise ValueError(f'{where}: existing cut file has different bytes: {target}')
+        if rel in self.assets:
+            if existing is None:
+                raise ValueError(f'{where}: registered cut file is missing: {source}')
+            return rel
+        if existing is None:
+            self.new_media[target] = data
+        row = {'id': f'{self.line}-cut-{digest}{suffix}', 'kind': 'crop', 'file': rel,
+               'export': rel, 'sha256': digest, 'origin': 'chapter strip'}
+        self.manifest.setdefault('schema_version', 1)
+        self.manifest['assets'].append(row)
+        self.assets[rel] = row
+        return rel
+
     def record(self, item, where, raw):
-        if 'file' in item:
-            self.notes.append(f'{where}: an unlinked cut stays in the storyboard until it has a corpus record')
-            return frame('period-picture', [4, 3], item['caption'])
         from familiar.checks.engine import record_path
-        rid = item['record']
+        rid = item.get('record')
         caption = item.get('caption', '')
+        asset = None
+        if 'file' in item:
+            rel = self.cut_asset(item['file'], where)
+            asset = '/' + rel
+            row = self.assets[rel]
+            origin = row.get('origin')
+            registered_record = origin.get('record') if isinstance(origin, dict) else None
+            if registered_record and rid and registered_record != rid:
+                raise ValueError(f'{where}: cut is registered to {registered_record}, not {rid}')
+            rid = rid or registered_record
+        elif rid:
+            previous = self.old_documents.get(rid, {})
+            registered = self.config.get('cuts', {}).get(rid)
+            asset = '/' + relative(registered) if registered else (previous.get('snippets') or [{}])[0].get('asset')
         if not caption:
             self.notes.append(f'{where}: MISSING CAPTION for {rid}; add caption= to the R: line')
-        file = record_path(self.instance, rid)
-        previous = self.old_documents.get(rid, {})
-        registered = self.config.get('cuts', {}).get(rid)
-        asset = '/' + relative(registered) if registered else (previous.get('snippets') or [{}])[0].get('asset')
-        record = read_json(file, {})
+        record = self.sources.json(record_path(self.instance, rid), {}) if rid else {}
         fictional = self.instance.config['family'].get('fictional') is True and record.get('fictional') is True
-        if not record or not (asset and self.media_file(relative(asset.lstrip('/'))) or fictional):
+        if (rid and not record) or not (asset or fictional) or ('file' not in item and asset
+                and not self.media_file(relative(asset.lstrip('/'))) and not fictional):
+            if 'file' in item:
+                raise ValueError(f'{where}: unknown corpus record: {rid}')
             self.notes.append(f'{where}: record or registered crop is missing: {rid}')
             return frame('period-picture', [4, 3], f'{item["cut"]} — {item["reading"]}')
-        if record.get('id') != rid:
+        if 'file' not in item and asset and (local := self.media_file(relative(asset.lstrip('/')))):
+            self.sources.data(local)
+        if rid and record.get('id') != rid:
             raise ValueError(f'{where}: record ID differs from {rid}')
-        reading = item['cut'] + '\n\n' + item['reading']
-        key = rid
-        if key in self.documents:
-            saved = self.documents[key]
-            if (saved['caption'], saved['snippets'][0]['read']) != (caption, reading):
-                digest = sha256(json.dumps([caption, reading]).encode()).hexdigest()[:8]
-                key = f'{rid}-{raw["n"]:02d}-{digest}'
-        source = record['source']
+        reading = '\n\n'.join(item[field] for field in ('cut', 'reading') if field in item)
+        source = record.get('source', {})
         defaults = {'source': source.get('holder', ''), 'where': source.get('locator', '').split('; archive:', 1)[0]}
         details = defaults | self.config.get('cut_details', {}).get(rid, {})
-        doc = {'record': rid, 'caption': caption, 'snippets': [{'asset': asset, 'read': reading}],
+        doc = {'caption': caption, 'snippets': [{'asset': asset, 'read': reading}],
                'source': details['source'], 'where': details['where']}
+        if rid:
+            doc['record'] = rid
+        else:
+            doc['kind'] = 'studio-cut'
         if fictional:
             doc.update(fictional=True, source=source.get('invented') or details['source'])
+        key = rid or raw['id'] + '-cut'
+        if 'file' in item or key in self.documents and self.documents[key] != doc:
+            digest = sha256(json.dumps([asset, caption, reading]).encode()).hexdigest()[:16]
+            key = f'{key}-{digest}'
         self.documents[key] = doc
         return {'doc': key, 'title': caption, 'pick': [1]}
 
@@ -497,8 +593,7 @@ class Importer:
         return chapter
 
 
-def translations(path, meta, chapters, pictures, play, language, languages):
-    old = read_json(path, {})
+def translations(old, meta, chapters, pictures, play, language, languages):
     sources = {f'feed:{key}': meta[key] for key in ('title', 'lead')}
     for chapter in chapters:
         cid = chapter['id']
@@ -546,7 +641,7 @@ def compile_chapters(instance, folder, sources, config, raw, meta):
     if expected is not None and [ch['n'] for ch in raw] != list(range(expected)):
         raise ValueError(f'Expected chapters 00 through {expected - 1:02d}, once each')
     importer = Importer(instance, sources, folder, config)
-    old = {ch['id']: ch for ch in read_json(folder / 'chapters.json', [])}
+    old = {ch['id']: ch for ch in sources.json(folder / 'chapters.json', [])}
     starts = part_starts(config, meta, raw, old, instance.source_language)
     part = 0
     chapters = []
@@ -565,12 +660,12 @@ def compile_chapters(instance, folder, sources, config, raw, meta):
     if importer.manifest_path.is_file() or importer.manifest['assets']:
         result[importer.manifest_path] = importer.manifest
     localized = folder / 'translations.json'
-    if localized.is_file():
-        result[localized] = translations(localized, meta, chapters, importer.pictures, importer.play,
+    if (old_translations := sources.json(localized)) is not None:
+        result[localized] = translations(old_translations, meta, chapters, importer.pictures, importer.play,
                                          instance.source_language, instance.languages)
     for note in importer.notes:
         print(note)
-    return result
+    return result | importer.new_media
 
 
 def run(instance, args):
@@ -587,9 +682,12 @@ def run(instance, args):
         print(out)
         return
     changes = compile_chapters(instance, *loaded)
-    changes = {path: (json.dumps(data, ensure_ascii=False, indent=2) + '\n').encode('utf-8')
+    changes = {path: data if isinstance(data, bytes) else (json.dumps(data, ensure_ascii=False, indent=2) + '\n').encode('utf-8')
                for path, data in changes.items()}
     if args.out:
-        changes = {args.out / path.name: content for path, content in changes.items()}
-    write_studio(instance, changes, out=args.out)
+        media = instance.path('media')
+        changes = {args.out / ('media' / path.relative_to(media) if path.is_relative_to(media)
+                               and path.name != 'manifest.json' else path.name): content
+                   for path, content in changes.items()}
+    write_studio(instance, changes, out=args.out, feed=folder, verify_inputs=sources.verify)
     print(f'{folder.name}: {len(chapters)} chapters')

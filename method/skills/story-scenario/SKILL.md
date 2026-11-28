@@ -161,6 +161,7 @@ L: file=<path> | caption=<what, who made it, when>
 L: placeholder | kind=<drawing|real-image|map|family-photo> | ratio=<3:2> | says=<what will be there>
 R: record=<record id> | cut=<the line to show> | reading=<plain reading> | caption=<what this shows>
 R: file=<path> | caption=<what it shows> | reading=<plain reading>
+R: file=<path> | record=<record id> | caption=<what it shows> | reading=<plain reading>
 D: kind=<guess|find|choice|count|trace> | ask=<question> | options=<a / b / c; "-" if none; trace: A -> B -> C> | answer=<shared answer> | after=<closing line>
 D: kind=choice | ask=<open question> | options=<a / b> | answers=<case for a / case for b> | after=<closing line>
 ---

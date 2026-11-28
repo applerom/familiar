@@ -12,6 +12,7 @@
 # - generated photo restorations bind real originals and deceased subjects before any privacy omission [review: engine lead]
 # - attaching an archival photograph elsewhere cannot subtract its identified subjects [review: engine lead]
 # - a protected person's citation closes the whole document unless its corpus record declares complete subjects and the citation is only an inference [test: tests/gate/test_data_guarantees.py::test_f2_record_subject_cannot_be_omitted]
+# - a dated historical paper in a home chapter uses the paper date and its actual subjects, not the chapter cast [review: engine lead]
 # - a public census or family annex needs a complete participant list, including children [test: tests/gate/test_data_guarantees.py::test_f2_record_subject_cannot_be_omitted]
 # CHANGES_WITH:
 # - MOD-PUBLICATION
@@ -298,9 +299,39 @@ def closure(instance, value, *, shape='chapter', documents=None, pictures=None, 
     return result
 
 
-def historical_records(resolved):
-    return bool(resolved.records) and all(record.get('privacy') == 'dead' and not protected_record(record)
-                                          for record in resolved.records.values())
+def historical_records(instance, resolved):
+    if not resolved.records:
+        return False
+
+    from datetime import date
+    from familiar.rules.cascade import Registry
+    from familiar.rules.roles import method_root
+    from familiar.tree.life import recorded
+    from .gate import shared
+
+    horizon = shared(instance, 'paper-family-horizon', lambda: Registry(
+        method_root() / 'rules', instance).resolve_setting('privacy.family_years').value)
+    today = date.today()
+
+    def historical(record):
+        if protected_record(record):
+            return False
+        if record.get('privacy') == 'dead':
+            return True
+        # The date of a reading, index, exhibit or later telling cannot age the paper.
+        when = str(record.get('date', ''))
+        if (record.get('kind') != 'archive-record' or not recorded(record)
+                or record.get('record_role') in {'analysis', 'catalogue'}):
+            return False
+        if re.fullmatch(r'[0-9]{4}', when):
+            return int(when) < today.year - horizon
+        try:
+            dated = date.fromisoformat(when)
+        except ValueError:
+            return False
+        return (dated.year, dated.month, dated.day) < (today.year - horizon, today.month, today.day)
+
+    return all(map(historical, resolved.records.values()))
 
 
 def fileless_memory(source):
@@ -524,10 +555,11 @@ def attribute_documents(instance, graph, *, family_display=False):
             stated[sid] = written(node, resolved.records[node['record']])
         # The checked period frame already identifies who is pictured independently of the story.
         use_context = not chapter or not (node.get('subjects') or shape == 'image' and period_pair(node)
-                                          or family_display and historical_records(resolved))
+                                          or family_display and historical_records(instance, resolved))
         people = resolved.people | (set(context) if use_context else set())
         key = bind(keys, people)
-        if any(blocked_record(rid, data) for rid, data in resolved.records.items()):
+        if (node.get('kind') == 'studio-cut' and not family_display
+                or any(blocked_record(rid, data) for rid, data in resolved.records.items())):
             node['_document_private'] = True
             if key is not None:
                 protected.add(key)

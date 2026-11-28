@@ -903,9 +903,10 @@ def _check(instance, selected=None):
         for ident, doc in docs.items():
             if ident.startswith('_'):
                 continue
-            required(doc, 'record caption source snippets', directory / 'documents.json')
+            required(doc, 'caption source snippets' if doc.get('kind') == 'studio-cut'
+                     else 'record caption source snippets', directory / 'documents.json')
             target = doc.get('record')
-            if target not in records:
+            if (target is not None or doc.get('kind') != 'studio-cut') and target not in records:
                 fail(directory / 'documents.json', f'unknown record {target}', 'instance.f-unknown-record-target')
     first = ([] if people else ['nonempty people']) + ([] if chapter_count else ['authored chapter'])
     cycle = [key for key, present in [('cases', cases), ('versions', versions), ('evidence', evidence.get('edges')), ('searches', searches)] if not present] if selected is None else []

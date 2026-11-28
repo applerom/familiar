@@ -169,6 +169,8 @@ class _Feed:
         r['title'] = row(spec['title'])
         if spec.get('kids') is True:
             r['kids'] = True
+        if d.get('kind') == 'studio-cut':
+            r['kind'] = d['kind']
         for k in ('full', 'source', 'record', 'fictional', 'subjects', 'excerpt'):
             if d.get(k):
                 r[k] = d[k]

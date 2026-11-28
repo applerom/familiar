@@ -23,10 +23,13 @@ phone-width reading page with the strips. Run from the family root or pass
 Write `T`, `L`, `R` and `D` lines in screen order; one `picture:` opens the
 chapter. Fields split on " | ", paths start at the family root, and each
 answer follows its option's position. An open choice can finish with what
-the family still seeks. A cut with only a file appears in the storyboard;
-link it to a corpus record for the reader, where the record joins the cut to
-its subjects and access rules. Write `caption=` on the `R:` line for the
-words under the cut. The archive locator goes under More. Legacy strips
+the family still seeks. An `R:` line with `file=`, `caption=` and `reading=`
+makes an openable cut. Add `record=` to tie it to its corpus record, or use
+the linkage already held in the media registry. Each file can carry its own
+caption and reading, even for cuts of the same record. A cut without a corpus
+record stays in the home projection and needs historical subject attribution.
+Its file may be a registered export or a local PNG, JPEG or WebP. The archive
+locator goes under More. Legacy strips
 without a caption import with a file-and-line note and an empty caption.
 Keep `id:` when changing a file's slug so
 facts, places and stored translations keep their chapter; without it the

@@ -51,7 +51,10 @@ class Page:
         return f'<figure class="frame" style="aspect-ratio:{width}/{height}">{escape(item["says"])}</figure>'
 
     def paper(self, item):
-        if 'record' in item:
+        if 'file' in item:
+            path = self.local_file(item['file']) or self.importer.media_file(self.importer.export(item['file']))
+            caption = item['caption']
+        else:
             rid = item['record']
             asset = self.config.get('cuts', {}).get(rid)
             if not asset:
@@ -59,9 +62,6 @@ class Page:
                 asset = (previous.get('snippets') or [{}])[0].get('asset')
             path = self.importer.media_file(relative(asset.lstrip('/'))) if asset else None
             caption = item.get('caption', '')
-        else:
-            path = self.local_file(item['file'])
-            caption = item['caption']
         url = image_url(path, self.out)
         image = f'<img src="{escape(url)}" alt="" loading="lazy">' if url else ''
         title = f'<figcaption>{escape(caption)}</figcaption>' if caption else ''

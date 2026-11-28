@@ -121,11 +121,40 @@ def corpus_place_scope(instance, apply):
     return lines
 
 
+def studio_file_cuts(instance, apply):
+    # Name old placeholders without replacing the current catalogues.
+    from familiar.checks.engine import load
+    from familiar.feeds.studio import parse
+
+    notes = []
+    for path in sorted(instance.path('feeds').glob('*/chapters.json')):
+        installed = load(path, [])
+        placeholders = {ch['id']: {frame['says'] for beat in ch.get('flow', [])
+                        if (frame := beat.get('placeholder', {})).get('kind') == 'period-picture'
+                        and frame.get('ratio') == [4, 3] and 'says' in frame} for ch in installed}
+        aliases = load(path.parent / 'studio/import.json', {}).get('chapter_ids', {})
+        for strip in sorted(path.parent.glob('studio/chapters/[0-9]*.md')):
+            try:
+                chapter = parse(strip, strip.read_text(encoding='utf-8-sig'))
+            except (OSError, ValueError):
+                continue
+            cid = chapter['id']
+            if not chapter.get('explicit_id'):
+                cid = aliases.get(cid, cid)
+            if any(tag == 'R' and 'file' in item and item['caption'] in placeholders.get(cid, ())
+                   for tag, item, _ in chapter['flow']):
+                notes.append(f'{path}: compare a draft from familiar feed chapters {path.parent.name} --out DIR, '
+                             'then reimport to carry the file cuts and readings over')
+                break
+    return notes
+
+
 STEPS = [
     ('0.41.0', 'generated document pages replace registered copies', generated_record_pages),
     ('0.53.1', 'render photographs received with remarks before family display', received_photographs),
     ('0.58.1', 'name the scope of life decisions with the author', scoped_life_decisions),
     ('0.65.0', 'preserve corpus readings and name incomplete place scopes', corpus_place_scope),
+    ('0.66.0', 'name the studio file cuts still installed as placeholders', studio_file_cuts),
 ]
 
 
