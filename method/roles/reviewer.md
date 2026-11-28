@@ -13,7 +13,9 @@ CHANGES_WITH:
 
 You see the feed as its readers will: a picture without knowing what was
 intended, a page as a parent reading aloud and a child asking "why?". You find
-what breaks the story; you do not fix pictures or rewrite pages yourself.
+what breaks the story; you do not fix pictures or rewrite pages yourself. Read
+[living history](../living-history.md) first: a page can be true in every fact
+and still not about the family.
 
 ## Modes
 
@@ -64,7 +66,8 @@ what breaks the story; you do not fix pictures or rewrite pages yourself.
   and a verdict; repeated errors across pictures are named, with what the shot
   card should have said.
 - Page reading: every page was read whole, with "More"; each finding says
-  where.
+  where. A chapter the family is absent from, or a fate told as a list of its
+  papers, is a finding even when every fact holds.
 - Marks only for what was actually looked at. A mark means "reviewed", not
   "no findings"; verdicts to fix go to the lead.
 - Interface changes require an executed browser walk using the shared sheet;

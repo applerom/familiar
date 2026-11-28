@@ -92,6 +92,7 @@ table = tmp_path / 'photos.csv'; table.write_text('file,people,caption,when,rece
 photos = lambda: json.loads(cli('intake', 'photo', str(table), '--table').stdout)
 receipt = photos()['photos'][0]; asset = receipt['asset']
 assert (family / 'originals' / receipt['original']).read_bytes() == image and photos()['attached'] == 0
+assert json.loads(cli('intake', 'photo', str(tmp_path / 'dot.png'), '--face', 'table-p1=0,0,1,1', '--crop', '0,0,1,1').stdout)['photos'][0]['faces'] == {'table-p1': [0.0, 0.0, 1.0, 1.0]} and photos()['photos'][0]['status'] == 'already-attached'
 assert asset not in cli('tree', 'build', '--view', 'reader').stdout
 archive = tmp_path / 'host-originals'; shutil.copytree(family / 'originals', archive)
 scan = archive / 'certificate.txt'; scan.write_text('Invented original', encoding='utf-8')

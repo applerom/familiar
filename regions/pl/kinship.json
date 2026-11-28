@@ -1,18 +1,16 @@
 {
   "title": "Słowa pokrewieństwa",
-  "intro": "Jak nazywamy bliskich. Wybierz siebie w drzewie, aby zobaczyć przykłady ze swojej rodziny.",
-  "example": "Dla Ciebie to",
-  "noExample": "W pokazanym drzewie nie ma jeszcze przykładu.",
-  "chooseViewer": "Wybierz siebie w drzewie, aby zobaczyć przykłady.",
+  "intro": "Kim są dla siebie bliscy: {name} i cała rodzina.",
+  "all": "Wszystkie słowa pokrewieństwa",
   "archaic": "dawne",
   "maybe": "możliwe: ",
-  "path": "Droga w drzewie",
+  "path": "Jak jesteście spokrewnieni",
   "groups": {
-    "direct": "Rodzice i potomkowie",
-    "collateral": "Rodzeństwo i linie boczne",
-    "marriage": "Powinowactwo",
+    "direct": "Rodzice, dzieci, wnuki",
+    "collateral": "Rodzeństwo i ich dzieci",
+    "marriage": "Przez ślub",
     "blended": "Rodzina przyrodnia i przybrana",
-    "spiritual": "Pokrewieństwo duchowe"
+    "spiritual": "Chrzestni"
   },
   "terms": [
     {
@@ -300,7 +298,7 @@
     {
       "id": "ancestor-2-m",
       "word": "dziadek",
-      "explanation": "2 pokolenia wstecz w linii rodziców",
+      "explanation": "ojciec Twojego ojca albo Twojej matki",
       "group": "direct",
       "match": [
         {
@@ -317,7 +315,7 @@
     {
       "id": "descendant-2-m",
       "word": "wnuk",
-      "explanation": "2 pokolenia naprzód w linii dzieci",
+      "explanation": "syn Twojego syna albo Twojej córki",
       "group": "direct",
       "match": [
         {
@@ -334,7 +332,7 @@
     {
       "id": "ancestor-2-f",
       "word": "babcia",
-      "explanation": "2 pokolenia wstecz w linii rodziców",
+      "explanation": "matka Twojego ojca albo Twojej matki",
       "group": "direct",
       "match": [
         {
@@ -351,7 +349,7 @@
     {
       "id": "descendant-2-f",
       "word": "wnuczka",
-      "explanation": "2 pokolenia naprzód w linii dzieci",
+      "explanation": "córka Twojego syna albo Twojej córki",
       "group": "direct",
       "match": [
         {
@@ -368,7 +366,7 @@
     {
       "id": "ancestor-3-m",
       "word": "pradziadek",
-      "explanation": "3 pokolenia wstecz w linii rodziców",
+      "explanation": "ojciec Twojego dziadka albo Twojej babci",
       "group": "direct",
       "match": [
         {
@@ -385,7 +383,7 @@
     {
       "id": "descendant-3-m",
       "word": "prawnuk",
-      "explanation": "3 pokolenia naprzód w linii dzieci",
+      "explanation": "syn Twojego wnuka albo Twojej wnuczki",
       "group": "direct",
       "match": [
         {
@@ -402,7 +400,7 @@
     {
       "id": "ancestor-3-f",
       "word": "prababcia",
-      "explanation": "3 pokolenia wstecz w linii rodziców",
+      "explanation": "matka Twojego dziadka albo Twojej babci",
       "group": "direct",
       "match": [
         {
@@ -419,7 +417,7 @@
     {
       "id": "descendant-3-f",
       "word": "prawnuczka",
-      "explanation": "3 pokolenia naprzód w linii dzieci",
+      "explanation": "córka Twojego wnuka albo Twojej wnuczki",
       "group": "direct",
       "match": [
         {
@@ -436,7 +434,7 @@
     {
       "id": "ancestor-4-m",
       "word": "prapradziadek",
-      "explanation": "4 pokolenia wstecz w linii rodziców",
+      "explanation": "ojciec Twojego pradziadka albo Twojej prababci",
       "group": "direct",
       "match": [
         {
@@ -453,7 +451,7 @@
     {
       "id": "descendant-4-m",
       "word": "praprawnuk",
-      "explanation": "4 pokolenia naprzód w linii dzieci",
+      "explanation": "syn Twojego prawnuka albo Twojej prawnuczki",
       "group": "direct",
       "match": [
         {
@@ -470,7 +468,7 @@
     {
       "id": "ancestor-4-f",
       "word": "praprababcia",
-      "explanation": "4 pokolenia wstecz w linii rodziców",
+      "explanation": "matka Twojego pradziadka albo Twojej prababci",
       "group": "direct",
       "match": [
         {
@@ -487,7 +485,7 @@
     {
       "id": "descendant-4-f",
       "word": "praprawnuczka",
-      "explanation": "4 pokolenia naprzód w linii dzieci",
+      "explanation": "córka Twojego prawnuka albo Twojej prawnuczki",
       "group": "direct",
       "match": [
         {
@@ -504,7 +502,7 @@
     {
       "id": "ancestor-5-m",
       "word": "praprapradziadek",
-      "explanation": "5 pokolenia wstecz w linii rodziców",
+      "explanation": "ojciec Twojego prapradziadka albo Twojej praprababci",
       "group": "direct",
       "match": [
         {
@@ -521,7 +519,7 @@
     {
       "id": "descendant-5-m",
       "word": "prapraprawnuk",
-      "explanation": "5 pokolenia naprzód w linii dzieci",
+      "explanation": "syn Twojego praprawnuka albo Twojej praprawnuczki",
       "group": "direct",
       "match": [
         {
@@ -538,7 +536,7 @@
     {
       "id": "ancestor-5-f",
       "word": "prapraprababcia",
-      "explanation": "5 pokolenia wstecz w linii rodziców",
+      "explanation": "matka Twojego prapradziadka albo Twojej praprababci",
       "group": "direct",
       "match": [
         {
@@ -555,7 +553,7 @@
     {
       "id": "descendant-5-f",
       "word": "prapraprawnuczka",
-      "explanation": "5 pokolenia naprzód w linii dzieci",
+      "explanation": "córka Twojego praprawnuka albo Twojej praprawnuczki",
       "group": "direct",
       "match": [
         {
@@ -572,7 +570,7 @@
     {
       "id": "ancestor-6-m",
       "word": "prapraprapradziadek",
-      "explanation": "6 pokolenia wstecz w linii rodziców",
+      "explanation": "ojciec Twojego praprapradziadka albo Twojej prapraprababci",
       "group": "direct",
       "match": [
         {
@@ -589,7 +587,7 @@
     {
       "id": "descendant-6-m",
       "word": "praprapraprawnuk",
-      "explanation": "6 pokolenia naprzód w linii dzieci",
+      "explanation": "syn Twojego prapraprawnuka albo Twojej prapraprawnuczki",
       "group": "direct",
       "match": [
         {
@@ -606,7 +604,7 @@
     {
       "id": "ancestor-6-f",
       "word": "praprapraprababcia",
-      "explanation": "6 pokolenia wstecz w linii rodziców",
+      "explanation": "matka Twojego praprapradziadka albo Twojej prapraprababci",
       "group": "direct",
       "match": [
         {
@@ -623,7 +621,7 @@
     {
       "id": "descendant-6-f",
       "word": "praprapraprawnuczka",
-      "explanation": "6 pokolenia naprzód w linii dzieci",
+      "explanation": "córka Twojego prapraprawnuka albo Twojej prapraprawnuczki",
       "group": "direct",
       "match": [
         {
@@ -640,7 +638,7 @@
     {
       "id": "ancestor-7-m",
       "word": "praprapraprapradziadek",
-      "explanation": "7 pokolenia wstecz w linii rodziców",
+      "explanation": "ojciec Twojego prapraprapradziadka albo Twojej praprapraprababci",
       "group": "direct",
       "match": [
         {
@@ -657,7 +655,7 @@
     {
       "id": "descendant-7-m",
       "word": "prapraprapraprawnuk",
-      "explanation": "7 pokolenia naprzód w linii dzieci",
+      "explanation": "syn Twojego praprapraprawnuka albo Twojej praprapraprawnuczki",
       "group": "direct",
       "match": [
         {
@@ -674,7 +672,7 @@
     {
       "id": "ancestor-7-f",
       "word": "prapraprapraprababcia",
-      "explanation": "7 pokolenia wstecz w linii rodziców",
+      "explanation": "matka Twojego prapraprapradziadka albo Twojej praprapraprababci",
       "group": "direct",
       "match": [
         {
@@ -691,7 +689,7 @@
     {
       "id": "descendant-7-f",
       "word": "prapraprapraprawnuczka",
-      "explanation": "7 pokolenia naprzód w linii dzieci",
+      "explanation": "córka Twojego praprapraprawnuka albo Twojej praprapraprawnuczki",
       "group": "direct",
       "match": [
         {
@@ -708,7 +706,7 @@
     {
       "id": "ancestor-8-m",
       "word": "prapraprapraprapradziadek",
-      "explanation": "8 pokolenia wstecz w linii rodziców",
+      "explanation": "ojciec Twojego praprapraprapradziadka albo Twojej prapraprapraprababci",
       "group": "direct",
       "match": [
         {
@@ -725,7 +723,7 @@
     {
       "id": "descendant-8-m",
       "word": "praprapraprapraprawnuk",
-      "explanation": "8 pokolenia naprzód w linii dzieci",
+      "explanation": "syn Twojego prapraprapraprawnuka albo Twojej prapraprapraprawnuczki",
       "group": "direct",
       "match": [
         {
@@ -742,7 +740,7 @@
     {
       "id": "ancestor-8-f",
       "word": "praprapraprapraprababcia",
-      "explanation": "8 pokolenia wstecz w linii rodziców",
+      "explanation": "matka Twojego praprapraprapradziadka albo Twojej prapraprapraprababci",
       "group": "direct",
       "match": [
         {
@@ -759,7 +757,7 @@
     {
       "id": "descendant-8-f",
       "word": "praprapraprapraprawnuczka",
-      "explanation": "8 pokolenia naprzód w linii dzieci",
+      "explanation": "córka Twojego prapraprapraprawnuka albo Twojej prapraprapraprawnuczki",
       "group": "direct",
       "match": [
         {
@@ -776,7 +774,7 @@
     {
       "id": "cousin-2-m",
       "word": "kuzyn",
-      "explanation": "wspólni przodkowie 2 pokolenia wstecz dla obojga",
+      "explanation": "macie wspólnych dziadków",
       "group": "collateral",
       "match": [
         {
@@ -793,7 +791,7 @@
     {
       "id": "cousin-3-m",
       "word": "kuzyn 2. stopnia",
-      "explanation": "wspólni przodkowie 3 pokolenia wstecz dla obojga",
+      "explanation": "macie wspólnych pradziadków",
       "group": "collateral",
       "match": [
         {
@@ -810,7 +808,7 @@
     {
       "id": "cousin-4-m",
       "word": "kuzyn 3. stopnia",
-      "explanation": "wspólni przodkowie 4 pokolenia wstecz dla obojga",
+      "explanation": "macie wspólnych prapradziadków",
       "group": "collateral",
       "match": [
         {
@@ -827,7 +825,7 @@
     {
       "id": "cousin-5-m",
       "word": "kuzyn 4. stopnia",
-      "explanation": "wspólni przodkowie 5 pokolenia wstecz dla obojga",
+      "explanation": "macie wspólnych praprapradziadków",
       "group": "collateral",
       "match": [
         {
@@ -844,7 +842,7 @@
     {
       "id": "cousin-6-m",
       "word": "kuzyn 5. stopnia",
-      "explanation": "wspólni przodkowie 6 pokolenia wstecz dla obojga",
+      "explanation": "macie wspólnych prapraprapradziadków",
       "group": "collateral",
       "match": [
         {
@@ -861,7 +859,7 @@
     {
       "id": "cousin-7-m",
       "word": "kuzyn 6. stopnia",
-      "explanation": "wspólni przodkowie 7 pokolenia wstecz dla obojga",
+      "explanation": "macie wspólnych praprapraprapradziadków",
       "group": "collateral",
       "match": [
         {
@@ -946,7 +944,7 @@
     {
       "id": "collateral-4-1-m",
       "word": "krewny z bocznej linii",
-      "explanation": "wspólny przodek: 4 pokolenia od Ciebie, 1 od tej osoby",
+      "explanation": "wspólni przodkowie: dla Ciebie to prapradziadkowie, dla tej osoby rodzice",
       "group": "collateral",
       "match": [
         {
@@ -963,7 +961,7 @@
     {
       "id": "collateral-1-4-m",
       "word": "krewny z bocznej linii",
-      "explanation": "wspólny przodek: 1 pokolenia od Ciebie, 4 od tej osoby",
+      "explanation": "wspólni przodkowie: dla Ciebie to rodzice, dla tej osoby prapradziadkowie",
       "group": "collateral",
       "match": [
         {
@@ -980,7 +978,7 @@
     {
       "id": "collateral-4-2-m",
       "word": "krewny z bocznej linii",
-      "explanation": "wspólny przodek: 4 pokolenia od Ciebie, 2 od tej osoby",
+      "explanation": "wspólni przodkowie: dla Ciebie to prapradziadkowie, dla tej osoby dziadkowie",
       "group": "collateral",
       "match": [
         {
@@ -997,7 +995,7 @@
     {
       "id": "collateral-2-4-m",
       "word": "krewny z bocznej linii",
-      "explanation": "wspólny przodek: 2 pokolenia od Ciebie, 4 od tej osoby",
+      "explanation": "wspólni przodkowie: dla Ciebie to dziadkowie, dla tej osoby prapradziadkowie",
       "group": "collateral",
       "match": [
         {
@@ -1014,7 +1012,7 @@
     {
       "id": "collateral-4-3-m",
       "word": "krewny z bocznej linii",
-      "explanation": "wspólny przodek: 4 pokolenia od Ciebie, 3 od tej osoby",
+      "explanation": "wspólni przodkowie: dla Ciebie to prapradziadkowie, dla tej osoby pradziadkowie",
       "group": "collateral",
       "match": [
         {
@@ -1031,7 +1029,7 @@
     {
       "id": "collateral-3-4-m",
       "word": "krewny z bocznej linii",
-      "explanation": "wspólny przodek: 3 pokolenia od Ciebie, 4 od tej osoby",
+      "explanation": "wspólni przodkowie: dla Ciebie to pradziadkowie, dla tej osoby prapradziadkowie",
       "group": "collateral",
       "match": [
         {
@@ -1048,7 +1046,7 @@
     {
       "id": "cousin-2-f",
       "word": "kuzynka",
-      "explanation": "wspólni przodkowie 2 pokolenia wstecz dla obojga",
+      "explanation": "macie wspólnych dziadków",
       "group": "collateral",
       "match": [
         {
@@ -1065,7 +1063,7 @@
     {
       "id": "cousin-3-f",
       "word": "kuzynka 2. stopnia",
-      "explanation": "wspólni przodkowie 3 pokolenia wstecz dla obojga",
+      "explanation": "macie wspólnych pradziadków",
       "group": "collateral",
       "match": [
         {
@@ -1082,7 +1080,7 @@
     {
       "id": "cousin-4-f",
       "word": "kuzynka 3. stopnia",
-      "explanation": "wspólni przodkowie 4 pokolenia wstecz dla obojga",
+      "explanation": "macie wspólnych prapradziadków",
       "group": "collateral",
       "match": [
         {
@@ -1099,7 +1097,7 @@
     {
       "id": "cousin-5-f",
       "word": "kuzynka 4. stopnia",
-      "explanation": "wspólni przodkowie 5 pokolenia wstecz dla obojga",
+      "explanation": "macie wspólnych praprapradziadków",
       "group": "collateral",
       "match": [
         {
@@ -1116,7 +1114,7 @@
     {
       "id": "cousin-6-f",
       "word": "kuzynka 5. stopnia",
-      "explanation": "wspólni przodkowie 6 pokolenia wstecz dla obojga",
+      "explanation": "macie wspólnych prapraprapradziadków",
       "group": "collateral",
       "match": [
         {
@@ -1133,7 +1131,7 @@
     {
       "id": "cousin-7-f",
       "word": "kuzynka 6. stopnia",
-      "explanation": "wspólni przodkowie 7 pokolenia wstecz dla obojga",
+      "explanation": "macie wspólnych praprapraprapradziadków",
       "group": "collateral",
       "match": [
         {
@@ -1218,7 +1216,7 @@
     {
       "id": "collateral-4-1-f",
       "word": "krewna z bocznej linii",
-      "explanation": "wspólny przodek: 4 pokolenia od Ciebie, 1 od tej osoby",
+      "explanation": "wspólni przodkowie: dla Ciebie to prapradziadkowie, dla tej osoby rodzice",
       "group": "collateral",
       "match": [
         {
@@ -1235,7 +1233,7 @@
     {
       "id": "collateral-1-4-f",
       "word": "krewna z bocznej linii",
-      "explanation": "wspólny przodek: 1 pokolenia od Ciebie, 4 od tej osoby",
+      "explanation": "wspólni przodkowie: dla Ciebie to rodzice, dla tej osoby prapradziadkowie",
       "group": "collateral",
       "match": [
         {
@@ -1252,7 +1250,7 @@
     {
       "id": "collateral-4-2-f",
       "word": "krewna z bocznej linii",
-      "explanation": "wspólny przodek: 4 pokolenia od Ciebie, 2 od tej osoby",
+      "explanation": "wspólni przodkowie: dla Ciebie to prapradziadkowie, dla tej osoby dziadkowie",
       "group": "collateral",
       "match": [
         {
@@ -1269,7 +1267,7 @@
     {
       "id": "collateral-2-4-f",
       "word": "krewna z bocznej linii",
-      "explanation": "wspólny przodek: 2 pokolenia od Ciebie, 4 od tej osoby",
+      "explanation": "wspólni przodkowie: dla Ciebie to dziadkowie, dla tej osoby prapradziadkowie",
       "group": "collateral",
       "match": [
         {
@@ -1286,7 +1284,7 @@
     {
       "id": "collateral-4-3-f",
       "word": "krewna z bocznej linii",
-      "explanation": "wspólny przodek: 4 pokolenia od Ciebie, 3 od tej osoby",
+      "explanation": "wspólni przodkowie: dla Ciebie to prapradziadkowie, dla tej osoby pradziadkowie",
       "group": "collateral",
       "match": [
         {
@@ -1303,7 +1301,7 @@
     {
       "id": "collateral-3-4-f",
       "word": "krewna z bocznej linii",
-      "explanation": "wspólny przodek: 3 pokolenia od Ciebie, 4 od tej osoby",
+      "explanation": "wspólni przodkowie: dla Ciebie to pradziadkowie, dla tej osoby prapradziadkowie",
       "group": "collateral",
       "match": [
         {
@@ -1488,7 +1486,7 @@
     {
       "id": "spouse-m",
       "word": "mąż",
-      "explanation": "osoba, z którą zawarto małżeństwo",
+      "explanation": "ten, za którego wyszła żona",
       "group": "marriage",
       "match": [
         {
@@ -1503,7 +1501,7 @@
     {
       "id": "spouse-f",
       "word": "żona",
-      "explanation": "osoba, z którą zawarto małżeństwo",
+      "explanation": "ta, z którą ożenił się mąż",
       "group": "marriage",
       "match": [
         {
@@ -1611,7 +1609,7 @@
     {
       "id": "stepSibling-m",
       "word": "brat przybrany",
-      "explanation": "dzieci małżonków bez wspólnych rodziców",
+      "explanation": "syn Twojego ojczyma albo Twojej macochy",
       "group": "blended",
       "match": [
         {
@@ -1623,7 +1621,7 @@
     {
       "id": "stepSibling-f",
       "word": "siostra przybrana",
-      "explanation": "dzieci małżonków bez wspólnych rodziców",
+      "explanation": "córka Twojego ojczyma albo Twojej macochy",
       "group": "blended",
       "match": [
         {
@@ -1635,7 +1633,7 @@
     {
       "id": "stepParent-m",
       "word": "ojczym",
-      "explanation": "małżonek rodzica, który nie jest rodzicem dziecka",
+      "explanation": "mąż Twojej matki, ale nie rodzony ojciec",
       "group": "blended",
       "match": [
         {
@@ -1647,7 +1645,7 @@
     {
       "id": "stepParent-f",
       "word": "macocha",
-      "explanation": "małżonek rodzica, który nie jest rodzicem dziecka",
+      "explanation": "żona Twojego ojca, ale nie rodzona matka",
       "group": "blended",
       "match": [
         {
@@ -1683,7 +1681,7 @@
     {
       "id": "godparent-m",
       "word": "ojciec chrzestny",
-      "explanation": "osoba podejmująca rolę rodzica chrzestnego przy chrzcie",
+      "explanation": "trzymał Cię do chrztu",
       "group": "spiritual",
       "match": [
         {
@@ -1695,7 +1693,7 @@
     {
       "id": "godparent-f",
       "word": "matka chrzestna",
-      "explanation": "osoba podejmująca rolę rodzica chrzestnego przy chrzcie",
+      "explanation": "trzymała Cię do chrztu",
       "group": "spiritual",
       "match": [
         {
@@ -1840,16 +1838,16 @@
     "childOf": "dziecko"
   },
   "fallback": {
-    "ancestor": "przodek, {n} pokolenia wstecz",
-    "descendant": "potomek, {n} pokolenia naprzód",
-    "collateral": "linia boczna: {n1} pokolenia do wspólnego przodka od Ciebie, {n2} od tej osoby",
-    "spouse": "małżonek lub małżonka",
+    "ancestor": "przodek o {n} pokolenia wcześniej",
+    "descendant": "potomek o {n} pokolenia później",
+    "collateral": "dalsza rodzina: wspólny przodek o {n1} pokolenia wcześniej",
+    "spouse": "mąż lub żona",
     "self": "to Ty",
-    "cousin": "wspólny przodek {n} pokolenia wyżej",
-    "viaSpouse": "pokrewieństwo przez małżonka: {relative}",
-    "spouseOf": "małżonek krewnego: {relative}",
-    "spiritual": "pokrewieństwo duchowe według zapisanego powiązania",
-    "step": "rodzina przybrana według zapisanego powiązania",
+    "cousin": "dalsza rodzina: wspólny przodek o {n} pokolenia wcześniej",
+    "viaSpouse": "z rodziny męża lub żony: {relative}",
+    "spouseOf": "mąż lub żona krewnego: {relative}",
+    "spiritual": "rodzina przez chrzest",
+    "step": "rodzina przez drugie małżeństwo",
     "halfFather": "wspólny ojciec, różne matki",
     "halfMother": "wspólna matka, różni ojcowie",
     "coParentInLaw": "rodzic małżonka lub małżonki Twojego dziecka"

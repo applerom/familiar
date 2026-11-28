@@ -53,6 +53,9 @@ def execute(args):
             from familiar.desk.model import feedback_count, words
             if count := feedback_count(instance):
                 print(words(instance)['unread'].format(count=count) + '\n')
+            from familiar.intake.photo import waiting
+            if files := len(waiting(instance)):
+                print(words(instance)['attachments_waiting'].format(count=files) + '\n')
         print(deliver(instance, args.host_view, selection=getattr(args, 'selection', None)))
         return 0
     except (ValueError, OSError, KeyError, TypeError) as exc:

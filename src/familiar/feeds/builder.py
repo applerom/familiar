@@ -2,6 +2,7 @@
 # PURPOSE: Materialize authored feed catalogs without executing family programs or writing family inputs.
 # PRD_REF: docs/PRD.md#PIPELINE
 # INVARIANTS:
+# - placed play resolves the same game catalogue as the default chapter layout [test: tests/gate/test_data_guarantees.py::test_play_in_flow]
 # - feed references resolve from working people rather than a delivered graph [review: engine lead]
 # - unresolved people and documents stop output [test: tests/gate/test_data_guarantees.py::test_f1_shown_reference_resolves]
 # - document subjects reach reader export as canonical people rather than feed symbols [test: tests/journeys/test_installed_engine.py::test_installed_engine]
@@ -19,6 +20,7 @@ from contextvars import ContextVar
 from pathlib import Path
 
 from . import translations
+from .flow import frame, placed_play
 
 context = ContextVar('feed_instance')
 
@@ -43,6 +45,23 @@ def osm(lat, lon, z=17):
     return f'https://www.openstreetmap.org/?mlat={lat}&mlon={lon}#map={z}/{lat}/{lon}'
 
 
+_LOCAL_LOCATOR = re.compile(
+    r'(?:\b(?:archive|file):|\b[A-Za-z]:[\\/]|(?<!\w)\\\\|(?<!\w)\.{0,2}[\\/](?=\S)'
+    r'|\b(?:captures|media|originals|inputs)[\\/]|\b[^\s/\\]+\.(?:jpe?g|png|webp|tiff?|pdf|djvu)\b)',
+    re.IGNORECASE,
+)
+
+
+def reader_locator(value):
+    """Keep archival references and descriptions, without machine filenames."""
+    if isinstance(value, dict):
+        return reader_locator(value.get(context.get().source_language))
+    if not isinstance(value, str):
+        return ''
+    return '; '.join(part.strip() for part in value.split(';')
+                     if part.strip() and not _LOCAL_LOCATOR.search(part))
+
+
 class _Feed:
     def __init__(self, folder):
         self.dir = Path(folder)
@@ -57,6 +76,7 @@ class _Feed:
         self.tr = read(self.dir / 'translations.json', {})
         self.links = read(self.dir / 'links.json', {})
         self.names = read(self.dir / 'names.json', {})
+        self.play = None
         self.holes = []
         self.notes = []
         from familiar.checks.engine import _known_people
@@ -116,9 +136,10 @@ class _Feed:
             r = {'kind': 'index', 'read': d['read'], 'title': row(spec['title'])}
             if spec.get('kids') is True:
                 r['kids'] = True
-            for k in ('source', 'where'):
-                if d.get(k):
-                    r[k] = d[k]
+            if d.get('source'):
+                r['source'] = d['source']
+            if locator := reader_locator(d.get('where')):
+                r['where'] = locator
             return r
         if not d or not d.get('snippets'):
             self.hole(where, f'document "{spec["doc"]}" has no crops in documents.json', 'feed.source-selection')
@@ -148,9 +169,11 @@ class _Feed:
         r['title'] = row(spec['title'])
         if spec.get('kids') is True:
             r['kids'] = True
-        for k in ('full', 'source', 'where', 'record', 'fictional', 'subjects', 'excerpt'):
+        for k in ('full', 'source', 'record', 'fictional', 'subjects', 'excerpt'):
             if d.get(k):
                 r[k] = d[k]
+        if locator := reader_locator(d.get('where')):
+            r['where'] = locator
         if 'subjects' in r:
             r['subjects'] = [self.person(pid, where) for pid in r['subjects']]
         return r
@@ -268,8 +291,25 @@ class _Feed:
             o['kidsRecords'] = c['kidsRecords']
         if c.get('flow'):
             nr, nf = len(recs), len(o.get('figures', []))
-            ok = [f for f in c['flow'] if ('figure' not in f or f['figure'] < nf) and ('record' not in f or f['record'] < nr)]
-            o['flow'] = ok
+            o['flow'] = []
+            for index, f in enumerate(c['flow']):
+                where = f'{i}.flow[{index}]'
+                beat = {k: f[k] for k in ('after', 'figure', 'record') if k in f}
+                if 'placeholder' in f:
+                    draft = frame(f['placeholder'])
+                    if draft is None:
+                        self.hole(where, 'placeholder needs a kind, a positive [width, height] ratio and one line of text')
+                    beat['placeholder'] = draft or {}
+                if 'do' in f:
+                    if self.play is None:
+                        self.play = read(self.dir / 'play.json', {})
+                    if activity := placed_play(f['do'], o, self.play):
+                        beat['do'] = activity
+                    else:
+                        self.hole(where, 'do needs a play.json key for a game or an activity on a chapter picture')
+                if 'placeholder' in beat or ('figure' not in beat or beat['figure'] < nf) and (
+                        'record' not in beat or beat['record'] < nr):
+                    o['flow'].append(beat)
         if c.get('extras'):
             xs = []
             for x in c['extras']:

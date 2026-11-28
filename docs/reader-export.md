@@ -13,12 +13,26 @@ CHANGES_WITH:
 -->
 # Reader export v1
 
-The assembled desk uses one lower frame on tree, person, families, stories,
-investigation, questions and kinship screens: the same navigation, private
-notice, engine version and remark entry. The frame is assembled once by
-`desk/build.py`, styled by `desk.css`, and controlled by `desk.js`; reader-only
-tabs are hidden in an assembled desk. Narrow screens retain the same links in
-a horizontally scrollable row. A full-screen feed always has a visible exit.
+The assembled desk uses one lower row on every screen: at most four places with
+an icon and a word (tree, relatives, stories, papers), only those the family has.
+The quieter places, the remark, the private notice and the engine version are one
+static list which the page top opens as “More”. Both are assembled once by
+`desk/build.py`, styled by `desk.css`, and controlled by `desk.js`; the reader's
+own tabs (the same three places without a desk) are hidden in an assembled desk.
+A full-screen feed always has a visible exit.
+
+**Papers** (`#view=papers`, `&of=<person>` for one person, `&paper=<id>` for an
+open one) show every paper of the delivered graph once: a person's attached scans,
+the documents of the card, and scanned records for everybody they name. The page
+asks for nothing the graph does not carry. By person the nearest to the reader
+come first; by time they stand in decades; photographs are the third tab. An open
+paper lies over the page with its reading, taken from the document's own page in
+the reader's language. A step through the reader is a history entry that keeps its
+scroll position, so Back returns to the place. Cards and chapters open the same
+view.
+
+`reader-src/plain-words.json` lists words that never reach a family's page; the
+shell build fails on one in its strings or in a bundled pack's desk words.
 
 Every remark entry opens the same sheet on the first click without scrolling.
 Hover shows at most a hint. Outside click, Escape and the entry itself dismiss
@@ -61,9 +75,10 @@ input fingerprints and payload hashes. Every served HTML screen carries a langua
 private notice. This is local delivery, not authorization to upload its files.
 
 The local family reader and signed-in desk use `privacy.family_years` (75 by default)
-for a person whose life status is uncertain. A recorded birth date or the reader's
-estimated birth year can reach that horizon. Explicit living decisions and unresolved
-life conflicts retain their protection. The public reader still uses `privacy.living_years`.
+for a person whose life status is uncertain. A recorded birth or dated participation can establish that age,
+including for an unknown merged card or a precautionary import. An explicit
+living declaration or refusal still protects the person. The public reader uses
+`privacy.living_years` (100 by default).
 
 Private display snapshots include only explicitly referenced corpus records and
 their captures, with record form checks. Unreferenced records and all search logs
@@ -182,7 +197,9 @@ Commit sources, lockfile, compiled assets and manifest together. Hatch includes
 `reader-shell/` as `familiar/_reader_shell` in the wheel. Runtime needs no Node.
 `host.feedback` is disabled when absent (legacy profiles may retain their API).
 
-Before releasing, commit the engine and run (replace the denied root with the
+When raising the release version, update all three install tags in
+[`first-family.md`](first-family.md#1-install-the-engine-and-choose-a-new-family)
+to the same version. Before releasing, commit the engine and run (replace the denied root with the
 local family checkout that must be unavailable):
 
 ```powershell

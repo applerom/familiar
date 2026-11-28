@@ -27,8 +27,8 @@ export function growth(data:Row,id:string,connector=false){
   confirmed:[...new Set(grounds)], manual:p.confirmation?.level&&p.confirmation.level!=='mention'};
 }
 export const growthWords:Record<string,Row>={
- ru:{tree:'Из семейного дерева',memory:'Со слов семьи',found:'Нашли в документах',docs:'Есть документы',confirmed:'По документу',people:'в дереве',peopleUnit:'человек',memoryCount:'из памяти семьи',foundCount:'нашли агенты',confirmedCount:'подтверждено документами'},
- en:{tree:'From the family tree',memory:'From the family’s testimony',found:'Found in documents',docs:'Documents available',confirmed:'From the document',people:'in the tree',peopleUnit:'people',memoryCount:'from family memory',foundCount:'found by researchers',confirmedCount:'confirmed by documents'},
- pl:{tree:'Z drzewa rodziny',memory:'Według relacji rodziny',found:'Znaleziono w dokumentach',docs:'Są dokumenty',confirmed:'Według dokumentu',people:'w drzewie',peopleUnit:'osób',memoryCount:'z pamięci rodziny',foundCount:'znaleźli badacze',confirmedCount:'potwierdzono dokumentami'},
- sv:{tree:'Från familjens träd',memory:'Enligt familjens berättelse',found:'Hittad i dokument',docs:'Dokument finns',confirmed:'Enligt dokumentet',people:'i trädet',peopleUnit:'personer',memoryCount:'ur familjens minne',foundCount:'hittade av forskare',confirmedCount:'bekräftade av dokument'}
+ ru:{tree:'Из семейного дерева',memory:'Со слов семьи',found:'Нашли в документах',docs:'Есть документы',confirmed:'По документу',people:'в дереве',peopleUnit:'человек',memoryCount:'из памяти семьи',foundCount:'нашли в бумагах',confirmedCount:'подтверждено документами'},
+ en:{tree:'From the family tree',memory:'From the family’s testimony',found:'Found in documents',docs:'Documents available',confirmed:'From the document',people:'in the tree',peopleUnit:'people',memoryCount:'from family memory',foundCount:'found in papers',confirmedCount:'confirmed by documents'},
+ pl:{tree:'Z drzewa rodziny',memory:'Według relacji rodziny',found:'Znaleziono w dokumentach',docs:'Są dokumenty',confirmed:'Według dokumentu',people:'w drzewie',peopleUnit:'osób',memoryCount:'z pamięci rodziny',foundCount:'znaleziono w dokumentach',confirmedCount:'potwierdzono dokumentami'},
+ sv:{tree:'Från familjens träd',memory:'Enligt familjens berättelse',found:'Hittad i dokument',docs:'Dokument finns',confirmed:'Enligt dokumentet',people:'i trädet',peopleUnit:'personer',memoryCount:'ur familjens minne',foundCount:'hittade i papper',confirmedCount:'bekräftade av dokument'}
 };

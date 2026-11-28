@@ -118,6 +118,8 @@ def catalog(instance):
     if photos and not permits_display(instance):
         return result
     for public, photo in photos.items():
+        if photo.get('show') == 'private':
+            continue
         if public in result or public in ids:
             raise ValueError('duplicate family photograph output or media id: ' + public)
         result[public] = ({'id': public, 'kind': KIND, 'sha256': photo['sha256']}, asset_file(instance, public, photo))

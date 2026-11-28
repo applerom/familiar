@@ -23,12 +23,46 @@ def test_old_journals_carry_over_and_coverage_stays_private(family, capsys):
 
 
 def test_search_map_tells_reading_depth_and_keeps_line_open(family, capsys):
+    from familiar.desk.model import words
+    from familiar.desk.search_map import project
+    people = family.path('tree_snapshot') / 'people.json'
+    tree = json.loads(people.read_bytes())
+    next(p for p in tree['people'] if p['id'] == 'p-daniel')['names'].extend([{'display': 'Daniel'}, {'display': 'Amaro Ferrolho'}])
+    people.write_text(json.dumps(tree), encoding='utf-8')
+    path = family.path('access')
+    ledger = json.loads(path.read_bytes())
+    ledger['places'][0]['books'][1].update(title='Daniel Pike in the register', look_for='Daniel asks about Amaro Ferrolho')
+    path.write_text(json.dumps(ledger), encoding='utf-8')
+    shown = project(family, words(family))['desk/search-map.html'].decode()
+    assert 'books 5-6' in shown and 'Daniel Pike' not in shown and 'Daniel asks about Amaro Ferrolho' in shown
+    assert main(['--root', str(family.root), 'research', 'plan', '--line', 'Calhau']) == 0 and 'Daniel Pike' not in capsys.readouterr().out
     run = lambda *a: (main(['--root', str(family.root), 'research', *a, '--line', 'Calhau', '--json']), json.loads(capsys.readouterr().out))[1]
     line = run('map')['lines'][0]; series = {s['id']: s['years'] for s in line['series']}
     assert (series['ponta-do-moinho-baptisms']['1900'], series['ponta-do-moinho-baptisms']['1903'], series['ponta-das-garcas-baptisms']['1901']) == ('full', 'surname', 'unknown')
     plan = run('plan')['lines'][0]
     assert plan['open_record']['years'] > 0 and 'Ponta do Moinho' in plan['open_record']['read_first'][0]['title'] and not any(p['state'] == 'exhausted' for p in plan['plays'])
-    from familiar.research.coverage import SearchLine
-    from familiar.research.search_map import line_groups
-    lines = [SearchLine([p], s, {s}, 0, False, 0) for p, s in (('a', 'Calhau'), ('b', 'Calhau'), ('c', ''), ('d', ''))]
-    assert [len(g) for g in line_groups(lines)] == [2, 1, 1]  # one surname is one section; a nameless chain stays alone
+
+
+def test_access_ledger_steers_plan_and_check(family, capsys):
+    run = lambda *a: (main(['--root', str(family.root), 'research', *a]), capsys.readouterr().out)
+    record = lambda *a: json.loads(run('access', 'record', *a, '--by', 'collector-a', '--at', '2026-11-24')[1])
+    family.path('series').unlink()
+    assert record('--id', 'a1', '--state', 'copy', '--price', '2 a page')['years'] == '1880-1910'  # only the given fields change
+    copy = json.loads(run('plan', '--line', 'Calhau', '--json')[1])['lines'][0]; assert copy['next'].startswith('Order a copy: Baptisms') and '2 a page' in copy['next'] and all(p['state'] != 'no-access' for p in copy['plays'])
+    record('--id', 'a1', '--needs', 'sheet numbers'); assert 'Find out: sheet numbers' in run('plan', '--line', 'Calhau')[1] and '# Copies to order' in run('access', '--order')[1]
+    record('--id', 'a1', '--needs', '', '--price', '', '--state', 'letter')
+    missing = lambda: {p['id']: p['missing'] for p in json.loads(run('plan', '--line', 'Calhau', '--json')[1])['lines'][0]['plays']}
+    assert missing()['forums'] == ['parish'] and record('--id', 'a1', '--title', 'Baptisms of the parish church') and not missing()['forums']
+    page = family.root / 'research/ACCESS.md'; page.write_text('by hand', encoding='utf-8'); assert run('access', '--markdown', '--save')[0] == 1 and page.read_text() == 'by hand'; page.unlink(); assert run('access', '--markdown', '--save')[0] == 0 and run('access', 'note', 'What we read.')[0] == 0
+    record('--id', 'a1', '--note', 'two volumes'); shown = page.read_text(encoding='utf-8'); assert 'What we read.' in shown and 'two volumes' in shown and 'collector-a, 2026-11-24' in shown
+    line = json.loads(run('plan', '--line', 'Calhau', '--json')[1])['lines'][0]
+    states = {p['id']: p['state'] for p in line['plays']}
+    assert states['place-nest'] == 'no-access' and line['next'].startswith('Order in the reading room: Baptisms 1911–1915')
+    note = family.root / 'research/STRATEGY.md'; note.write_text('# Plan\n\nThe Calhau line is exhausted.\n', encoding='utf-8')
+    from familiar.instance.validation import check
+    said = lambda: [a['message'] for a in check(family)['advice'] if a['location'].startswith(str(note))]
+    assert 'Ponta do Moinho, Ilha Vaqueira 3' in said()[0]
+    note.write_text('The Calhau line: name bases are exhausted; the parish books are unread.\n', encoding='utf-8'); assert not said()
+    assert record('--place', 'Ponta do Moinho', '--kind', 'parish', '--years', '1911-1915', '--state', 'read')['id'] == 'a2'
+    assert record('--id', 'a1', '--state', 'home') and 'no-access' not in run('plan', '--line', 'Calhau', '--json')[1]
+    assert run('access', 'record', '--id', 'a9', '--state', 'read', '--by', 'x')[0] == 1

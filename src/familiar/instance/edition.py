@@ -6,6 +6,7 @@
 # - every selected gallery file must resolve even when its owner is private [review: engine lead]
 # - canonical card decisions win over an alias without losing distinct alias facts [review: engine lead]
 # - imported photographs append to curated cards and follow active person identities [review: engine lead]
+# - editorial rows follow a recorded snapshot withdrawal and come back on undo [review: engine lead]
 # CHANGES_WITH:
 # - MOD-PUBLICATION (card schema and disclosure policies)
 # - MOD-INSTANCE-VALIDATION (editorial references are checked at intake)
@@ -44,7 +45,7 @@ def cards(instance):
     return result
 
 
-def errors(instance):
+def errors(instance, *, withdrawn=()):
     """Check the entire authored selection, not just today's public subset."""
     from familiar.checks.engine import _known_people
 
@@ -66,6 +67,8 @@ def errors(instance):
                 yield from assets(child)
 
     for pid, patch in patches.items():
+        if pid in withdrawn:
+            continue
         if pid not in known:
             yield f'edition: unknown person: {pid}; inspect ids with tree build --view working'
         for key in ('media', 'illustrations'):
@@ -79,6 +82,8 @@ def apply(instance, graph):
     """Overlay only card fields; restrict_graph subsequently enforces display exclusions."""
     aliases = graph.get('identityAliases', {})
     patches = copy.deepcopy(cards(instance))
+    for pid in graph.get('_withdrawnSnapshotCards', []):
+        patches.pop(pid, None)
     for alias, target in aliases.items():
         patch = patches.pop(alias, None)
         if patch is None:

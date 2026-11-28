@@ -15,7 +15,7 @@ from datetime import date
 from uuid import UUID, uuid4
 
 from familiar.instance.gate import boundary
-from familiar.instance.writer import mutate
+from familiar.instance.writer import attachment_catalog, mutate
 from .core import read, safe, token
 from .table import toml
 
@@ -57,6 +57,9 @@ def prepare(instance, identities, output, ident=None, told_by='Рассказч�
         seen.add(identity)
         original = f'family/feedback/inbox/{identity}.json'
         row = json.loads(instance._inside(original).read_text(encoding='utf-8-sig'))
+        if (row.get('id') == identity and not row.get('text')
+                and (row.get('files') or attachment_catalog(instance, identity))):
+            raise ValueError(f'Feedback {identity} contains photographs; use intake attachment {identity}')
         if row.get('id') != identity or not isinstance(row.get('text'), str) or not row['text']:
             raise ValueError(f'Invalid feedback: {identity}')
         source = 'feedback-' + identity
@@ -64,6 +67,18 @@ def prepare(instance, identities, output, ident=None, told_by='Рассказч�
         strength = 'firm' if isinstance(np, dict) and np.get('known_from') == 'memory' else 'hearsay'
         data['items'].append({'id': source, 'text': row['text'], 'received_at': row.get('received_at', ''),
                               'original': original, 'witness': told_by, 'strength': strength})
+        about, _, rest = str(row.get('subject') or '').partition(':')
+        if about in {'blank', 'amendment'} and row.get('kind') in {'correction', 'confirm', 'decline'}:
+            # A line of the card filled in, or our proposal answered with one tap: the person and the field came with it.
+            item = data['items'][-1]
+            if row.get('person') in people:
+                item['person'] = people[row['person']]['id']
+            item.update({'amendment': rest} if about == 'amendment' else {'field': rest.rpartition(':')[2]})
+            if row['kind'] != 'correction':
+                item['answer'] = 'yes' if row['kind'] == 'confirm' else 'no'
+            if row.get('question'):
+                item['version'] = row['question']
+            comments.append(f"# {identity}: {about} {rest} · {item.get('answer', row['kind'])}")
         if row.get('kind') in FEEDBACK:
             _, ask = get(instance, row['ask_id'])
             item = data['items'][-1]

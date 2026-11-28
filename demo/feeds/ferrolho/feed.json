@@ -7,21 +7,44 @@
   "period": "1921-1925",
   "line": "Ferrolho",
   "cover": null,
-  "people": ["AMARO", "ROSA", "HELENA"],
+  "people": [
+    "AMARO",
+    "ROSA",
+    "HELENA"
+  ],
   "profile": {
     "anchor": "AMARO",
     "readers": "family of all ages, read aloud",
     "kids": "block",
     "pictures": "none",
     "depth": "feed",
-    "languages": ["en"],
+    "languages": [
+      "en"
+    ],
     "games": "none",
-    "names": {"text": "as the papers write them"}
+    "names": {
+      "text": "as the papers write them"
+    }
   },
   "parts": [],
   "gens": [
-    {"name": "Island", "years": "about 1898-1921", "ids": ["JOAQUINA", "AMARO"]},
-    {"name": "Mill town", "years": "1921-1925", "ids": ["AMARO", "ROSA", "HELENA"]}
+    {
+      "name": "Island",
+      "years": "about 1898-1921",
+      "ids": [
+        "JOAQUINA",
+        "AMARO"
+      ]
+    },
+    {
+      "name": "Mill town",
+      "years": "1921-1925",
+      "ids": [
+        "AMARO",
+        "ROSA",
+        "HELENA"
+      ]
+    }
   ],
   "persons": {
     "AMARO": "p-amaro",

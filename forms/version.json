@@ -12,6 +12,7 @@
       "id": "bea-same",
       "label": "Same person",
       "weight": 0.45,
+      "guess": {"person": "bea-telling-bea-person", "field": "birth", "value": "1880"},
       "for": [
         {
           "text": "The home paper names Bea; the captured index row is a candidate, not an established birthplace.",

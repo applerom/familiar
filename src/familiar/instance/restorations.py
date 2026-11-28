@@ -2,7 +2,7 @@
 # PURPOSE: Bind generated restorations to deceased subjects, real frames and append-only recipes.
 # PRD_REF: docs/PRD.md#FORMS
 # INVARIANTS:
-# - restoration subjects must all be known dead, even in the host display [review: engine lead]
+# - named subjects must be dead everywhere; unnamed people require a dated historical period frame [test: tests/gate/test_data_guarantees.py::test_photo_treatment_stays_local_for_living_subject]
 # - every version binds original and output bytes, crop, model and comparison recipe [review: engine lead]
 # - family transactions append versions rather than replace their recipes or bytes [review: engine lead]
 # CHANGES_WITH:
@@ -14,7 +14,35 @@ import copy
 import hashlib
 import json
 import math
+import re
 from datetime import date
+
+
+def period_pair(image):
+    """An archival period frame paired with a restoration, in either authored shape."""
+    if image.get('kind') == 'photo-restoration':
+        return (image.get('orig') or {}).get('kind') == 'period-picture'
+    return image.get('kind') == 'period-picture' and (image.get('ours') or {}).get('kind') == 'photo-restoration'
+
+
+def historical_frame(instance, record):
+    """The corpus date is the latest date this camera could have seen the people."""
+    from familiar.rules.cascade import Registry
+    from familiar.rules.roles import method_root
+    from familiar.tree.life import recorded
+
+    when = record.get('date')
+    if not isinstance(when, str) or not recorded(record):
+        return False
+    if re.fullmatch(r'[0-9]{4}', when):
+        when += '-12-31'  # a bare year may mean its last day
+    try:
+        captured = date.fromisoformat(when)
+    except ValueError:
+        return False
+    today = date.today()
+    horizon = Registry(method_root() / 'rules', instance).resolve_setting('privacy.living_years').value
+    return (captured.year + max(100, horizon), captured.month, captured.day) <= (today.year, today.month, today.day)
 
 
 def restorations(value):
@@ -33,7 +61,8 @@ def bind(instance, original, restored):
     from PIL import Image
     from familiar.checks.engine import _known_people, generated, life_status, load, record_path
     from .archive import photograph_rights
-    from .subjects import closure
+    from .gallery import PREFIX
+    from .subjects import closure, protected_record
     fail = 'TRUST-08: photo restoration '
     source = {k: copy.deepcopy(v) for k, v in original.items() if k != 'ours'}
     reference = restored.get('orig')
@@ -48,10 +77,19 @@ def bind(instance, original, restored):
         raise ValueError(fail + 'needs a real original with corpus reference or family-photo rights')
     known, privacy = _known_people(instance), load(instance.path('privacy'), {})
     resolved = closure(instance, source, shape='image', people=known)
-    if not resolved.people or any(life_status(known[p], privacy) != 'dead' for p in resolved.people):
+    period = source.get('kind') == 'period-picture' and not (source.get('asset') or '').startswith('/' + PREFIX)
+    if source.get('subject_living') or any(life_status(known[p], privacy) != 'dead' for p in resolved.people):
         raise ValueError(fail + 'requires deceased subjects; living or unknown is forbidden everywhere')
-    if any(r.get('privacy') in {'living', 'living-possible'} for r in resolved.records.values()):
+    if any(map(protected_record, resolved.records.values())):
         raise ValueError(fail + 'cannot use a protected original')
+    if 'unidentified_people' in source and type(source['unidentified_people']) is not bool:
+        raise ValueError(fail + 'unidentified_people must be a boolean')
+    if source.get('unidentified_people') and not (
+            period and isinstance(source.get('subjects'), list)
+            and historical_frame(instance, resolved.records[source['record']])):
+        raise ValueError(fail + 'unnamed people require a corpus capture date at least a century old')
+    if not resolved.people and not (period and source.get('subjects') == []):
+        raise ValueError(fail + 'requires deceased subjects or an explicit subject list for a period picture')
     source['subjects'] = sorted(resolved.people)
     for key in ('subjects', 'record'):
         if key in restored and restored[key] != source.get(key) and not source.get('_document_attributed'):

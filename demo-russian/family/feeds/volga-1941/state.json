@@ -1,0 +1,10 @@
+{
+  "pipeline": {
+    "reading": {
+      "gnadenflur-1941": "ae17cc3c450fc06137fa3b79cf2c8d14eb97536795f3c3c2da69ce423dd9cb5a"
+    }
+  },
+  "build_fingerprints": {
+    "gnadenflur-1941": "ae17cc3c450fc06137fa3b79cf2c8d14eb97536795f3c3c2da69ce423dd9cb5a"
+  }
+}

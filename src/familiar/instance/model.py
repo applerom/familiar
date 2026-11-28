@@ -32,7 +32,7 @@ DEFAULTS = {
     "evidence": "tree/evidence.json", "contributions": "tree/contributions",
     "identity_decisions": "tree/identity-decisions.json", "translations": "tree/translations", "cases": "cases",
     "versions": "versions", "asks": "family/asks", "questions": "family/questions", "answers": "family/answers",
-    "horizons": "family/horizons.json",
+    "horizons": "family/horizons.json", "amendments": "family/amendments", "access": "research/access.json",
     "correspondence": "family/correspondence",
     "memory": "family/memory", "research_permission": "family/research-permission.json",
     "privacy": "family/privacy.json", "archive_rights": "family/archive-rights.json", "variant_overrides": "family/variants.json",
@@ -190,7 +190,7 @@ class Instance:
             return None
         from .gallery import asset_file, permits_display, photograph
         if photo := photograph(self, '/' + rel):
-            return asset_file(self, rel, photo) if permits_display(self) else None
+            return asset_file(self, rel, photo) if photo.get('show') != 'private' and permits_display(self) else None
         base = self.path('media')
         manifest = base / 'manifest.json'
         if manifest.is_file():

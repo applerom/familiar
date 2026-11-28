@@ -32,6 +32,20 @@ def execute(args):
             else:
                 from .pages import pages
                 print(json.dumps(pages(instance, args.feed, preview=args.preview), ensure_ascii=False))
+        elif args.feed_command in {'chapters', 'storyboard'}:
+            from .studio import run
+            run(instance, args)
+        elif args.feed_command == 'rhythm':
+            from familiar.rules.cascade import Registry
+            from familiar.rules.roles import method_root
+
+            from .rhythm import measure, report
+            from .service import _materialize
+
+            registry = Registry(method_root() / 'rules', instance)
+            for folder in folders(instance, args.feed):
+                feed, _ = _materialize(instance, folder)
+                print(folder.name + '\n' + report(*measure(instance, feed, registry), feed_counts=True))
         elif args.feed_command == 'build':
             result = build(instance, args.out or instance.path('build') / 'feeds', args.feed)
             from .service import refresh_output
@@ -146,7 +160,7 @@ def register(commands):
     # Reuse the parser owned by checks; the check command remains unchanged.
     feed = commands.choices['feed']
     sub = next(a for a in feed._actions if hasattr(a, 'choices') and isinstance(a.choices, dict))
-    for name in ('build', 'status', 'new', 'pages', 'read', 'worklist', 'review', 'restorations'):
+    for name in ('build', 'status', 'new', 'pages', 'read', 'worklist', 'review', 'restorations', 'rhythm'):
         command = sub.add_parser(name)
         command.add_argument('feed', nargs=None if name == 'new' else '?')
         if name == 'pages':
@@ -158,6 +172,16 @@ def register(commands):
         if name == 'review':
             command.add_argument('--out', required=True, help='New directory for exact private review bytes and ticket')
             command.add_argument('--kind', choices=('feeds', 'tree', 'reader', 'reader-private'), default='feeds')
+        command.set_defaults(run=execute)
+    for name, help_text in (
+            ('chapters', 'Import studio chapter files as feed data'),
+            ('storyboard', 'Render a private phone-width draft from studio chapter files')):
+        command = sub.add_parser(name, help=help_text)
+        command.add_argument('feed')
+        command.add_argument('--studio', help='Studio folder relative to the family root')
+        command.add_argument('--config', type=Path, help='Use this import.json instead of the studio settings')
+        command.add_argument('--source-ref', help='Read studio files and image lists from a family Git commit')
+        command.add_argument('--out', type=Path, help='Scratch directory for chapters, or HTML file for storyboard')
         command.set_defaults(run=execute)
     for name, fields in (('person', ('feed', 'person')), ('doc', ('feed', 'key', 'frame', 'box', 'reading')), ('accept', ('feed',))):
         command = sub.add_parser(name)

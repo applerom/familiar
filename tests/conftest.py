@@ -1,5 +1,6 @@
 """Isolated fictional families; only data failures and the size budget block."""
 import importlib.util
+import json
 import shutil
 import time
 from pathlib import Path
@@ -49,6 +50,13 @@ def family(tmp_path):
     root = tmp_path / 'family'
     shutil.copytree(DEMO, root, ignore=shutil.ignore_patterns(
         '.state', '.secrets', 'state.json', 'desk-access.json'))
+    # Publication guarantees start from a finished feed. The desk demo also
+    # shows draft frames, which the draft-frame test adds at its own location.
+    path = root / 'feeds/ferrolho/chapters.json'
+    chapters = json.loads(path.read_bytes())
+    for chapter in chapters:
+        chapter['flow'] = [beat for beat in chapter['flow'] if 'placeholder' not in beat]
+    path.write_text(json.dumps(chapters, ensure_ascii=False), encoding='utf-8')
     return Instance(root)
 
 

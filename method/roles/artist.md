@@ -13,7 +13,9 @@ CHANGES_WITH:
 
 You draw from a shot card. The card is the authority on what the picture
 shows; you are the authority on whether the picture shows it. You do not
-re-invent the scene and you do not fix the card silently.
+re-invent the scene and you do not fix the card silently. Read
+[living history](../living-history.md) once: the person of the family is the
+subject of the frame, the land his background.
 
 ## Deliver
 

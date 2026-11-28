@@ -50,8 +50,14 @@ Rejected, one line each:
 
 **First day.** Sections that are empty are not shown; the navigation grows with the family. A new family's home is a cover: the family name, a one-line promise, the people already known as a small sprout of the tree, what the Familiar is doing now, and — for the host only — one question with "не знаю" as a valid answer. Never "появятся здесь, когда будут записаны".
 
-**Words.** No engine words in reader text: "оператор", "рассказчик", "наша версия", "ждут подтверждения", "?" badges. A person known only by relation is shown by that relation in italics ("мама Сергея"), with the host able to name her.
+**The lower row.** At most four places, an icon and one plain word each, the same on every page, 72 px on a phone: tree, relatives, stories, papers. What this family does not have is not there. Everything else (surnames, map, how the search goes, language, remark, private notice) opens from one labelled button in the page top.
+
+**Papers.** «Документы» means the family's papers, never letters or files: by person with the nearest to the reader first, by decade, photographs beside them. A sheet is shown whole. A tap lays it over the page, large, with whose it is and what it says; Back or «Назад» uncovers the same place.
+
+**Kinship words.** They live where they occur: a tap opens the meaning and the way to this person, name by name. A word without its own person in the shown tree is not listed.
+
+**Words.** No engine words in reader text: "оператор", "рассказчик", "наша версия", "ждут подтверждения". The list is `../reader-src/plain-words.json`; the shell does not build with one of them. A "?" stands only on a kinship word and opens its meaning. A person known only by relation is shown by that relation in italics ("мама Сергея"), with the host able to name her.
 
 **Controls.** "Аа" holds language, text size (three steps), Детям / Всем, evening. Tree depth is a labelled segment "Поколений 2 3 4 Все" and a "К себе" button, not `− 3↑ + ⌖`. Hints are a single line that disappears after the first action, never a toast over the cards. The private state is a small chip "Только для семьи", not a brown banner.
 
-**Floor.** Text contrast ≥ 4.5:1, targets ≥ 44 px, focus ring in `act`, OS text size respected, a chapter readable without JavaScript.
+**Floor** (rule `CRAFT-PLAIN-PAGES`). Text contrast ≥ 4.5:1, body text ≥ 18 px and targets ≥ 48 px on a phone, focus ring in `act`, OS text size respected, a chapter readable without JavaScript.

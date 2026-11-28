@@ -93,6 +93,9 @@
     <!-- Literal union notes remain attributed snapshot input across repeat exchange. -->
     <REL TYPE="DEPENDS_ON" TARGET="MOD-INTAKE-GEDCOM"/>
   </MODULE_INTAKE_CORE>
+  <MODULE_INTAKE_LAYERS ID="MOD-INTAKE-LAYERS" FILE="src/familiar/intake/layers.py" STATE="IMPLEMENTED">
+    <!-- A layer says how far a search may lean on a statement; it changes no strength, status or weight. -->
+  </MODULE_INTAKE_LAYERS>
   <MODULE_INTAKE_NAMES ID="MOD-INTAKE-NAMES" FILE="src/familiar/intake/names.py" STATE="IMPLEMENTED"/>
   <MODULE_INTAKE_GEDCOM ID="MOD-INTAKE-GEDCOM" FILE="src/familiar/intake/gedcom.py" STATE="IMPLEMENTED">
     <!-- PHRASE survives as literal attributed notes with tag path and enum value;
@@ -112,6 +115,7 @@
     <REL TYPE="DEPENDS_ON" TARGET="MOD-FAMILY-WRITER"/>
   </MODULE_INTAKE_PHOTO>
   <MODULE_FAMILY_GATE ID="MOD-FAMILY-GATE" FILE="src/familiar/instance/gate.py" STATE="IMPLEMENTED">
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_draft_frames_stay_home">The gate names every draft chapter with a frame before a feed or reader leaves home.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Withheld chapter media advise separately for the host and readers without weakening exclusions.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Research lookups are registered boundaries without the family verdict; they publish nothing.</INVARIANT>
     <INVARIANT REVIEW="engine lead">One verdict or one checked call reads fixed inputs: derived reads are shared inside it and its final fingerprint comparison still rejects any change.</INVARIANT>
@@ -137,7 +141,10 @@
     <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_photo_treatment_stays_local_for_living_subject">Restorations refuse living or unknown subjects everywhere and require original frames and version recipes; deceased pairs reach both views.</INVARIANT>
     <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_photo_treatment_stays_local_for_living_subject">Living photo treatments stay in the family display; public generations track dead-only treatment uses.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Family display includes living and unknown people; public output retains only names and kinship.</INVARIANT>
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_life_decision_scope">Public reader references to protected people and closed sources use opaque bundle-local identifiers.</INVARIANT>
     <INVARIANT REVIEW="engine lead">A card fact linked to a canonical record follows that document's protection in both reader modes.</INVARIANT>
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_only_visible_amendments_leave_the_inbox">Amendment text is projected only for visible proposals and visible sources. Literal answers remain inbox data.</INVARIANT>
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_f2_record_subject_cannot_be_omitted">An attributed literal field has its own subjects; the full sheet and globally restricted records keep their protection.</INVARIANT>
     <!-- Plain card serialization is cheaper than reading and checking hundreds
          of cache payloads; the full declared projection is always applied. -->
     <!-- Serializer validates term declarations once; semantic worklist matches
@@ -150,15 +157,18 @@
     <REL TYPE="DEPENDS_ON" TARGET="MOD-NARRATIVE-DISCLOSURE"/>
   </MODULE_PUBLICATION>
   <MODULE_NARRATIVE_DISCLOSURE ID="MOD-NARRATIVE-DISCLOSURE" FILE="src/familiar/instance/narrative.py" STATE="IMPLEMENTED">
-    <INVARIANT REVIEW="engine lead">Public exclusions follow the active person’s life classification.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Public exclusions follow the active person’s life classification; remaining papers stay visible when paragraphs are removed.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Instance check locates prose with disclosure cues and missing paragraph attribution; the author reviews its meaning.</INVARIANT>
   </MODULE_NARRATIVE_DISCLOSURE>
   <MODULE_SUBJECT_CLOSURE ID="MOD-SUBJECT-CLOSURE" FILE="src/familiar/instance/subjects.py" STATE="IMPLEMENTED">
     <REL TYPE="DEPENDS_ON" TARGET="MOD-PHOTO-RESTORATIONS"/>
     <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_f2_record_subject_cannot_be_omitted">Declared cut-out subjects agree with corpus subjects; chapter context is only a fallback, while protected shared scans retain their full closure.</INVARIANT>
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_f2_record_subject_cannot_be_omitted">A complete corpus list separates inferred relatives from participants. Public census and annex papers require complete attribution.</INVARIANT>
     <!-- Structured gallery, chapter and fact attachments accumulate across shared document identities before either reader projection. -->
   </MODULE_SUBJECT_CLOSURE>
   <MODULE_PHOTO_RESTORATIONS ID="MOD-PHOTO-RESTORATIONS" FILE="src/familiar/instance/restorations.py" STATE="IMPLEMENTED">
-    <INVARIANT REVIEW="engine lead">Every generated restoration binds a real frame, deceased subjects and append-only version recipes; original and alternative versions remain reachable.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Every generated restoration binds a real frame and append-only version recipes; original and alternative versions remain reachable.</INVARIANT>
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_photo_treatment_stays_local_for_living_subject">Named subjects must be dead everywhere. A period frame with unidentified people needs a corpus capture date beyond the privacy horizon.</INVARIANT>
   </MODULE_PHOTO_RESTORATIONS>
   <MODULE_OUTPUT_REVIEW ID="MOD-OUTPUT-REVIEW" FILE="src/familiar/instance/review.py" STATE="IMPLEMENTED">
     <INVARIANT REVIEW="engine lead">Media uses follow displayed records and pictures rather than withheld authoring dependencies.</INVARIANT>
@@ -211,6 +221,10 @@
     <INVARIANT REVIEW="engine lead">Rank follows the current version weights, and authored relevance takes precedence over automatic explanations.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-PUBLICATION"/>
   </MODULE_CORRESPONDENCE_VIEW>
+  <MODULE_FAMILY_BLANKS ID="MOD-FAMILY-BLANKS" FILE="src/familiar/instance/blanks.py" STATE="IMPLEMENTED">
+    <INVARIANT TEST="tests/gate/test_desk_guarantees.py::test_bare_card_invites_and_a_tap_settles_the_amendment">Only a direct ancestor within the witness horizon is offered to the family, with our leading guess beside the empty field; a field a relative spoke to is not offered again.</INVARIANT>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-FAMILY-ASKS"/>
+  </MODULE_FAMILY_BLANKS>
   <MODULE_FAMILY_ASKS ID="MOD-FAMILY-ASKS" FILE="src/familiar/instance/asks.py" STATE="IMPLEMENTED">
     <INVARIANT TEST="tests/gate/test_desk_guarantees.py::test_family_asks_carry_over_and_private_memory">Question ids and relative letters survive carry-over; private replies enter research memory while family output excludes them.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-FAMILY-WRITER"/>

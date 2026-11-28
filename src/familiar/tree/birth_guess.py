@@ -6,6 +6,17 @@ from datetime import date
 
 YEAR = re.compile(r'\b(1\d{3}|20\d{2})\b')
 REJECTED = {'rejected', 'disproved'}
+# What the card itself tells bounds an estimate: how old somebody at least was in a year the card names.
+TOLD_AGES = {'military': 17, 'marriage': 15, 'baptism': 0, 'event': 0}
+VERSION_FLOOR = .3  # the weight from which a version is drawn (dashed) and told
+# Words of one man's service; a village's war ("the front came") says nothing about his age.
+SERVICE = re.compile(r'\b(?:солдат|рядов(?:ой|ым|ого)\b|лазарет|на фронт|ранен|ранил|мобилизова|призван|полк(?:а|у|е|ом)?\b|'
+                     r'żołnierz|szeregow(?:y|ym|ego)\b|na froncie|ranny|ranili|lazaret|zmobilizowa|pułk|'
+                     r'soldier|wounded|at the front|regiment|drafted|enlisted|soldat|regement|sårad|inkallad)', re.I)
+KIN = (r'(?:отец|отца|отцом|мать|матери|сын|сына|сыну|сыном|дочь|дочери|брат|брата|братья|братьев|сестра|муж|мужа|дед|деда|'
+       r'ojciec|ojca|matka|syn|syna|córka|bracia|mąż|męża|dziadek|'
+       r'father|mother|sons?|daughter|brothers?|husband|grandfather|far|bror|bröder)')
+BORN = re.compile(r'\b(?:родил|рожд|г\.\s?р\.|urodz|ur\.|born|född)', re.I)
 # The family's rule: a parent is guessed from the first known child; when no child is dated, the spouse, then
 # brothers and sisters, then parents. A real date always beats a chain of guesses.
 ORDER = {'child': 0, 'spouse': 1, 'sibling': 2, 'parent': 3}
@@ -61,6 +72,50 @@ def _link(edge):
     return 2 if edge.get('status') == 'hypothesis' and edge.get('likelihood') == 'probable' else 3
 
 
+def _said(value):
+    return ' '.join(v for v in value.values() if isinstance(v, str)) if isinstance(value, dict) else str(value or '')
+
+
+def _served(fact, person):
+    """Years a told fact puts this man at war: personal words of service, and a year nobody else's and not a birth."""
+    given = next((n['given'] for n in person.get('names') or [] if n and n.get('given')), '').split(' ')[0]
+    root = re.escape(given[:max(3, len(given) - 1)])
+
+    def others(sentence):
+        """Somebody's father, son or brother, unless the sentence names this very man (not as "father Pyotr")."""
+        if not re.search(rf'\b{KIN}\b', sentence, re.I):
+            return False
+        return not given or not re.search(rf'\b{root}', sentence, re.I) or re.search(rf'\b{KIN}\s+{root}', sentence, re.I)
+
+    own = [s for s in re.split(r'(?<=[.!?;])\s+', re.sub(r'\([^)]*\)', '', _said(fact.get('text')))) if not others(s)]
+    if fact.get('eventType') != 'military' and not SERVICE.search(' '.join([_said(fact.get('label')), *own])):
+        return []
+    return [int(y) for s in own if not BORN.search(s) for y in YEAR.findall(s)]
+
+
+def told(pid, person, families, sex=''):
+    """Latest birth year each dated thing on the card allows: [(latest, kind, year)], the tightest first."""
+    rows = []
+    for event in person.get('events') or []:
+        kind, year, weight = event.get('type') or str(event.get('tag', '')).lower(), _year(event.get('date')), event.get('weight')
+        if not year or kind in {'birth', 'death', 'burial', 'birt', 'deat', 'buri'} or event.get('status') in REJECTED:
+            continue
+        if weight < VERSION_FLOOR if isinstance(weight, (int, float)) else event.get('status') == 'hypothesis':
+            continue
+        rows.append(({'marr': 'marriage', 'chr': 'baptism', 'bapm': 'baptism'}.get(kind, kind), year))
+    for family in families:
+        if family.get('status') not in REJECTED | {'hypothesis'}:
+            rows += [('marriage', year) for e in family.get('events') or [] if (e.get('type') == 'marriage' or e.get('tag') == 'MARR')
+                     and (year := _year(e.get('date')))]
+    for fact in person.get('facts') or [] if sex != 'f' else ():
+        weight = fact.get('weight')
+        shown = weight >= VERSION_FLOOR if isinstance(weight, (int, float)) else fact.get('status') in {'verified', 'export'}
+        if shown and fact.get('status') not in REJECTED | {'conflict'} and not fact.get('detailOnly'):
+            rows += [('military', year) for year in _served(fact, person)]
+    kinds = {(kind if kind in TOLD_AGES else 'event', year) for kind, year in rows}
+    return sorted((year - TOLD_AGES[kind], kind, year) for kind, year in kinds)
+
+
 def first_child_age(ages, sex, around):
     """How old a father or mother usually was at the first child born around this year (setting tree.first_child_age)."""
     eras = sorted((int(start), row) for start, row in ages.items())
@@ -73,8 +128,13 @@ def first_child_age(ages, sex, around):
     return round((row['father'] + row['mother']) / 2)
 
 
-def guesses(graph, ages, eligible=None):
-    """{person id: guess} for people without a birth year; `eligible` limits who may receive one."""
+def guesses(graph, ages, eligible=None, *, limits=None):
+    """{person id: guess} for people without a birth year; `eligible` limits who may receive one.
+
+    `limits` ({person id: latest birth year}) are what the cards tell (`bounds`). Life assessment never passes them:
+    a version must not age anybody out of the protection of the living.
+    """
+    limits = limits or {}
     people, families = graph['people'], graph.get('families', [])
     sex = {pid: _sex(pid, p, families) for pid, p in people.items()}
     parents, children = {}, {}
@@ -148,7 +208,7 @@ def guesses(graph, ages, eligible=None):
             ranked = [o for o in ranked if o[3] <= now and (death is None or o[3] <= death)]
             if ranked:
                 _, relation, anchors, year = ranked[0]
-                found[pid] = (year, step)
+                found[pid] = (min(year, limits.get(pid, year)), step)
                 result[pid] = (relation, anchors)
         if not found:
             break
@@ -169,6 +229,7 @@ def guesses(graph, ages, eligible=None):
             real = [p for p, lv in parents.get(pid, []) if p in dated and p not in result and lv < 3]
             if real and year < (floor := max(dated[p][0] for p in real) + 16):
                 year, result[pid] = floor, ('parent', [max(real, key=lambda p: dated[p][0])])
+            year = min(year, limits.get(pid, year))
             if year != dated[pid][0]:
                 dated[pid], moved = (year, dated[pid][1]), True
         if not moved:
@@ -183,10 +244,61 @@ def guesses(graph, ages, eligible=None):
             return first_child_age(ages, sex[a], y + 25)
         return estimate(pid, 'spouse', [a]) - y if relation == 'spouse' else 0
 
-    return {pid: {'year': 5 * round(dated[pid][0] / 5), 'exact': dated[pid][0], 'relation': relation,
+    def rounded(pid):
+        year = 5 * round(dated[pid][0] / 5)
+        return year if year <= limits.get(pid, year) else 5 * (dated[pid][0] // 5)
+
+    return {pid: {'year': rounded(pid), 'exact': dated[pid][0], 'relation': relation,
                   'anchors': [{'id': a, 'year': dated[a][0], 'guessed': a in result, 'age': age(pid, relation, a),
                                'offset': dated[pid][0] - dated[a][0]} for a in anchors]}
             for pid, (relation, anchors) in result.items()}
+
+
+def bounds(graph):
+    """({person: told row that bounds the birth}, {person: (told row, relative)} where the two cannot agree).
+
+    A dated thing on the card yields to what real years of close relatives allow: a child's year less a parent's
+    greatest age, a parent's year plus the least. Outside them no estimate moves.
+    """
+    people, families = graph['people'], graph.get('families', [])
+    mine, floors = {}, {}
+    for family in families:
+        for pid in {family.get('husband'), family.get('wife')}:
+            mine.setdefault(pid, []).append(family)
+    for edge in graph.get('edges', []):
+        parent, child = edge.get('parent'), edge.get('child')
+        if edge.get('status') in REJECTED or parent not in people or child not in people or _link(edge) == 3:
+            continue
+        if year := _birth(people[child]):
+            oldest = 50 if _sex(parent, people[parent], mine.get(parent, [])) == 'f' else 65
+            floors.setdefault(parent, []).append((year - oldest, child))
+        if year := _birth(people[parent]):
+            floors.setdefault(child, []).append((year + 14, parent))
+    limits, clashes = {}, {}
+    for pid, person in people.items():
+        own = mine.get(pid, [])
+        if _birth(person) or not (rows := told(pid, person, own, _sex(pid, person, own))):
+            continue
+        floor, relative = max(floors.get(pid, []), default=(None, None))
+        agreed = [row for row in rows if floor is None or row[0] >= floor]
+        if agreed:
+            limits[pid] = agreed[0]
+        if len(agreed) < len(rows):
+            clashes[pid] = (rows[0], relative)
+    return limits, clashes
+
+
+def check(instance, graph, fail):
+    """Advice only: what a card tells and the years of close relatives leave no possible year of birth."""
+    if not bounds(graph)[1]:
+        return
+    from .life import family_cards
+    graph = family_cards(instance, graph)
+    people, location = graph['people'], instance.path('contributions')
+    for pid, ((latest, kind, year), relative) in sorted(bounds(graph)[1].items()):
+        fail(location, f"{people[pid].get('name') or pid}: the card tells of {year} ({kind}), so a birth by {latest}, while "
+             f"{people[relative].get('name') or relative} was born in {_birth(people[relative])}; the estimated year of birth "
+             'keeps to the relatives. One of the two belongs to somebody else: correct the link, the year or the version')
 
 
 def apply(instance, graph, *, host_private=False):
@@ -197,6 +309,12 @@ def apply(instance, graph, *, host_private=False):
     ages = Registry(method_root() / 'rules', instance).resolve_setting('tree.first_child_age').value
     people = graph['people']
     eligible = None if host_private else {pid for pid, p in people.items() if p.get('living') is False}
-    for pid, guess in guesses(graph, ages, eligible).items():
+    limits, _ = bounds(graph)
+    plain = guesses(graph, ages, eligible)
+    agreed = guesses(graph, ages, eligible, limits={pid: row[0] for pid, row in limits.items()}) if limits else plain
+    for pid, guess in agreed.items():
+        if pid in limits and guess['exact'] < plain[pid]['exact']:
+            latest, kind, year = limits[pid]
+            guess['told'] = {'year': year, 'kind': kind, 'latest': latest, 'before': plain[pid]['year']}
         people[pid]['birthGuess'] = guess
     return graph

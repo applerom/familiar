@@ -14,6 +14,7 @@ Steps are idempotent and run every time, whatever the pin says: a family pinned 
 carried over is the normal case after a half-finished upgrade. Nothing is deleted except registry rows
 the engine itself now owns; the files they named stay where they are.
 """
+import hashlib
 import json
 
 
@@ -45,8 +46,70 @@ def generated_record_pages(instance, apply):
     return [line]
 
 
+def received_photographs(instance, apply):
+    """Keep adopted 0.53.0 photographs and replace their display bytes with a worker raster."""
+    from familiar.intake.core import safe
+    from familiar.intake.photo import read_received, received
+    from familiar.reader.received_scan import raster
+    from familiar.reader.assets import publication_bytes
+    from . import gallery
+
+    registry = instance.path('gallery')
+    if not registry.is_file():
+        return []
+    original_registry = registry.read_bytes()
+    data = json.loads(original_registry)
+    checksums = {item['sha256'] for _, item, _, _ in received(instance)}
+    rows = gallery.photographs(instance)
+    messages, changes, expected = [], {}, {registry: original_registry}
+    for asset, row in rows.items():
+        if row['original_sha256'] not in checksums or row.get('received_raster'):
+            continue
+        line = f'{registry.name}: {asset}'
+        if not apply:
+            messages.append(line + ' will receive a new display raster; the original stays')
+            continue
+        original, _ = gallery.files(instance, asset, row)
+        target = safe(instance, 'media', asset)
+        try:
+            raw = read_received(original, row['original_sha256'])
+            rendered = publication_bytes(raster(raw, target.suffix[1:]), asset)
+            if target.is_file():
+                expected[target] = target.read_bytes()
+            changes[target] = rendered
+            row.update(sha256=hashlib.sha256(rendered).hexdigest(), received_raster=True)
+            messages.append(line + ' received a new display raster; the original stays')
+        except (OSError, ValueError) as error:
+            messages.append(f'{line}: {error}; keep the original and fix the input before republishing')
+    if changes:
+        from .writer import mutate
+        changes[registry] = data | {gallery.KEY: rows}
+        mutate(instance, changes, expect=expected)
+    return messages
+
+
+def life_decision_scope_message(index, decision):
+    if decision.get('revoked') or 'scope' in decision:
+        return None
+    where = f"life_decisions[{index}] ({decision.get('person', '?')})"
+    action = ('write scope "everywhere" for recorded death or an established age over 100, '
+              'or "home" for a family age decision' if decision.get('status') == 'dead'
+              else 'write scope "everywhere" to retain protection in both views')
+    return f'{where}: {action}. The author must confirm the written basis.'
+
+
+def scoped_life_decisions(instance, apply):
+    from familiar.checks.engine import load
+
+    file = instance.path('privacy')
+    return [f'{file}: {message}' for index, decision in enumerate(load(file, {}).get('life_decisions', []))
+            if (message := life_decision_scope_message(index, decision))]
+
+
 STEPS = [
     ('0.41.0', 'generated document pages replace registered copies', generated_record_pages),
+    ('0.53.1', 'render photographs received with remarks before family display', received_photographs),
+    ('0.58.1', 'name the scope of life decisions with the author', scoped_life_decisions),
 ]
 
 

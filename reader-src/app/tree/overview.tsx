@@ -2,7 +2,7 @@
 import {useCallback,useEffect,useLayoutEffect,useRef,useState} from 'react';
 import {KinshipExplanation} from '../kinship-words';
 import {SecondWay} from './second-way';
-import {NEUTRAL,kinPhrase,relationPhrase,lifeLabel,lineTitle,placeLabel,type Model,type Row} from './model';
+import {isPerson,NEUTRAL,kinPhrase,relationPhrase,lifeLabel,lineTitle,placeLabel,type Model,type Row} from './model';
 import {useZoomPan} from './use-zoom-pan';
 /** How firmly a link or a person holds to the family: 1 records or family memory, 2 probable, 3 our version. */
 export type Hold=1|2|3;
@@ -137,7 +137,7 @@ function Dots({ov,model,visible,center,selected,onPick,onHover,detail,k,names}:{
  const dim=(id:string)=>{const tn=model.tone(id);return tn?(tn.kin?.8:.85):.55};
  // a whole large family seen from afar: dots and lines keep a readable size on screen instead of shrinking with it
  const s=detail?Math.max(1,.7/k):1;const r=detail?7*Math.max(1,.45/k):20;const fs=11/Math.max(k,.3);
- const label=(id:string)=>{const i=model.info[id];if(i.providedName)return i.providedName;const sur=i.short.split(' ').filter(x=>/\p{L}/u.test(x)).slice(-1)[0]||i.short;return k>=3?i.short:k>=1.7?sur.slice(0,10):names.has(id)?i.short:''};
+ const label=(id:string)=>{const i=model.info[id];if(i.knot)return '';if(i.providedName)return i.providedName;const sur=i.short.split(' ').filter(x=>/\p{L}/u.test(x)).slice(-1)[0]||i.short;return k>=3?i.short:k>=1.7?sur.slice(0,10):names.has(id)?i.short:''};
  const grid=detail?ov.axis.filter(a=>a.major||k>=1.8):ov.axis.filter(a=>Number(a.label)%100===0);
  // the part of the tree on screen now: one soft amber frame around it, so size and colour of a dot keep their own meaning
  const seen=[...visible].map(id=>ov.pos.get(id)).filter(Boolean) as {x:number;y:number}[];const fp=detail?15:46;
@@ -159,8 +159,8 @@ function Dots({ov,model,visible,center,selected,onPick,onHover,detail,k,names}:{
   {[...ov.pos].map(([id,p])=>{const here=id===center;const sel=id===selected;const rr=here?r*1.7:sel?r*1.35:r;
    return <g key={id}>{here?<circle cx={p.x} cy={p.y} r={rr} fill="#d98a1f" stroke="#fff" strokeWidth={detail?2:3} pointerEvents="none"/>:<HoldDot cx={p.x} cy={p.y} r={rr} color={col(id)} hold={ov.hold.get(id)??1} opacity={sel||visible.has(id)?1:dim(id)}/>}
     {sel&&<circle cx={p.x} cy={p.y} r={rr+(detail?2.6:6)} fill="none" stroke="#233a31" strokeWidth={detail?1.8:4} pointerEvents="none"/>}
-    {onPick&&<title>{model.info[id].name+(model.info[id].life?' · '+model.info[id].life:'')}</title>}</g>})}
-  {onPick&&[...ov.pos].map(([id,p])=><circle key={'hit'+id} className="ovdot" cx={p.x} cy={p.y} r={Math.max(22/k,r*1.8)} fill="transparent" role="button" tabIndex={0} aria-label={model.info[id].name} onPointerEnter={e=>{if(e.pointerType==='mouse')onHover?.(id)}} onFocus={()=>onHover?.(id)} onClick={()=>onPick(id)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onPick(id)}}}/>)}
+    {onPick&&isPerson(model.info[id])&&<title>{model.info[id].name+(model.info[id].life?' · '+model.info[id].life:'')}</title>}</g>})}
+  {onPick&&[...ov.pos].filter(([id])=>isPerson(model.info[id])).map(([id,p])=><circle key={'hit'+id} className="ovdot" cx={p.x} cy={p.y} r={Math.max(22/k,r*1.8)} fill="transparent" role="button" tabIndex={0} aria-label={model.info[id].name} onPointerEnter={e=>{if(e.pointerType==='mouse')onHover?.(id)}} onFocus={()=>onHover?.(id)} onClick={()=>onPick(id)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onPick(id)}}}/>)}
   {detail&&[...ov.pos].map(([id,p])=>{const t=label(id);const text=id===selected?[model.info[id].short,model.info[id].life].filter(Boolean).join(' · '):t;return text?<text key={'t'+id} x={p.x} y={p.y+r*2.3+fs*.6} fontSize={fs} textAnchor="middle" fill="#2b4338" fontWeight={id===center||id===selected?700:500} stroke="#f6f3ea" strokeWidth={fs*.35} paintOrder="stroke">{text}</text>:null})}
  </>
 }
@@ -190,7 +190,7 @@ export function OverviewDialog({ov,model,visible,center,go,onClose,labels,langua
  const when=sel&&!sel.birth&&!sel.death?'≈'+(sel.guess?.year??ov.years.get(selected)):'';
  return <div className="overview" role="dialog" aria-modal="true" aria-label={labels.overviewTitle}>
   <div className="ov-head"><div><h2>{labels.overviewTitle}</h2><p>{labels.overviewHint}</p></div><button className="ov-close" onClick={onClose} aria-label={labels.close}>×</button></div>
-  <div className="ov-lines">{model.lines.map(l=><button key={l.id} onClick={()=>focus(l.id)}><i style={{background:l.color}}/><span><b>{model.info[l.id].short}</b><small>{role(l)}</small></span></button>)}<HoldLegend labels={labels}/></div>
+  <div className="ov-lines">{model.lines.filter(l=>isPerson(model.info[l.id])).map(l=><button key={l.id} onClick={()=>focus(l.id)}><i style={{background:l.color}}/><span><b>{model.info[l.id].short}</b><small>{role(l)}</small></span></button>)}<HoldLegend labels={labels}/></div>
   <div ref={box} className={'ov-stage'+(moving?' moving':'')} onClick={e=>{if((e.target as Element).tagName==='svg'||(e.target as Element).classList.contains('ov-stage'))setSelected('')}}>
    <svg width={cw} height={ch} className="ov-svg" style={{transform:`translate(${t.x}px,${t.y}px) scale(${t.k})`}}><g transform={`translate(${PADL},${PAD})`}><Dots ov={ov} model={model} visible={visible} center={center} selected={selected} detail onPick={pick} onHover={setSelected} k={t.k} names={heads}/></g></svg>
    <div className="controls"><button aria-label={labels.zoomIn} onClick={()=>zoomBy(1.4)}>+</button><button aria-label={labels.zoomOut} onClick={()=>zoomBy(1/1.4)}>−</button><button aria-label={labels.recenter} title={labels.recenter} onClick={()=>focusAt(center,1.4)}>⌖</button><button aria-label={labels.showWhole} title={labels.showWhole} onClick={fit}>⤢</button></div>

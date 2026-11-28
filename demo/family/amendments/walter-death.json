@@ -1,0 +1,15 @@
+{
+  "_about": "Invented for the Familiar demo: what the host told stays as told; the proposal stands beside it.",
+  "fictional": true,
+  "id": "walter-death",
+  "person": "p-walter",
+  "field": "death",
+  "original": {"text": "Walter Pike died in 1990.", "source": "m-walter-death"},
+  "value": "1991",
+  "weight": 0.45,
+  "basis": "A neighbour remembers 1991 on the stone in Quarry Bend; nobody has photographed it yet.",
+  "sources": [],
+  "state": "proposed",
+  "by": "researcher",
+  "at": "2026-11-24T09:00:00+00:00"
+}

@@ -12,8 +12,18 @@ before you edit the graph or a contract; do not pin it.
 | You are | Read at start | Open on demand |
 |---|---|---|
 | Working on the engine (this repo) | `AGENTS.md`, `docs/why-graph.xml` (the router) | the PRD section your capability points at; the one shard your task names; a second shard when an outgoing or incoming router edge touches the change |
-| Working for a family (an instance) | the role sheet you were given | nothing here: the graph is not for you |
+| Working for a family (an instance) | the role sheet you were given; it sends a role that makes or judges what the family reads to `method/living-history.md` first | nothing here: the graph is not for you |
+| Changing the method of what a family reads (feed skills, feed rules, role sheets) | also `method/living-history.md` | the rule's "Written against" line before you tighten or loosen it |
 | A delegated subagent | what the brief names: one shard or less | — |
+
+`method/living-history.md` is the why-layer of the method, as the graph is of
+the code: rules arrive by command and carry no history, so this page says what
+they are for and which failure each was written against. It is not a rule and
+not a node; it is read once at the start because the agent's own bias toward
+accuracy is the failure it explains, and a rule read without its reason gets
+over-applied (27.11.2026: a correction against chapters that described papers
+was obeyed into chapters with no people). Whoever changes a feed rule adds its
+"Written against" line and, when the swing is new, a line to the page.
 
 For core changes, use `python scripts/why_impact.py <module-id|path|feature-id|PRD-key>`
 when declared coupling is not already clear. It retrieves direct dependencies and consumers in both shard and router,

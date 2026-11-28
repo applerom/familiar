@@ -236,7 +236,7 @@ Resources:
                   for page in s3.get_paginator('list_objects_v2').paginate(Bucket=os.environ['BUCKET'], Prefix='feedback/inbox/'):
                       for obj in page.get('Contents', []):
                           item = json.loads(s3.get_object(Bucket=os.environ['BUCKET'], Key=obj['Key'])['Body'].read())
-                          if item.get('kind') in {'ask_answer', 'ask_state'} or owner_only(item):
+                          if item.get('kind') in {'ask_answer', 'ask_state'} or str(item.get('subject', '')).startswith('amendment:') or owner_only(item):
                               continue
                           if item.get('id') in identities or subject and any(item.get(k) == subject for k in ('subject', 'anchor', 'question', 'ask_id', 'person')):
                               items.append({k: v for k, v in item.items() if k not in {'status', 'reply'}})
@@ -278,6 +278,8 @@ Resources:
                   return reply(400, {'error': 'invalid_feedback'})
               if owner_only(data):
                   return reply(403, {'error': 'owner_required'})
+              if data.get('subject', '').startswith('amendment:'):
+                  return reply(403, {'error': 'invalid_feedback'})
               data = {k: v for k, v in data.items() if k in allowed or k == 'new_person' or k in ASK_FIELDS}
               key = 'feedback/inbox/' + identity + '.json'
               existing = s3.list_objects_v2(Bucket=os.environ['BUCKET'], Prefix=key, MaxKeys=1)

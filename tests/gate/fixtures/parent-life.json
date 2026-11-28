@@ -1,0 +1,240 @@
+{
+  "historical": {
+  "people": [
+    {
+      "id": "p-walter", "name": "Walter Pike", "living": true, "living_basis": "precaution: imported",
+      "events": [
+        {"type": "death", "date": "1990", "weight": 0.3},
+        {"type": "birth", "date": "1849-10-07", "identity": "possible-namesake"}
+      ],
+      "cardPresentation": {"birth": "1700", "birthKind": "inferred"}
+    },
+    {"id": "baptized-child", "name": "Child Pike", "events": [{"type": "baptism", "date": "1788"}]},
+    {"id": "parent-on-threshold", "name": "Andrew Pike"},
+    {"id": "dated-bride", "name": "Rosa Pike", "events": [{"type": "marriage", "date": "1839"}]},
+    {"id": "parent-of-bride", "name": "Mary Pike"},
+    {"id": "baptism-parent", "name": "Aaron Pike", "living": true, "life_origin": "gedcom"},
+    {"id": "cautious", "name": "Clara Pike", "living": true, "living_basis": "precaution: imported", "events": [{"type": "birth", "date": "RECENT"}]},
+    {"id": "signer", "name": "Simon Pike", "living": true, "living_basis": "precaution: imported"},
+    {"id": "wife", "name": "Vera Pike", "living": true, "life_origin": "gedcom"},
+    {"id": "declared", "name": "Daniel Pike", "living": true, "life_origin": "memory", "events": [{"type": "birth", "date": "OLDER"}]}
+  ],
+  "record": {"events": [{"type": "baptism", "date": "1788", "subjects": [{"person": "baptism-parent", "role": "father"}]}, {"type": "commission", "date": "1944", "subjects": [{"person": "signer", "role": "signer"}]}, {"type": "loss-report", "date": "1942", "subjects": [{"person": "wife", "role": "wife"}]}]},
+  "expected": {"p-walter": ["unknown", "unknown"], "parent-on-threshold": ["unknown", "unknown"], "parent-of-bride": ["dead", "dead"], "baptism-parent": ["dead", "dead"], "signer": ["unknown", "dead"], "wife": ["unknown", "dead"], "cautious": ["living", "living"], "declared": ["living", "living"]},
+  "edges": [
+    {"type": "parent", "from": "signer", "to": "p-walter", "weight": 0.6, "status": "hypothesis", "sources": ["doc-helena-baptism"]},
+    {"type": "parent", "from": "p-walter", "to": "baptized-child", "status": "hypothesis", "weight": 0.29, "sources": ["doc-helena-baptism"]},
+    {"type": "parent", "from": "parent-on-threshold", "to": "baptized-child", "status": "hypothesis", "weight": 0.30, "sources": ["doc-helena-baptism"]},
+    {"type": "parent", "from": "parent-of-bride", "to": "dated-bride", "status": "verified", "sources": ["doc-helena-baptism"]}
+  ]
+  },
+  "citation": {
+    "people": [
+      {
+        "id": "p-citer",
+        "name": "Citer",
+        "events": [
+          {
+            "type": "residence",
+            "date": "",
+            "provenance": [
+              "doc-helena-baptism"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "p-relative",
+        "name": "Relative"
+      },
+      {
+        "id": "p-linked",
+        "name": "Linked"
+      },
+      {
+        "id": "p-named",
+        "name": "Named"
+      }
+    ],
+    "record": {
+      "date": "1910",
+      "people": {},
+      "subjects": [
+        {
+          "person": "p-named",
+          "role": "named"
+        }
+      ]
+    },
+    "expected": {
+      "p-citer": [
+        "unknown",
+        "unknown"
+      ],
+      "p-relative": [
+        "unknown",
+        "unknown"
+      ],
+      "p-linked": [
+        "unknown",
+        "unknown"
+      ],
+      "p-named": [
+        "dead",
+        "dead"
+      ]
+    },
+    "edges": [
+      {
+        "type": "parent",
+        "from": "p-relative",
+        "to": "p-named",
+        "status": "verified",
+        "sources": [
+          "rec-santa-ludovina-1921-14"
+        ]
+      },
+      {
+        "type": "parent",
+        "from": "p-relative",
+        "to": "p-linked",
+        "status": "verified",
+        "sources": [
+          "doc-helena-baptism"
+        ]
+      }
+    ],
+    "merges": [
+      {
+        "canonical": "p-citer",
+        "alias": "p-named",
+        "status": "probable",
+        "basis": "Compare the two cards.",
+        "weight": 0.3,
+        "sources": [
+          "doc-helena-baptism"
+        ]
+      }
+    ],
+    "sealed_living": null
+  },
+  "same": {
+    "candidate_paper": {
+      "id": "doc-candidate",
+      "kind": "home-paper",
+      "title": "Named’s baptism",
+      "source": {"kind": "home", "holder": "host"},
+      "language": ["en"],
+      "fields": {"Name": "Named"},
+      "reading": "Named",
+      "people": {},
+      "subjects": [{"person": "p-named", "role": "named"}],
+      "subjects_complete": true,
+      "fictional": true,
+      "date": "1891",
+      "privacy": "dead"
+    },
+    "people": [
+      {
+        "id": "p-citer",
+        "name": "Citer",
+        "events": [
+          {
+            "type": "residence",
+            "date": "",
+            "provenance": [
+              "doc-helena-baptism"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "p-relative",
+        "name": "Relative"
+      },
+      {
+        "id": "p-linked",
+        "name": "Linked"
+      },
+      {
+        "id": "p-named",
+        "name": "Named"
+      },
+      {
+        "id": "p-child",
+        "name": "Child"
+      }
+    ],
+    "record": {
+      "date": "1930",
+      "people": {},
+      "subjects": [
+        {
+          "person": "p-named",
+          "role": "adult-witness"
+        }
+      ]
+    },
+    "expected": {
+      "p-citer": [
+        "dead",
+        "dead"
+      ],
+      "p-relative": [
+        "unknown",
+        "unknown"
+      ],
+      "p-linked": [
+        "unknown",
+        "unknown"
+      ]
+    },
+    "edges": [
+      {
+        "type": "parent",
+        "from": "p-relative",
+        "to": "p-named",
+        "status": "verified",
+        "weight": 0.99,
+        "sources": [
+          "rec-santa-ludovina-1921-14"
+        ]
+      },
+      {
+        "type": "parent",
+        "from": "p-relative",
+        "to": "p-linked",
+        "status": "verified",
+        "sources": [
+          "doc-helena-baptism"
+        ]
+      },
+      {
+        "type": "parent",
+        "from": "p-citer",
+        "to": "p-child",
+        "status": "verified",
+        "weight": 0.99,
+        "sources": ["rec-santa-ludovina-1921-14"]
+      }
+    ],
+    "merges": [
+      {
+        "canonical": "p-citer",
+        "alias": "p-named",
+        "status": "accepted_evidence",
+        "basis": "Compare the two cards.",
+        "weight": 0.5,
+        "sources": [
+          "doc-helena-baptism"
+        ],
+        "evidence": "The signed name was established.",
+        "decision": "Host confirmed the reading.",
+        "name": "Named Pike",
+        "summary": "Kept on the combined card.",
+        "birth": "ABT 1900"
+      }
+    ],
+    "sealed_living": false
+  }
+}

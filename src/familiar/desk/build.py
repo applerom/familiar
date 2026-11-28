@@ -11,8 +11,8 @@
 # - personal staging also removes correspondence receipts from the common feedback file [review: engine lead]
 # - local serving pins verified bytes, reloads a changed build record and refuses changed file-set metadata [review: engine lead]
 # - reader receipts use only explicit status and reply fields bound to the assembled mark bytes [review: engine lead]
-# - privacy, engine version and navigation share a static lower row on every desk HTML [review: engine lead]
-# - every screen consumes the same available reader links and investigation entry [review: browser walk]
+# - one static lower row of at most four places, none of them empty, is the same on every desk HTML; a fifth place stops the build [review: engine lead]
+# - every quieter place, the private notice and the engine version are static in one list the page top opens [review: browser walk]
 # - reader and supplemental pages use one packaged page-top component with reserved control slots [review: browser walk]
 # - fictional demo exports use portable links and omit server-backed editing controls [review: engine lead]
 # - public-reader demos consume the public, independently read seal instead of the host-private projection [review: engine lead]
@@ -38,15 +38,68 @@ from familiar import __version__
 from familiar.instance.gate import boundary
 from familiar.instance.writer import encode
 
+from .attachments import ATTACH_LIMITS
 from .model import decision, listing, relative, settings, sha, source, words
 
 
-def hosted_files(files, *, personal, feedback_ids=()):
+PAPERS = {'archive-record', 'home-paper', 'record', 'document', 'document-scan'}
+
+
+def icon(path):
+    return ('<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" '
+            'stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + path + '</svg>')
+
+
+ICONS = {
+    'tree_short': icon('<circle cx="12" cy="5" r="2.5"/><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="19" r="2.5"/>'
+                       '<path d="M12 7.5V12M12 12 6.8 16.6M12 12l5.2 4.6"/>'),
+    'nav_asks': icon('<path d="M4 5h16v11H11l-5 4v-4H4z"/><path d="M8.5 9h7M8.5 12h4.5"/>'),
+    'nav_stories': icon('<path d="M3 5.5A2.5 2.5 0 0 1 5.5 3H11v16H5.5A2.5 2.5 0 0 0 3 21z"/>'
+                        '<path d="M21 5.5A2.5 2.5 0 0 0 18.5 3H13v16h5.5A2.5 2.5 0 0 1 21 21z"/>'),
+    'nav_papers': icon('<path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/>'),
+}
+
+
+def hosted_files(files, *, personal, feedback_ids=(), photos=None, fictional_draft=False):
+    from familiar.feeds.flow import require_finished
+
+    from .feed_strip import PAGE as STRIP_PAGE
+
+    from familiar.instance.gallery import external_faces
+    graph = json.loads(files['graph.json']) if 'graph.json' in files else {}
+    if not fictional_draft:
+        require_finished(graph.get('feeds', []))
+    projected, cuts, originals = external_faces(graph, photos or {}, files.__getitem__)
     result = {name: raw for name, raw in files.items()
-              if personal or not name.startswith(('desk/correspondence.', 'desk/search-map.'))}
+              if name not in originals and name != STRIP_PAGE
+              and (personal or not name.startswith(('desk/correspondence.', 'desk/search-map.')))}
+    if projected != graph:
+        from .asks import faces
+        previous = faces(graph, graph['people'])
+        current = faces(projected, projected['people'])
+        avatar_changes = {css.encode(): current.get(pid, '').encode()
+                          for pid, css in previous.items() if css != current.get(pid)}
+        result['graph.json'] = encode(projected)
+        if cuts.keys() & result.keys():
+            raise ValueError('A face rendition takes a hosted desk asset name')
+        result.update(cuts)
+        for name, raw in result.items():
+            if name.startswith('desk/asks') and name.endswith('.html'):
+                for old, new in avatar_changes.items():
+                    raw = raw.replace(old, new)
+                result[name] = raw
     for name, raw in result.items():
-        if not personal and name.endswith('.html'):
-            result[name] = re.sub(rb'<a data-desk-label="nav_(?:correspondence|search_map)"[^>]*>.*?</a>', b'', raw)
+        if name.endswith('.html'):
+            if not personal:
+                raw = re.sub(rb'<a data-desk-label="nav_(?:correspondence|search_map)"[^>]*>.*?</a>', b'', raw)
+            result[name] = re.sub(rb'<p data-local-feed-strip>.*?</p>', b'', raw)
+        if not personal and re.fullmatch(r'desk/asks-links(?:\.[a-z-]+)?\.json', name):
+            links = json.loads(raw)
+            from .feedback_offer import amendment_reply
+            if 'blanks' in links:
+                links['blanks'] = {pid: kept for pid, slots in links['blanks'].items()
+                                   if (kept := [slot for slot in slots if not amendment_reply(slot)])}
+            result[name] = encode(links)
     if 'desk/feedback.json' in result:
         result['desk/feedback.json'] = encode({k: v for k, v in json.loads(result['desk/feedback.json']).items()
                                                if k in feedback_ids})
@@ -54,7 +107,8 @@ def hosted_files(files, *, personal, feedback_ids=()):
         result['desk/asks-reminders.json'] = encode([r for r in json.loads(result['desk/asks-reminders.json']) if not r['birthday']])
     if 'reader-manifest.json' in result:
         manifest = json.loads(result['reader-manifest.json'])
-        manifest['files'] = {name: sha(result[name]) for name in manifest['files']}
+        paths = [name for name in manifest['files'] if name not in originals]
+        manifest['files'] = {name: sha(result[name]) for name in [*paths, *sorted(cuts)]}
         result['reader-manifest.json'] = encode(manifest)
     return result
 
@@ -164,7 +218,11 @@ def _assemble_checked(instance, active, config, delivered, watch, stamp, *, publ
     listings.update(show_listings)
     pages['desk/show.json'] = encode(show)
     lines = '' if public_reader else line_section(active, graph, w['show'])
-    pages['desk/progress.html'] = show_page(active, w, 'desk/journal.html' in pages, lines=lines)
+    from .feed_strip import PAGE as STRIP_PAGE, page as feed_strip
+    strips = not public_reader and any(feed['chapters'] for feed in graph.get('feeds', []))
+    if strips:
+        pages[STRIP_PAGE] = feed_strip(graph['feeds'], active.source_language).encode('utf-8')
+    pages['desk/progress.html'] = show_page(active, w, 'desk/journal.html' in pages, lines=lines, strips=strips)
     from familiar.reader.graph import card_memory
     memory = card_memory(active)
     def translated(value, texts):
@@ -180,21 +238,21 @@ def _assemble_checked(instance, active, config, delivered, watch, stamp, *, publ
         pages[f'desk/show.{lang}.json'] = encode(translated(shown_in, texts))
         lines_in = '' if public_reader else line_section(active, graph, lw['show'], language=lang, texts=texts)
         pages[f'desk/progress.{lang}.html'] = show_page(active, lw, 'desk/journal.html' in pages, lines=lines_in,
-                                                        language=lang, data=f'desk/show.{lang}.json')
+                                                        language=lang, data=f'desk/show.{lang}.json', strips=strips)
     if not public_reader:
-        from .correspondence import project as project_correspondence
-        correspondence_pages, correspondence_inputs, correspondence_listings = project_correspondence(active, w)
-        pages.update(correspondence_pages)
+        # All desk languages render one checked correspondence projection.
+        from .correspondence import checked_letters, project as project_correspondence
+        letters, correspondence_inputs, correspondence_listings = checked_letters(active)
+        pages.update(project_correspondence(active, w, letters))
         inputs.update(correspondence_inputs)
         listings.update(correspondence_listings)
         for lang, texts in memory.items():
             names = {pid: form for pid, person in graph.get('people', {}).items()
                      if isinstance(form := ((person.get('namePresentation') or {}).get('byLanguage') or {}).get(lang), str)
                      and form.strip()}
-            pages.update(project_correspondence(active, words(instance, lang), language=lang, texts=texts, local_names=names)[0])
+            pages.update(project_correspondence(active, words(instance, lang), letters, language=lang, texts=texts, local_names=names))
     from .search_map import PAGE as SEARCH_MAP, project as project_map
-    if (search_map := project_map(active, w)) is not None:
-        pages[SEARCH_MAP] = search_map
+    pages.update(project_map(active, w, [(lang, words(instance, lang), texts) for lang, texts in memory.items()]))
     from .feedback import owner_only, receipt, research_feedback
     def read_mark(path):
         raw = path.read_bytes() if path.is_file() else None
@@ -219,35 +277,43 @@ def _assemble_checked(instance, active, config, delivered, watch, stamp, *, publ
         for lang in instance.languages}, 'source_language': instance.source_language,
         'asks_languages': sorted(lang for lang in instance.languages if f'desk/asks.{lang}.html' in files),
         'page_languages': {page: sorted(lang for lang in instance.languages if f'desk/{page}.{lang}.html' in files)
-                           for page in ('asks', 'correspondence', 'progress')},
+                           for page in ('asks', 'correspondence', 'progress', 'search-map')},
         'engine_version': __version__, 'build': build_id,
-        'family_id': instance.id})
+        'family_id': instance.id, 'attach_limits': ATTACH_LIMITS})
     files['robots.txt'] = b'User-agent: *\nDisallow: /\n'
     styles = ''.join('<link rel="stylesheet" href="/' + name + '">'
                      for name in files if name.startswith('assets/tokens-') and name.endswith('.css'))
     people = list(graph.get('people', {}).values())
+    # The lower row: what a reader comes for, at most four places, and only those this family has.
     navigation = [('tree_short', '/#view=tree')]
+    if b'class="ask-card"' in pages.get('desk/asks.html', b''):
+        navigation.append(('nav_asks', '/desk/asks.html'))
     if any(f.get('chapters') for f in graph.get('feeds', [])) or any(p.get('story') for p in people):
         navigation.append(('nav_stories', '/#view=stories'))
+    if any(m.get('asset') for p in people for m in p.get('media', []) + p.get('illustrations', [])) or any(
+            s.get('image') or s.get('asset') and s.get('kind') in PAPERS for s in graph.get('sources', {}).values()):
+        navigation.append(('nav_papers', '/#view=papers'))
+    if len(navigation) > 4:
+        raise ValueError('The lower row holds at most four places; CRAFT-PLAIN-PAGES')
+    # Everything else is one tap away behind the page top: never in a reader's way, never lost to the narrator.
+    quiet = [('nav_families', '/#view=families')] if people else []
     if graph.get('worldMap'):
-        navigation.append(('nav_world', '/#view=world'))
-    navigation.append(('nav_families', '/#view=families'))
-    if active.source_language in {'ru', 'pl', 'en'}:
-        navigation.append(('nav_kinship', '/#view=kinship'))
-    if any(any(m.get('photo') and m.get('asset') for m in p.get('media', []))
-           or any(i.get('asset') for i in p.get('illustrations', [])) for p in people):
-        navigation.append(('nav_photos', '/#view=photos'))
-    navigation.append(('nav_progress', '/desk/progress.html'))
+        quiet.append(('nav_world', '/#view=world'))
+    quiet.append(('nav_progress', '/desk/progress.html'))
     if SEARCH_MAP in pages:
-        navigation.append(('nav_search_map', '/' + SEARCH_MAP))
-    if not public_reader:
-        navigation[1:1] = [('nav_asks', '/desk/asks.html'), ('nav_correspondence', '/desk/correspondence.html')]
-    links = ''.join('<a data-desk-label="' + label + '" href="' + href + '">'
-                    + html.escape(w[label]) + '</a>' for label, href in navigation)
-    banner = (styles + '<footer id="desk-footer"><aside id="desk-notice" role="note"><span class="desk-private-label">' + html.escape(w['private_notice']) + '</span>'
-              + '<small class="desk-version" title="Familiar ' + html.escape(__version__) + '">Familiar '
-              + html.escape(__version__) + '</small></aside><nav id="desk-nav" aria-label="Familiar">'
-              + links + '</nav><span id="desk-feedback-entry"></span></footer>'
+        quiet.append(('nav_search_map', '/' + SEARCH_MAP))
+    if 'desk/correspondence.html' in pages:
+        quiet.append(('nav_correspondence', '/desk/correspondence.html'))
+    def link(label, href, icon=''):
+        return ('<a data-desk-label="' + label + '" href="' + href + '">' + icon + '<span>'
+                + html.escape(w[label]) + '</span></a>')
+    notice = ('<span class="desk-private-label">' + html.escape(w['private_notice']) + '</span>'
+              '<small class="desk-version">Familiar ' + html.escape(__version__) + '</small>')
+    banner = (styles + '<footer id="desk-footer"><aside id="desk-notice" role="note">' + notice + '</aside><nav id="desk-nav" aria-label="Familiar">'
+              + ''.join(link(label, href, ICONS[label]) for label, href in navigation)
+              + '</nav><span id="desk-feedback-entry"></span></footer>'
+              '<nav id="desk-more" hidden>' + ''.join(link(label, href) for label, href in quiet)
+              + '<p class="desk-colophon">' + notice + '</p></nav>'
               '<link rel="stylesheet" href="/desk/desk.css">'
               '<script src="/desk/session.js"></script>'
               '<script defer src="/desk/desk.js"></script>')
@@ -402,11 +468,10 @@ def export_demo(instance, out, *, public_reader=False):
     """A portable, read-only desk for an explicitly fictional family only."""
     if instance.config.get('family', {}).get('fictional') is not True:
         raise ValueError('Static demo export requires family.fictional = true')
-    from familiar.instance.gate import publication
-    checked = publication(instance, 'reader')
-    checked.check(instance)
     if public_reader:
+        from familiar.instance.gate import publication
         from familiar.instance.writer import InputWatch
+        checked = publication(instance, 'reader')
         decision(instance)
         active = source(instance)
         if active.id != instance.id or active.root != instance.root:
@@ -418,7 +483,9 @@ def export_demo(instance, out, *, public_reader=False):
                                    watch, stamp, public_reader=True)
     else:
         bundle = assemble(instance)
-    files = bundle.files
+    from familiar.instance.gallery import photographs
+    files = hosted_files(bundle.files, personal=True, photos=photographs(instance),
+                         fictional_draft=not public_reader)
     # Personal desk scripts require a feedback/auth server. The public demo has
     # neither; retain only the reader, investigation and their static navigation.
     omitted = {'desk/desk.js', 'desk/session.js', 'desk/tree-add.js', 'desk/tree-add.css',

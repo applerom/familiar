@@ -1,6 +1,6 @@
 'use client';
 import {useEffect,useMemo,useRef,useState,type ReactNode} from 'react';
-import type {Model,Row} from './tree/model';
+import {isPerson,type Model,type Row} from './tree/model';
 
 /** Cyrillic letters in a rough Latin sound, so "Ковальский" meets "Kowalski". */
 const CYR:Record<string,string>={а:'a',б:'b',в:'v',г:'h',ґ:'g',д:'d',е:'e',ё:'e',є:'e',ж:'z',з:'z',и:'i',і:'i',ї:'i',й:'i',к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ў:'u',ф:'f',х:'h',ц:'c',ч:'c',ш:'s',щ:'s',ъ:'',ы:'i',ь:'',э:'e',ю:'iu',я:'ia'};
@@ -14,8 +14,9 @@ function strings(x:unknown,out:string[]){if(typeof x==='string')out.push(x);else
 export function findPeople(people:Row,model:Model,query:string,keep:(id:string)=>boolean=()=>true){
  const words=query.split(/\s+/).map(searchKey).filter(Boolean);if(!words.length)return [];
  const found:{id:string;byName:boolean}[]=[];
- for(const p of Object.values<Row>(people)){if(!model.info[p.id]||model.info[p.id].placeholder||!keep(p.id))continue;
-  const names=searchKey(strings([model.info[p.id].short,p.name,p.names,p.namePresentation,p.disambiguator],[]).join(' '));
+ for(const p of Object.values<Row>(people)){if(!isPerson(model.info[p.id])||!keep(p.id))continue;
+  const possible=(p.probableIdentities||[]).map((m:Row)=>[m.name,m.card?.names]);
+  const names=searchKey(strings([model.info[p.id].short,p.name,p.names,p.namePresentation,p.disambiguator,possible],[]).join(' '));
   if(words.every(w=>names.includes(w))){found.push({id:p.id,byName:true});continue}
   const all=names+' '+searchKey(strings([p.events,(p.facts||[]).map((f:Row)=>[f.label,f.text])],[]).join(' '));
   if(words.every(w=>all.includes(w)))found.push({id:p.id,byName:false})}

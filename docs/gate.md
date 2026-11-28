@@ -30,6 +30,12 @@ defaults without changing the stored family file; unknown nonprivacy preferences
 and stale text-lexicon paths cannot stop display. Setting weights use the same
 registry as findings, rather than creating a second set of gates.
 
+A grey draft frame belongs in the local desk. External reader and feed releases
+and hosted-desk staging name the affected chapters and ask for the placeholders
+to be replaced or removed. The local instance check reports the rhythm as advice.
+Photos marked `unnamed_faces` stay in the local desk. For a marked portrait
+outside it, the reader receives a separate face image with the original omitted.
+
 What it promises, to whom, and how to extend it without opening a hole.
 Read this before you add a form, a reader surface, an output or a check.
 
@@ -39,7 +45,23 @@ Advice names the item, protected subjects and life status, and the next action:
 clarify life status or separate a deceased-only excerpt.
 A living or unknown person's full document and its record-linked card details
 remain excluded. The build can continue with that omission. Conflicting
-subjects still refuse it.
+subjects still refuse it. A paper with stated `subjects` is judged by them when a
+living relative's fact only infers from it; a paper without them, one that records
+the living person's own name or event, and one whose words name that person stay
+excluded.
+
+`instance check` and `instance upgrade --dry-run` name existing life decisions
+whose author must confirm the scope. Only the family projection uses an
+unscoped death decision. Public census or annex papers require a complete
+list of named people. Public reader ids for protected people and closed source
+stubs are ordinal references scoped to one bundle. Unchanged inputs retain
+the same references. Cross-release links to those ids have no stable identity.
+
+For prose whose attribution is missing, `instance check` reports candidate
+paragraphs and the reason for a second reading. It never infers a person's
+identity from those cues. Use `prose` to name each paragraph's people, with
+an `otherwise` passage for public names and kinship. Public release still
+requires an independent reading of the exact preview.
 
 A `photo-treatment` is the same real photographic frame with colour or print
 processing, distinct from a generated reconstruction. The original picture has
@@ -58,8 +80,16 @@ from public reader exports. Protected
 documents remain excluded in both views. Existing stored forms are unchanged.
 
 A `photo-restoration` generates a sharp photograph from an existing real frame,
-only when every original subject is known dead. Living or unknown subjects are
-refused even in the local host display, in every display. It never supplies
+only when every identified subject is known dead everywhere. For a
+corpus-backed `period-picture`, inspect the original and explicitly list its
+identified `subjects`. Use `subjects: []` if there are none. If any people in
+the frame are unidentified, also set `unidentified_people: true` on the
+original. The corpus record's `date` must then be the recorded date of the
+frame itself (ISO day or four-digit year) and at least a century old, or older
+if the family's privacy horizon is longer. A year alone ends on 31 December.
+Protected records and living or unknown identified subjects are refused even
+in the local host display. Family photos and scans still require known
+deceased subjects. A restoration never supplies
 a document, source, cut-out or game evidence. The original retains its own rights
 and privacy rules, and is one tap away in both the chapter and person card.
 See `forms/photo-restoration.json`: put the restoration under the original's
@@ -273,9 +303,14 @@ about living or unknown people, or uses an authored `otherwise` passage about
 deceased people. Nested prose inherits chapter subjects unless declared separately.
 No omissions are turned into permission requests.
 
-Life assessments use one registered horizon (default 110) for all intake kinds.
-Unknown is represented separately and is protected. Direct-generation estimates
-never manufacture a birth event. Family decisions retain basis, author, date and
+Across intakes the registered public age is over 100. The private family display
+uses 75 and over for unknown status. A paper's date bounds only the people
+attributed in its own record: structured subjects, people, relatives, field
+subjects, or the established primary person. A citation alone carries no date.
+A child's own recorded event, including a birth or baptism attributed in a
+record, can bound a parent on a link at weight 0.30 or above. Import precautions
+leave the family declaration open. Card estimates stay separate from recorded
+events. Family decisions retain basis, author, date and
 an explicit revocation flag; a positive living privacy declaration always wins.
 
 A document `excerpt` selects exact literal record field keys with recorded

@@ -4,7 +4,9 @@
     <REL TYPE="DEPENDS_ON" TARGET="MOD-FAMILY-GALLERY"/>
   </MODULE_FAMILY_EDITION>
   <MODULE_FAMILY_GALLERY ID="MOD-FAMILY-GALLERY" FILE="src/familiar/instance/gallery.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Outside the house, a face is delivered as cropped pixels and a photograph with unnamed faces is omitted.</INVARIANT>
     <INVARIANT REVIEW="engine lead">The gallery supplies the same identified subjects in each use; living subjects' photos stay in the family display and original metadata stays in the archive.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">An archival-only photo has no reader asset. Card-only photographs stay out of the general album.</INVARIANT>
     <PRD_REF>docs/PRD.md#FORMS</PRD_REF>
   </MODULE_FAMILY_GALLERY>
   <MODULE_READER_PROFILE ID="MOD-READER-PROFILE" FILE="docs/reader-profile.md" STATE="IMPLEMENTED"/>
@@ -51,6 +53,7 @@
   </MODULE_READER_EXPORT>
   <MODULE_READER_ASSETS ID="MOD-READER-ASSETS" FILE="src/familiar/reader/assets.py" STATE="IMPLEMENTED"/>
   <MODULE_READER_DOCUMENTS ID="MOD-READER-DOCUMENTS" FILE="src/familiar/reader/documents.py" STATE="IMPLEMENTED">
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_f2_record_subject_cannot_be_omitted">Document pages resolve the approved corpus reference from the projection. A withheld source id cannot recover its page or scan.</INVARIANT>
     <PRD_REF>docs/PRD.md#FORMS</PRD_REF>
     <!-- A canonical record keeps its literal local page even when several cut-outs share its source. -->
     <REL TYPE="DEPENDS_ON" TARGET="MOD-READER-SCANS"/>
@@ -59,7 +62,11 @@
     <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_f3_public_name_and_kinship_and_private_address_exclusion">A permitted scan is a local web derivative bound to its original fingerprint.</INVARIANT>
   </MODULE_READER_SCANS>
   <!-- Person adaptation and card serialization run in memory; feeds/documents/media keep checked caches. -->
-  <MODULE_READER_GRAPH ID="MOD-READER-GRAPH" FILE="src/familiar/reader/graph.py" STATE="IMPLEMENTED"/>
+  <MODULE_READER_GRAPH ID="MOD-READER-GRAPH" FILE="src/familiar/reader/graph.py" STATE="IMPLEMENTED">
+    <INTENT>Join probable tiles only in the family display, after independent life and document decisions.</INTENT>
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_only_recorded_events_open_a_card">Both people must be deceased in the family projection before the found card lends dates or papers.</INVARIANT>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-TREE-IDENTITIES"/>
+  </MODULE_READER_GRAPH>
   <MODULE_READER_CLI ID="MOD-READER-CLI" FILE="src/familiar/reader/cli.py" STATE="IMPLEMENTED">
     <REL TYPE="DEPENDS_ON" TARGET="MOD-READER-EXPORT"/>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-READER-BOOK"/>
@@ -67,7 +74,9 @@
   <MODULE_READER_EXPORT_CONTRACT ID="MOD-READER-EXPORT-CONTRACT" FILE="docs/reader-export.md" STATE="IMPLEMENTED"/>
   <MODULE_READER_SHELL_BUILD ID="MOD-READER-SHELL-BUILD" FILE="reader-src/build.mjs" STATE="IMPLEMENTED"/>
   <MODULE_READER_SERVER ID="MOD-READER-SERVER" FILE="src/familiar/reader/server.py" STATE="IMPLEMENTED"/>
-  <MODULE_READER_EXPERIENCES ID="MOD-READER-EXPERIENCES" FILE="src/familiar/reader/experiences.py" STATE="IMPLEMENTED"/>
+  <MODULE_READER_EXPERIENCES ID="MOD-READER-EXPERIENCES" FILE="src/familiar/reader/experiences.py" STATE="IMPLEMENTED">
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_play_in_flow">A game cannot deliver a route on an image absent from its displayed chapter.</INVARIANT>
+  </MODULE_READER_EXPERIENCES>
   <MODULE_READER_BOOK ID="MOD-READER-BOOK" FILE="src/familiar/reader/book.py" STATE="IMPLEMENTED">
     <!-- Consume the factory's current seal; do not duplicate its family gate before flat delivery. -->
     <!-- English prompt cues name UI objects/directions; ordinary tap/press prose stays printable. -->
@@ -85,6 +94,7 @@
     <INVARIANT REVIEW="engine lead">The investigation derives ordered dateless pages, all recorded alternatives including ruled-out ones, weight shifts and cumulative coverage from research inputs; it is never a research source.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Every desk screen offers one feedback sender with literal text, stable page/person/feed/step context and a human where line; naming, additions, corrections and answers use the same inbox.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Browser-owned receipts show sent, read or addressed and an explicit reader reply; local marks appear immediately and hosted marks enter the next build. Closed drafts survive.</INVARIANT>
+    <INVARIANT TEST="tests/gate/test_desk_guarantees.py::test_attached_files_are_taken_by_content_within_bounds">A file failure or edited retry keeps one accepted text, and a storage failure during logout still clears the browser cookies.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Every desk HTML labels its private version and engine before JavaScript in the same lower row as navigation and feedback; phone controls do not overlap.</INVARIANT>
     <INVARIANT TEST="tests/journeys/test_installed_engine.py::test_installed_engine">Desk rebuilds retain literal person placeholders and withhold source assets after privacy changes; revoking the host decision prevents another build.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Warm builds and shell or language changes reuse a checked reader; cached media remain bound to its seal and person edits affect only their dependent projections.</INVARIANT>
@@ -110,6 +120,7 @@
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DESK-SHOW-STYLE"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DESK-SERVER"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DESK-FEEDBACK"/>
+    <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DESK-ATTACHMENTS"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DESK-TREE-ADD"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-DESK-TREE-ADD-STYLE"/>
   </FEATURE_FAMILY_DESK>
@@ -119,6 +130,7 @@
   <MODULE_DESK_BUILD ID="MOD-DESK-BUILD" FILE="src/familiar/desk/build.py" STATE="IMPLEMENTED">
     <INVARIANT REVIEW="engine lead">Both hosted modes exclude owner receipts from the common feedback projection.</INVARIANT>
     <INVARIANT REVIEW="engine lead">A public-reader fictional demo wraps the accepted public projection; it never substitutes the host-private reader.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">Every desk language renders the same checked correspondence projection.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-READER-EXPORT"/>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-DESK-MODEL"/>
   </MODULE_DESK_BUILD>
@@ -138,8 +150,19 @@
   </MODULE_DESK_SHOW>
   <MODULE_DESK_SHOW_CLIENT ID="MOD-DESK-SHOW-CLIENT" FILE="src/familiar/desk/assets/show.js" STATE="IMPLEMENTED"/>
   <MODULE_DESK_SHOW_STYLE ID="MOD-DESK-SHOW-STYLE" FILE="src/familiar/desk/assets/show.css" STATE="IMPLEMENTED"/>
-  <MODULE_DESK_SERVER ID="MOD-DESK-SERVER" FILE="src/familiar/desk/server.py" STATE="IMPLEMENTED"/>
+  <MODULE_DESK_SERVER ID="MOD-DESK-SERVER" FILE="src/familiar/desk/server.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Login actions use the local origin and a server-generated page outside every published artifact.</INVARIANT>
+  </MODULE_DESK_SERVER>
   <MODULE_DESK_FEEDBACK ID="MOD-DESK-FEEDBACK" FILE="src/familiar/desk/feedback.py" STATE="IMPLEMENTED"/>
+  <MODULE_RECEIVED_SCAN ID="MOD-RECEIVED-SCAN" FILE="src/familiar/reader/received_scan.py" STATE="IMPLEMENTED">
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-READER-SCANS"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-DESK-ATTACHMENTS"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-SCAN-WINDOWS"/>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-SCAN-LINUX"/>
+  </MODULE_RECEIVED_SCAN>
+  <MODULE_SCAN_WINDOWS ID="MOD-SCAN-WINDOWS" FILE="src/familiar/reader/scan_windows.py" STATE="IMPLEMENTED"/>
+  <MODULE_SCAN_LINUX ID="MOD-SCAN-LINUX" FILE="src/familiar/reader/scan_linux.py" STATE="IMPLEMENTED"/>
+  <MODULE_DESK_ATTACHMENTS ID="MOD-DESK-ATTACHMENTS" FILE="src/familiar/desk/attachments.py" STATE="IMPLEMENTED"/>
   <MODULE_DESK_TREE_ADD ID="MOD-DESK-TREE-ADD" FILE="src/familiar/desk/assets/tree-add.js" STATE="IMPLEMENTED"/>
   <MODULE_DESK_TREE_ADD_STYLE ID="MOD-DESK-TREE-ADD-STYLE" FILE="src/familiar/desk/assets/tree-add.css" STATE="IMPLEMENTED"/>
 </Why_Graph_Shard>

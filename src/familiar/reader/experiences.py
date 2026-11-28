@@ -3,7 +3,7 @@
 # PRD_REF: docs/PRD.md#FORMS
 # INVARIANTS:
 # - public routes contain only visible stops and attributed deceased participants [review: engine lead]
-# - games cannot restore a document removed from their enclosing chapter [review: engine lead]
+# - games cannot restore a document or image removed from their enclosing chapter [review: engine lead]
 # - interactive data never executes family-supplied code [review: engine lead]
 # CHANGES_WITH:
 # - MOD-PUBLICATION (typed atlas, game and panorama fields)
@@ -29,17 +29,56 @@ def play(instance, graph):
                         if image.get('asset') in data.get(source, {}):
                             image[target] = copy.deepcopy(data[source][image['asset']])
             if game := data.get('games', {}).get(f"{feed['id']}/{chapter['id']}"):
-                chapter['game'] = copy.deepcopy(game)
+                chapter['game'] = chapter_game(chapter, game)
 
 
-def protect_game_documents(graph):
+def chapter_game(chapter, game):
+    result = copy.deepcopy(game)
+    _protect_route(chapter, result)
+    return result
+
+
+def _visible_route(route, images):
+    if not isinstance(route, dict):
+        return False
+    asset = route.get('asset')
+    points = route.get('points')
+    if not isinstance(asset, str) or asset not in images:
+        return False
+    if not isinstance(points, list) or len(points) < 2:
+        return False
+    for point in points:
+        if not isinstance(point, dict):
+            return False
+        for axis in ('x', 'y'):
+            coordinate = point.get(axis)
+            if type(coordinate) not in (int, float) or not 0 <= coordinate <= 100:
+                return False
+    return True
+
+
+def _protect_route(chapter, game):
+    if 'route' not in game:
+        return
+    pictures = [chapter.get('picture'), *chapter.get('figures', [])]
+    images = {image['asset'] for picture in pictures if picture
+              for image in (picture, picture.get('ours')) if image and image.get('asset')}
+    if not _visible_route(game['route'], images):
+        game.pop('route')
+
+
+def protect_game_media(graph):
+    """A game uses only the pictures and paper cut-outs its chapter can show."""
     for feed in graph.get('feeds', []):
         for chapter in feed.get('chapters', []):
-            truth = chapter.get('game', {}).get('truth', {})
             assets = {r.get('asset') for r in chapter.get('records', [])}
             assets.update(p.get('asset') for r in chapter.get('records', []) for p in r.get('parts', []))
-            if truth.get('record') not in assets:
-                truth.pop('record', None)
+            for placed in [chapter, *(beat.get('do', {}) for beat in chapter.get('flow', []))]:
+                game = placed.get('game', {})
+                truth = game.get('truth', {})
+                if truth.get('record') not in assets:
+                    truth.pop('record', None)
+                _protect_route(chapter, game)
 
 
 def world(instance, graph, *, host_private=False):
@@ -48,8 +87,6 @@ def world(instance, graph, *, host_private=False):
         return
     from familiar.rules.cascade import Registry
     from familiar.rules.roles import method_root
-    from familiar.tree.life import _assess
-    _assess(instance, graph)
     source = json.loads(path.read_text(encoding='utf-8'))
     if source.get('schema_version') != 1:
         raise ValueError('world_map.schema_version: expected 1')

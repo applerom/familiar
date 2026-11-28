@@ -5,9 +5,10 @@
 # - every identity mutation verifies the exact tagged stack and pool before use [review: engine lead]
 # - host CLI identity operations share the family's cloud-command lock [review: engine lead]
 # - temporary passwords travel through a private CLI input file and ignored writer storage only [review: engine lead]
-# - temporary passwords are plain to read and type (login + birth year, else this year); first sign-in replaces them [review: engine lead]
+# - each issue generates a fresh readable password; first sign-in replaces it [review: engine lead]
 # - disabling, removal and reset revoke edge sessions before changing Cognito [review: engine lead]
 # - the signing runtime is hash-pinned and its layer is owned by the same desk stack [review: engine lead]
+# - the hosted function carries desk/attachments.py verbatim: one table of limits on loopback and hosted [review: engine lead]
 # CHANGES_WITH:
 # - MOD-DESK-AWS (personal template and outputs)
 # - MOD-FAMILY-WRITER (ignored credentials)
@@ -16,7 +17,6 @@ import json
 import re
 import secrets
 import unicodedata
-from datetime import date
 from importlib.resources import files
 
 from familiar.instance.gate import boundary
@@ -32,15 +32,47 @@ def mode(instance):
     return choice
 
 
-def template():
+def compact(source, mark):
+    """Full-line comments and blank lines stay in the repository, out of the 51,200-byte template body."""
+    return '\n'.join(line for line in source.split('\n') if line.strip() and not line.lstrip().startswith(mark))
+
+
+def template(*, bootstrap=False):
     root = files('familiar.desk').joinpath('aws')
     data = json.loads(root.joinpath('stack-accounts.json').read_text(encoding='utf-8'))
-    data['Resources']['Login']['Properties']['FunctionCode'] = root.joinpath('accounts-edge.js').read_text(encoding='utf-8')
-    data['Resources']['Feedback']['Properties']['Code']['ZipFile'] = (
-        data['Resources']['Feedback']['Properties']['Code']['ZipFile'] + '\n' +
+    data['Resources']['Login']['Properties']['FunctionCode'] = compact(
+        root.joinpath('accounts-edge.js').read_text(encoding='utf-8'), '//')
+    code = data['Resources']['Feedback']['Properties']['Code']
+    if bootstrap:
+        return json.dumps(data, ensure_ascii=False, separators=(',', ':'))
+    code['ZipFile'] = compact(root.joinpath('accounts-inbox.py').read_text(encoding='utf-8') + '\n' +
+        files('familiar.desk').joinpath('feedback_offer.py').read_text(encoding='utf-8') + '\n' +
         root.joinpath('accounts-auth.py').read_text(encoding='utf-8') + '\n' +
-        root.joinpath('accounts-access.py').read_text(encoding='utf-8'))
-    return json.dumps(data, ensure_ascii=False)
+        root.joinpath('accounts-access.py').read_text(encoding='utf-8') + '\n' +
+        # Attached scans and photographs: the loopback desk's own table of limits, then the S3 path.
+        files('familiar.desk').joinpath('attachments.py').read_text(encoding='utf-8') + '\n' +
+        root.joinpath('accounts-files.py').read_text(encoding='utf-8'), '#')
+    return json.dumps(data, ensure_ascii=False, separators=(',', ':'))
+
+
+def template_url(instance, current):
+    """Stage a content-addressed CloudFormation template in the checked stack's private bucket."""
+    import hashlib
+    from tempfile import TemporaryDirectory
+    from pathlib import Path
+    from .aws import _aws, _outputs
+    bucket = _outputs(current).get('Bucket')
+    if not bucket:
+        raise ValueError('Owned desk stack has no bucket output; cannot stage the personal template')
+    raw = template().encode('utf-8')
+    key = 'runtime/templates/' + hashlib.sha256(raw).hexdigest() + '.json'
+    with TemporaryDirectory(prefix='familiar-template-') as temporary:
+        path = Path(temporary) / 'personal.json'
+        path.write_bytes(raw)
+        _aws(instance, 's3api', 'put-object', '--bucket', bucket, '--key', key, '--body', str(path),
+             '--content-type', 'application/json')
+    region = publication(instance).get('region', 'eu-north-1')
+    return f'https://{bucket}.s3.{region}.amazonaws.com/{key}'
 
 
 # SigV4A signing requires AWS CRT, which is absent from the managed Python SDK.
@@ -84,7 +116,7 @@ def access_runtime(instance, current, state):
                 layer.writestr('python/' + item.filename, archive.read(item))
         _aws(instance, 's3api', 'put-object', '--bucket', _outputs(current)['Bucket'],
             '--key', CRT_KEY, '--body', str(path))
-    payload = {'StackName': current['StackId'], 'TemplateBody': template(),
+    payload = {'StackName': current['StackId'], 'TemplateURL': template_url(instance, current),
         'Capabilities': ['CAPABILITY_IAM'],
         'Parameters': [{'ParameterKey': 'SessionKey', 'ParameterValue': state['session_key']},
             {'ParameterKey': 'FamilyTag', 'ParameterValue': publication(instance)['family_tag']},
@@ -170,24 +202,10 @@ def username_for(person, identity):
     return re.sub(r'[^a-z0-9]+', '-', latin).strip('-')[:30] or 'relative'
 
 
-def _birth_year(person):
-    for event in (person or {}).get('events') or []:
-        if (event.get('tag') == 'BIRT' or event.get('type') == 'birth') and event.get('status') not in {
-                'hypothesis', 'rejected', 'disproved'}:
-            found = re.search(r'\b(1[89]\d\d|20\d\d)\b', str(event.get('date') or ''))
-            if found:
-                return found.group(1)
-    found = re.search(r'\b(1[89]\d\d|20\d\d)\b', str(((person or {}).get('cardPresentation') or {}).get('birth') or ''))
-    return found.group(1) if found else ''
-
-
-def _password(username, person):
-    """A first-sign-in password an elderly relative can read aloud and type: login letters + birth year.
-
-    Strength is not the goal here: Cognito forces a new password at first sign-in, and long random
-    strings with symbols broke selection and typing in practice (16.11.2026)."""
-    base = re.sub(r'[^a-z]', '', username.split('-')[0].lower())
-    return (base if len(base) >= 2 else 'family') + (_birth_year(person) or str(date.today().year))
+def _password():
+    """Three short groups without lookalike letters, to read aloud or copy."""
+    alphabet = 'abcdefghjkmnpqrstuvwxyz23456789'
+    return '-'.join(''.join(secrets.choice(alphabet) for _ in range(4)) for _ in range(3))
 
 
 def _private_call(instance, operation, payload):
@@ -203,12 +221,14 @@ def _private_call(instance, operation, payload):
 
 @boundary('consume')
 @cloud_command
-def execute(instance, args):
+def execute(instance, args, *, owner_page=False):
     from familiar.instance.writer import desk_private
     from .aws import _aws
     state = target(instance)
     pool = state['user_pool']
     action = args.user_action
+    if owner_page and action not in {'list', 'add', 'reset', 'disable'}:
+        raise ValueError('Unsupported account action')
     if action == 'list':
         users = _aws(instance, 'cognito-idp', 'list-users', '--user-pool-id', pool).get('Users', [])
         rows = []
@@ -217,8 +237,12 @@ def execute(instance, args):
             rows.append({'username': user['Username'], 'role': attr.get('custom:role', ''),
                 'person': attr.get('custom:person', ''), 'enabled': user['Enabled'],
                 'status': user['UserStatus'], 'last_login': None})
-        return json.dumps({'users': rows, 'last_login_note': 'Cognito does not return last sign-in in ListUsers'},
-                          ensure_ascii=False, indent=2)
+        listing = {'users': rows, 'last_login_note': 'Cognito does not return last sign-in in ListUsers'}
+        return listing if owner_page else json.dumps(listing, ensure_ascii=False, indent=2)
+    if action in {'add', 'reset', 'disable'}:
+        username = args.username
+        if (action != 'add' or username is not None) and not valid_username(username):
+            raise ValueError('Username must contain 1–64 Latin letters, digits, dots, hyphens or underscores')
     if action == 'add':
         from .build import read_build
         paths = read_build(instance)
@@ -226,15 +250,18 @@ def execute(instance, args):
         if args.person not in graph['people']:
             raise ValueError('Person is absent from the checked desk graph; build the desk and use its person ID')
         username = args.username or username_for(graph['people'][args.person], args.person)
-        if not re.fullmatch(r'[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}', username):
-            raise ValueError('Username must contain 1–64 Latin letters, digits, dots, hyphens or underscores')
-        existing = {u['Username'].lower() for u in
-            _aws(instance, 'cognito-idp', 'list-users', '--user-pool-id', pool).get('Users', [])}
+        users = _aws(instance, 'cognito-idp', 'list-users', '--user-pool-id', pool).get('Users', [])
+        aliases = graph.get('identityAliases', {})
+        assigned = [attributes(user).get('custom:person') for user in users]
+        if owner_page and (args.role != 'reader' or not living_name(graph['people'][args.person])
+                           or any(aliases.get(pid, pid) == args.person for pid in assigned)):
+            raise ValueError('Select a living relative without a login')
+        existing = {u['Username'].lower() for u in users}
         if username.lower() in existing:
             if args.username:
                 raise ValueError('Username already exists; choose another --username or use desk user reset')
             username += '-' + secrets.token_hex(3)
-        password, session = _password(username, graph['people'][args.person]), secrets.token_hex(16)
+        password, session = _password(), secrets.token_hex(16)
         attrs = {'custom:role': args.role, 'custom:person': args.person, 'custom:session': session}
         if args.email:
             attrs.update({'email': args.email, 'email_verified': 'true'})
@@ -246,10 +273,12 @@ def execute(instance, args):
             'UserAttributes': [{'Name': k, 'Value': v} for k, v in attrs.items()]})
         sub = attributes(result['User'])['sub']
         put_edge(instance, state, 'user:' + sub, {'enabled': True, 'session': session})
-        return f'Username: {username}\nInitial password (shown once): {password}\nChange it on first sign-in. Private handout: .secrets/desk-user-{username}.json'
+        return handout(username, password, owner_page)
     username = args.username
     user = _aws(instance, 'cognito-idp', 'admin-get-user', '--user-pool-id', pool, '--username', username)
     attr = attributes(user)
+    if owner_page and (attr.get('custom:role') != 'reader' or not user['Enabled']):
+        raise ValueError('Select an enabled relative account')
     session = secrets.token_hex(16)
     # Revocation happens before Cognito mutation. A partial failure stays closed.
     put_edge(instance, state, 'user:' + attr['sub'], {'enabled': False, 'session': session})
@@ -260,17 +289,36 @@ def execute(instance, args):
     _aws(instance, 'cognito-idp', 'admin-update-user-attributes', '--user-pool-id', pool, '--username', username,
          '--user-attributes', json.dumps([{'Name': 'custom:session', 'Value': session}]))
     if action == 'reset':
-        from .build import read_build
-        people = json.loads(read_build(instance)['graph.json'].read_bytes())['people']
-        password = _password(username, people.get(attr.get('custom:person', ''), {}))
+        password = _password()
         desk_private(instance, 'desk-user-' + username + '.json',
             {'username': username, 'temporary_password': password, 'person': attr.get('custom:person', ''),
              'role': attr.get('custom:role', '')})
         _private_call(instance, 'admin-set-user-password', {'UserPoolId': pool, 'Username': username,
                                                         'Password': password, 'Permanent': False})
         put_edge(instance, state, 'user:' + attr['sub'], {'enabled': user['Enabled'], 'session': session})
-        return f'Username: {username}\nInitial password (shown once): {password}\nChange it on next sign-in. Private handout: .secrets/desk-user-{username}.json'
+        return handout(username, password, owner_page)
     _aws(instance, 'cognito-idp', 'admin-' + action + '-user', '--user-pool-id', pool, '--username', username)
     if action == 'enable':
         put_edge(instance, state, 'user:' + attr['sub'], {'enabled': True, 'session': session})
-    return 'User ' + ('enabled' if action == 'enable' else 'disabled') + '; previous sessions revoked'
+    return {} if owner_page else 'User ' + ('enabled' if action == 'enable' else 'disabled') + '; previous sessions revoked'
+
+
+def valid_username(username):
+    return isinstance(username, str) and bool(re.fullmatch(r'[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}', username))
+
+
+def living_name(person):
+    from familiar.tree.identities import marked_for_deletion
+    display = person.get('namePresentation', {}).get('display') or person.get('name') or ''
+    if (person.get('living') is True and display.strip() and not marked_for_deletion(person)
+            and display.strip().casefold() not in {
+                'имя не записано', 'name not recorded', 'imienia nie zapisano', 'namnet är inte antecknat'}):
+        return display
+    return None
+
+
+def handout(username, password, owner_page):
+    if owner_page:
+        return {'username': username, 'password': password}
+    return (f'Username: {username}\nInitial password (shown once): {password}\n'
+            f'Change it on next sign-in. Private handout: .secrets/desk-user-{username}.json')

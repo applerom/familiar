@@ -14,7 +14,9 @@ CHANGES_WITH:
 
 The family's primary language leads; translations follow it. You translate a
 chapter, a caption or a game line so it reads aloud naturally in the target
-language, and you add nothing.
+language, and you add nothing. Read [living history](../living-history.md)
+once: "our version" stays said once, and a weak link grows no stronger in
+another language.
 
 ## Deliver
 

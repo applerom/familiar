@@ -79,6 +79,16 @@ cost = {en = "high", ru = "высокая"}
 next = {en = "Find the earliest local household list and trace the surname's households forward to the break, checking neighboring parishes.", ru = "Найди самый ранний местный список и проследи дворы фамилии до разрыва, заглядывая в соседние приходы."}
 
 [[play]]
+id = "role-lists"
+title = {en = "Small lists by occupation", ru = "Малые списки по занятию"}
+purpose = {en = "Read small closed lists where a surname and a place are enough: teachers, clergy, veterinarians, councils, commissions, graduates. The names and trades of the children hint at the father's.", ru = "Прочитать малые закрытые списки, где хватает фамилии и места: учителя, причт, ветеринары, сельсовет, комиссии, выпускники. На занятие отца намекают имена и занятия детей."}
+requires = ["surname", "place"]
+classes = ["occupation-list", "school", "clergy", "village-council", "commission", "address-calendar"]
+exhaustion = {en = "The lists of the locality for each likely occupation were read whole or located.", ru = "Списки этой местности по каждому вероятному занятию прочитаны целиком или найдено, где они лежат."}
+cost = {en = "low", ru = "низкая"}
+next = {en = "Name the likely occupations from the shape of the family and read their lists for the locality whole, not by name.", ru = "Назови вероятные занятия по облику семьи и прочитай их списки по этой местности целиком, а не по имени."}
+
+[[play]]
 id = "generation-events"
 title = {en = "What the generation did", ru = "Поведение поколения"}
 purpose = {en = "Use an event the person could have taken part in and the lists it produced.", ru = "Искать по спискам события, в котором человек мог участвовать."}

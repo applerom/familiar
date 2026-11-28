@@ -1,16 +1,19 @@
 # START_MODULE_CONTRACT: MOD-DESK-SEARCH-MAP
-# PURPOSE: Show the host, per family line, what of the open record was read: year strips of record series, the field of name bases and the empty cells to read next.
+# PURPOSE: Show, per family line, what was read and where the unread books lie: the books of its places, year strips of record series, the field of name bases, the cells to read next and a reading-room list to take along.
 # PRD_REF: docs/PRD.md#FAMILY-DESK
 # INVARIANTS:
 # - the page is the host's: the shared hosted projection omits it and its navigation link [review: engine lead]
 # - meaning is carried by form; where the map cannot tell, the page says unknown [review: browser walk]
-# - no person's name and no external link leaves the map; years, places and source titles only [review: engine lead]
+# - headings, ledger lines and translated text omit names of people whose death is unestablished [review: engine lead]
+# - where a book lies is told as a plan: no warning, no verdict, and nothing where nothing exists [review: engine lead]
 # - the lines the family works on come first and open; the rest fold to one row; detail is one tap away [review: browser walk]
 # CHANGES_WITH:
 # - MOD-SEARCH-MAP (the view)
+# - MOD-ACCESS-LEDGER (books of a place and the reading-room list)
 # - MOD-DESK-BUILD (page and navigation)
 # :END_MODULE_CONTRACT
 import html
+import re
 
 PAGE = 'desk/search-map.html'
 STATES = ('full', 'surname', 'named', 'index', 'unknown', 'online', 'login', 'archive', 'missing', 'blocked')
@@ -35,7 +38,7 @@ def strip(series, w):
     return '<div class="strip" role="group">' + ''.join(rows) + '</div>'
 
 
-def timeline(line, w):
+def timeline(line, w, tr=str):
     """Every series of the line on one time axis, a row of years each; its decade grid is one tap away."""
     esc = html.escape
     years = [int(y) for s in line['series'] for y in s['years']]
@@ -66,14 +69,14 @@ def timeline(line, w):
             lo, hi = min(own), max(own)
             cells = ''.join(f'<i class="y s-{own[y]}{" w" if y in window else ""}"></i>' if y in own
                             else '<i class="y none"></i>' for y in range(lo, hi + 1))
-            bars.append(f'<span class="lane"><span class="kind">{esc(lanes[kind][0]["kind"])}</span><span class="axis">'
+            bars.append(f'<span class="lane"><span class="kind">{esc(tr(lanes[kind][0]["kind"]))}</span><span class="axis">'
                         f'<span class="yrs" style="--from:{(lo - first) / span * 100:.2f}%;'
                         f'--width:{(hi - lo + 1) / span * 100:.2f}%">{cells}</span></span></span>')
         detail = ''.join(
-            f'<div class="one"><small><b>{esc(s.get("title") or s["kind"] + " · " + s["place"])}</b>'
+            f'<div class="one"><small><b>{esc(tr(s.get("title") or s["kind"] + " · " + s["place"]))}</b>'
             + ''.join(f' · {esc(v)}' for v in (s.get('holder'), ', '.join(s['online'])) if v) + '</small>'
             + strip(s, w) + '</div>' for s in every)
-        rows.append(f'<details class="series"{" open" if len(line["series"]) <= 3 else ""}><summary><span class="label">{esc(place)}</span>'
+        rows.append(f'<details class="series"{" open" if len(line["series"]) <= 3 else ""}><summary><span class="label">{esc(tr(place))}</span>'
                     f'<span class="tally"><b>{read}</b>/{total}</span><span class="lanes" aria-hidden="true">'
                     f'{"".join(bars)}</span></summary>{detail}</details>')
     return f'<div class="timeline"><div class="ticks" aria-hidden="true">{ticks}</div>{"".join(rows)}</div>'
@@ -146,9 +149,62 @@ def field(line, w):
     return ''.join(out)
 
 
-def line_section(line, w, *, open_):
+MARKS = {'read': 'full', 'home': 'online', 'copy': 'online', 'room': 'archive', 'letter': 'archive', 'unknown': 'login'}
+
+
+def shelves(places, w, language, texts, strict):
+    """The books of each place: what we have read and where the rest lies. Nothing is said where nothing exists."""
+    from familiar.research.access_ledger import MARKS_ORDER, in_order, progress, say, title
+    esc, b = html.escape, w['books']
+    out = []
+    for place in places:
+        groups = {}
+        for row in in_order(place['books']):
+            if row['state'] in MARKS and not row.get('doubtful'):
+                holder = say(row.get('holder'), language, texts) if row['state'] in {'copy', 'room', 'letter'} else ''
+                groups.setdefault((MARKS_ORDER.index(row['state']), holder), []).append(row)
+        body = []
+        for (n, holder), rows in sorted(groups.items(), key=lambda item: item[0][0]):
+            state = MARKS_ORDER[n]
+            head = b[state].format(holder=holder) if holder or state not in {'copy', 'room', 'letter'} else b[state + '_some']
+            items = []
+            for row in rows:
+                where = [say(row.get('holder'), language, texts) if not holder else '', say(row.get('reference'), language, texts),
+                         progress(row, b, language, texts) if state in {'read', 'home'} else '']
+                detail = ' · '.join(v for v in where if v)
+                items.append(f'<li><i class="y s-{MARKS[state]}"></i><span>{esc(title(row, b, language, texts, strict=strict))}'
+                             + (f'<small>{esc(detail)}</small>' if detail else '') + '</span></li>')
+            body.append(f'<h5>{esc(head)}</h5><ul>{"".join(items)}</ul>')
+        if body:
+            name = say(place.get('title') or place['place'], language, texts)
+            out.append(f'<article class="shelf"><h4>{esc(name)}</h4>{"".join(body)}</article>')
+    return f'<div class="shelves">{"".join(out)}</div>' if out else ''
+
+
+def take_along(places, w, language, texts, strict):
+    """The reading-room list by archive: call number, place and books, what to look for."""
+    from familiar.research.access_ledger import reading_room, say, title
+    esc, b = html.escape, w['books']
+    archives = {}
+    for place, row in reading_room(places):
+        holder = say(row.get('holder'), language, texts) or b['order_any']
+        name = say(place.get('title') or place['place'], language, texts)
+        wanted = say(row.get('look_for'), language, texts, strict=strict)
+        archives.setdefault(holder, []).append(
+            f'<li><b>{esc(say(row.get("reference"), language, texts))}</b><span>{esc(name)} · '
+            f'{esc(title(row, b, language, texts, strict=strict))}</span>' + (f'<em>{esc(wanted)}</em>' if wanted else '') + '</li>')
+    if not archives:
+        return ''
+    return (f'<section class="take-along" id="reading-room"><h2 class="h2">{esc(b["order_title"])}</h2>'
+            f'<p class="sub">{esc(b["order_sub"])}</p>'
+            + ''.join(f'<h3>{esc(holder)}</h3><ol>{"".join(rows)}</ol>' for holder, rows in archives.items()) + '</section>')
+
+
+def line_section(line, w, *, open_, language='', texts=None, strict=False):
     from familiar.research.search_map import base_groups
     esc = html.escape
+    def tr(value):
+        return (texts or {}).get(value, value)
     totals = line['totals']
     read = totals.get('full', 0) + totals.get('surname', 0)
     touched = sum(totals.get(s, 0) for s in ('named', 'index', 'unknown'))
@@ -159,15 +215,17 @@ def line_section(line, w, *, open_):
     tally = [w['tally_years'].format(read=read, years=years) if years else '',
              w['tally_bases'].format(opened=sum(b['opened'] for b in tiles), fit=len(tiles)) if tiles else '']
     out = [f'<details class="map-line"{" open" if open_ else ""}><summary><h2 class="h2">'
-           f'{esc(line["surname"] or w["no_surname"])}</h2><span class="line-tally">'
+           f'{esc(tr(line["surname"]) or w["no_surname"])}</h2><span class="line-tally">'
            f'{esc(" · ".join(t for t in tally if t))}</span></summary>']
+    if books := shelves(line['access'], w, language, texts, strict):
+        out.append(f'<h3>{esc(w["books"]["families_heading"])}</h3>' + books)
     if line['series']:
         counts = [(read, w['count_read']), (touched, w['count_touched']), (open_online, w['count_online']),
                   (archive, w['count_archive'])]
         out.append('<div class="counts" style="--counter-count:4">' + ''.join(
             f'<div><b>{n}</b><span>{esc(label)}</span></div>' for n, label in counts) + '</div>')
-        out.append(f'<h3>{esc(w["series"])}</h3>' + timeline(line, w))
-    titles = {s['id']: s.get('title') or f"{s['kind']} · {s['place']}" for s in line['series']}
+        out.append(f'<h3>{esc(w["series"])}</h3>' + timeline(line, w, tr))
+    titles = {s['id']: tr(s.get('title') or f"{s['kind']} · {s['place']}") for s in line['series']}
     if line['next']:
         out.append(f'<h3>{esc(w["next"])}</h3><ol class="next">'
                    + ''.join(next_item(r, titles, w) for r in line['next'][:5]) + '</ol>')
@@ -179,33 +237,50 @@ def line_section(line, w, *, open_):
     return ''.join(out)
 
 
-def page(active, w, view, *, language=None):
+def page(active, w, view, *, language=None, texts=None, protected=None):
     from familiar.research.search_map import working
     esc = html.escape
     language = language or active.source_language
-    shown = [line for line in view['lines'] if line['series'] or line['bases']]
+    strict = language != active.source_language
+    shown = [line for line in view['lines'] if line['series'] or line['bases'] or line['access']]
     main = [line for line in shown if working(line)] or shown[:1]
-    body = ''.join(line_section(line, w, open_=line in main) for line in shown)
+    body = ''.join(line_section(line, w, open_=line in main, language=language, texts=texts, strict=strict) for line in shown)
     if body and not view['series_list']:
         body = f'<p class="sub series-unknown">{esc(w["series_unknown"])}</p>' + body
     if view['series_list'] and any(line['series'] for line in view['lines']):
         body += legend(w)
-    return ('<!doctype html><html lang="' + esc(language) + '"><head><meta charset="utf-8">'
+    listed = take_along(view['access'], w, language, texts, strict)
+    to_list = f'<p class="to-list"><a href="#reading-room">{esc(w["books"]["order_title"])}</a></p>' if listed else ''
+    body += listed
+    rendered = ('<!doctype html><html lang="' + esc(language) + '"><head><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width,initial-scale=1">'
             '<meta name="robots" content="noindex,nofollow,noarchive"><title>' + esc(w['title'])
             + '</title><link rel="stylesheet" href="/desk/show.css"><link rel="stylesheet" href="/desk/search-map.css">'
             '</head><body class="familiar-show search-map"><main class="wrap"><section class="since">'
-            '<div class="kicker">' + esc(w['kicker']) + '</div><h1>' + esc(w['title']) + '</h1></section>'
-            + (body or '<p class="sub">' + esc(w['series_unknown']) + '</p>') + '</main></body></html>').encode()
+            '<div class="kicker">' + esc(w['kicker']) + '</div><h1>' + esc(w['title']) + '</h1>' + to_list + '</section>'
+            + (body or '<p class="sub">' + esc(w['series_unknown']) + '</p>') + '</main></body></html>')
+    if protected is not None:
+        def redact(match):
+            value = html.unescape(match[2])
+            clean = protected.sub('…', value)
+            return match[1] + esc(clean) if clean != value else match[0]
+        rendered = re.sub(r'(>|(?:title|aria-label)=")([^<>"]+)(?=<|")', redact, rendered)
+    return rendered.encode()
 
 
-def project(active, w):
-    """The page bytes, or None when the working journals cannot be read (the desk still builds)."""
+def project(active, w, languages=()):
+    """{page name: bytes} in the family's language and each (language, words, texts); empty when the journals cannot be read."""
     from familiar.research.search_map import build
     try:
         view = build(active)
     except (ValueError, OSError, KeyError, TypeError, AttributeError):
-        return None
-    if not view['series_list'] and not any(line['bases'] for line in view['lines']):
-        return None
-    return page(active, w['search_map'], view)
+        return {}
+    if not view['series_list'] and not view['access'] and not any(line['bases'] for line in view['lines']):
+        return {}
+    from familiar.instance.subjects import protected_names
+    protected = protected_names(active)
+    pages = {PAGE: page(active, w['search_map'], view, protected=protected)}
+    for language, words, texts in languages:
+        pages[PAGE.replace('.html', f'.{language}.html')] = page(
+            active, words['search_map'], view, language=language, texts=texts, protected=protected)
+    return pages

@@ -20,6 +20,8 @@
 # - build-local input projections bind file identity and metadata; referenced paths are resolved again by each dependency check [review: engine lead]
 # - a search journal carry-over changes only paths.searches and keeps the race and input checks while old row flaws do not stop it [review: engine lead]
 # - standalone demo desks require a fictional family and an empty output, retaining the checked reader and host decision [review: engine lead]
+# - an access-ledger verdict rewrites that file alone, under a lock and by atomic replacement [review: engine lead]
+# - an amendment proposal writes its own file alone; envelopes that answer proposals are tree inputs [review: engine lead]
 # CHANGES_WITH:
 # - MOD-FAMILY-GATE
 # - MOD-OUTPUT-REVIEW
@@ -320,8 +322,8 @@ def _inputs(instance):
     instance = fresh(instance)
     paths = {instance.root / 'familiar.toml', instance.root / 'exceptions.toml'}
     for key in DEFAULTS:
-        if key in {'build', 'state', 'export'} | _SELECTED_ROOTS:
-            continue
+        if key in {'build', 'state', 'export', 'access'} | _SELECTED_ROOTS:
+            continue  # The access ledger is no output's input: a verdict never makes a reading stale.
         if key == 'questions' and not getattr(instance, '_carry_over_asks', False):
             continue  # The retired path is read only by the carry-over command.
         if instance._display_scope:
@@ -351,6 +353,8 @@ def _inputs(instance):
     settings(instance.config)
     for pack in [*instance.packs, *instance.language_pack_data.values()]:
         settings(pack['data'])
+    from familiar.tree.amendments import answer_files
+    paths.update(answer_files(instance))
     from .display import dependencies
     from .gate import shared
     # Shared within one checked call: a changed reference changes its own file's digest.
@@ -735,6 +739,26 @@ def _publisher(out):
         lock.unlink(missing_ok=True)
 
 
+@boundary('writer')
+def write_studio(instance, changes, *, out=None):
+    """Save authored catalogs or write a private draft to a separate output."""
+    if out is None:
+        mutate(instance, {p: content for p, content in changes.items()
+                          if not p.is_file() or p.read_bytes() != content})
+        return
+    root = _output_root(instance, out)
+    with _publisher(root), tempfile.TemporaryDirectory(prefix='studio-', dir=root) as tmp:
+        staged = Path(tmp)
+        for path, content in changes.items():
+            target = _relative(root, path.name)
+            if path.is_symlink() or target != path.resolve():
+                raise ValueError(f'Invalid draft output: {path}')
+            if not target.is_file() or target.read_bytes() != content:
+                _put(staged / path.name, content)
+        for path in staged.iterdir():
+            os.replace(path, root / path.name)
+
+
 def publish(instance, out, publication):
     """One publisher per destination; contention is a retryable, explicit refusal."""
     from .publication import Publication
@@ -1047,7 +1071,18 @@ def desk_private(instance, name, value):
 @contextmanager
 def desk_cloud(instance, command):
     """One foreground cloud operation per family; kernel locks die with the process."""
-    path = instance._inside('.state/desk-cloud.lock')
+    with _desk_lock(instance._inside('.state/desk-cloud.lock'), command):
+        yield
+
+
+@contextmanager
+def desk_loopback(instance):
+    with _desk_lock(instance.path('state') / 'feedback-upload.lock', 'desk feedback', blocking=True):
+        yield
+
+
+@contextmanager
+def _desk_lock(path, command, *, blocking=False):
     path.parent.mkdir(parents=True, exist_ok=True)
     # Keep the inode: unlinking a released lock permits two different lock owners.
     with path.open('a+b') as stream:
@@ -1055,7 +1090,7 @@ def desk_cloud(instance, command):
         try:
             if os.name == 'nt':
                 import msvcrt
-                msvcrt.locking(stream.fileno(), msvcrt.LK_NBLCK, 1)
+                msvcrt.locking(stream.fileno(), msvcrt.LK_LOCK if blocking else msvcrt.LK_NBLCK, 1)
             else:
                 import fcntl
                 fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -1075,6 +1110,40 @@ def desk_cloud(instance, command):
                 msvcrt.locking(stream.fileno(), msvcrt.LK_UNLCK, 1)
             else:
                 fcntl.flock(stream, fcntl.LOCK_UN)
+
+
+def access_verdict(instance, change, printed, *, first=False):
+    """Rewrite the access ledger alone. Nothing references it and executors hand in side by side while others write
+    the family, so a verdict takes a lock and an atomic swap instead of a family-wide snapshot. The Markdown print
+    beside it, once made (`first`), is renewed with it."""
+    from familiar.research.access_ledger import PRINT, print_path
+    path, page = instance.path('access'), print_path(instance)
+    if not path.is_relative_to(instance.root):
+        raise ValueError('family writer cannot modify host-mapped external inputs')
+    with _desk_lock(instance.path('state') / 'access-ledger.lock', 'research access record', blocking=True):
+        value = change(json.loads(path.read_text(encoding='utf-8-sig')) if path.is_file() else None)
+        temporary = path.with_suffix('.tmp')
+        if not first:
+            _put(temporary, encode(value))
+            os.replace(temporary, path)
+        if first or page.is_file() and PRINT in page.read_text(encoding='utf-8-sig'):
+            _put(temporary, printed(value).encode('utf-8'))
+            os.replace(temporary, page)
+
+
+def amendment_proposal(instance, row):
+    """Write one proposal file: a correction kept beside the statement never waits for a family-wide snapshot."""
+    path = instance.path('amendments') / (row['id'] + '.json')
+    if not path.is_relative_to(instance.root):
+        raise ValueError('family writer cannot modify host-mapped external inputs')
+    with _desk_lock(instance.path('state') / 'amendments.lock', 'research amend', blocking=True):
+        if path.exists():
+            before = json.loads(path.read_text(encoding='utf-8-sig'))
+            if any(before.get(k) != row[k] for k in ('person', 'field', 'original')):
+                raise ValueError(f'{path.name} amends another statement; give this proposal its own --id')
+        temporary = path.with_suffix('.tmp')
+        _put(temporary, encode(row))
+        os.replace(temporary, path)
 
 
 def desk_transition(instance, value):
@@ -1098,6 +1167,7 @@ def coverage_inputs(instance):
     paths.update((instance.root / 'research' / 'team').glob('**/corpus/records/*.json'))
     paths.add(instance.path('variant_overrides'))
     paths.add(instance.path('series'))
+    paths.add(instance.path('access'))
     found = {}
     for p in sorted(paths):
         try:
@@ -1111,7 +1181,7 @@ def coverage_inputs(instance):
 @contextmanager
 def desk_reader(instance, active):
     """Reuse a private seal only while all of its semantic dependencies still match."""
-    from familiar.reader.export import export
+    from .gate import publication
     from familiar.rules.roles import method_root
     active = display_instance(active)
     cache = _BuildCache(active)
@@ -1148,7 +1218,7 @@ def desk_reader(instance, active):
                 # Existing private export/gate remains the only seal producer.
                 with tempfile.TemporaryDirectory(prefix='desk-reader-', dir=secrets_root) as directory:
                     staged = Path(directory) / 'reader'
-                    export(active, staged, host_private=True)
+                    save_private_reader(active, staged, publication(active, 'reader-private'))
                     old = Path(directory) / 'old'
                     if out.exists():
                         out.rename(old)
@@ -1232,11 +1302,12 @@ def desk_upload(instance, *, personal):
     from familiar.desk.build import CheckedDesk, hosted_files
     from familiar.desk.feedback import owner_only, research_feedback
     from familiar.desk.model import source
+    from .gallery import photographs
     checked = CheckedDesk(instance)
     active = source(instance)
     public_ids = {p.stem for p in active._inside('family/feedback/inbox').glob('*.json')
                   if not owner_only(row := json.loads(p.read_bytes())) and not research_feedback(row)}
-    files = hosted_files(checked.files, personal=personal, feedback_ids=public_ids)
+    files = hosted_files(checked.files, personal=personal, feedback_ids=public_ids, photos=photographs(active))
     from .memory_visibility import check_delivery
     check_delivery(active, files)
     with tempfile.TemporaryDirectory(prefix='familiar-desk-upload-') as directory:
@@ -1269,18 +1340,155 @@ def save_demo_site(instance, out, bundle):
             item.rename(out / item.name)
 
 
+def attachment_path(instance, identity, n, kind, digest=None):
+    """A received scan or photograph lies with the family's originals (outside git), by message and number."""
+    import uuid
+    if type(n) is not int or not 1 <= n <= 99 or not re.fullmatch(r'[a-z]{3,4}', kind or ''):
+        raise ValueError('invalid attachment')
+    if digest is not None and not re.fullmatch('[0-9a-f]{64}', digest):
+        raise ValueError('invalid attachment digest')
+    return instance.path('originals') / 'feedback' / str(uuid.UUID(identity)) / f'{digest or n}.{kind}'
+
+
+def attachment_catalog(instance, identity):
+    path = attachment_path(instance, identity, 1, 'pdf').with_name('added.json')
+    rows = json.loads(path.read_bytes()) if path.is_file() else []
+    if not isinstance(rows, list):
+        raise ValueError('invalid received attachment catalog')
+    return rows
+
+
+def _feedback_uploads(instance):
+    return instance.path('state') / 'feedback-upload'
+
+
 @boundary('writer')
-def desk_feedback(instance, identity, content, *, local=False):
-    """Incoming narrator words are append-only raw JSON, never accepted memory."""
+def desk_upload_ledger(instance, value=None):
+    path = _feedback_uploads(instance) / 'slots.json'
+    if value is None:
+        return json.loads(path.read_bytes()) if path.is_file() else {}
+    temporary = path.with_suffix('.tmp')
+    _put(temporary, encode(value))
+    os.replace(temporary, path)
+
+
+def _publish_once(path, raw, staging=None):
+    # Stage on the same filesystem, then publish atomically without replacing accepted bytes.
+    path.parent.mkdir(parents=True, exist_ok=True)
+    staging = staging or path.parent
+    staging.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(dir=staging, suffix='.tmp', delete=False) as stream:
+        staged = Path(stream.name)
+        try:
+            stream.write(raw)
+            stream.close()
+            if os.name == 'nt':
+                staged.rename(path)  # Windows rename fails if the destination exists.
+            else:
+                os.link(staged, path)
+        finally:
+            staged.unlink(missing_ok=True)
+
+
+@boundary('writer')
+def desk_attachment_stage(instance, identity, first, n, part, raw=None):
+    """Immutable, bounded bytes still on their way; None reads a part."""
+    import uuid
+    path = _feedback_uploads(instance) / str(uuid.UUID(identity)) / str(first) / f'{n}.{part}'
+    if raw is None:
+        return path.read_bytes() if path.is_file() else None
+    try:
+        _publish_once(path, raw)
+    except FileExistsError:
+        if path.read_bytes() != raw:
+            raise ValueError('Upload part already received with different bytes') from None
+
+
+def desk_attachment_parts(instance, identity, first):
+    path = _feedback_uploads(instance) / identity / str(first)
+    return {file.name for file in path.iterdir()} if path.is_dir() else set()
+
+
+@boundary('writer')
+def desk_expire_uploads(instance, ledger):
+    root = _feedback_uploads(instance)
+    for identity in root.iterdir() if root.is_dir() else ():
+        if not identity.is_dir() or identity.is_symlink() or not identity.resolve().is_relative_to(root.resolve()):
+            continue
+        slot = ledger.get(identity.name)
+        for path in identity.iterdir():
+            if slot and path.name == str(slot['first']):
+                continue
+            if path.is_dir() and not path.is_symlink() and path.resolve().is_relative_to(root.resolve()):
+                shutil.rmtree(path)
+            else:
+                path.unlink()
+        if not any(identity.iterdir()):
+            identity.rmdir()
+
+
+@boundary('writer')
+def desk_expire_feedback_writes(instance, now):
+    """Reap temporary files abandoned by a process crash before atomic publication."""
+    roots = (instance._inside('family/feedback/inbox'), instance.path('originals') / 'feedback')
+    for root in roots:
+        staging = root / '.incoming'
+        if not staging.resolve().is_relative_to(root.resolve()):
+            continue
+        for path in staging.glob('*.tmp'):
+            try:
+                if path.stat().st_mtime + 86400 <= now:
+                    path.unlink()
+            except FileNotFoundError:
+                pass
+
+
+@boundary('writer')
+def desk_feedback_file(instance, identity, n, kind, raw, digest=None):
+    target = attachment_path(instance, identity, n, kind, digest)
+    try:
+        _publish_once(target, raw, target.parent.parent / '.incoming')
+    except FileExistsError:
+        if target.read_bytes() != raw:
+            raise ValueError('Attachment collision; the received original was retained') from None
+
+
+@boundary('writer')
+def desk_add_feedback_file(instance, envelope, item, raw):
+    """Publish a verified original, then index it without rewriting the words. Caller holds desk_loopback."""
+    identity = envelope['id']
+    catalog = attachment_catalog(instance, identity)
+    for row in catalog:
+        if row['sha256'] == item['sha256']:
+            present = attachment_path(instance, identity, row['n'], row['kind'], row['sha256']).is_file()
+            desk_feedback_file(instance, identity, row['n'], row['kind'], raw, row['sha256'])
+            return not present
+    legacy = envelope.get('files', [])
+    existing = next((row for row in legacy if row['sha256'] == item['sha256']), None)
+    number = existing['n'] if existing else max((row['n'] for row in legacy + catalog), default=0) + 1
+    row = item | {'n': number}
+    from familiar.desk.attachments import stored_attachment
+    stored_attachment(row)
+    desk_feedback_file(instance, identity, number, row['kind'], raw, row['sha256'])
+    path = attachment_path(instance, identity, number, row['kind']).with_name('added.json')
+    temporary = path.with_suffix('.tmp')
+    _put(temporary, encode(catalog + [row]))
+    os.replace(temporary, path)
+    return True
+
+
+@boundary('writer')
+def desk_feedback(instance, identity, content, *, local=False, attachments=()):
+    """Publish the immutable words first so each original has a durable record."""
     import uuid
     identity = str(uuid.UUID(identity))
     path = instance._inside('family/feedback/inbox/' + identity + '.json')
-    path.parent.mkdir(parents=True, exist_ok=True)
     try:
-        with path.open('xb') as stream:
-            stream.write(content)
+        _publish_once(path, content, path.parent / '.incoming')
     except FileExistsError:
         if path.read_bytes() != content:
             raise ValueError('Feedback collision; original narrator words were retained') from None
+    for n, kind, raw in attachments:
+        desk_feedback_file(instance, identity, n, kind, raw)
     from .correspondence import apply_feedback
     return apply_feedback(instance, json.loads(content), local=local)

@@ -1,18 +1,16 @@
 {
   "title": "Kinship words",
-  "intro": "The words we use for family. Choose yourself in the tree to see examples from your family.",
-  "example": "For you, this is",
-  "noExample": "No example in the displayed tree yet.",
-  "chooseViewer": "Choose yourself in the tree to see examples.",
+  "intro": "Who everyone is to {name}.",
+  "all": "All kinship words",
   "archaic": "historical",
   "maybe": "possibly ",
-  "path": "Path through the tree",
+  "path": "How you are related",
   "groups": {
-    "direct": "Parents and descendants",
-    "collateral": "Siblings and collateral kin",
-    "marriage": "Relations by marriage",
-    "blended": "Half and step relations",
-    "spiritual": "Spiritual kinship"
+    "direct": "Parents, children, grandchildren",
+    "collateral": "Brothers, sisters and their children",
+    "marriage": "By marriage",
+    "blended": "Half and step family",
+    "spiritual": "Godparents"
   },
   "terms": [
     {
@@ -156,7 +154,7 @@
     {
       "id": "ancestor-2-m",
       "word": "grandfather",
-      "explanation": "2 generations up the parent line",
+      "explanation": "your father’s or your mother’s father",
       "group": "direct",
       "match": [
         {
@@ -173,7 +171,7 @@
     {
       "id": "descendant-2-m",
       "word": "grandson",
-      "explanation": "2 generations down the child line",
+      "explanation": "your son’s or your daughter’s son",
       "group": "direct",
       "match": [
         {
@@ -190,7 +188,7 @@
     {
       "id": "ancestor-2-f",
       "word": "grandmother",
-      "explanation": "2 generations up the parent line",
+      "explanation": "your father’s or your mother’s mother",
       "group": "direct",
       "match": [
         {
@@ -207,7 +205,7 @@
     {
       "id": "descendant-2-f",
       "word": "granddaughter",
-      "explanation": "2 generations down the child line",
+      "explanation": "your son’s or your daughter’s daughter",
       "group": "direct",
       "match": [
         {
@@ -224,7 +222,7 @@
     {
       "id": "ancestor-3-m",
       "word": "great-grandfather",
-      "explanation": "3 generations up the parent line",
+      "explanation": "the father of your grandfather or grandmother",
       "group": "direct",
       "match": [
         {
@@ -241,7 +239,7 @@
     {
       "id": "descendant-3-m",
       "word": "great-grandson",
-      "explanation": "3 generations down the child line",
+      "explanation": "the son of your grandson or granddaughter",
       "group": "direct",
       "match": [
         {
@@ -258,7 +256,7 @@
     {
       "id": "ancestor-3-f",
       "word": "great-grandmother",
-      "explanation": "3 generations up the parent line",
+      "explanation": "the mother of your grandfather or grandmother",
       "group": "direct",
       "match": [
         {
@@ -275,7 +273,7 @@
     {
       "id": "descendant-3-f",
       "word": "great-granddaughter",
-      "explanation": "3 generations down the child line",
+      "explanation": "the daughter of your grandson or granddaughter",
       "group": "direct",
       "match": [
         {
@@ -292,7 +290,7 @@
     {
       "id": "ancestor-4-m",
       "word": "great-great-grandfather",
-      "explanation": "4 generations up the parent line",
+      "explanation": "the father of your great-grandfather or great-grandmother",
       "group": "direct",
       "match": [
         {
@@ -309,7 +307,7 @@
     {
       "id": "descendant-4-m",
       "word": "great-great-grandson",
-      "explanation": "4 generations down the child line",
+      "explanation": "the son of your great-grandson or great-granddaughter",
       "group": "direct",
       "match": [
         {
@@ -326,7 +324,7 @@
     {
       "id": "ancestor-4-f",
       "word": "great-great-grandmother",
-      "explanation": "4 generations up the parent line",
+      "explanation": "the mother of your great-grandfather or great-grandmother",
       "group": "direct",
       "match": [
         {
@@ -343,7 +341,7 @@
     {
       "id": "descendant-4-f",
       "word": "great-great-granddaughter",
-      "explanation": "4 generations down the child line",
+      "explanation": "the daughter of your great-grandson or great-granddaughter",
       "group": "direct",
       "match": [
         {
@@ -360,7 +358,7 @@
     {
       "id": "ancestor-5-m",
       "word": "great-great-great-grandfather",
-      "explanation": "5 generations up the parent line",
+      "explanation": "the father of your great-great-grandfather or great-great-grandmother",
       "group": "direct",
       "match": [
         {
@@ -377,7 +375,7 @@
     {
       "id": "descendant-5-m",
       "word": "great-great-great-grandson",
-      "explanation": "5 generations down the child line",
+      "explanation": "the son of your great-great-grandson or great-great-granddaughter",
       "group": "direct",
       "match": [
         {
@@ -394,7 +392,7 @@
     {
       "id": "ancestor-5-f",
       "word": "great-great-great-grandmother",
-      "explanation": "5 generations up the parent line",
+      "explanation": "the mother of your great-great-grandfather or great-great-grandmother",
       "group": "direct",
       "match": [
         {
@@ -411,7 +409,7 @@
     {
       "id": "descendant-5-f",
       "word": "great-great-great-granddaughter",
-      "explanation": "5 generations down the child line",
+      "explanation": "the daughter of your great-great-grandson or great-great-granddaughter",
       "group": "direct",
       "match": [
         {
@@ -428,7 +426,7 @@
     {
       "id": "ancestor-6-m",
       "word": "great-great-great-great-grandfather",
-      "explanation": "6 generations up the parent line",
+      "explanation": "the father of your great-great-great-grandfather or great-great-great-grandmother",
       "group": "direct",
       "match": [
         {
@@ -445,7 +443,7 @@
     {
       "id": "descendant-6-m",
       "word": "great-great-great-great-grandson",
-      "explanation": "6 generations down the child line",
+      "explanation": "the son of your great-great-great-grandson or great-great-great-granddaughter",
       "group": "direct",
       "match": [
         {
@@ -462,7 +460,7 @@
     {
       "id": "ancestor-6-f",
       "word": "great-great-great-great-grandmother",
-      "explanation": "6 generations up the parent line",
+      "explanation": "the mother of your great-great-great-grandfather or great-great-great-grandmother",
       "group": "direct",
       "match": [
         {
@@ -479,7 +477,7 @@
     {
       "id": "descendant-6-f",
       "word": "great-great-great-great-granddaughter",
-      "explanation": "6 generations down the child line",
+      "explanation": "the daughter of your great-great-great-grandson or great-great-great-granddaughter",
       "group": "direct",
       "match": [
         {
@@ -496,7 +494,7 @@
     {
       "id": "ancestor-7-m",
       "word": "great-great-great-great-great-grandfather",
-      "explanation": "7 generations up the parent line",
+      "explanation": "the father of your great-great-great-great-grandfather or great-great-great-great-grandmother",
       "group": "direct",
       "match": [
         {
@@ -513,7 +511,7 @@
     {
       "id": "descendant-7-m",
       "word": "great-great-great-great-great-grandson",
-      "explanation": "7 generations down the child line",
+      "explanation": "the son of your great-great-great-great-grandson or great-great-great-great-granddaughter",
       "group": "direct",
       "match": [
         {
@@ -530,7 +528,7 @@
     {
       "id": "ancestor-7-f",
       "word": "great-great-great-great-great-grandmother",
-      "explanation": "7 generations up the parent line",
+      "explanation": "the mother of your great-great-great-great-grandfather or great-great-great-great-grandmother",
       "group": "direct",
       "match": [
         {
@@ -547,7 +545,7 @@
     {
       "id": "descendant-7-f",
       "word": "great-great-great-great-great-granddaughter",
-      "explanation": "7 generations down the child line",
+      "explanation": "the daughter of your great-great-great-great-grandson or great-great-great-great-granddaughter",
       "group": "direct",
       "match": [
         {
@@ -564,7 +562,7 @@
     {
       "id": "ancestor-8-m",
       "word": "great-great-great-great-great-great-grandfather",
-      "explanation": "8 generations up the parent line",
+      "explanation": "the father of your great-great-great-great-great-grandfather or great-great-great-great-great-grandmother",
       "group": "direct",
       "match": [
         {
@@ -581,7 +579,7 @@
     {
       "id": "descendant-8-m",
       "word": "great-great-great-great-great-great-grandson",
-      "explanation": "8 generations down the child line",
+      "explanation": "the son of your great-great-great-great-great-grandson or great-great-great-great-great-granddaughter",
       "group": "direct",
       "match": [
         {
@@ -598,7 +596,7 @@
     {
       "id": "ancestor-8-f",
       "word": "great-great-great-great-great-great-grandmother",
-      "explanation": "8 generations up the parent line",
+      "explanation": "the mother of your great-great-great-great-great-grandfather or great-great-great-great-great-grandmother",
       "group": "direct",
       "match": [
         {
@@ -615,7 +613,7 @@
     {
       "id": "descendant-8-f",
       "word": "great-great-great-great-great-great-granddaughter",
-      "explanation": "8 generations down the child line",
+      "explanation": "the daughter of your great-great-great-great-great-grandson or great-great-great-great-great-granddaughter",
       "group": "direct",
       "match": [
         {
@@ -666,7 +664,7 @@
     {
       "id": "cousin-2-m",
       "word": "first cousin",
-      "explanation": "shared ancestors 2 generations above both of you",
+      "explanation": "you share grandparents",
       "group": "collateral",
       "match": [
         {
@@ -692,7 +690,7 @@
     {
       "id": "cousin-3-m",
       "word": "second cousin",
-      "explanation": "shared ancestors 3 generations above both of you",
+      "explanation": "you share great-grandparents",
       "group": "collateral",
       "match": [
         {
@@ -718,7 +716,7 @@
     {
       "id": "cousin-4-m",
       "word": "third cousin",
-      "explanation": "shared ancestors 4 generations above both of you",
+      "explanation": "you share great-great-grandparents",
       "group": "collateral",
       "match": [
         {
@@ -744,7 +742,7 @@
     {
       "id": "cousin-5-m",
       "word": "fourth cousin",
-      "explanation": "shared ancestors 5 generations above both of you",
+      "explanation": "you share great-great-great-grandparents",
       "group": "collateral",
       "match": [
         {
@@ -770,7 +768,7 @@
     {
       "id": "cousin-6-m",
       "word": "fifth cousin",
-      "explanation": "shared ancestors 6 generations above both of you",
+      "explanation": "you share great-great-great-great-grandparents",
       "group": "collateral",
       "match": [
         {
@@ -796,7 +794,7 @@
     {
       "id": "cousin-7-m",
       "word": "sixth cousin",
-      "explanation": "shared ancestors 7 generations above both of you",
+      "explanation": "you share great-great-great-great-great-grandparents",
       "group": "collateral",
       "match": [
         {
@@ -1314,7 +1312,7 @@
     {
       "id": "spouse-m",
       "word": "husband",
-      "explanation": "the person one is married to",
+      "explanation": "the man she married",
       "group": "marriage",
       "match": [
         {
@@ -1329,7 +1327,7 @@
     {
       "id": "spouse-f",
       "word": "wife",
-      "explanation": "the person one is married to",
+      "explanation": "the woman he married",
       "group": "marriage",
       "match": [
         {
@@ -1507,7 +1505,7 @@
     {
       "id": "godparent-m",
       "word": "godfather",
-      "explanation": "a person undertaking a spiritual role at baptism",
+      "explanation": "held you when you were baptized",
       "group": "spiritual",
       "match": [
         {
@@ -1519,7 +1517,7 @@
     {
       "id": "godparent-f",
       "word": "godmother",
-      "explanation": "a person undertaking a spiritual role at baptism",
+      "explanation": "held you when you were baptized",
       "group": "spiritual",
       "match": [
         {
@@ -1654,16 +1652,16 @@
     "childOf": "child"
   },
   "fallback": {
-    "ancestor": "ancestor, {n} generations up",
-    "descendant": "descendant, {n} generations down",
-    "collateral": "collateral kin: {n1} generations to the shared ancestor from you, {n2} from this person",
+    "ancestor": "ancestor {n} generations before you",
+    "descendant": "descendant {n} generations after you",
+    "collateral": "distant family: a shared ancestor {n1} generations before you",
     "spouse": "spouse",
     "self": "this is you",
-    "cousin": "shared ancestor {n} generations up",
+    "cousin": "distant family: a shared ancestor {n} generations before you",
     "viaSpouse": "a spouse’s relative: {relative}",
     "spouseOf": "a relative’s spouse: {relative}",
-    "spiritual": "spiritual kinship through a recorded link",
-    "step": "step relation through a recorded link",
+    "spiritual": "family through a christening",
+    "step": "family through a second marriage",
     "halfFather": "a shared father and different mothers",
     "halfMother": "a shared mother and different fathers",
     "coParentInLaw": "a parent of your child’s spouse"

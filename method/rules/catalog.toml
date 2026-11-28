@@ -37,7 +37,7 @@ reads = ["host.correspondence_voice"]
 [[rule]]
 id = "CRAFT-RESEARCH-BEFORE-TEXT"
 kind = "craft"
-statement = "Before the scenario, collect the whole line with siblings, a table of each person's age in the main years of the region, what lay within a day's travel by year, and how each step of a fate was actually done (papers, fares, prices, conscription)."
+statement = "Before the plan of a feed, gather the cast: who the feed follows, each life as dated events with the paper under each and the link's weight once, the turns (what the person wanted, what stood in the way, what he did), how such a step was actually done there and then (papers, fares, prices, conscription), the neighbours who did the same that year, and the holes with where their paper should lie. Then the place as what these people saw: its names under every authority with distances and sources, and its wonders by decade against the cast's years, firm or still to check, peaceful ones well ahead of wars. Written against: a place, a river of records and a list of wonders handed to the writer with no people in them, from which only the place could be told."
 roles = ["researcher", "lead"]
 serves = "UC-STORY"
 check = ""
@@ -87,8 +87,18 @@ reads = ["research.witness_horizon_years"]
 [[rule]]
 id = "CRAFT-HOME-NOT-COURT"
 kind = "craft"
-statement = "A family reads these pages at home; nobody is on trial. We research and suppose about people who died a hundred, two hundred, three hundred years ago: tell what is known and what was found as the leading version, in a warm plain voice. Do not write warnings, disclaimers or verdicts for the family to read (documents exist but do not confirm the facts, unverified, not proven, insufficient evidence): where nothing is known, write nothing; where a version is weak, it waits in the investigation. Doubt is shown by form (a dotted line, an approximate year) and explained one tap away, never by a notice that undermines trust in the whole telling."
+statement = "A family reads these pages at home; nobody is on trial. We research and suppose about people who died a hundred, two hundred, three hundred years ago: tell what is known and what was found as the leading version, in a warm plain voice. Do not write warnings, disclaimers or verdicts for the family to read (documents exist but do not confirm the facts, unverified, not proven, insufficient evidence): where nothing is known, write nothing; where a version is weak, it waits in the investigation. Doubt is shown by form (a dotted line, an approximate year) and explained one tap away, never by a notice that undermines trust in the whole telling. Written against: warnings and verdicts on the family's pages, which made a home read as a court; not against weights, which stay in the investigation and 'More'."
 roles = ["researcher", "second-look", "feed-author", "reviewer", "translator", "lead"]
+serves = "UC-STORY"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "CRAFT-PLAIN-PAGES"
+kind = "craft"
+statement = "A page a family reads is simple enough for a grandmother of seventy-five and a child of eight. The lower row holds at most four places a reader comes for, each an icon and one plain word, the same on every page; everything else is one tap behind it, and every place is within two taps of home. Nothing empty is drawn: no section, entry or option without content, and no sentence saying it will come. A word from the workshop (version, candidate, index, narrator, coverage, control search) stays in the investigation; the ban list is reader-src/plain-words.json and the shell is not built with one. A word a child does not know explains itself where it stands, with an example from this family. Papers are one tap from any page and from every card: large, whole, with their reading and whose they are; back returns to the place the reader left. On a phone body text is at least 18 px, a target at least 48 px, contrast AA."
+roles = ["researcher", "feed-author", "reviewer", "translator", "lead"]
 serves = "UC-STORY"
 check = ""
 mode = "advise"
@@ -117,7 +127,7 @@ reads = []
 [[rule]]
 id = "CRAFT-EVENT-FIT"
 kind = "craft"
-statement = "A hero meets a great event only where the table of ages and places allows it; no links of fates by stretch. A sky event (comet, eclipse, aurora) enters a scene only with a visibility verdict, at most one per chapter, next to a family date."
+statement = "A wonder of the big world enters a chapter in the same scene as the family moment: the same people, the same evening, the same road; one that only stands beside the moment goes to 'More'. A hero meets a great event only where the table of ages and places allows it; no links of fates by stretch. A sky event (comet, eclipse, aurora) enters with a visibility verdict for the place and its date in the record's calendar, at most one per chapter. A wonder still to be checked is not stated as a fact: the chapter is written to stand without it. Written against: the world's wonders set beside the family as textbook inserts."
 roles = ["researcher", "feed-author"]
 serves = "UC-STORY"
 check = ""
@@ -211,7 +221,7 @@ reads = []
 [[rule]]
 id = "CRAFT-WORLD-THROUGH-PEOPLE"
 kind = "craft"
-statement = "Regional history appears as what a person saw, heard, held and paid. Double test per paragraph: remove the person and it still stands - it is a reference; remove the world and a form remains - it is a biography. One or two windows on the world per chapter, different in neighbouring chapters."
+statement = "Regional history appears as what a person saw, heard, held and paid. Double test per paragraph: remove the person and it still stands - it is a reference; remove the world and a form remains - it is a biography. One or two windows on the world per chapter, different in neighbouring chapters. Written against: the region's history in good prose with the family in the background (the family: a history textbook about other people), and its opposite, a fate retold as the list of its papers."
 roles = ["feed-author", "reviewer"]
 serves = "UC-STORY"
 check = ""
@@ -229,10 +239,40 @@ mode = "advise"
 reads = []
 
 [[rule]]
+id = "CRAFT-FATES-OF-OUR-PEOPLE"
+kind = "craft"
+statement = "The hero of a chapter is a real, named person of the line: an ancestor, his wife, his brother, a neighbour of the yard from a version. A link held by a probability is said once; the person is told as one who lived, what he wanted, what stood in the way, why he may have acted so (our guess, resting on what the neighbours did that year), with his paper in the chapter. The plan of a feed begins with the cast. Before showing, count the chapters a person of the family opens and the chapters his paper stands in (feed rhythm). Written against: feeds in which the place was the hero and the people left with the papers; not against a short chapter of the place where nobody of the family is known yet."
+roles = ["feed-author", "reviewer", "researcher", "lead"]
+serves = "UC-STORY"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "CRAFT-FEEDS-DIVIDE-THE-CENTURY"
+kind = "craft"
+statement = "The lines of one family lived in like places at one time, so their stories are alike: one table per family, before chapters, sets each shared event (a war, the collective farm, the crossing, the sky) against the feeds and says which hero lived it and how. Each feed takes the event from the side that fits its own hero; what one feed tells, another leaves out or meets only from its side; one picture, frame or description stands in one feed. Written against: sibling feeds telling the same century the same way; not against the same years told with the same honesty."
+roles = ["feed-author", "lead", "reviewer"]
+serves = "UC-STORY"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
 id = "CRAFT-DOCUMENT-SUPPORTS"
 kind = "craft"
-statement = "A document supports the story and does not retell it: every shown cut-out is told in the text, but no paragraph translates it, and a census or register is never the subject of a sentence. Find one visible detail of the paper that becomes the turn of the scene; a strong argument or an award is shown large from the original."
+statement = "A paper is a pin and the proof: the hero's own paper stands in his chapter as a cut with its reading, right after the paragraph where the story meets its name, place and year, so the reader sees we did not invent him. As a rule one paper a chapter; a fate may take two cuts of it. A paper is never the subject, the turn or the title of a chapter: no page about a sheet, a scribe, a spelling, a column or the search, which belong to the investigation. The text does not retell it, and a census or register is never the subject of a sentence. A later publication (a memorial book, a database row, an index, a transliteration) confirms a fact, but its spelling belongs to its publisher and year and it is not shown as a paper of its time. A strong argument or an award is shown large from the original. Written against: pages that described papers; not against the paper in the chapter, whose removal took the people with it."
 roles = ["feed-author"]
+serves = "UC-STORY"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "CRAFT-COMMON-NOT-FEATURE"
+kind = "craft"
+statement = "What is true of any family of the kind (a common surname ending, a custom the whole village kept, a form every emigrant filled) is a small aside, never the subject of a page, a title or a game. Test: would the title, the game or the paragraph fit the neighbouring surname or village without one edit? Then it is not this family's story, and a page built on it undermines trust in the whole feed. A surname page tells the surname's own root, checked in a dictionary and with the line's researcher. A wonder of the place is shared by nature and is told as the family's world, never as its trait. Written against: a headline true of every surname with that ending; not against telling the shared world."
+roles = ["feed-author", "reviewer", "researcher"]
 serves = "UC-STORY"
 check = ""
 mode = "advise"
@@ -279,7 +319,7 @@ reads = []
 [[rule]]
 id = "TASTE-CHAPTER-UNIT"
 kind = "taste"
-statement = "By default a chapter follows one person's fate or its turn, with documents as the points that confirm it, and every person of the line with documents gets a whole fate without gaps."
+statement = "By default a chapter is a moment of one person's fate and a wonder of its place in the same scene, with a custom or a thing of daily life, told as short paragraphs between things to look at and to do; papers are the pins that confirm it. A time of the line with no family paper held yet is still a chapter: the place carries it and the family is an honest version."
 roles = ["feed-author", "lead"]
 serves = "UC-STORY"
 check = "review:reviewer"
@@ -299,7 +339,7 @@ reads = ["story.line_order", "story.anchor_ancestor", "names.lineage_forms"]
 [[rule]]
 id = "TASTE-READER-NEUTRAL"
 kind = "taste"
-statement = "By default the text does not depend on who reads it: no 'our', 'your', 'you'; the family is 'the family' and kinship is counted from the feed's anchor ancestor."
+statement = "By default the text does not depend on who reads it: no 'our', 'your', 'you'; the family is 'the family' and kinship is counted from one seat for the whole site, the owner's, from whom the tree is drawn; an in-law's line goes by first name (story-scenario)."
 roles = ["feed-author", "translator"]
 serves = "UC-READ"
 check = "check:reader-address"
@@ -309,7 +349,7 @@ reads = ["reader.address", "story.anchor_ancestor", "lang.lexicon"]
 [[rule]]
 id = "TASTE-NARRATOR-VOICE"
 kind = "taste"
-statement = "By default the chapter is told by a narrator, not an investigator: no 'apparently', 'we do not know', 'no papers', 'our version', 'it later turned out', no named teller of a memory; doubt and reasoning live in 'More'. Two versions told as a plot inside one scene are not a violation."
+statement = "By default the chapter is told by a narrator, not an investigator: no 'apparently', 'we do not know', 'no papers', 'our version', 'it later turned out', no named teller of a memory; doubt and reasoning live in 'More'. Two versions told as a plot inside one scene are not a violation, nor is the bridge sentence of a line whose place is a version, said once in the feed, nor one plain 'we do not know' where the plot would otherwise claim it (story-scenario). Written against: an investigator's voice in the story; not against a guess at why, said once as ours."
 roles = ["feed-author", "translator", "reviewer"]
 serves = "UC-READ"
 check = "check:narrator-voice"
@@ -493,7 +533,7 @@ reads = ["research.scope"]
 [[rule]]
 id = "PROC-SCENARIO-FIRST"
 kind = "process"
-statement = "A scenario (one line per chapter: whose fate, the scene, the shot, the document) exists before text; text never starts from the first document."
+statement = "A scenario (one line per chapter: whose fate, the turn, the scene, the shot, the document) exists before text; text never starts from the first document. Three chapters of different fates are written whole and read by the lead, and by the family when it can, before the rest. Written against: chapters that retold the first paper found, and whole feeds written in a day before anyone read a sample."
 roles = ["feed-author", "lead"]
 serves = "UC-STORY"
 check = "check:stage-scenario"
@@ -603,7 +643,7 @@ reads = []
 [[rule]]
 id = "PROC-CHECK-SERVES-STORY"
 kind = "process"
-statement = "A check serves the story: text is never made worse to satisfy it. A false finding is waived with a reason in the same move and the check is fixed or reported; when the engine cannot hold a story, the engine is changed, not the story."
+statement = "A check serves the story: text is never made worse to satisfy it. A false finding is waived with a reason in the same move and the check is fixed or reported; when the engine cannot hold a story, the engine is changed, not the story. Written against: uniform chapter length and pacing that made stories formulaic; a note of a check invites a thought and forbids nothing."
 roles = ["lead", "feed-author", "reviewer"]
 serves = "UC-TUNE"
 check = ""
@@ -665,7 +705,7 @@ reads = []
 [[rule]]
 id = "PROC-STORY-LEVEL"
 kind = "process"
-statement = "Evidence sets the ceiling of a line's story and interest sets its size. Memory and weighted versions give a card, and a card may carry a micro-story; a document about the line's own people gives a story page; a feed needs documents across generations, linked by accepted links or leading versions, and a researched scenario. The ceiling is raised by a bridge paper or a stronger version, never by text; below the ceiling a story is as long as its interest, not its records."
+statement = "A line's story level is a card, a story page or a feed. Memory and weighted versions alone give a card, which may carry a micro-story; a paper about one person or couple of the line gives a story page. A feed needs a cast whose fates can be told, by papers and by versions, and the place they saw, not papers in every generation: a person known without his paper is still told, by his version, with the paper that would pin him named in 'More'; only a stretch with no person of the family known is a chapter of the place alone, and a short one. Until the whole can be drawn, the feed is its first page and a list of what to gather. Weights set how firmly a link is told, never whether the story is written; interest sets its size, not the number of records. Written against: lines left untold for want of papers, and then the over-correction, chapters carried by the place with the family as a background version."
 roles = ["lead", "feed-author", "researcher"]
 serves = "UC-STORY"
 check = ""

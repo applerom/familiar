@@ -1,4 +1,5 @@
 """OAuth code/PKCE callback, composed into the existing feedback Lambda."""
+# ruff: noqa: F821 -- the composed source supplies the file session helpers.
 import hashlib
 import hmac
 import base64
@@ -82,6 +83,12 @@ def auth(event):
         return auth_reply(200, json.dumps({k: claims.get(k, '') for k in
             ('sub', 'username', 'role', 'person', 'login')}), content_type='application/json')
     if path == '/auth/logout':
+        try:
+            files_end_session(unsign(jar.get('__Host-familiar', '')))
+        except (ValueError, KeyError, TypeError):
+            pass  # No live personal session to close.
+        except (ClientError, BotoCoreError):
+            print('Could not revoke upload grants on logout; clearing browser cookies')
         target = domain + '/logout?' + urllib.parse.urlencode({
             'client_id': os.environ['USER_CLIENT'], 'logout_uri': origin + '/auth/login'})
         return auth_reply(302, location=target, cookies=[cookie('__Host-familiar', '', 0),

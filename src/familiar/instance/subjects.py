@@ -11,12 +11,16 @@
 # - declared cut-out subjects cannot replace corpus subjects; chapter context is only a fallback [review: engine lead]
 # - generated photo restorations bind real originals and deceased subjects before any privacy omission [review: engine lead]
 # - attaching an archival photograph elsewhere cannot subtract its identified subjects [review: engine lead]
+# - a protected person's citation closes the whole document unless its corpus record declares complete subjects and the citation is only an inference [test: tests/gate/test_data_guarantees.py::test_f2_record_subject_cannot_be_omitted]
+# - a public census or family annex needs a complete participant list, including children [test: tests/gate/test_data_guarantees.py::test_f2_record_subject_cannot_be_omitted]
 # CHANGES_WITH:
 # - MOD-PUBLICATION
 # - MOD-CHECKS-PRIVACY
 # :END_MODULE_CONTRACT
-import unicodedata
 import copy
+import json
+import re
+import unicodedata
 from dataclasses import dataclass, field
 
 
@@ -33,6 +37,26 @@ def normalized(value):
     return value
 
 
+def recorded_match(record):
+    """A recorded identification can name a participant; a search candidate cannot."""
+    from familiar.tree.life import recorded
+    match = record.get('match') or {}
+    if match.get('confidence') == 'same' and recorded(record) and recorded(match):
+        return match.get('tree_id')
+    return None
+
+
+def feedback_record(record):
+    """A home paper copied from a family member's feedback is their document."""
+    locator = (record.get('source') or {}).get('locator')
+    return (record.get('kind') == 'home-paper' and isinstance(locator, str)
+            and locator.replace('\\', '/').removeprefix('./').startswith('family/feedback/inbox/'))
+
+
+def protected_record(record):
+    return feedback_record(record) or record.get('privacy') in {'living', 'living-possible'}
+
+
 def explicit_subjects(record):
     """Declared record references: people values, subjects.person, person.id, relatives.id."""
     subjects = []
@@ -44,6 +68,8 @@ def explicit_subjects(record):
         subjects.append(person)
     elif isinstance(person, dict) and person.get('id'):
         subjects.append(person['id'])
+    elif pid := recorded_match(record):
+        subjects.append(pid)
     unsupported = {'person', 'person_id', 'personId', 'canonical', 'canonical_id', 'subjects', 'people'}
     if isinstance(person, dict) and unsupported.intersection(person):
         raise ValueError('unsupported primary person reference; use person.id')
@@ -54,6 +80,10 @@ def explicit_subjects(record):
             subjects.append(relative['id'])
         if unsupported.intersection(relative):
             raise ValueError('unsupported relative reference; use relatives[].id')
+    for event in record.get('events', []):
+        subjects.extend(s.get('person') if isinstance(s, dict) else s for s in event.get('subjects', []))
+    for field_people in record.get('field_subjects', {}).values():
+        subjects.extend(field_people)
     return list(dict.fromkeys(normalized(s) for s in subjects if s))
 
 
@@ -71,7 +101,9 @@ def _excerpt(data, fields):
     mapping = data.get('field_subjects', {})
     if any(f not in data.get('fields', {}) or f not in mapping or not isinstance(mapping[f], list) or not mapping[f] for f in fields):
         raise ValueError('TRUST-06: excerpt fields need recorded subjects; classify or separate the document first')
+    privacy = 'living' if protected_record(data) else data.get('privacy')
     return {'id': data['id'], 'kind': data.get('kind'), 'fictional': data.get('fictional', False),
+            **({'privacy': privacy} if privacy else {}),
             'fields': {f: data['fields'][f] for f in fields}, 'excerpt': fields,
             'subjects': list(dict.fromkeys(p for f in fields for p in mapping[f]))}
 
@@ -266,17 +298,177 @@ def closure(instance, value, *, shape='chapter', documents=None, pictures=None, 
     return result
 
 
-def attribute_documents(instance, graph):
+def historical_records(resolved):
+    return bool(resolved.records) and all(record.get('privacy') == 'dead' and not protected_record(record)
+                                          for record in resolved.records.values())
+
+
+def fileless_memory(source):
+    return source.get('kind') in {'memory', 'family-memory'} and not any(
+        source.get(k) for k in ('record', 'asset', 'assetIn', 'local', 'url', 'image', 'capture', 'full'))
+
+
+def complete_subjects(record):
+    """Only the corpus record can attest that its list covers the whole document."""
+    rows = record.get('subjects') or []
+    return (record.get('subjects_complete') is True and bool(rows)
+            and all(s if isinstance(s, str) else isinstance(s, dict) and s.get('person') for s in rows))
+
+
+GROUP_RECORD = re.compile(r'\b(?:census|household|family[- ]annex|перепис\w*|семейн\w+ приложен\w*|'
+                          r'spis ludności|folkräkning)\b', re.I)
+
+
+def unreviewed_group(record):
+    """A group sheet may name children or unnamed-in-the-tree relatives."""
+    if record.get('excerpt') or complete_subjects(record):
+        return False
+    labels = [record.get(k, '') for k in ('id', 'kind', 'title', 'type')]
+    labels.extend(event.get('type', '') for event in record.get('events', []))
+    return (any(GROUP_RECORD.search(str(label)) for label in labels)
+            or any(not relative.get('id') for relative in record.get('relatives', [])))
+
+
+def own_papers(person):
+    """Sources of the person's own names and events: a paper that records them is about this person."""
+    return {sid for key in ('names', 'events') for row in person.get(key) or [] if isinstance(row, dict)
+            for field in ('provenance', 'sources') for sid in row.get(field) or [] if isinstance(sid, str)}
+
+
+def infers(fact):
+    """A told conclusion, not the person's own name or event read from the paper."""
+    return not any(fact.get(k) for k in ('eventType', 'event_correction', 'card_details', 'record'))         and fact.get('label') not in ('names', 'events', 'document')
+
+
+def check(instance, graph, records, fail):
+    """Advice only: a paper is off a dead relative's card only because a living person's fact infers from it."""
+    from familiar.checks.engine import life_status, load
+    from familiar.tree.life import _assess
+    people = graph['people']
+    inferring, owners, own = {}, {}, {}
+    for pid, person in people.items():
+        papers = own_papers(person)
+        for fact in person.get('facts', []):
+            for sid in fact.get('sources') or []:
+                owners.setdefault(sid, set()).add(pid)
+                (inferring if infers(fact) and sid not in papers else own).setdefault(sid, set()).add(pid)
+    def waiting(sid, dead):
+        source = graph['sources'].get(sid, {})
+        record = records.get(source.get('record', sid))
+        living = inferring[sid] - dead
+        named = any(names(written(source, record), people[p]) for p in living)
+        return (record and living and owners[sid] & dead and (named or not complete_subjects(record))
+                and not (own.get(sid, set()) - dead) and not protected_record(record)
+                and not {p for p in explicit_subjects(record) if p in people} - dead)
+    privacy = load(instance.path('privacy'), {})
+    gone = lambda view: {pid for pid, p in view.items() if life_status(p, privacy) == 'dead'}
+    if not any(waiting(sid, gone(people)) for sid in inferring):
+        return
+    # Reuse the recorded evidence for the family's display horizon.
+    seen = _assess(instance, graph | {'people': {pid: dict(p) for pid, p in people.items()}}, family_display=True)['people']
+    dead = gone(seen)
+    for sid in sorted(inferring):
+        if waiting(sid, dead):
+            name = lambda ids: ', '.join(sorted(people[p].get('name') or p for p in ids))
+            source = graph['sources'].get(sid, {})
+            theirs, kept = sorted(owners[sid] & dead), inferring[sid] - dead
+            named = [p for p in kept if names(written(source, records[source.get('record', sid)]), people[p])]
+            fail(instance.path('contributions'), f"{source.get('title') or records[source.get('record', sid)].get('title') or sid}: "
+                 f"not shown on the card of {name(theirs)} only because a fact on the card of {name(kept)} "
+                 '(living) cites it. ' + (f"Its own words name {name(named)}: if that is our note, move it to collector_note"
+                                          if named else f'If the paper is about the dead alone, review all participants in the '
+                                          f'corpus record and write "subjects": {json.dumps(theirs)}, "subjects_complete": true'))
+
+
+def written(source, record):
+    """The paper's own words: its title, reading and literal fields, never a researcher's note beside them."""
+    from familiar.checks.engine import strings
+    record = record or {}
+
+    def literal(value):
+        if isinstance(value, dict):
+            for key, child in value.items():
+                yield key
+                yield from literal(child)
+        elif isinstance(value, list):
+            for child in value:
+                yield from literal(child)
+        elif isinstance(value, str):
+            yield value
+
+    subject_names = [s.get('written') for s in record.get('subjects', []) if isinstance(s, dict)]
+    return ' '.join([*strings([source.get('title'), *subject_names,
+                               *(record.get(k) for k in ('title', 'reading', 'events', 'relatives'))]),
+                     *literal(record.get('fields'))]).casefold()
+
+
+def names(text, person):
+    """Whether these words name the person: a given name and a surname of one of their written names, by their roots."""
+    rows = [f"{n.get('given') or ''} {n.get('surname') or ''}".split() for n in person.get('names') or [] if n]
+    return any(all(re.search(r'\b' + re.escape(word.casefold()[:max(3, len(word) - 2)]), text) for word in (row[0], row[-1]))
+               for row in [*rows, str(person.get('name') or '').split()] if len(row) > 1)
+
+
+def protected_names(instance, *, include_short=False):
+    """Match names of people still protected, including alternate written forms and name order."""
+    from familiar.checks.engine import _known_people, life_status
+    living, historical = set(), set()
+    for person in _known_people(instance).values():
+        forms = historical if life_status(person, {}) == 'dead' else living
+        shown = person.get('namePresentation') or {}
+        values = [person.get('name'), shown.get('full'), *(shown.get('byLanguage') or {}).values()]
+        for row in person.get('names') or []:
+            given, patronymic, surname = row.get('given'), row.get('patronymic'), row.get('surname')
+            values.append(row.get('display'))
+            if given and surname:
+                values.extend((f'{given} {surname}', f'{surname} {given}',
+                               ' '.join(filter(None, (surname, given, patronymic)))))
+            if include_short and given and patronymic:
+                values.extend((f'{given} {patronymic}', f'{patronymic} {given}'))
+        for value in values:
+            if not isinstance(value, str) or not value.strip():
+                continue
+            bits = tuple(re.findall(r'[^\W\d_]+', value.casefold()))
+            if len(bits) >= 2:
+                forms.add(bits)
+                if len(bits) > 2:
+                    forms.add((bits[0], bits[-1]))
+                    if include_short:
+                        forms.add(bits[:2])
+    patterns, historical_stems = set(), {tuple(w[:-2] for w in bits) for bits in historical}
+    for bits in living - historical:
+        patterns.add(r'[\W_]+'.join(map(re.escape, bits)))
+        stems = tuple(w[:-2] for w in bits)
+        if stems not in historical_stems and all(re.fullmatch(r'[а-яё]{4,}', w) for w in bits):
+            patterns.add(r'[\W_]+'.join(re.escape(w) + r'[а-яё]{1,4}' for w in stems))
+    return re.compile(r'(?<!\w)(?:' + '|'.join(sorted(patterns)) + r')(?!\w)' if patterns else r'(?!)', re.I)
+
+
+def attribute_documents(instance, graph, *, family_display=False):
     """Add contextual subjects to every shared document route, without changing inputs.
 
     Resource identities join only structured references, never titles or prose.
     A shared scan inherits all its uses, including protected gallery owners.
     Literal excerpts remain separate from the full record's identity.
     """
-    from familiar.checks.engine import _known_people
-    known = _known_people(instance)
-    record_ids = {normalized(p.stem) for p in instance.path('records').rglob('*.json')}
+    from familiar.checks.engine import _known_people, life_status, load
+    from .gate import shared
+    known, privacy = _known_people(instance, family_display=family_display), load(instance.path('privacy'), {})
+    stated = {}
+    record_paths = {normalized(p.stem): p for p in instance.path('records').rglob('*.json')}
     parents, subjects, uses, protected = {}, {}, [], set()
+    mentioned = None if family_display else shared(
+        instance, 'public-protected-names', lambda: protected_names(instance, include_short=True))
+    paper_safety = {}
+
+    def blocked_record(rid, record):
+        if protected_record(record):
+            return True
+        if family_display or record.get('excerpt'):
+            return False
+        if rid not in paper_safety:
+            paper_safety[rid] = unreviewed_group(record) or bool(mentioned.search(written({}, record)))
+        return paper_safety[rid]
 
     def root(key):
         parents.setdefault(key, key)
@@ -297,6 +489,8 @@ def attribute_documents(instance, graph):
         return first
 
     def document(node, shape, context=(), sid=None, *, chapter=False):
+        from .restorations import period_pair
+
         keys = [('source', sid)] if sid else []
         if node.get('record') and 'excerpt' not in node:
             keys.append(('record', node['record']))
@@ -309,9 +503,9 @@ def attribute_documents(instance, graph):
                 keys.append(('asset', value))
             elif isinstance(value, dict) and value.get('asset'):
                 keys.append(('asset', value['asset']))
-        value = dict(node, kind='archive-record') if shape == 'source' and node.get('record') in record_ids else node
+        value = dict(node, kind='archive-record') if shape == 'source' and node.get('record') in record_paths else node
         resolved = closure(instance, value, shape=shape, people=known)
-        if shape == 'source' and 'excerpt' not in node and (record := resolved.records.get(node.get('record'))):
+        if 'excerpt' not in node and (record := resolved.records.get(node.get('record'))):
             from familiar.reader.scans import selected_capture
             _, capture = selected_capture(instance, record)
             if capture:
@@ -321,18 +515,49 @@ def attribute_documents(instance, graph):
             declared = {known[p].get('id', p) for p in node['subjects']}
             if actual and declared != actual:
                 raise ValueError('TRUST-06: declared subjects disagree with corpus record: ' + node['record'])
-        people = (set() if chapter and node.get('subjects') else set(context)) | resolved.people
+        if shape == 'source' and sid and 'excerpt' not in node and complete_subjects(resolved.records.get(node.get('record'), {})):
+            stated[sid] = written(node, resolved.records[node['record']])
+        # The checked period frame already identifies who is pictured independently of the story.
+        use_context = not chapter or not (node.get('subjects') or shape == 'image' and period_pair(node)
+                                          or family_display and historical_records(resolved))
+        people = resolved.people | (set(context) if use_context else set())
         key = bind(keys, people)
-        if key is not None and any(r.get('privacy') in {'living', 'living-possible'} for r in resolved.records.values()):
-            protected.add(key)
+        if any(blocked_record(rid, data) for rid, data in resolved.records.items()):
+            node['_document_private'] = True
+            if key is not None:
+                protected.add(key)
         uses.append((node, key, people))
 
-    def fact(row, context):
+    sources = graph.get('sources', {})
+    manifest = load(instance.path('media') / 'manifest.json', {})
+    attached = {row['source_id'] for row in manifest.get('assets', []) if row.get('source_id') and row.get('export')}
+    attached.update(image[key] for person in graph.get('people', {}).values() for field in ('media', 'illustrations')
+                    for image in person.get(field, []) if image.get('asset') for key in ('sid', 'sourceSid') if image.get(key))
+    tellings = {sid for sid, source in sources.items()
+                if family_display and fileless_memory(source) and sid not in record_paths and sid not in attached}
+
+    def cite(sid, people, *, inference=False):
+        if sid in tellings:
+            return
+        alias = sources.get(sid, {}).get('record', sid)
+        if inference and sid not in stated and alias in record_paths:
+            record = load(record_paths[alias], {})
+            if complete_subjects(record):
+                stated[sid] = written(sources.get(sid, {}), record)
+        if inference and sid in stated:
+            people = {p for p in people if life_status(known.get(p, {'id': p}), privacy) == 'dead'
+                      or names(stated[sid], known.get(p, {}))}
+        if sources.get(sid, {}).get('excerpt'):
+            bind([('source', sid)], people)
+        else:
+            bind([('source', sid)] + ([('record', alias)] if alias in record_paths else []), people)
+
+    def fact(row, context, own=()):
         people = set(context) | set(row.get('_people', row.get('people', [])))
         if row.get('record'):
             document(row, 'fact', people)
         for sid in row.get('sources', []):
-            bind([('source', sid)], people)
+            cite(sid, people, inference=sid not in own and infers(row))
 
     def story(node, context=()):
         people = node.get('_people', node.get('people', context))
@@ -350,18 +575,47 @@ def attribute_documents(instance, graph):
         for child in node.get('extras', []) + node.get('chapters', []):
             story(child, people)
 
-    for sid, source in graph.get('sources', {}).items():
-        if not source.get('record') and sid in record_ids:
+    for sid, source in sources.items():
+        if not source.get('record') and sid in record_paths:
             source['record'] = sid
-        document(source, 'source', sid=sid)
+        if sid not in tellings:
+            document(source, 'source', sid=sid)
+    for row in manifest.get('assets', []):
+        if row.get('source_id') and row.get('export'):
+            sid = row['source_id']
+            bind([('source', sid), ('asset', '/' + row['export'].lstrip('/'))]
+                 + ([('record', sid)] if sid in record_paths else []), ())
     for pid, person in graph.get('people', {}).items():
         for collection in ('media', 'illustrations'):
             for image in person.get(collection, []):
                 photo_pair(instance, image)
                 if image.get('record') or image.get('kind') == 'document-scan' or image.get('photo') is False:
                     document(image, 'image', [pid])
-        for row in person.get('facts', []) + person.get('retiredFacts', []):
-            fact(row, [pid])
+        own = own_papers(person)
+        if life_status(known.get(pid, {'id': pid}), privacy) != 'dead':
+            for sid in own:
+                cite(sid, {pid})
+            for row in person.get('notes', []):
+                for sid in [*(row.get('sources') or []), *(row.get('provenance') or [])]:
+                    cite(sid, {pid})
+        for row in person.get('facts', []):
+            fact(row, [pid], own)
+        # A retired fact stays on record, but its papers are no longer papers about this person:
+        # a namesake's sheet must not sit among the documents of the card it was once tried on.
+        for row in person.get('retiredFacts', []):
+            fact(row, [])
+    from familiar.tree.life import attributed_link, relation_people
+    for relation in [*graph.get('edges', []), *graph.get('associations', []), *graph.get('families', [])]:
+        if not attributed_link(relation):
+            continue
+        members = {p for p in relation_people(relation) if life_status(known.get(p, {'id': p}), privacy) != 'dead'}
+        if not members:
+            continue  # A citation can protect a sheet, but cannot establish all its subjects.
+        for sid in [*relation.get('sources', []), *relation.get('provenance', [])]:
+            cite(sid, members, inference=relation.get('derived') is True or relation.get('status') in {'hypothesis', 'possible', 'probable'})
+        for event in relation.get('events', []):
+            for sid in [*event.get('sources', []), *event.get('provenance', [])]:
+                cite(sid, members)
     for feed in graph.get('feeds', []):
         story(feed)
     for node, key, people in uses:
@@ -375,3 +629,6 @@ def attribute_documents(instance, graph):
     from .restorations import restorations
     if any(restorations(graph)):
         closure(instance, graph, shape='graph', people=known)
+    private = {root(key) for key in protected}
+    return {key for key in parents if root(key) in private or any(
+        life_status(known.get(p, {'id': p}), privacy) != 'dead' for p in subjects[root(key)])}

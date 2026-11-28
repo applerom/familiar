@@ -68,6 +68,18 @@ Going back is the same command with the previous tag. A carry-over step that
 rewrote stored forms is undone from your backup, which is why the backup step
 above is not optional.
 
+## From 0.52.1 to 0.64.2
+
+The upgrade command checks old photo registrations and asks the author to
+scope any older life decisions. In `family/privacy.json`, use `everywhere`
+for a recorded death or an established age over 100, and `home` for a family
+age decision. Until the author records the scope, a legacy death decision
+applies at home only. This can withhold passages and papers in the public feed.
+
+Existing `feed.json`, `chapters.json` and `documents.json` still build. Chapter
+strips are an optional way to author those catalogs, described in
+[Feed studio](feed-studio.md).
+
 ## From 0.41.3 to 0.50.0
 
 0.41.3 was the previous published release. Back up the family directory, then:

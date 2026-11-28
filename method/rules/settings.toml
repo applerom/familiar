@@ -60,7 +60,7 @@ scopes = ["family", "feed"]
 type = "string"
 choices = ["neutral", "direct"]
 default = "neutral"
-help = "neutral: the text does not depend on who reads it (no 'our', 'your'; kinship counted from the feed's anchor ancestor). direct: the text addresses one known reader."
+help = "neutral: the text does not depend on who reads it (no 'our', 'your'; kinship counted from the site's one seat, the owner's). direct: the text addresses one known reader."
 serves = "UC-READ"
 scopes = ["family", "feed"]
 
@@ -128,6 +128,54 @@ type = "string"
 choices = ["policy-of-power", "as-documented"]
 default = "policy-of-power"
 help = "How chapters on hardship and faith are framed. The trust core already forbids blaming a people or a faith as a group; this chooses the narrative frame."
+serves = "UC-STORY"
+scopes = ["family", "feed"]
+
+[setting."story.max_words"]
+type = "integer"
+minimum = 1
+default = 200
+help = "Advise on a full chapter above this many words."
+serves = "UC-STORY"
+scopes = ["family", "feed"]
+
+[setting."story.max_paragraph_words"]
+type = "integer"
+minimum = 1
+default = 55
+help = "Advise on a paragraph above this many words."
+serves = "UC-STORY"
+scopes = ["family", "feed"]
+
+[setting."story.max_text_run"]
+type = "integer"
+minimum = 1
+default = 2
+help = "Advise on an uninterrupted run above this many paragraphs."
+serves = "UC-STORY"
+scopes = ["family", "feed"]
+
+[setting."story.min_look_do"]
+type = "integer"
+minimum = 0
+default = 3
+help = "Advise on a chapter with fewer visual or interactive beats, including planned frames."
+serves = "UC-STORY"
+scopes = ["family", "feed"]
+
+[setting."story.max_kids_words"]
+type = "integer"
+minimum = 1
+default = 80
+help = "Advise on a separate children's text above this many words."
+serves = "UC-STORY"
+scopes = ["family", "feed"]
+
+[setting."story.max_no_do_run"]
+type = "integer"
+minimum = 0
+default = 1
+help = "Advise after this many consecutive chapters without an activity."
 serves = "UC-STORY"
 scopes = ["family", "feed"]
 
@@ -367,7 +415,7 @@ scopes = ["region", "family"]
 type = "integer"
 minimum = 100
 maximum = 150
-default = 110
+default = 100
 help = "Birth before this age horizon is treated as deceased for privacy, equally for memory and imports; unknown stays protected."
 serves = "UC-READ"
 scopes = ["family"]
@@ -377,7 +425,7 @@ type = "integer"
 minimum = 75
 maximum = 100
 default = 75
-help = "Age at which someone with no established life status is treated as deceased in the family reader and signed-in desk. Uses a recorded birth date or the reader's estimated birth year. An explicit living decision always protects the person's documents."
+help = "A recorded birth or dated participation may establish this age for the family reader and signed-in desk. Explicit living decisions protect the person's documents."
 serves = "UC-READ"
 scopes = ["family"]
 

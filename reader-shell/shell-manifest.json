@@ -4,7 +4,7 @@
     "repository": "familiar",
     "directory": "reader-src",
     "command": "bun run reader:shell",
-    "toolchain_sha256": "e66029a37816c83d10c9e179a6fbb6ac669fa0869bc94b061e53e70e93ee6f5d"
+    "toolchain_sha256": "b0d52413bf2ff9286882deb19eca74c84f1f0df9ad3f6e6c96559bd0a7d956a6"
   },
   "contracts": {
     "reader_profile": 1,
@@ -15,13 +15,13 @@
     "size": 1069
   },
   "files": {
-    "assets/index-DK0XPK9H.js": {
-      "sha256": "c7e8675d9ec84bacb2485e41d9aa176142ecbf01d9a3cc0bc9ffaa46237f643f",
-      "size": 222744
+    "assets/index-aBMAlvXh.css": {
+      "sha256": "aac78136e9687515d20dc693651e1e0b3f2ef5de84a73048bf933b338f24a1c6",
+      "size": 99670
     },
-    "assets/index-EMA8CZyX.css": {
-      "sha256": "109c781aa1d441685a04052a9281f50c515c2d606bc4d8375262c65485488e87",
-      "size": 84862
+    "assets/index-BxRAo14h.js": {
+      "sha256": "790c5ce633f230890f47e94ccc5b92b86a8a1d9794f796b1e438e33324c3f2e7",
+      "size": 242940
     },
     "assets/Literata-CuqrGnnX.woff2": {
       "sha256": "fbf8199381bc34ce9318bef1f612ecd58fac5ece5225c637dcbb7fd79866e15e",
@@ -35,24 +35,24 @@
       "sha256": "db13d369f93f282f7f6277ea03c7fcda9c93ad88be4232cf9fb5b825ec76efe2",
       "size": 38520
     },
-    "assets/page-top-h3QduTQz.css": {
-      "sha256": "f6f4f6eadeadbe205a5e8ba23907eeacdc8fc1d6995b327aec70cba2e369985f",
-      "size": 1550
+    "assets/page-top-9jSco4dO.js": {
+      "sha256": "3d11844e1f2b8809c22af2a5891da37544be2f4ec3176fa308929da64ab8af72",
+      "size": 343919
     },
-    "assets/page-top-YThvJJv6.js": {
-      "sha256": "d59ad3f1226140870a5d4e9fb839310c89f9b57a6ba19aa6b83da292488076be",
-      "size": 341440
+    "assets/page-top-Dt9Vbkvv.css": {
+      "sha256": "ac1dfa4c5210d7ea6a13748b5dc282583e16a01de477de4c524ba6f268368270",
+      "size": 2823
     },
-    "assets/pageTop-HgdViiQU.js": {
-      "sha256": "e9b4a6db73193500fada1c5b14fec882e3262c38e60e51f48bc707db09966905",
-      "size": 519
+    "assets/pageTop-D_PVX90q.js": {
+      "sha256": "e135b442a80dcf9e41ca54e1cbcabb03ff36fdd9b838902c53cc8e533ed717de",
+      "size": 646
     },
     "assets/tokens-ChzF_6gm.css": {
       "sha256": "080c3aac7ddd4478a576035bc1d3e18c7d1b6664b779adc0cbb7abbc563c0644",
       "size": 2204
     },
     "index.html": {
-      "sha256": "b43e77a183fdb69b8e9dd1fe495ef8214fa302e441c9605120641759ea0db34e",
+      "sha256": "d5380820da331f982b405a40f2ed960fc7632651cc674effdf062ac8c67ad2d9",
       "size": 610
     },
     "THIRD_PARTY_NOTICES.txt": {

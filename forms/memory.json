@@ -7,6 +7,7 @@
     {
       "id": "bea-memory-name",
       "text": "Bea Example lived in a city. Her family remembers her life as 1880 to 1955.",
+      "layers": ["skeleton", "attribute"],
       "strength": "hearsay",
       "witness": "heard from her child"
     },
@@ -80,6 +81,7 @@
       ]
     }
   ],
+  "blanks": [{"person": "ben-person", "field": "occupation"}],
   "families": [
     {
       "id": "bea-ben-union",

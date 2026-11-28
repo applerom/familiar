@@ -12,7 +12,7 @@ from collections import Counter
 from datetime import date
 
 
-def parse(path, ident, years=110, as_of=None):
+def parse(path, ident, years=100, as_of=None):
     if years < 1:
         raise ValueError("living years must be positive")
     today = date.fromisoformat(as_of) if as_of else date.today()

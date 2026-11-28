@@ -184,6 +184,7 @@ class Case:
             if status == 'unknown' and raw not in {'', 'unknown', 'possibly-living', 'possibly living'}:
                 self.loss('people', local, 'living_status', f'Unrecognized value {raw!r}; protected as unknown')
             self.decisions.append({'person': pid, 'status': status, 'by': 'kinship-case',
+                                   'scope': 'home' if status == 'dead' else 'everywhere',
                                    'at': date.today().isoformat(),
                                    'basis': f"Imported case classification: {raw or 'unspecified'}"})
             # Labels and estimates come from a research register. Do not split labels or promote its estimates to events.

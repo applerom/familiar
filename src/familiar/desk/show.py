@@ -91,7 +91,24 @@ def project(active, graph, w, *, asks=()):
         return path.relative_to(active.root).as_posix()
     people = graph.get('people', {})
     from familiar.checks.engine import _known_people, life_status
-    known = _known_people(active)
+    from familiar.instance.publication import quotation_filter
+    from familiar.instance.gate import fixed_inputs, shared
+    from familiar.tree.builder import _build
+    with fixed_inputs():
+        known = _known_people(active)
+        original = shared(active, ('known-people', False), lambda: _build(active))['sources']
+        closed = {sid: original.get(sid, {}).get('record') or sid for sid, source in graph.get('sources', {}).items()
+                  if source.keys() <= {'id', 'kind'}}
+        quotes_record = quotation_filter(active, set(closed.values()))
+
+    def label(value, fallback=''):
+        return quotes_record(public_line(value, fallback))
+
+    def against(argument):
+        if not isinstance(argument, dict):
+            return label(argument)
+        cited = [closed.get(sid, sid) for sid in argument.get('sources', [])]
+        return quotes_record(public_line(argument.get('text')), cited)
     events, versions, lanes, pending = [], [], [], []
     lanes.append({'id': 'tree', 'title': w['tree'], 'kind': 'tree'})
     lane_ids, version_paths = {}, {}
@@ -106,8 +123,7 @@ def project(active, graph, w, *, asks=()):
         lane = opaque(identity)
         lane_ids[identity] = lane
         historical = all(life_status(known.get(p, {'id': p}), {}) == 'dead' for p in subjects)
-        title = public_line(row.get('headline') or (row.get('title') if historical else ''),
-                            w['branch'].format(n=index))
+        title = label(row.get('headline') or (row.get('title') if historical else ''), w['branch'].format(n=index))
         # The real question ID is needed by the researcher's feedback inbox, but
         # only safe opaque/token IDs may cross this boundary, never file paths.
         question = identity if re.fullmatch(r'[\w.-]{1,160}', str(identity)) else lane
@@ -179,11 +195,11 @@ def project(active, graph, w, *, asks=()):
                     target = {'id': opaque(lane + ':' + str(key)), 'lane': lane, 'series': []}
                     items[key] = target
                     born.append(target['id'])
-                target.update(label=public_line(item.get('headline') or (item.get('label') if historical else ''),
-                                                 w['version_n'].format(n=n)), w=value, state=state)
+                target.update(label=label(item.get('headline') or (item.get('label') if historical else ''),
+                                          w['version_n'].format(n=n)), w=value, state=state)
                 # Only literal contrary arguments, never test plans or inferred reasons.
                 target['reason'] = next((text for a in item.get('against', [])
-                    if historical and (text := public_line(a.get('text') if isinstance(a, dict) else a))), '')
+                    if historical and (text := against(a))), '')
                 if previous != value:
                     target['series'].append(value)
                 if previous is not None and (abs(value - previous) >= .05 - 1e-9 or state != previous_state):
@@ -328,9 +344,12 @@ def line_section(active, graph, w, *, language=None, texts=None):
             + ('<ul>' + ''.join(rows) + '</ul>' if rows else '<p>' + esc(w['lines_empty']) + '</p>') + '</section>')
 
 
-def page(active, w, supplemental=False, *, lines='', language=None, data='desk/show.json'):
+def page(active, w, supplemental=False, *, lines='', language=None, data='desk/show.json', strips=False):
     esc, s = html.escape, w['show']
     language = language or active.source_language
+    from .feed_strip import PAGE as STRIP_PAGE, words as strip_words
+    strip_link = (f'<p data-local-feed-strip><a href="/{STRIP_PAGE}">{esc(strip_words(language)[0])}</a></p>'
+                  if strips else '')
     title = active.config['family']['title']
     title = (title.get(language) or title.get(active.source_language, '')) if isinstance(title, dict) else title
     extras = ('<p class="desk-extra"><a href="/desk/journal.html">' + esc(w['journal'])
@@ -341,9 +360,12 @@ def page(active, w, supplemental=False, *, lines='', language=None, data='desk/s
             '<meta name="robots" content="noindex,nofollow,noarchive"><title>' + esc(s['progress'])
             + ' · ' + esc(title) + '</title><link rel="stylesheet" href="/desk/show.css">'
             '<script defer src="/desk/show.js"></script></head><body class="familiar-show">'
-            '<main class="wrap"><section class="since">'
-            '<div class="kicker">' + esc(s['ongoing']) + '</div><h1>' + esc(s['latest_shifts'])
-            + '</h1><ul id="show-shifts"></ul></section>'
+            '<main class="wrap"><section class="show-intro"><h1>' + esc(s['progress']) + '</h1><p>' + esc(s['intro'])
+            + '</p>' + ''.join('<div id="intro-' + key + '" hidden><h2>' + esc(s['intro_' + key]) + '</h2><ul></ul></div>'
+                               for key in ('now', 'found', 'help')) + '</section>'
+            '<h2 class="show-workshop">' + esc(s['workshop']) + '</h2>' + strip_link + '<section class="since" hidden>'
+            '<div class="kicker">' + esc(s['ongoing']) + '</div><h2 class="since-title">' + esc(s['latest_shifts'])
+            + '</h2><ul id="show-shifts"></ul></section>'
             '<section id="show-added" class="added" hidden><h2 class="h2">' + esc(s['added_title'])
             + '</h2><ul id="show-added-list"></ul></section>'
             '<section class="volume"><h2 class="h2">' + esc(s['work_volume']) + '</h2>'

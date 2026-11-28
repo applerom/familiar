@@ -1,0 +1,19 @@
+{
+  "_about": "Save as research/access.json (path key access), or let `research access record` write it: one verdict is one command. The ledger says, place by place, which papers of the family's villages exist and what stands between us and them, so \"no access\" is never read as \"not found\". A place: place (as the family writes it), optional lines (line surnames; without them the place belongs to lines whose people or versions stand in it), optional title (the place by reader language), books. A row: id (unique, e.g. a1), kind (parish, revision, census, household, estate, civil, parishioners, consistory, voters, tax, school, commission, army, or your own word; memorial-book, name-base, researcher and web are somebody's compilations and never count as books of the place), state, at (date of the verdict), by (who gave it). State: home (opens from home, not finished), copy (the archive sells a copy remotely: price and, where a detail is missing to order it, needs, e.g. \"sheet numbers of the village\"), room (reading room only), letter (the archive answers letters), unknown (not settled where it is, or whether it survives), read, none (lost, or this holder has none). Optional: title, years (\"1860-1918\" or \"1816; 1858\"), holder, reference (call number), online (where it opens from home), read and of with unit (\"read 31 of 31 frames\"), letter (correspondence id), order (place in the reading-room list; a letter, copy or unknown row with order joins the list), look_for (what to look for there; relatives read it, so it never names the living), doubtful (true: not sure the book holds our place; it neither opens nor closes the road), report (file of the verdict), note (for the research only). title, holder, reference, online, unit, look_for, note, price and needs may be a row by language. Words for the printed page, all optional: title, about (header), sections ([{title, about}]) and room (above the reading-room list) beside places; about and section in a place. Read years and depth of single books belong to the series list (research form series).",
+  "schema_version": 1,
+  "places": [
+    {
+      "place": "Example Village",
+      "lines": ["Example"],
+      "books": [
+        {"id": "a1", "kind": "parish", "years": "1860-1918", "state": "room", "holder": "Example state archive",
+         "reference": "12/3/40-58", "order": 1, "look_for": "Households of the Examples, baptisms first",
+         "at": "2026-11-24", "by": "collector-a", "report": "research/example/README.md"},
+        {"id": "a2", "kind": "census", "years": "1926", "state": "letter", "holder": "Example regional archive",
+         "letter": "archive-example", "at": "2026-11-24", "by": "collector-a"},
+        {"id": "a3", "kind": "revision", "years": "1858", "state": "home", "online": "example-scans", "read": 12, "of": 140,
+         "unit": "sheets", "at": "2026-11-24", "by": "collector-a"}
+      ]
+    }
+  ]
+}

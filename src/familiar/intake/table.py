@@ -24,6 +24,7 @@ from familiar.instance.packs import bundled_root
 from familiar.instance.writer import mutate
 
 from .core import safe, token
+from .layers import CELLS, ROLES
 from .sheet import cells
 from .table_review import bridge_label, describe, enrich
 
@@ -86,7 +87,7 @@ def prepare(instance, path, ident, witness, date, language, mapping=None):
     aliases = {s.casefold().strip(): k for k, names in pack['headers'].items() for s in names}
     paths = pack.get('kin_paths', {})
     data = {'id': ident, 'told_by': witness, 'date': date, 'table_sha256': hashlib.sha256(blob).hexdigest(),
-            'items': [], 'people': [], 'families': []}
+            'items': [], 'people': [], 'families': [], 'blanks': []}
     report = {'format': 'Kin Sheet 1', 'status': 'draft', 'cells': [], 'questions': [], 'losses': [],
               'policy': 'Unambiguous parent/grandparent and no doubt: firm (assumed acquaintance); otherwise hearsay. Reviewer must check witness/strength.',
               'assumptions': ['First nonempty row of each sheet is the header; UTF-8 CSV/TSV.',
@@ -145,6 +146,9 @@ def prepare(instance, path, ident, witness, date, language, mapping=None):
                 data['people'].append(person)
                 person['_name'] = name
                 person['_kin'] = kin
+                told = {roles.get(c['col']) for c in group if c['text'].strip() not in {'', '-'}}
+                data['blanks'] += [{'person': person['id'], 'field': field} for role, field in CELLS.items()
+                                   if role in roles.values() and role not in told]
             for c in group:
                 if c['text'].strip() == '-':
                     report['cells'].append({**c, 'outcome': 'loss', 'reason': 'Dash means empty, not a memory assertion'})
@@ -158,6 +162,8 @@ def prepare(instance, path, ident, witness, date, language, mapping=None):
                 item = {'id': item_id, 'text': c['text'] or c.get('formula') or c.get('link'),
                         'cell': c['address'], 'strength': strength, 'witness': row_witness,
                         'status': 'possible' if doubtful(c['text']) else 'reported', 'rule': rule}
+                if not footnote and role in ROLES:
+                    item['layers'] = [ROLES[role]]
                 for key in ('raw_number', 'number_format', 'date', 'formula', 'link', 'display_gap', 'display_rule'):
                     if key in c:
                         item[key] = c[key]

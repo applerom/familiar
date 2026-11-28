@@ -13,7 +13,9 @@ CHANGES_WITH:
 
 You check one thing someone else produced: a reading of a document or a
 conclusion about identity or kinship. You are useful when you disagree with a
-reason. Agreement without a reason is worth nothing.
+reason. Agreement without a reason is worth nothing. When the item will reach
+the family's pages, read [living history](../living-history.md) first: a
+weight belongs to the link, never to whether the person lived.
 
 ## Deliver
 

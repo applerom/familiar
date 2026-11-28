@@ -10,6 +10,7 @@ import csv
 import json
 import sys
 import tomllib
+from argparse import RawDescriptionHelpFormatter
 from pathlib import Path
 from uuid import uuid4
 
@@ -26,6 +27,25 @@ def register(commands):
     actions = parser.add_subparsers(dest="intake_kind", required=True)
     for kind in ("memory", "paper", "gedcom", "table"):
         sub = actions.add_parser(kind)
+        if kind == "paper":
+            sub.formatter_class = RawDescriptionHelpFormatter
+            sub.epilog = '''Example paper.toml (attach the preserved original with --original FILE):
+
+id = "bea-paper"
+[record]
+title = "Invented city certificate"
+source = {holder = "host"}
+language = ["en"]
+fields = {Name = "Bea Example"}
+reading = "Name: Bea Example"
+people = {Bea = "bea-person"}
+[record.interest]
+level = 0.6
+tell = "A home paper preserves a name alongside family memory."
+[[people]]
+id = "bea-person"
+existing = "bea-telling-bea-person"
+'''
         sub.add_argument("input", type=Path)
         if kind in {"paper", "memory"}:
             sub.add_argument("--original", required=kind == "paper", type=Path)
@@ -48,11 +68,28 @@ def register(commands):
     case.add_argument('--apply', action='store_true', help='Preserve and import the case (default: preview)')
     photo = actions.add_parser('photo', help='Attach one family photo or a CSV/TSV of photos')
     photo.add_argument('input', type=Path)
-    photo.add_argument('--table', action='store_true', help='Columns: file, people, caption, received_from, when (optional)')
+    photo.add_argument('--table', action='store_true', help='Columns: file, people, caption, received_from; optional when, sent_for, show, sheet, unnamed_faces (yes/no), faces (PERSON=x,y,w,h;...), crop')
     photo.add_argument('--person', action='append', default=[], help='Working-tree person ID; repeat for a group photo')
     photo.add_argument('--caption', default='')
     photo.add_argument('--when', default='', help='Date or era as written in the archive')
     photo.add_argument('--received-from', default='')
+    photo.add_argument('--for', dest='sent_for', default='', help='Why the sender gave this photograph (archive note)')
+    photo.add_argument('--show', choices=('gallery', 'card', 'private'),
+                       help='Show in the gallery and cards, cards only, or keep in the archive. Sheets, unnamed faces and purpose notes default to private.')
+    photo.add_argument('--sheet', action='store_true', help='This file is a sheet of several photographs')
+    photo.add_argument('--unnamed-faces', action='store_true', help='Some or all of the people pictured are unnamed')
+    photo.add_argument('--face', action='append', default=[], metavar='PERSON=x,y,w,h',
+                       help="Where this person's face is, as fractions of the picture; repeat for each named face. "
+                            'Run again on an attached original with only --face/--crop to add them later')
+    photo.add_argument('--crop', default='', metavar='x,y,w,h',
+                       help='Show only this part of the picture (a print re-shot by phone); the original stays whole')
+    sent = actions.add_parser('attachment', help="List files relatives attached to remarks, or take one remark's files in")
+    sent.add_argument('input', nargs='?', metavar='ID', help='Remark ID (without it: list files waiting)')
+    sent.add_argument('--file', type=int, action='append', default=[], help='Only this attached file number; repeatable')
+    sent.add_argument('--person', action='append', default=[], help="Working-tree person ID (default: the remark's person)")
+    sent.add_argument('--caption', default='', help='Default: the first line of the remark')
+    sent.add_argument('--when', default='', help='Date or era as written in the archive')
+    sent.add_argument('--received-from', default='', help='Default: the signed sender and the remark')
     draft = actions.add_parser("feedback-draft", help="Prepare editable memory TOML from inbox feedback IDs")
     draft.add_argument("input", nargs="+", metavar="ID")
     draft.add_argument("--output", required=True, type=Path)
@@ -73,10 +110,19 @@ def run(args):
             return 0
         if kind == 'photo':
             from .photo import ingest as ingest_photo
-            if args.table and (args.person or args.caption or args.when or args.received_from):
-                raise ValueError('put people, caption, date or era and attribution in the table')
+            if args.table and (args.person or args.caption or args.when or args.received_from or args.sheet or args.unnamed_faces):
+                raise ValueError('put people, caption, date or era, attribution, sheet and unnamed faces in the table')
             report = ingest_photo(instance, args.input, table=args.table, people=args.person,
-                                  caption=args.caption, when=args.when, received_from=args.received_from)
+                                  caption=args.caption, when=args.when, received_from=args.received_from,
+                                  sent_for=args.sent_for, show=args.show, sheet=args.sheet, unnamed_faces=args.unnamed_faces,
+                                  faces=args.face, crop=args.crop)
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+            return 0
+        if kind == 'attachment':
+            from .photo import from_feedback, waiting
+            report = ({'waiting': waiting(instance)} if not args.input else from_feedback(
+                instance, args.input, numbers=args.file, people=args.person, caption=args.caption,
+                when=args.when, received_from=args.received_from))
             print(json.dumps(report, ensure_ascii=False, indent=2))
             return 0
         if kind == "feedback-draft":

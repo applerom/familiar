@@ -11,13 +11,12 @@ from .pages import journal_date, page
 STATE_ICON = {'draft': '○', 'ready': '●', 'sent': '◷', 'answered': '✓', 'closed': '✓', 'not_needed': '−'}
 
 
-def project(instance, w, *, language=None, texts=None, local_names=None):
-    """The letters page; another reader language translates the family's notes, never the letter itself."""
-    language, texts, local_names = language or instance.source_language, texts or {}, local_names or {}
-    tr = lambda value: texts.get(value.strip(), value) if isinstance(value, str) and value.strip() else value
+def checked_letters(instance):
     root = instance.path('correspondence')
     paths, names = listing(root, '*.json')
     listings = {(root, '*.json'): names}
+    if not paths:
+        return [], {}, listings
     inputs = {p: p.read_bytes() for p in paths}
     for raw in list(inputs.values()):
         for reply in json.loads(raw).get('replies', []):
@@ -31,9 +30,16 @@ def project(instance, w, *, language=None, texts=None, local_names=None):
     for key in ('evidence', 'tree_metadata', 'identity_decisions'):
         p = instance.path(key)
         inputs[p] = p.read_bytes() if p.is_file() else None
-    result = publication(instance, 'correspondence')
-    result.check(instance)
-    items, c = result.data()['items'], w['correspondence']
+    return publication(instance, 'correspondence').data()['items'], inputs, listings
+
+
+def project(instance, w, items, *, language=None, texts=None, local_names=None):
+    """The letters page; another reader language translates the family's notes, never the letter itself."""
+    if not items:
+        return {}
+    language, texts, local_names = language or instance.source_language, texts or {}, local_names or {}
+    tr = lambda value: texts.get(value.strip(), value) if isinstance(value, str) and value.strip() else value
+    c = w['correspondence']
     if language != instance.source_language:
         shown = ('settles', 'title', 'why_now', 'relevance', 'recipient', 'context', 'cost_note', 'how', 'sender', 'line')
         # The letter keeps its own subject: the translated title never becomes the subject sent to an archive.
@@ -123,9 +129,7 @@ def project(instance, w, *, language=None, texts=None, local_names=None):
     if unassigned := [row for row in items if not row['has_aim']]:
         content += ('<section class="mail-unassigned"><h2>' + e(c['no_aim']) + '</h2>'
                     + text(c['add_aim'], 'mail-meta') + ''.join(map(card, unassigned)) + '</section>')
-    if not items:
-        content += text(c['empty'])
     content += '</div><aside class="mail-pane" aria-label="' + e(c['letter']) + '"></aside></div>'
     content += '<script defer src="/desk/correspondence.js"></script><link rel="stylesheet" href="/desk/correspondence.css">'
     name = 'desk/correspondence.html' if language == instance.source_language else f'desk/correspondence.{language}.html'
-    return {name: page(c['title'], content, language)}, inputs, listings
+    return {name: page(c['title'], content, language)}

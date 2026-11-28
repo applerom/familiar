@@ -2,6 +2,7 @@
 # PURPOSE: Pair locally preserved records with their checked capture and literal reading.
 # PRD_REF: docs/PRD.md#TRUST
 # INVARIANTS:
+# - document pages render only corpus references approved by the reader projection [test: tests/gate/test_data_guarantees.py::test_f2_record_subject_cannot_be_omitted]
 # - document pages render nested literal fields without losing keys, escape text and contain no research hyperlinks [review: engine lead]
 # - a preserved document derivative cannot outlive its source checksum [review: engine lead]
 # - arbitrary local JSON cannot substitute for a canonical record [review: engine lead]
@@ -22,7 +23,7 @@ import re
 from pathlib import Path
 
 from .assets import publication_bytes, sha256
-from .scans import derivative, selected_capture
+from .scans import derivative, first_page, selected_capture
 
 BACK_SCRIPT = 'sources/document-back.js'
 _BACK = b"""document.getElementById('document-back').addEventListener('click', (event) => {
@@ -157,7 +158,7 @@ def _local_sources(instance, graph, media, *, host_private=False):
     generated, bindings, rendered = {}, {}, {}
     records = {}
     from familiar.checks.engine import _known_people, life_status
-    from familiar.instance.subjects import closure
+    from familiar.instance.subjects import closure, fileless_memory, protected_record
     from familiar.tree.builder import read_json
     privacy = read_json(instance.path('privacy'), {})
     known = _known_people(instance, family_display=host_private)
@@ -180,10 +181,13 @@ def _local_sources(instance, graph, media, *, host_private=False):
         if value.get('id'):
             records[value['id']] = value
     for sid, source in graph.get('sources', {}).items():
+        telling = host_private and fileless_memory(source)
         source.pop('url', None)
         source.pop('image', None)  # Output-only reference, never an authored delivery path.
         local = source.pop('local', None)
-        record = records.get(source.get('record', sid))
+        # A withheld source is an id/kind stub. Resolving its id again would
+        # reopen the corpus record without its contextual subjects.
+        record = records.get(source.get('record'))
         source_file = None
         if local:
             if local.startswith('archive:'):
@@ -201,14 +205,11 @@ def _local_sources(instance, graph, media, *, host_private=False):
             if file.is_file():
                 source_file = file
         subjects = closure(instance, source, shape='source', people=known).people
-        if record and source.get('record') != record['id']:
-            subjects |= closure(instance, {'record': record['id']}, shape='source', people=known).people
         living_document = any(life_status(known.get(pid, {'id': pid}), privacy) != 'dead' for pid in subjects if pid)
         entry = registered.get(sid)
-        if (host_private and source.get('kind') == 'memory' and not record and not source_file
-                and not entry and sid not in attached and not source.get('asset')):
+        if telling and not record and not source_file and not entry and sid not in attached:
             continue  # An attributed telling is not a living person's document.
-        if living_document or (record and record.get('privacy') in {'living', 'living-possible'}) or not subjects:
+        if living_document or (record and protected_record(record)) or not subjects:
             for key in list(source):
                 if key not in {'id', 'kind'}:
                     source.pop(key)
@@ -247,8 +248,16 @@ def _local_sources(instance, graph, media, *, host_private=False):
                 source['assetIn'] = {lang: '/' + page for lang, page in pages.items() if lang != instance.source_language}
             generated[BACK_SCRIPT] = _BACK
             source['asset'] = '/' + name
-            if image and not image.endswith('.pdf'):
-                source['image'] = image
+            if image:
+                thumbnail = image
+                if image.endswith('.pdf'):
+                    preview = image[1:].removesuffix('.pdf') + '-thumb.jpg'
+                    if preview not in generated and (pixels := first_page(generated[image[1:]])):
+                        generated[preview] = publication_bytes(pixels, preview)
+                        bindings[preview] = bindings[image[1:]]
+                    thumbnail = '/' + preview if preview in generated else None
+                if thumbnail:
+                    source['image'] = thumbnail
             source.setdefault('kind', 'record' if record else 'document' if image.endswith('.pdf') else 'image')
         elif entry and not record:
             source['asset'] = '/' + entry

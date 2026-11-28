@@ -9,6 +9,7 @@
 # - narrator kin words, inferred name parts and event-kind uncertainty survive as distinct, attributed reader surfaces [review: engine lead]
 # - generated intake notices use the family language pack without rewriting family prose [review: engine lead]
 # - prose and date adaptation use current normalized fields and directly cited sources without per-person disk reads [review: engine lead]
+# - a possible identity lends dates and papers only when both cards are deceased and the found card can show those details [test: tests/gate/test_data_guarantees.py::test_only_recorded_events_open_a_card]
 # CHANGES_WITH:
 # - MOD-LANGUAGE-RU (reader_intake notice keys, also supplied by other language packs)
 # - MOD-PUBLICATION (declared reader surfaces and default-deny policy)
@@ -19,12 +20,21 @@
 import copy
 import hashlib
 import json
+import re
 
 from familiar.feeds.service import _materialize, folders
 from familiar.tree.builder import _build, read_json
+from familiar.tree.identities import DRAWN_LINK
 
 
 FOREIGN_CLAIM = 'Recorded in another tree (unverified): '
+WORKSHOP = re.compile(r'\b(?:HTTP\s+[1-5]\d\d|recordsFiltered|локальн\w*\s+проверк\w*|'
+                      r'(?:(?:официальн\w*|архивн\w*)\s+)?опись\s*(?:\d+|содержит)|'
+                      r'local check|local verification)\b', re.IGNORECASE)
+
+
+def _workshop(value):
+    return isinstance(value, str) and WORKSHOP.search(value)
 
 def intake_prose(instance, graph):
     """Present stored intake assertions; keep originals and provenance untouched."""
@@ -114,6 +124,11 @@ def _intake_person(person, source_map, records, telling, wording, labels):
                 fact['label'] = documents[0].get('title', '')
         if fact.get('derived') and field == 'notes':
             fact['detailOnly'] = True  # Generated reasoning stays outside the ordinary card view.
+        if isinstance(field, str) and not fact.get('eventType'):
+            # Older family cards used a life-event heading with a version suffix.
+            heading = field.partition(' · ')[0]
+            if kind := next((k for k in ('birth', 'death') if wording.get(k) == heading), None):
+                fact['eventType'] = kind
         event_type = fact.get('eventType') or next((i.get('role') for i in memory_items
                      if i.get('role') in {'birth', 'death', 'birth_place', 'death_place'}), None)
         if field == 'events' and event_type:
@@ -230,6 +245,9 @@ def _assemble(instance, *, for_review=False, host_private=False):
     for folder in folders(instance):
         feed, _ = _materialize(instance, folder)
         graph['feeds'].append(feed)
+    if not host_private:
+        from familiar.feeds.flow import require_finished
+        require_finished(graph['feeds'])
     from familiar.reader.experiences import play, world
     play(instance, graph)
     world(instance, graph, host_private=host_private)
@@ -243,6 +261,13 @@ def _assemble(instance, *, for_review=False, host_private=False):
     card_dates(graph['people'], evidence)
     from familiar.instance.publication import restrict_graph
     graph = restrict_graph(instance, graph, host_private=host_private)
+    for person in graph['people'].values():
+        if person.get('living') is False:
+            if _workshop(person.get('summary')):
+                person.pop('summary')
+            for fact in person.get('facts', []):
+                if not fact.get('eventType') and (_workshop(fact.get('label')) or _workshop(fact.get('text'))):
+                    fact['detailOnly'] = True
     # after the restriction: hidden dates cannot anchor a guess, protected people receive none
     from familiar.tree.birth_guess import apply as guess_births
     guess_births(instance, graph, host_private=host_private)
@@ -250,6 +275,127 @@ def _assemble(instance, *, for_review=False, host_private=False):
     for key in ('originalPeople', 'originalEdges', 'workingVersion', 'gallerySelection', 'distinct', 'plan', 'validation', 'context'):
         graph.pop(key, None)
     return graph
+
+
+def show_probable_identities(graph):
+    """Coalesce the family display after life assessment and document delivery."""
+    people, sources = graph['people'], graph['sources']
+    candidates = [(pid, match) for pid, person in people.items() if not person.get('placeholder')
+                  for match in person.get('probableIdentities', [])
+                  if match['weight'] >= DRAWN_LINK and match['alias'] in people]
+    aliases, selected = {}, {}
+    # Keep one leading card per group. An accepted alias is resolved upstream;
+    # an ambiguous chain of probable junctions does not silently collapse.
+    for pid, match in sorted(candidates, key=lambda pair: -pair[1]['weight']):
+        alias = match['alias']
+        if alias == pid or pid in aliases or alias in aliases or alias in selected:
+            continue
+        aliases[alias] = pid
+        selected.setdefault(pid, []).append(match)
+    if not aliases:
+        return
+    for pid, matches in selected.items():
+        for match in matches:
+            other = people[match['alias']]
+            match.pop('card', None)
+            if people[pid].get('living') is not False or other.get('living') is not False:
+                match.pop('basis', None)
+                match.pop('sources', None)
+            if people[pid].get('living') is False:
+                if other.get('living') is False:
+                    match['card'] = _possible_card(other, sources)
+                elif facts := _possible_claims(other, match['weight']):
+                    match['card'] = {'facts': facts}
+    _present_kinship(graph, aliases, {m['alias']: m['weight'] for rows in selected.values() for m in rows})
+    graph['presentationAliases'] = aliases
+    for alias in aliases:
+        people.pop(alias)
+        graph.get('cardStatuses', {}).pop(alias, None)
+
+def _possible_claims(person, weight):
+    # The family can read the person's already filtered claims. A possible
+    # double carries the words alone; an attached closed paper stays on its side.
+    return [dict(text=fact['text'], label=fact.get('label', ''), status='hypothesis',
+                 weight=min(weight, fact.get('weight') if fact.get('weight') is not None else 1))
+            for fact in person.get('facts', [])
+            if fact.get('text') and not any(fact.get(k) for k in ('detailOnly', 'record', 'eventType'))
+            and fact.get('scope') != 'search'
+            and (fact.get('weight') is None or fact['weight'] >= DRAWN_LINK)]
+
+
+def _possible_card(person, sources):
+    # The source table is already restricted and document paths bound. A stub
+    # has no title, image or paper and cannot travel through a different card.
+    visible = lambda sid: any(sources.get(sid, {}).get(k) for k in ('title', 'asset', 'image'))
+    refs = lambda row: [*(row.get('sources') or []), *(row.get('provenance') or [])]
+    displayable = lambda row: not row.get('record') or visible(row['record']) or any(map(visible, refs(row)))
+    events = [e for e in person.get('events', []) if all(map(visible, refs(e)))]
+    facts = [f for f in person.get('facts', []) if displayable(f) and all(map(visible, refs(f)))
+             and not f.get('detailOnly') and (f.get('weight') is None or f['weight'] >= DRAWN_LINK)]
+    card = {}
+    for key, tag in (('birth', 'BIRT'), ('death', 'DEAT')):
+        events_of_kind = [e for e in person.get('events', []) if e.get('type') == key or e.get('tag') == tag]
+        # An attributed event's protected sources cannot be bypassed by its card heading.
+        if all(event in events for event in events_of_kind):
+            date = person.get('cardPresentation', {}).get(key) or next(
+                (e['date'] for e in events_of_kind if e.get('date') and e.get('status') != 'hypothesis'), '')
+            if date and date.casefold() not in {'unknown', '?'}:
+                card[key] = date
+    papers = {sid: None for row in [*facts, *events, *person.get('names', []), *person.get('notes', [])]
+              for sid in refs(row) if visible(sid)}
+    papers.update({sid: None for sid, source in sources.items() if person['id'] in (source.get('subjects') or ()) and visible(sid)})
+    media = [m for m in person.get('media', []) if m.get('asset') and not m.get('photo')
+             and m.get('kind') != 'photo-restoration' and (m.get('ours') or {}).get('kind') != 'photo-restoration']
+    other_events = [e for e in events if not {e.get('type'), e.get('tag')} & {'birth', 'death', 'BIRT', 'DEAT'}]
+    names = [n.get('display') or ' '.join(n[k] for k in ('given', 'patronymic', 'surname') if n.get(k))
+             for n in person.get('names', []) if all(map(visible, refs(n)))]
+    if not person.get('names') and (written := (person.get('namePresentation') or {}).get('sourceName')):
+        names.append(written)
+    return {**card, 'summary': person.get('summary', ''), 'names': list(dict.fromkeys(filter(None, names))),
+            'facts': facts, 'events': other_events, 'papers': list(papers), 'media': media}
+
+
+def _present_kinship(graph, aliases, weights):
+    for pid, person in graph['people'].items():
+        if guess := person.get('birthGuess'):
+            for anchor in guess['anchors']:
+                anchor['id'] = aliases.get(anchor['id'], anchor['id'])
+            if any(anchor['id'] == pid for anchor in guess['anchors']):
+                person.pop('birthGuess')
+    for key in ('root', 'narrator', 'defaultViewer'):
+        if graph.get(key) in aliases:
+            graph[key] = aliases[graph[key]]
+    for collection, first, second in (('edges', 'child', 'parent'), ('associations', 'from', 'to')):
+        seen, kept, pending = set(), [], []
+        for row in graph.get(collection, []):
+            key = (row.get(first), row.get(second), row.get('role') or row.get('type'))
+            if key[0] in aliases or key[1] in aliases:
+                pending.append(row)
+            else:
+                kept.append(row)
+                seen.add(key)
+        for row in pending:
+            weight = min([row.get('weight') if row.get('weight') is not None else 1.0,
+                          *(weights[row[k]] for k in (first, second) if row.get(k) in weights)])
+            moved = {k: aliases.get(v, v) if k in ('child', 'parent', 'from', 'to') else v for k, v in row.items()}
+            key = (moved.get(first), moved.get(second), row.get('role') or row.get('type'))
+            if key[0] != key[1] and key not in seen and row.get('status') not in {'rejected', 'disproved', 'conflict'}:
+                kept.append(moved | {'status': 'hypothesis', 'weight': weight})
+                seen.add(key)
+        graph[collection] = kept
+    for family in graph.get('families', []):
+        changed = [pid for pid in (family.get('husband'), family.get('wife'), *family.get('children', [])) if pid in aliases]
+        if not changed:
+            continue
+        for key in ('husband', 'wife'):
+            if family.get(key) in aliases:
+                family[key] = aliases[family[key]]
+        spouses = {family.get('husband'), family.get('wife')}
+        family['children'] = list(dict.fromkeys(aliases.get(pid, pid) for pid in family.get('children', [])))
+        family['children'] = [pid for pid in family['children'] if pid not in spouses]
+        if family.get('status') not in {'conflict', 'rejected', 'disproved'}:
+            own = family.get('weight') if family.get('weight') is not None else 1.0
+            family.update(status='hypothesis', weight=min([own, *(weights[pid] for pid in changed)]))
 
 
 def card_memory(instance):
@@ -293,6 +439,10 @@ def translate_cards(instance, graph):
             for key in ('label', 'text', 'basis'):
                 if key in fact:
                     fact[key] = row(fact[key])
+        for amendment in person.get('amendments', []):
+            for key in ('original', 'value', 'basis'):
+                if key in amendment:
+                    amendment[key] = row(amendment[key])
         for event in person.get('events', []):
             if 'place' in event:
                 event['place'] = row(event['place'])

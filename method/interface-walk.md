@@ -17,7 +17,10 @@ adding a corrected follow-up. Add task-specific actions below these base rows.
 
 | Width | Action | Expected | Observed / evidence |
 |---|---|---|---|
-| each | Open tree, person, families, stories, investigation, questions, kinship; include map/photos if present | Same lower navigation, private notice, version and remark entry; no overlaps; all links reachable | |
+| each | Open tree, person, relatives, stories, papers, then everything in "More" | Same lower row of at most four places; nothing empty; every place within two taps of home; private notice and remark in the row (wide) or in "More" (phone); no overlaps | |
+| 390 | Walk as a grandmother: "show me my father's paper"; count taps | Two taps from any page to the paper, large, with its reading and whose it is; Back returns to the same place | |
+| 390 | Tap a kinship word on a card; follow "all words" | Meaning and way in this family's names; no word without a person | |
+| 390 | Measure computed styles of every screen | Body text ≥ 18 px, targets ≥ 48 px, contrast AA | |
 | each | Tree → Investigation → Tree; then browser back/forward | Navigation stays in the same place; current link follows the screen | |
 | each | Open a full person card, click “Write to us” once | One common remark sheet opens immediately; page and card scroll do not change | |
 | each | Hover remark entry, then move away | No sheet opens or stays behind | |

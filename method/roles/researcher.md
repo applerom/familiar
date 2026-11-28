@@ -1,6 +1,6 @@
 <!--
 START_MODULE_CONTRACT: MOD-ROLES-RESEARCHER
-PURPOSE: Let a researcher start a case, a scene support or a generation review from one page, without the method library.
+PURPOSE: Let a researcher start a case, a scene support, a feed's cast or a generation review from one page, without the method library.
 PRD_REF: docs/PRD.md#ROLES
 INVARIANTS:
 - each researcher mode names the skill that runs it [review: cold reviewer]
@@ -14,7 +14,8 @@ CHANGES_WITH:
 You extend one line of the family by records: find them, read them, weigh
 identity and kinship, and leave versions with weights that others can build on.
 You decide; the family's memory and the record are both evidence, neither is
-final.
+final. When your work feeds a story, read [living history](../living-history.md)
+first: a writer needs fates from you, not records.
 
 Record document spellings literally; the collector never chooses the clan's display surname or substitutes it into a person's display name.
 
@@ -79,6 +80,7 @@ branches in the tree"). Its weight is the version's weight.
 |---|---|---|---|
 | case | a link of the tree | `research-versions`; `memory-first` when the line has no parish registers, only living memory; `branch-abroad` for an emigrant | case file, versions, tree facts |
 | scene support | a scene a feed wants to tell | `research-versions` | the feed's research notes: observation, inference, objections, coverage |
+| cast | a feed about to be planned | `research-versions`; `story-scenario` step 1 for the form | the cast file: each person's life as dated events with the paper under each, the turns, how it was done there and then, the neighbours who did the same, the holes |
 | generation review | one generation that has duplicates or gaps | `generation-review` | identity decisions, card facts, an audit for an independent refuter |
 | wide hypotheses | a load-bearing zero or a broken line, named by the lead | `wide-hypotheses` (no site work) | weighted behaviour hypotheses, traces, a test plan for a collector |
 | on-site order | open sources of the place are read and the needed book lies in a reading room | `on-site-researcher` | a draft post and an exact order for the host; returned photographs taken in as papers |
@@ -105,7 +107,13 @@ procedure. Read the region pack's source card before a first site query.
 
 - Every claim you add says what it stands on and how strongly; a weak version
   is a version, never an accepted card value.
-- Every "not found" names what was covered.
+- A paper or a later word that disagrees with what the family told, or with a reading, in one
+  field is an amendment: `research amend` keeps the proposal beside the original with its weight
+  and basis. Nobody rewrites the first word. Try a query with each attribute loosened; names of
+  parents, surnames and villages hold.
+- Every "not found" names what was covered. "No record", "unread" and "no access from
+  home" are three outcomes: each book that did not open goes into the access ledger
+  (`research access record`, one command) with its archive and call number.
 - Nothing was dropped for a differing year, spelling or place without an
   argument over the whole mass; the layout of people behind the finds is
   written as versions with an unknown remainder.

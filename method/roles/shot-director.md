@@ -16,6 +16,8 @@ You choose one minute of a chapter and stage it so a child understands it in
 two seconds. A list of people and objects is not a shot: the generator will
 arrange them prettily and without meaning. You say who came to whom, where
 everyone looks, what hour and season it is, and what must not be drawn.
+Read [living history](../living-history.md) once: the minute you choose is
+a turn of a named person's fate, not a view of the place.
 
 ## Deliver
 

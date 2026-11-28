@@ -75,6 +75,19 @@ def secrets(instance, *, deploying=False):
     return state
 
 
+# Swedish has no desk pack yet; the attach control and its refusals still speak to a Swedish reader.
+SWEDISH_ATTACH = {'attach': 'Bifoga ett foto eller en skanning', 'attach_remove': 'Ta bort',
+                  'file_kind': 'Välj ett foto eller en skanning.',
+                  'file_large': 'Filen är större än {mb} MB. Ett nytt foto av sidan räcker.',
+                  'file_many': 'Högst {count} filer åt gången; resten i nästa kommentar.',
+                  'file_day': 'Det räcker med filer för i dag, resten i morgon. Texten finns kvar här.',
+                  'file_failed': 'Anslutningen bröts. Du kan försöka skicka filerna igen.',
+                  'file_batch_large': 'Filerna till en kommentar får tillsammans vara högst 100 MB.',
+                  'files_pending': 'Kvar att skicka: {names}.', 'files_retry': 'Välj filer igen',
+                  'files_sending': 'Skickar filer…', 'words_sent': 'Dina ord kom fram. Skickar filerna…',
+                  'original_sent': 'Ditt tidigare meddelande kom fram. Din ändrade text finns kvar här. Tryck på Skicka för att skicka den.'}
+
+
 def words(instance, language=None):
     language = language or instance.source_language
     pack = instance.language_pack_data.get(language, {}).get('data', {})
@@ -85,7 +98,10 @@ def words(instance, language=None):
     result = base | local | {'show': base['show'] | local.get('show', {}),
                             'correspondence': base['correspondence'] | local.get('correspondence', {}),
                             'asks': base['asks'] | local.get('asks', {}),
+                            'blanks': base['blanks'] | local.get('blanks', {}),
                             'search_map': base['search_map'] | local.get('search_map', {})}
+    if language.split('-')[0] == 'sv' and 'attach' not in local:
+        result |= SWEDISH_ATTACH
     return result
 
 

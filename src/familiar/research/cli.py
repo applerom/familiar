@@ -1,5 +1,5 @@
 # START_MODULE_CONTRACT: MOD-RESEARCH-CLI
-# PURPOSE: Expose research forms, search forms by key, the identity score, source coverage, line plans, the search map, offline replay, and research delivery.
+# PURPOSE: Expose research forms, amendment proposals, search forms by key, the identity score, source coverage, line plans, the search map, the access ledger, offline replay, and research delivery.
 # PRD_REF: docs/PRD.md#FORMS
 # INVARIANTS:
 # - packet failures return an error without writing family data [review: engine lead]
@@ -12,6 +12,7 @@
 # - MOD-RESEARCH-COVERAGE
 # - MOD-MATCH-SCORE
 # - MOD-SEARCH-MAP
+# - MOD-ACCESS-LEDGER
 # :END_MODULE_CONTRACT
 import json
 import sys
@@ -23,6 +24,7 @@ from .packet import packet
 
 
 def register(commands):
+    from .access_ledger import STATES
     parser = commands.add_parser('research')
     actions = parser.add_subparsers(dest='action', required=True)
     template = actions.add_parser('form')
@@ -78,6 +80,57 @@ def register(commands):
     smap.add_argument('--line', help='Surname line or its starting person ID')
     smap.add_argument('--json', action='store_true', help='JSON instead of markdown')
     smap.set_defaults(run=run_map)
+    access = actions.add_parser('access', help='The access ledger: which books of a place exist, read or not, and how to reach them')
+    access.add_argument('--line', help='Only places that name this surname line')
+    access.add_argument('--place')
+    access.add_argument('--order', action='store_true', help='The reading-room order list')
+    access.add_argument('--json', action='store_true', help='JSON instead of markdown')
+    access.add_argument('--markdown', action='store_true', help='The whole ledger as one page: every row with its verdict, copies to order, the reading-room list')
+    access.add_argument('--save', action='store_true', help='With --markdown: write it beside the ledger (ACCESS.md); every later verdict renews it')
+    access.set_defaults(run=run_access)
+    commands = access.add_subparsers(dest='verdict')
+    words = commands.add_parser('note', help='Words around the rows: the header, a section, a place or the reading-room list')
+    words.add_argument('text', nargs='?', help='The words, or a JSON row by language; empty text removes them')
+    words.add_argument('--file', type=Path, help='Read the words from a UTF-8 file')
+    words.add_argument('--place', help='Words about this place; with --section also files it there')
+    words.add_argument('--section', help='Title of a section of the print')
+    words.add_argument('--room', action='store_true', help='Words above the reading-room list')
+    words.add_argument('--title', help='Title of the page, or of the place in the print')
+    words.set_defaults(run=run_access_note)
+    verdict = commands.add_parser('record', help='Record one verdict; with --id only the given fields change. Words may be a JSON row by language')
+    verdict.add_argument('--id', help='Row to change, as research access prints it')
+    verdict.add_argument('--place', help='Village or parish')
+    verdict.add_argument('--line', action='append', default=[], help='Surname line of the place; repeatable')
+    verdict.add_argument('--kind', help='parish, revision, census, household, estate, civil, tax, voters, commission ... or your own word')
+    verdict.add_argument('--state', choices=STATES, help='home: opens from home; copy: the archive sells a copy remotely; room: reading room only; letter: the archive answers letters; '
+                         'unknown: not settled where it is; read; none: lost, or this holder has none')
+    for name, text in (('title', 'What it is, if the kind is not enough'), ('years', '"1860-1918" or "1816; 1858"'),
+                       ('holder', 'Archive'), ('reference', 'Call number'), ('online', 'Where it opens from home'),
+                       ('unit', 'What --read counts: pages, years'), ('price', 'What a copy costs'),
+                       ('needs', 'What is missing to order it, e.g. the sheet numbers of the village'), ('letter', 'Correspondence ID'),
+                       ('look-for', 'What to look for in the reading room'), ('report', 'File of the verdict'), ('note', 'Note')):
+        verdict.add_argument('--' + name, help=text)
+    for name in ('read', 'of', 'order'):
+        verdict.add_argument('--' + name, type=int)
+    verdict.add_argument('--doubtful', action='store_true', default=None, help='Not sure the book holds our place: it neither opens nor closes the road')
+    verdict.add_argument('--by', required=True, help='Who gave the verdict')
+    verdict.add_argument('--at', help='Date YYYY-MM-DD (default today)')
+    verdict.set_defaults(run=run_access_record)
+    from familiar.tree.amendments import FIELDS
+    amend = actions.add_parser('amend', help='Keep a proposed amendment beside a family statement or a document reading; the original is not touched')
+    amend.add_argument('--id', help='Name of the proposal (default PERSON-FIELD); an existing one is restated')
+    amend.add_argument('--person', required=True, help='Tree ID')
+    amend.add_argument('--field', required=True, choices=FIELDS)
+    amend.add_argument('--original', required=True, help='What was told or read, literally')
+    amend.add_argument('--of', required=True, help='Memory item or record that says so')
+    amend.add_argument('--value', required=True, help='What we propose instead')
+    amend.add_argument('--weight', required=True, type=float, help='From 0.5 the card tells it')
+    amend.add_argument('--basis', required=True, help='Why, in words the family reads: the stone, the act, a later word')
+    amend.add_argument('--source', action='append', default=[], help='Record or memory item of the basis; repeatable')
+    amend.add_argument('--by', required=True, help='Who proposes')
+    amend.add_argument('--report', help='File of the argument')
+    amend.add_argument('--state', choices=('proposed', 'confirmed', 'declined'), help='Decided outside the site')
+    amend.set_defaults(run=run_amend)
     forms = actions.add_parser('forms', help='Search forms of names or places: dictionary forms, then forms the family wrote that share the key (suggestions)')
     forms.add_argument('words', nargs='+')
     forms.add_argument('--kind', choices=['surname', 'place', 'given_name'], default='surname')
@@ -203,6 +256,72 @@ def run_map(args):
         return 0
     except (ValueError, OSError, KeyError, TypeError) as exc:
         print(f'research map: {exc}', file=sys.stderr)
+        return 1
+
+
+def worded(value):
+    """A text, or a row by language given as JSON."""
+    return json.loads(value) if isinstance(value, str) and value.lstrip().startswith('{') else value
+
+
+def run_access_note(args):
+    from .access_ledger import note
+    try:
+        text = args.file.read_text(encoding='utf-8-sig').strip() if args.file else args.text
+        note(Instance(args.root), worded(text), place=args.place, section=args.section, room=args.room, title=worded(args.title))
+        return 0
+    except (ValueError, OSError, KeyError, TypeError) as exc:
+        print(f'research access note: {exc}', file=sys.stderr)
+        return 1
+
+
+def run_access(args):
+    from .access_ledger import printed, read, save_print, show
+    try:
+        if args.markdown:
+            instance = Instance(args.root)
+            path, _, problems = read(instance)
+            if problems:
+                raise ValueError(f'{problems[0][0]}: {problems[0][1]}')
+            if args.save:
+                print(save_print(instance))
+            else:
+                print(printed(instance, json.loads(path.read_text(encoding='utf-8-sig')) if path.is_file() else {'places': []}))
+            return 0
+        data, text = show(Instance(args.root), line=args.line, place=args.place, order=args.order)
+        print(json.dumps(data, ensure_ascii=False, indent=1) if args.json else text)
+        return 0
+    except (ValueError, OSError, KeyError, TypeError) as exc:
+        print(f'research access: {exc}', file=sys.stderr)
+        return 1
+
+
+def run_access_record(args):
+    from datetime import date
+    from .access_ledger import record
+    try:
+        values = {k: worded(getattr(args, k)) for k in ('kind', 'title', 'years', 'state', 'holder', 'reference', 'online', 'read', 'of',
+                                                'unit', 'letter', 'look_for', 'price', 'needs', 'order', 'doubtful', 'by', 'report', 'note')}
+        row = record(Instance(args.root), args.place, values | {'at': args.at or date.today().isoformat()},
+                     identity=args.id, lines=args.line)
+        print(json.dumps(row, ensure_ascii=False))
+        return 0
+    except (ValueError, OSError, KeyError, TypeError) as exc:
+        print(f'research access record: {exc}', file=sys.stderr)
+        return 1
+
+
+def run_amend(args):
+    from familiar.tree.amendments import record
+    try:
+        row = record(Instance(args.root), {
+            'id': args.id, 'person': args.person, 'field': args.field, 'original': {'text': args.original, 'source': args.of},
+            'value': args.value, 'weight': args.weight, 'basis': args.basis, 'sources': args.source, 'by': args.by,
+            'report': args.report, 'state': args.state})
+        print(json.dumps(row, ensure_ascii=False))
+        return 0
+    except (ValueError, OSError, KeyError, TypeError) as exc:
+        print(f'research amend: {exc}', file=sys.stderr)
         return 1
 
 

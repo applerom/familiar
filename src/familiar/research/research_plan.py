@@ -2,7 +2,7 @@
 import re
 from collections import defaultdict
 
-from familiar.instance import asks, correspondence
+from familiar.instance import asks, blanks, correspondence
 from familiar.instance.gate import boundary
 from familiar.tree.life import _birth_bounds
 
@@ -266,7 +266,10 @@ def home_and_archive(instance):
     return local_asks, letters
 
 
-def subject_inputs(data, line, members, source_options, witness, sent_or_drafted):
+def subject_inputs(data, line, members, source_options, witness, sent_or_drafted, line_place=False, ledger=()):
+    """`line_place`: the ledger, a version or a told fact places the line; `ledger`: the access ledger's places of it."""
+    from . import access_ledger
+    parish, keeper = access_ledger.names_parish(ledger), access_ledger.answers_letters(ledger)
     graph = data['tree'].graph
     people = graph['people']
     household = set()
@@ -289,18 +292,19 @@ def subject_inputs(data, line, members, source_options, witness, sent_or_drafted
         known_birth = lo is not None and hi - lo <= 20
         death = [e for e in events if e.get('type') == 'death' or e.get('tag') == 'DEAT']
         places = recorded_places(fields)
+        placed = bool(places) or line_place and pid not in living
         context = data['contexts'].get(pid)
         relevant = [source for sid, source in source_options.items()
                     if not {'epoch', 'region'}.intersection(applicability(data, pid, sid, context))]
         subjects[pid] = {
-            'surname': bool(line.surname), 'place': bool(places), 'historical_place': bool(places) and pid not in living,
+            'surname': bool(line.surname), 'place': placed, 'historical_place': placed and pid not in living,
             'witness': witness or pid in living,
-            'registrar': sent_or_drafted or any(src.get('kind') in {'archive', 'registry'}
+            'registrar': sent_or_drafted or keeper or any(src.get('kind') in {'archive', 'registry'}
                                                 for src in relevant),
             'year_or_household': known_birth or pid in household or
                                  any(_birth_bounds(e.get('date')) for e in events),
             'household': pid in household,
-            'parish': bool(fields.get('parish') or any(e.get('parish') for e in events)),
+            'parish': parish and pid not in living or bool(fields.get('parish') or any(e.get('parish') for e in events)),
             'birth_year': known_birth,
             'episode': any(episode_fit(fields, source) > 0 for source in relevant)
                        or any(e.get('type') in {'military', 'emigration', 'deportation', 'repression', 'refugee'}
@@ -311,7 +315,7 @@ def subject_inputs(data, line, members, source_options, witness, sent_or_drafted
             'guide': any(src.get('kind') in {'archive', 'finding-aid', 'reference'}
                          and {'archive-guide', 'inventory', 'census-revision', 'consistory'} & set(src.get('classes', []))
                          for src in relevant),
-            'bridge': pid in linked and bool(places),
+            'bridge': pid in linked and placed,
         }
     return subjects
 
@@ -373,9 +377,18 @@ def plan_line(data, line, entries, asks_on_disk, letters_on_disk, lang, horizon=
     members = line_members(data, chain)
     people = data['tree'].graph['people']
     places = list(dict.fromkeys(place for pid in chain for place in recorded_places(people[pid])))
-    place_forms = variants_for_place(places, entries)
     name_forms = {form for entry in entries for form in entry['names']}
     nest_place, nest_weight = nest_target(data, line, members, entries)
+    from . import access_ledger
+    ledger = access_ledger.line_places(data, data.get('ledger', []), line, members, [nest_place])
+    if nest_place is None and ledger:
+        nest_place = max(ledger, key=lambda p: len(access_ledger.unread(p)))['place']
+    # The line has a place when the ledger, a version from 0.3 up or a told fact gives one, whatever the cards record.
+    told = [place[1] for pid in chain if pid not in data['living'] for fact in people[pid].get('facts', [])
+            if (place := weighted_place(fact, entries))]
+    line_place = bool(nest_place or ledger or told)
+    places = list(dict.fromkeys([*places, *(p['place'] for p in ledger), *filter(None, [nest_place]), *told]))
+    place_forms = variants_for_place(places, entries)
     nest_names = {norm(nest_place)} if nest_place else set()
     if nest_names:
         nest_names |= {name for entry in entries if norm(nest_place) in entry['names'] for name in entry['names']}
@@ -391,7 +404,7 @@ def plan_line(data, line, entries, asks_on_disk, letters_on_disk, lang, horizon=
     known_witness = any(isinstance(row.get('holder'), str) and
                         data['tree'].aliases.get(row['holder'], row['holder']) in data['living']
                         for row in local_asks)
-    subjects = subject_inputs(data, line, members, sources, known_witness, bool(letters))
+    subjects = subject_inputs(data, line, members, sources, known_witness, bool(letters), line_place, ledger)
     keeper_rows = [obs['row'] for obs in groups.get('keeper-forms', []) if isinstance(obs['row'].get('query'), dict)]
     query_terms = [p for row in keeper_rows for p in [*query_places(row), row['query'].get('query')] if isinstance(p, str)]
     extra_places = variants_for_place(query_terms, entries, prefixes=True)
@@ -471,10 +484,11 @@ def plan_line(data, line, entries, asks_on_disk, letters_on_disk, lang, horizon=
                  'signs': [sign[lang] for sign in closed['signs']]}
     next_play = next((p for p in plays if p['state'] in {'untried', 'in-progress'}), None)
     for play in plays:
+        play['step'] = play['next']
         if play is not next_play:
             play.pop('next')
     return {'surname': surname, 'start': chain[0], 'frontier': chain[-1], 'people': chain, 'plays': plays,
-            'unrecorded_play': unknown} | found
+            'unrecorded_play': unknown, 'ledger': ledger} | found
 
 
 @boundary('diagnostic')
@@ -489,6 +503,8 @@ def plan(instance, *, line=None):
     data['text'] = lambda value: value if isinstance(value, str) else (value or {}).get(instance.source_language) or next(
         iter((value or {}).values()), '')
     chosen = selected_lines(data, line)
+    from . import access_ledger
+    _, data['ledger'], _ = access_ledger.read(instance)
     lines = [plan_line(data, row, entries, local_asks, letters, lang,
                        next(((name, entry) for name, entry in closed.items() if surname_keys(name, data['language'])
                              & row.forms), None))
@@ -497,10 +513,105 @@ def plan(instance, *, line=None):
     _, series_rows, _ = read_series(instance)
     if series_rows:
         prepare(instance, data)
+    family = blanks.Family(instance, data['tree'].graph, data['living'])
+    feedback = blanks.inbox(instance)
+    words = access_ledger.words_for(instance, instance.source_language if lang == 'ru' else 'en')
     for view_line, row in zip(lines, chosen):
-        open_record(view_line, map_line(data, row, series_rows) if series_rows else None, lang)
+        record_map = map_line(data, row, series_rows) if series_rows else None
+        open_record(view_line, record_map, lang)
+        access_ledger.steer(view_line, view_line.pop('ledger'), record_map, words, lang)
+        thin_first(view_line, family, list(data['versions'].values()), feedback, local_asks, lang)
+        for play in view_line['plays']:
+            play.pop('step')
     view = {'schema': 1, 'lines': lines}
-    return view, markdown_plan(view, lang)
+    from familiar.instance.subjects import protected_names
+    return view, protected_names(instance).sub('…', markdown_plan(view, lang, words))
+
+
+SKELETON_PLAYS = ('place-nest', 'role-lists', 'place-administration', 'keeper-forms')
+
+
+def thin_first(line, family, versions, feedback, local_asks, lang):
+    """A person known by little more than a name: the relatives see the card first, then the place and the small
+    lists; a surname in name bases is no first move."""
+    from familiar.desk.model import words
+    pid = next((p for p in line['people'] if family.people[p].get('life_assessment', {}).get('status') == 'dead'
+                and blanks.thin(family, p)), None)
+    if pid is None:
+        return
+    w, person, ru = words(family.instance, 'ru' if lang == 'ru' else 'en')['blanks'], family.people[pid], lang == 'ru'
+
+    def label(field):
+        return w['field_' + field + ('_' + (family.sex(pid) or 'm') if field == 'spouse' else '')]
+
+    def said(value):
+        return value if isinstance(value, str) else value.get(lang) or next(iter(value.values()), '')
+
+    missing, father = family.missing(pid), family.father_guess(pid)
+    guesses = [f"{label('father')}: {father['value']} ({father['weight']:g})"] if father else []
+    guesses += [f"{label(field)}: {said(g['value'])} ({g['weight']:g})" for (who, field), g
+                in blanks.version_guesses(versions, family.aliases).items() if who == pid and field in missing]
+    skeleton, drifting = layered(family, pid)
+    reachable = family.askable(pid) and not line.get('horizon')
+    shown = blanks.shown_before(family, pid, feedback, local_asks)
+    line['thin'] = {'person': pid, 'name': person.get('name') or pid, 'missing': missing, 'guesses': guesses,
+                    'labels': [label(field) for field in missing], 'reachable': reachable, 'shown': shown,
+                    'skeleton': skeleton, 'attributes': drifting}
+    current = next((p for p in line['plays'] if 'next' in p), None)
+    if current and current['id'] == 'surname-place' and not line.get('next') and (better := next(
+            (p for p in line['plays'] if p['id'] in SKELETON_PLAYS and p['state'] in {'untried', 'in-progress'}), None)):
+        current.pop('next')
+        better['next'] = better['step']
+        current = better
+    if reachable and not shown:
+        step = line.get('next') or (current or {}).get('next', '')
+        for play in line['plays']:
+            play.pop('next', None)
+        line['next'] = (f"Показать родным карточку «{line['thin']['name']}» с пустыми местами и нашей догадкой: одно слово "
+                        'заменяет сотни запросов. Место и малые списки — следом, базы по фамилии — после них.' if ru else
+                        f"Show the relatives the card of {line['thin']['name']} with its blanks and our guess: one word replaces "
+                        'hundreds of queries. The place and the small lists come next, surname bases after them.')
+        line['meanwhile'] = ' '.join(filter(None, [step, line.get('meanwhile')]))
+
+
+def layered(family, pid):
+    """What the family told around this person: names, villages and parentage hold, dates may drift. A statement
+    marked as an attribute at intake moves what rests on it to the drifting side."""
+    from familiar.intake.layers import statements
+    people, circle = family.people, [pid, *family.down(pid)]
+    cited = {s for p in circle for key in ('names', 'events') for row in people[p].get(key) or [] for s in row.get('provenance') or []}
+    soft = {ident for ident, layers in statements(family.instance, cited) if layers == ['attribute']}
+    holds, drifts = [], []
+    for p in circle:
+        for name in family.names(p)[:1]:
+            text = name.get('display') or ' '.join(filter(None, (name.get('given'), name.get('surname'))))
+            (drifts if set(name.get('provenance') or ['']) <= soft else holds).append(text)
+        for event in people[p].get('events') or []:
+            if isinstance(event.get('place'), str) and event['place'].strip():
+                holds.append(event['place'].strip())
+            if event.get('type') in {'birth', 'death'} and isinstance(event.get('date'), str) and event['date'].strip():
+                drifts.append(f"{family.given(p)}: {event['date'].strip()}")
+    return [list(dict.fromkeys(filter(None, values)))[:7] for values in (holds, drifts)]
+
+
+def thin_lines(thin, lang):
+    ru = lang == 'ru'
+    head = f"**{'Тонкое звено' if ru else 'Thin link'} · {thin['name']}** · "
+    head += ('не хватает: ' if ru else 'missing: ') + ', '.join(v.lower() for v in thin['labels'])
+    if thin['guesses']:
+        head += ('; догадка — ' if ru else '; our guess: ') + ', '.join(thin['guesses'])
+    if not thin['reachable']:
+        head += '; спросить некого' if ru else '; nobody alive to ask'
+    elif thin['shown']:
+        head += '; родные о нём уже говорили' if ru else '; relatives have already spoken of it'
+    else:
+        head += '; родным карточку не показывали' if ru else '; no relative has seen the card'
+    out = [head + '.']
+    if thin['skeleton']:
+        out.append(('Каркас, на него опираться: ' if ru else 'Skeleton, lean on it: ') + '; '.join(thin['skeleton']))
+    if thin['attributes']:
+        out.append(('Признаки, могут плыть: ' if ru else 'Attributes, they may drift: ') + '; '.join(thin['attributes']))
+    return [*out, '']
 
 
 RECORD_PLAYS = {'ask-family', 'archive-letters'}
@@ -556,13 +667,16 @@ def period_label(period):
     return str(first) if first == last else f'{first}–{last}'
 
 
-def markdown_plan(view, lang):
+def markdown_plan(view, lang, words):
+    from .access_ledger import plan_lines
     heading = 'План поиска' if lang == 'ru' else 'Research plan'
     table = '| Подход | Состояние | Журнал |' if lang == 'ru' else '| Approach | State | Journal |'
     states = {'disabled': 'выключен', 'not-applicable': 'не применим', 'exhausted': 'исчерпан',
-              'in-progress': 'идёт', 'untried': 'не пробовали', 'closed': 'спросить некого'} if lang == 'ru' else {
+              'in-progress': 'идёт', 'untried': 'не пробовали', 'closed': 'спросить некого',
+              'no-access': 'нет доступа из дома'} if lang == 'ru' else {
               'disabled': 'disabled', 'not-applicable': 'not applicable', 'exhausted': 'exhausted',
-              'in-progress': 'in progress', 'untried': 'untried', 'closed': 'nobody left to ask'}
+              'in-progress': 'in progress', 'untried': 'untried', 'closed': 'nobody left to ask',
+              'no-access': 'no access from home'}
     write_next = 'Следующий шаг' if lang == 'ru' else 'Next step'
     no_play = 'Подход не записан' if lang == 'ru' else 'Approach not recorded'
     out = [f'# {heading}', '']
@@ -570,11 +684,16 @@ def markdown_plan(view, lang):
         out.extend([f"## {line['surname'] or line['start']}", ''])
         if horizon := line.get('horizon'):
             out.extend(horizon_lines(horizon, line['signs'], lang))
+        if line.get('thin'):
+            out.extend(thin_lines(line['thin'], lang))
+        out.extend(plan_lines(line['access'], words, lang))
         out.extend([table, '|---|---|---|'])
         for play in line['plays']:
             state = states[play['state']]
             if play['state'] == 'not-applicable':
                 state += ' · ' + ', '.join(play['needs'])
+            if play.get('holders'):
+                state += ' · ' + '; '.join(play['holders'])
             if play.get('option'):
                 state += ' · ' + ('опция' if lang == 'ru' else 'option')
             activity = str(play['journal_passes'])
@@ -611,6 +730,10 @@ def markdown_plan(view, lang):
             out.extend(['', f"**{write_next}** · {line['next']}"])
         elif next_play:
             out.extend(['', f"**{write_next}** · {next_play['next']}"])
+        if line.get('meanwhile'):
+            out.extend(['', f"**{words['plan']['meanwhile']}** · {line['meanwhile']}"])
+        if line.get('closed_road'):
+            out.extend(['', f"**{words['plan']['closed_road']}** · {line['closed_road']}"])
         if any(play.get('place_form_gaps') for play in line['plays']):
             out.extend(['', 'Формы места у хранителя' if lang == 'ru' else 'Place forms by keeper'])
         for play in line['plays']:

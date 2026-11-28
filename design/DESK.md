@@ -6,6 +6,11 @@ and logs as evidence; this page is a disposable derived display.
 
 ## Investigation
 
+Its first screen is for a relative: three plain sentences (here one sees how the search goes; what we look
+for and what we found; you can help) and this family's own titles under "Looking for now", "Found lately"
+and "How relatives can help". A heading without titles is not drawn. Everything below "In detail, step by
+step" is the workshop and may look like one. The page is never in the lower row.
+
 1. **What moved.** Up to four recent questions with a substantive recorded
    weight/status change. The question title, alternative label and weights come
    from the instance; ordinary UI templates supply the connective words. Within
@@ -53,13 +58,14 @@ versions use act green. Muted alternatives keep their labels and reasons.
 
 ## The lower row
 
-One fixed row, 54 CSS pixels plus the device safe inset: private label and engine
-version left, navigation centre, Remark right. The label, version and two links
-are already in static HTML. On phones the label and number occupy two short
-lines inside that same row. The tree's existing phone tabs use the centre space;
-the investigation link has reserved width. At narrow widths the two auxiliary
-tabs retain accessible names and show their icons. No second navigation floor.
-The reader shell, minimap, person panels and feed reserve this single row.
+One fixed row, static in every HTML page: at most four places with an icon and a
+word (tree, relatives, stories, papers), only those the family has; `desk build`
+stops at a fifth. On a phone it is 72 px plus the safe inset and holds nothing
+else. On wide screens the private notice and engine version stand at its left and
+Remark at its right. The quieter places (surnames, map, how the search goes, the
+host's search map and letters), the remark, the notice and the version are one
+static list, `#desk-more`, which the page top opens as "More". Without JavaScript
+the notice stays visible above the row.
 
 ## Asks inside the show
 

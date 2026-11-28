@@ -148,4 +148,5 @@
     <INTENT>The interface Familiar needs from the host environment: a model tier per role and a gate before launching an agent. The tooling itself lives outside.</INTENT>
     <PRD_REF>docs/PRD.md#LAYERS</PRD_REF>
   </CAPABILITY_HOST>
+  <REL TYPE="DEPENDS_ON" SOURCE="MOD-INTAKE-PHOTO" TARGET="MOD-RECEIVED-SCAN"/>
 </Why_Graph>

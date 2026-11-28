@@ -1,0 +1,33 @@
+{
+  "_about": "Invented for the Familiar demo. A bare card: the host knows Walter's name and the year he died. Our guess waits on the card for one tap.",
+  "fictional": true,
+  "id": "walter-birth",
+  "title": "When was Walter Pike born?",
+  "line": "Pike",
+  "people": ["p-walter"],
+  "status": "open",
+  "updated": "2026-11-25",
+  "summary": "Nobody told Walter's year of birth; he married Helena, born in 1925.",
+  "unknown_weight": 0.6,
+  "versions": [
+    {
+      "id": "walter-about-1922",
+      "label": "About 1922, a few years older than his wife",
+      "weight": 0.4,
+      "state": "leading",
+      "people": ["p-walter"],
+      "guess": {"person": "p-walter", "field": "birth", "value": "about 1922"},
+      "for": [
+        {
+          "kind": "family",
+          "text": "Helena was born in 1925 and they were one generation; nobody remembers a great difference in age.",
+          "sources": ["m-helena-born-qb"],
+          "dependency_group": "origin:m-helena-born-qb"
+        }
+      ],
+      "against": []
+    }
+  ],
+  "tests": [],
+  "advice": []
+}

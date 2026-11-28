@@ -1,0 +1,29 @@
+{
+  "record": {
+    "id": "clip",
+    "title": "A sheet",
+    "reading": "The signed register records the names of both witnesses beside the entry for A. F.",
+    "fields": {"fate": "missing in action", "place": "The northern orchard on the old road from Quarry Bend"},
+    "field_subjects": {"place": ["p-amaro"]}
+  },
+  "graph": {
+    "people": {
+      "p-amaro": {"id": "p-amaro", "name": "missing in action", "facts": [{"text": "missing in action; «both witnesses beside»", "sources": ["clip"]}], "notes": [{"text": "Quoted: ed register records the names of both witnesses beside the entry fo"}]},
+      "p-daniel": {"id": "p-daniel", "facts": [{"text": "He signed.", "sources": ["clip"]}]}
+    },
+    "sources": {
+      "clip": {"title": "A sheet"},
+      "voice": {"kind": "memory", "text": "Unsigned recollection"},
+      "son": {"kind": "family-memory", "subjects": ["p-daniel"], "text": "His own story"}
+    },
+    "edges": [{"child": "p-daniel", "parent": "p-amaro", "sources": []}],
+    "feeds": [{"chapters": [{
+      "people": ["p-amaro", "p-daniel"],
+      "records": [
+        {"record": "clip", "subjects": ["p-amaro"], "asset": "/clip.png"},
+        {"record": "clip", "subjects": ["p-amaro"], "excerpt": ["place"], "field": "place", "read": "The northern orchard on the old road from Quarry Bend"}
+      ],
+      "game": {"truth": {"record": "/clip.png"}}
+    }]}]
+  }
+}

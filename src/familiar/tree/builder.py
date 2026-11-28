@@ -18,6 +18,7 @@
 # - MOD-INSTANCE-RESEARCH-FORMS (evidence container)
 # - MOD-TREE-CONTRIBUTIONS (declaration owner paths)
 # - MOD-TREE-SURNAMES (reversible clan display after identity resolution)
+# - MOD-TREE-AMENDMENTS (working readings after the life assessment)
 # :END_MODULE_CONTRACT
 import copy
 import json
@@ -68,6 +69,7 @@ def _snapshot_graph(instance, raw, *, apply_identity=True):
         if key in evidence: graph[key] = copy.deepcopy(evidence[key])
     if raw.get('identityAliases'): graph['identityAliases'] = copy.deepcopy(raw['identityAliases'])
     graph['families'] = read_json(instance.path('tree_snapshot') / 'families.json', {'families': []})['families']
+    graph['_snapshotPeople'] = set(people)
     if not evidence.get('edges'):
         for family in graph['families']:
             for child in family.get('children', []):
@@ -77,7 +79,7 @@ def _snapshot_graph(instance, raw, *, apply_identity=True):
                         edges.append({'child': child, 'parent': parent, 'type': 'parent',
                                       'from': parent, 'to': child, 'status': family.get('status', 'export'),
                                       'sources': family.get('provenance', []),
-                                      **({k: family[k] for k in ('derived', 'basis')} if family.get('derived') is True else {})})
+                                      **{k: family[k] for k in ('weight', 'identity', 'derived', 'basis') if k in family}})
     # Existing snapshot relationships must exist before a contribution can decide them.
     from familiar.tree.contributions import _merge_contributions
     _merge_contributions(instance.path('contributions'), people, edges, sources, graph['research'], instance.root,
@@ -110,6 +112,7 @@ def _build_pre_identity(instance):
 
 def _build(instance, *, enrich=None, family_display=False):
     data = _build_pre_identity(instance)
+    life = copy.deepcopy(data) if enrich is not None else data
     if enrich is not None:
         # In-place presentation enrichment is inside the publication snapshot;
         # it never returns an unprojected graph to the external consumer.
@@ -120,8 +123,14 @@ def _build(instance, *, enrich=None, family_display=False):
     if metadata.get('root') in data['people']:
         data['root'] = metadata['root']
     from .life import _assess
-    result = _assess(instance, _apply_identities(_assess(instance, data), read_json(instance.path("identity_decisions"), {}),
-                            labels=metadata.get("labels", {})), family_display=family_display)
+    decisions = read_json(instance.path("identity_decisions"), {})
+    labels = metadata.get("labels", {})
+    _assess(instance, life, family_display=family_display)
+    assessed = _assess(instance, _apply_identities(life, decisions, labels=labels), family_display=family_display)
+    result = assessed if enrich is None else _apply_identities(data, decisions, labels=labels)
+    if enrich is not None:
+        for pid, person in result['people'].items():
+            person['life_assessment'] = assessed['people'].get(pid, {}).get('life_assessment', {'status': 'unknown'})
     if metadata.get('narrator'):
         narrator = result.get('identityAliases', {}).get(metadata['narrator'], metadata['narrator'])
         if narrator in result['people']:
@@ -148,6 +157,8 @@ def build(instance, *, enrich=None, view='reader'):
         from familiar.instance.writer import snapshot
         with snapshot(instance) as (active, inputs):
             graph = _build(active, enrich=enrich)
+            from .amendments import apply
+            apply(active, graph)
             require_assertions(graph)
         from familiar.instance.writer import fingerprints
         if inputs != fingerprints(instance):

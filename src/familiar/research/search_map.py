@@ -449,6 +449,7 @@ def name_bases(data, line, observations, people_places, communities=frozenset())
 def map_line(data, group, series_rows):
     """One section for every chain of one surname: their people, searches and series together."""
     from .research_plan import line_observations, recorded_places, variants_for_place
+    from .access_ledger import line_places
     from .coverage import line_members
     from .search_ledger import row_digest
     group = group if isinstance(group, list) else [group]  # the plan maps one chain
@@ -513,6 +514,7 @@ def map_line(data, group, series_rows):
     return {'surname': line.surname, 'start': line.chain[0], 'frontier': group[0].chain[-1],
             'chains': len(group), 'main': not line.secondary, 'order': (line.focus_order, line.main_order),
             'questions': len(questions), 'last': max((str(o['row'].get('at') or '')[:10] for o in observations), default=''),
+            'access': line_places(data, data['access'], line, members),
             'communities': sorted(communities), 'windows': windows,
             'leading_places': leading, 'series': view_series, 'bases': bases, 'fit_people': fit_people,
             'open_online_in_window': len(window_open), 'next': ranked(cells),
@@ -543,13 +545,16 @@ def prepare(instance, data=None):
         data['living'], data['linked'] = links_to_living(data['tree'].graph)
     data['instance'] = instance
     data.setdefault('place_entries', place_entries(instance))
+    from .access_ledger import read
+    data['access'] = read(instance)[1]
     return data
 
 
 @boundary('diagnostic')
 def search_map(instance, *, line=None):
     view = build(instance, line=line)
-    return view, markdown_map(view, 'ru' if instance.source_language == 'ru' else 'en')
+    from familiar.instance.subjects import protected_names
+    return view, protected_names(instance).sub('…', markdown_map(view, 'ru' if instance.source_language == 'ru' else 'en'))
 
 
 def build(instance, *, line=None):
@@ -559,7 +564,7 @@ def build(instance, *, line=None):
     data = prepare(instance)
     lines = working_first([map_line(data, group, series_rows) for group in line_groups(selected_lines(data, line))])
     view = {'schema': 1, 'series_file': path.relative_to(instance.root).as_posix() if path.is_relative_to(instance.root) else str(path),
-            'series_list': series_rows is not None, 'problems': [{'series': w, 'message': m} for w, m in problems],
+            'series_list': series_rows is not None, 'access': data['access'], 'problems': [{'series': w, 'message': m} for w, m in problems],
             'lines': lines}
     return view
 

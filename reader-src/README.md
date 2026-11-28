@@ -12,6 +12,8 @@ bun run reader:shell
 ```
 
 The output is `../reader-shell/`, including the generated integrity manifest.
+The build stops at a word from `plain-words.json` in a reader string or in a bundled
+pack's desk words: a family reads these pages (rule `CRAFT-PLAIN-PAGES`).
 The lockfile and explicit transformer overrides make the shell reproducible.
 Storage keys use neutral names, scoped by the reader profile's family id.
 No migration from historical key spellings is provided. The build copies

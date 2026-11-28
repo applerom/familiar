@@ -16,6 +16,7 @@ One question per file, `<id>.json`: `id`, `title`, `line`, `people[]`, `status`
 `versions[]` (`id`, `label`, `weight`, `state`: leading, alternative, weak,
 refuted; `place`, `for[]` and `against[]` with `kind`, `text`, `sources[]`,
 optional `reading`), `tests[]` (`text`, `where`, `would`), `advice[]`.
-Optional `story_choice` names the version the story tells: `version`, `by`
+An option may carry `guess` (`person`, `field`, `value`): the line of a bare card it would
+fill; from 0.3 the card offers it for one tap. Optional `story_choice` names the version the story tells: `version`, `by`
 (`weight`, or `interest` among versions of at least half the heaviest weight),
 `basis` (one sentence), `date`. It never changes a weight.

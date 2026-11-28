@@ -4,6 +4,7 @@
 # INVARIANTS:
 # - unattributed nested prose conservatively inherits its chapter's subjects [review: engine lead]
 # - protected canonical names in feed signatures and tree nodes exclude inferred components [review: engine lead]
+# - instance check names passages with missing privacy attribution separately from restricted blocks [review: engine lead]
 # CHANGES_WITH:
 # - MOD-PUBLICATION (default-deny reader fields and private attribution)
 # - MOD-FEED-BUILDER (canonical blocks and optional otherwise passage)
@@ -11,6 +12,77 @@
 # - docs/gate.md
 # :END_MODULE_CONTRACT
 import copy
+import re
+from datetime import date
+
+
+DETAIL = re.compile(
+    r'\b(?:[12]\d{3}|\d{1,2}[./-]\d{1,2}[./-]\d{2,4}|родил\w*|жив[еёу]\w*|прожива\w*|'
+    r'лет|года|born|lives?|aged|years? old|urodzi\w*|mieszka\w*|lat|född\w*|bor|år gammal)\b', re.I)
+RELATIVE = re.compile(
+    r'\b(?:бабушк\w*|дедушк\w*|т[её]щ\w*|внук\w*|дочк\w*|дети|потомки|семь[яюеёи]|'
+    r'grand(?:mother|father|children)|mother.in.law|children|daughter|'
+    r'babci\w*|wnuk\w*|dzieci|córk\w*|barn(?:barn)?|dotter)\b', re.I)
+YEAR = re.compile(r'\b(?:1\d{3}|20\d{2})\b')
+AGE = re.compile(r'\b(?:лет|lat|old|gammal)\b', re.I)
+PARAGRAPH = re.compile(r'\n\s*\n|\n(?=[-–•] )')
+LIVES_IN = re.compile(r'\b(?:живут|прожива\w*|live in|mieszkaj\w*|bor i)\b', re.I)
+
+
+def prose_review(instance, feed):
+    """Find review candidates without deciding whom a sentence is about."""
+    from familiar.checks.engine import _known_people, life_status, strings
+    from .gate import shared
+    from .subjects import protected_names
+
+    known = _known_people(instance)
+    match = shared(instance, 'public-protected-names', lambda: protected_names(instance, include_short=True))
+    current_year = date.today().year
+
+    def protected(ids):
+        return any(life_status(known.get(pid, {'id': pid}), {}) != 'dead' for pid in ids)
+
+    def reason(text, recent_chapter=False):
+        if DETAIL.search(text):
+            if match.search(text):
+                return 'protected name near a date, age or place cue'
+            if RELATIVE.search(text) and (AGE.search(text) or any(
+                    int(year) >= current_year - 100 for year in YEAR.findall(text))):
+                return 'kinship wording with a recent year or age cue'
+            if recent_chapter and LIVES_IN.search(text):
+                return 'place cue in a recent chapter'
+        return None
+
+    def paragraphs(value, field, recent_chapter=False):
+        for lang, text in value.items() if isinstance(value, dict) else [(instance.source_language, value or '')]:
+            for index, paragraph in enumerate(PARAGRAPH.split(text), 1):
+                if why := reason(paragraph, recent_chapter):
+                    yield f'{field} paragraph {index} ({lang}): {why}; name its people in prose and keep names and kinship in otherwise'
+
+    for chapter in [feed, *feed.get('chapters', [])]:
+        is_feed = chapter is feed
+        fields = ('title', 'lead', 'period', 'line') if is_feed else ('title', 'text', 'more', 'ask', 'text_kids')
+        where = feed['id'] if is_feed else f"{feed['id']}/{chapter['id']}"
+        year = str(chapter.get('year', ''))
+        recent_chapter = re.fullmatch(r'\d{4}', year) and int(year) >= current_year - 25
+        for field in fields:
+            if (blocks := chapter.get('_prose', {}).get(field)) is not None:
+                for index, block in enumerate(blocks, 1):
+                    if protected(block['people']):
+                        yield where, f'{field} paragraph {index}: protected subjects; public uses only a permitted otherwise passage'
+                continue
+            if protected(chapter.get('people', [])):
+                continue  # The existing chapter attribution already withholds the unsplit field.
+            yield from ((where, note) for note in paragraphs(chapter.get(field), field, recent_chapter))
+        if not is_feed:
+            kids = chapter.get('kids', {})
+            if 'text_kids' not in chapter.get('_prose', {}) and not protected(kids.get('_people', chapter.get('people', []))):
+                yield from ((where, note + ' (use prose.text_kids)') for note in paragraphs(kids.get('text'), 'kids.text'))
+            for field in ('places', 'facts'):
+                for index, item in enumerate(chapter.get(field, []), 1):
+                    if not protected(item.get('_people', chapter.get('people', []))):
+                        if why := next(filter(None, map(reason, strings(item))), None):
+                            yield where, f'{field} item {index}: {why}; attribute its people or keep only names and kinship'
 
 
 def restrict_feed(instance, feed, *, host_private=False):
@@ -69,9 +141,15 @@ def restrict_feed(instance, feed, *, host_private=False):
                     alternative = block.get('otherwise')
                     if alternative and not restricted(alternative['people']):
                         shown.append(alternative['text'])
+                if field == 'text' and len(shown) != len(blocks):
+                    # Paragraph positions belonged to the complete story. The
+                    # reader places the surviving papers after the shorter text.
+                    chapter.pop('flow', None)
                 chapter[field] = {lang: '\n\n'.join(
                     b.get(lang, '') for b in shown if b.get(lang, '').strip())
                     for lang in instance.languages}
+                if field == 'text_kids' and chapter.get('kids'):
+                    chapter['kids']['text'] = chapter[field]
             elif chapter.get(field) and restricted(defaults):
                 chapter.pop(field)
         for field in ('facts', 'variants', 'places', 'extras', 'links', 'kids', 'game'):
@@ -87,6 +165,9 @@ def restrict_feed(instance, feed, *, host_private=False):
                 chapter.pop(field)
             else:
                 chapter[field] = kept if isinstance(chapter[field], list) else kept[0]
+        if chapter.get('flow') and restricted(defaults):
+            for beat in chapter['flow']:
+                beat.pop('do', None)
         # Authoring classification is not part of the reader's story.
         chapter.pop('kind', None)
     return feed

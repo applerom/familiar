@@ -5,9 +5,12 @@
 # - accepted feedback is bounded literal text, never a tree mutation [review: engine lead]
 # - correspondence feedback is owner-only, including remarks from its page [review: engine lead]
 # - add_person fields stay the narrator's bounded strings beside the readable text [review: engine lead]
+# - amendment replies are private envelopes and settle only an offer served to an authorized reader [review: engine lead]
+# - a message may carry attached files instead of words; their list is declared, the bytes are checked by the server [review: engine lead]
 # CHANGES_WITH:
 # - MOD-DESK-AWS-TEMPLATE (identical envelope and subject matching; no cooldown)
 # - MOD-DESK-BUILD (reader receipt projection)
+# - MOD-DESK-ATTACHMENTS (declared files)
 # - MOD-FAMILY-WRITER (immutable inbox)
 # :END_MODULE_CONTRACT
 import json
@@ -17,14 +20,17 @@ from urllib.parse import unquote
 
 from familiar.instance.asks import FEEDBACK, WANTS, key
 
+from .feedback_offer import amendment_reply
+
 FIELDS = {'id', 'text', 'kind', 'page', 'person', 'question', 'ask_id', 'finding',
           'client_time', 'subject', 'anchor', 'relation', 'place', 'where', 'screen',
           'feed', 'step', 'text_mode', 'language', 'selection', 'viewport',
-          'engine_version', 'build'}
+          'engine_version', 'build', 'amendment_revision'}
 LIMITS = {'page': 2048, 'person': 200, 'question': 200, 'ask_id': 200, 'finding': 1000,
           'client_time': 40, 'subject': 200, 'anchor': 200, 'relation': 40, 'place': 200,
           'where': 1000, 'screen': 80, 'feed': 200, 'step': 40, 'text_mode': 40,
-          'language': 40, 'selection': 300, 'viewport': 40, 'engine_version': 80, 'build': 100}
+          'language': 40, 'selection': 300, 'viewport': 40, 'engine_version': 80, 'build': 100,
+          'amendment_revision': 64}
 RELATIONS = {'child', 'spouse', 'parent', 'father', 'mother', 'sibling', 'relative', 'self'}
 # The narrator's own fields for one added person; `text` repeats them as the readable message.
 NEW_PERSON = {'surname': 200, 'given': 200, 'patronymic': 200, 'maiden_surname': 200, 'birth': 200,
@@ -83,12 +89,12 @@ def ask_valid(data):
 
 
 def research_feedback(data):
-    return data.get('kind') in FEEDBACK
+    return data.get('kind') in FEEDBACK or amendment_reply(data)
 
 
 def preserve_tender(instance, data):
     """Bind a local answer to the current ask before storing the literal envelope."""
-    if research_feedback(data):
+    if data.get('kind') in FEEDBACK:
         from familiar.instance.asks import get
         from .model import source
         _, ask = get(source(instance), data['ask_id'])
@@ -101,9 +107,13 @@ def validate(body):
     if len(body) > 20000:
         raise ValueError('too_large')
     data = json.loads(body)
+    if isinstance(data, dict) and 'files' in data:
+        from .attachments import declared
+        data['files'] = declared(data['files'])
     if (not isinstance(data, dict)
             or not all(isinstance(data.get(k, ''), str) for k in FIELDS)
-            or not 1 <= len(data.get('text', '').strip()) <= 6000 or len(data['text']) > 6000
+            or not (1 if 'files' not in data else 0) <= len(data.get('text', '').strip()) <= 6000
+            or len(data.get('text', '')) > 6000
             or not data.get('kind', '').strip()
             or any(len(data.get(k, '')) > limit for k, limit in LIMITS.items())
             or not data.get('page', '').startswith('/') or data['page'].startswith('//')):
@@ -116,11 +126,12 @@ def validate(body):
     if data['kind'] in ACTIONS:
         token(data.get('subject'))
     data['id'] = str(uuid.UUID(data['id']))
+    data.setdefault('text', '')
     return data
 
 
 def received(data):
-    return {k: v for k, v in data.items() if k != 'sender'} | {
+    return {k: v for k, v in data.items() if k not in {'sender', 'amendment_offered'}} | {
         'schema_version': 1, 'received_at': datetime.now(UTC).isoformat()}
 
 

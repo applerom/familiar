@@ -194,7 +194,7 @@ def check(instance, *, paths=None, prefix=None):
 
 def _full_check(instance):
     from .gate import evaluate
-    verdict = evaluate(instance)
+    verdict = evaluate(instance, editorial=True)
     result = verdict['forms']
     result['valid'] = not verdict['blocked']
     result['errors'] = [{'location': f['location'], 'message': f['message']} for f in verdict['findings'] if f['mode'] == 'block' and f['certainty'] == 'finding']
@@ -323,9 +323,6 @@ def _check(instance, selected=None):
     working_files = {str(p) for root in research_roots.values() for p in root.rglob('*')
                      if p.is_file() and p not in adopted} if selected is None else set()
 
-    from .edition import errors as edition_errors
-    for message in edition_errors(instance):
-        fail(instance.path('edition'), message, 'instance.message')
     gallery_path = instance.path('gallery')
     if selected is None or str(gallery_path) in selected:
         from .gallery import asset_file, photographs
@@ -482,11 +479,23 @@ def _check(instance, selected=None):
                 waiting.append({'file': item['file'], 'author': item['author'], 'waits': item['waits'],
                                 'message': item['error']})
     applied_files = [a['file'] for a in graph['research']['contributions']['applied']]
-    from familiar.tree.identities import _apply_identities
+    from familiar.tree.identities import _apply_identities, marked_for_deletion
     from familiar.tree.builder import read_json
     from familiar.tree.life import _assess
-    graph = _assess(instance, _apply_identities(_assess(instance, graph), read_json(instance.path('identity_decisions'), {})))
+    identity_path = instance.path('identity_decisions')
+    decisions = read_json(identity_path, {})
+    graph = _assess(instance, _apply_identities(_assess(instance, graph), decisions))
     people = people_index(graph)
+    withdrawn = graph.get('_withdrawnSnapshotCards', [])
+    from .edition import errors as edition_errors
+    for message in edition_errors(instance, withdrawn=withdrawn):
+        fail(instance.path('edition'), message, 'instance.message')
+    snapshot_refs = people | {pid: snapshot_people[pid] for pid in withdrawn}
+    for pid, person in snapshot_people.items():
+        if pid in graph['people'] and marked_for_deletion(person) and marked_for_deletion(people[pid]):
+            advice.append({'location': str(identity_path), 'message':
+                           f'{pid}: snapshot is marked for deletion; ask the family whether to withdraw this card '
+                           'and record its decision in withdraw_snapshot_cards'})
     for person in graph['people'].values():
         for message in person['life_assessment'].get('conflicts', []):
             advice.append({'location': str(instance.path('identity_decisions')), 'message': message})
@@ -583,7 +592,7 @@ def _check(instance, selected=None):
     for family in family_rows if chosen(snapshot) else []:
         required(family, 'id children events provenance', snapshot)
         for member in [family.get('husband'), family.get('wife'), *family.get('children', [])]:
-            ref(member, people, snapshot)
+            ref(member, snapshot_refs, snapshot)
         walk(family, snapshot)
     for path, row in records_rows:
         if not chosen(path):
@@ -755,6 +764,18 @@ def _check(instance, selected=None):
         for where, message in ledger_findings(instance, ledger_rows):
             fail(where, message, 'instance.search-ledger')  # advice: the matrix reads these fields, nothing refuses without them
     series_check(instance, searches, chosen, fail)
+    from familiar.research.access_ledger import check as access_check
+    access_check(instance, versions_rows, searches, chosen, fail)
+    if graph.get('people'):
+        from familiar.tree.amendments import check as amendment_check
+        from .blanks import check as blank_check
+        amendment_check(instance, graph, chosen, fail)
+        if selected is None:
+            from .subjects import check as subjects_check
+            from familiar.tree.birth_guess import check as birth_check
+            birth_check(instance, graph, fail)
+            subjects_check(instance, graph, {r.get('id'): r for _, r in records_rows if isinstance(r, dict)}, fail)
+        blank_check(instance, graph, [r for _, r in versions_rows], [r for _, r in searches if isinstance(r, dict)], chosen, fail)
     from .gate import assertions
     from .model import DEFAULTS
     def nonstandard(value):
@@ -792,8 +813,9 @@ def _check(instance, selected=None):
     for value in (people_rows, family_rows, [r for _, r in versions_rows]) if selected is None else []:
         for error in assertions(value):
             fail(snapshot, error, 'instance.error')
+    from .upgrade import life_decision_scope_message
     privacy = load(instance.path('privacy'), {})
-    for decision in privacy.get('life_decisions', []) if chosen('privacy') else []:
+    for index, decision in enumerate(privacy.get('life_decisions', []) if chosen('privacy') else []):
         if not required(decision, 'person status by at', 'privacy'):
             continue
         ref(decision.get('person'), people, 'privacy')
@@ -803,6 +825,11 @@ def _check(instance, selected=None):
             fail('privacy', 'life decision needs a written basis, author and date', 'instance.life-decision-needs-a-written-basis-author')
         if 'revoked' in decision and type(decision['revoked']) is not bool:
             fail('privacy', 'life decision revoked must be boolean', 'instance.life-decision-revoked-must-be-boolean')
+        if message := life_decision_scope_message(index, decision):
+            advice.append({'location': str(instance.path('privacy')), 'message': message})
+        if 'scope' in decision and (decision['scope'] not in ('home', 'everywhere') or
+                                    decision['scope'] == 'home' and decision['status'] != 'dead'):
+            fail('privacy', 'life decision scope must be everywhere, or home for a death decision', 'instance.life-decision-scope')
     evidence = load(instance.path('evidence'), {})
     for source in evidence.get('sources', []) if chosen(instance.path('evidence')) else []:
         required(source, 'id kind record', 'evidence source')
@@ -814,8 +841,8 @@ def _check(instance, selected=None):
             ref(source.get('record'), records, 'evidence source')
     for edge in evidence.get('edges', []) if chosen(instance.path('evidence')) else []:
         required(edge, 'type from to sources confidence', 'evidence')
-        ref(edge.get('from'), people, 'evidence')
-        ref(edge.get('to'), people, 'evidence')
+        ref(edge.get('from'), snapshot_refs, 'evidence')
+        ref(edge.get('to'), snapshot_refs, 'evidence')
         provenance(edge.get('sources'), 'evidence')
     story_hints(instance, versions_rows, evidence, graph, chosen, fail)
     chapter_count = 0

@@ -42,7 +42,27 @@ CHANGES_WITH:
     return w.near_certain;
   };
   const lanes = new Map(data.lanes.map((l, i) => [l.id, {...l, x: 10 + (i === 0 ? 0 : 12 + ((i - 1) % 4) * 12)}]));
+  // The first screen answers three plain questions with this family's own words; an answer that is not there is not shown.
+  const askPage = () => { const page = language !== words.source_language && (words.page_languages?.asks || []).includes(language)
+    ? 'desk/asks.' + language + '.html' : 'desk/asks.html'; return (interactive ? '/' : '') + page; };
+  const introduce = (key, lines) => {
+    const box = document.querySelector('#intro-' + key); box.hidden = !lines.length;
+    for (const [text, href] of lines) {
+      const row = el('li'), node = href ? el('a', '', text) : el('span', '', text);
+      if (href) node.href = href;
+      row.append(node); box.querySelector('ul').append(row);
+    }
+  };
+  const recent = [...new Set(data.event_pages.flat().map(e => e.lane))].map(id => lanes.get(id)).filter(l => l?.open);
+  const answered = data.shifts.filter(x => x.w_to >= .5 && x.w_to > x.w_from).slice(0, 3), done = new Set(answered.map(x => x.lane));
+  introduce('now', (recent.length ? recent : data.lanes.filter(l => l.open)).filter(l => !done.has(l.id)).slice(0, 3).map(l => [l.title]));
+  introduce('found', answered.map(x => {
+    const title = lanes.get(x.lane).title.replace(/\s*[—-]\s*…$/, ''), said = title.toLowerCase();
+    return [x.label.toLowerCase().split(/[^\p{L}\d]+/u).every(word => said.includes(word)) ? title : title + (/[?!]$/.test(title) ? ' ' : ': ') + x.label];
+  }));
+  introduce('help', data.asks.slice(0, 3).map(a => [a.text, askPage() + '#ask-' + encodeURIComponent(a.id)]));
   const shifts = document.querySelector('#show-shifts');
+  shifts.closest('.since').hidden = !data.shifts.length;
   for (const shift of data.shifts) {
     const row = el('li'), lane = lanes.get(shift.lane);
     row.append(el('strong', '', lane.title), el('span', '', shift.label + ' · ' + word({state: shift.state,
@@ -50,7 +70,6 @@ CHANGES_WITH:
       el('small', '', `${Math.round(shift.w_from * 100)} → ${Math.round(shift.w_to * 100)}`));
     shifts.append(row);
   }
-  if (!data.shifts.length) shifts.append(el('li', 'sub', w.no_shifts));
   // Narrator additions wait for the researcher; this browser's sends show before the next build.
   let local = [];
   try { local = JSON.parse(localStorage.getItem('familiar-desk-pending:' + (profile.family?.id || document.title)) || '[]'); } catch (_) { /* optional */ }

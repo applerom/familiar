@@ -179,6 +179,7 @@ captures = "captures"                      # pages saved while searching
 media = "media"                            # cut-outs and pictures, with a manifest
 searches = "searches"                      # what was searched and what it covered
 series = "sources/series.json"             # record series: what exists, where, which years (research map)
+access = "research/access.json"             # access ledger: books of a place, read or not, how to reach them
 state = ".state"
 build = ".build"
 export = "export"                          # regenerated; never the only copy of anything
@@ -329,8 +330,9 @@ What is not in the instance:
 ### Kinship words
 <!-- PRD_ANCHOR: KINSHIP-WORDS -->
 
-The reader names a relationship with its language's exact word first and offers
-its explanation and permitted tree path on hover or tap. One table resolver
+The reader names a relationship with its language's exact word first. A tap on
+the word, or a line beside a rarer one in a list, gives its plain meaning and the
+way to this person through the permitted tree, name by name. One table resolver
 uses gender, the viewer's gender, parent/spouse side and generation distances;
 unknown sex or a missing word keeps a descriptive fallback. The existing
 qualification of uncertain links remains visible. Literal narrator kinship
@@ -338,10 +340,9 @@ still heads the card for that narrator, with computed kinship alongside it.
 
 Russian, Polish and English language packs own their vocabulary and explanations,
 including historical words with an explicit marker. The offline “Kinship words”
-page is reachable from the menu and each explanation. It groups words and gives
-examples relative to the selected viewer using only the permitted reader graph.
-Without a matching permitted person it says there is no example; it never reads
-research files. Half-siblings require known differing parents; step and spiritual
+page is reachable from each explanation and is no menu entry. It lists only words
+somebody in the permitted reader graph answers to, each with that person, counted
+from the selected viewer or the home person; it never reads research files. Half-siblings require known differing parents; step and spiritual
 kinship require explicit links. A missing parent never proves a step relation.
 The glossary has no separate children's mode; explanations use short definitions.
 
@@ -467,24 +468,30 @@ optional literal part of a name. Identity proposals compare all names across
 scripts and report matched fields; only an explicit decision merges people.
 
 Life status is `dead`, `living` or `unknown` and is assessed after identity.
-`privacy.living_years` in the setting registry defaults to 110 for every intake.
+`privacy.living_years` in the setting registry defaults to 100 for every intake.
 A birth upper bound before current year minus this horizon implies dead for
 privacy, not a historical death date. Approximate births use a five-year margin; after-dates have no historic upper bound.
-Missing birth may be bounded by directly
-dated parents, children or spouse; conflicting estimates use their union.
-Privacy bounds are deliberately wide (parent/child 0–120 years, spouses ±100),
-never typical-generation averages that could declassify a younger spouse.
 The family reader and signed-in desk also use `privacy.family_years` (default
-75) for people whose status is unestablished, using a birth date or the
-reader’s birth estimate. Explicit living and unknown decisions and unresolved life
-conflicts remain protected. This rule applies only to family display.
-Dated canonical record subjects and attributed baptism/marriage events also bound
-birth: child/baptized/named no later than the record, parent/godparent/spouse
-at least 12 years earlier. A deceased role establishes death. Hypothetical
-attributions, unlinked names, prose and source metadata provide no bound.
-Record bounds do not propagate to relatives; conflicting bounds retain the union.
-`privacy.json` may hold `life_decisions`: `{person, status, basis, by, at, revoked}`.
-A written decision needs no death certificate; setting revoked=true cancels it.
+75) for people whose status is unestablished, using a recorded birth. Reader
+estimates, amendments and inferred identity dates provide no life evidence.
+Family declarations and refusals survive a merge. A precautionary import flag
+leaves status unknown. A merge with missing evidence uses the ordinary age
+horizons. Contradictory birth and death dates remain protected.
+An attributed participant was born by the date of the paper or event. The
+dated roles of parent, godparent, spouse and explicitly adult witness use the
+established twelve-year minimum. A child's direct recorded event bounds a
+recorded parent link. Existing weighted tentative links can supply only the
+family age horizon. The public horizon requires recorded participation.
+A citation for a hypothesis cannot place an unmentioned child at the father's signing.
+A paper names its recorded participants and their accepted identity aliases.
+A probable identity keeps separate cards and can suggest kinship, with its
+explanation on the private card. A doubtful identity, proposed event or date
+in free text supplies no bound. Disagreeing recorded births retain the youngest year.
+`privacy.json` may hold `life_decisions`: `{person, status, scope, basis, by, at, revoked}`.
+Use `home` for a death decision based on the family age horizon and `everywhere`
+for recorded death or an established age beyond the common horizon. Living and
+unknown decisions protect in both views. Legacy death decisions missing scope
+continue in the family view until the author reviews their basis. Setting revoked=true cancels a decision.
 An explicit living privacy declaration overrides derived death classifications.
 Unknown remains distinct and receives the same reader protection as living.
 
@@ -493,11 +500,25 @@ A literal text document excerpt names record `excerpt` field keys. The record's
 reading must equal that literal field. An excerpt carries no full reading, scan,
 asset or full-sheet link. Its closure includes only those fields' subjects plus
 any additional author-declared subjects; a full sheet retains every subject.
-Documents about protected people are excluded in every display.
+Documents about protected people are excluded in every display. A home paper
+copied from the family's feedback inbox remains protected, including an excerpt
+from it. A separate account may tell the kinship.
 Document subjects also accumulate from card galleries, chapter attachments and
-facts citing their sources. Shared record, source and scan references retain the
+facts and family relationships citing their sources. Shared record, source and scan references retain the
 union of these subjects in both reader modes; a protected attachment cannot be
 released through an ancestor's gallery. Unattached documents remain withheld.
+Public census and family annex records need `subjects_complete: true`, with
+children and other household members included. Recognized protected names in
+the paper's literal words also withhold the public full document.
+A protected person's citation can be treated as an inference from someone
+else's paper when the canonical record lists every subject and marks it
+`subjects_complete: true`. A citation of the person's own name or event still
+counts as their paper.
+A source or record whose `subjects` name everybody it is about stays theirs when a
+living relative's told fact infers from it ("his father was …"): a fact is no
+likeness. It stays withheld when it states no subjects, when the living person's own
+name or event cites it, or when its own words name that person. `instance check`
+names the papers withheld for such a fact alone and how to state their subjects.
 Image crops still need a reviewed derivative route; this text route cannot certify pixels.
 
 The family gate produces a publication capability from a private input snapshot.
@@ -575,10 +596,29 @@ Each row carries a stable chapter id, hero, want/fear, turn, support locators,
 version scenes, document placements, windows into daily life, and a children's
 question. These are author judgements, not generated facts. The pipeline hashes
 scenario.json with the other catalogs; a change invalidates prior approvals.
+The method (`story-scenario`) now writes a feed as plain files in the feed's
+`studio/`: the cast (`fates.md`), place, wonders, and one chapter file per chapter in the
+layout the skill states. A studio script carries them into `chapters.json`
+until the engine has that command; a feed may have no `scenario.json`.
+The writer also hands in `studio/joints.md`, the sentences that join two
+facts with each link's weight, for the researcher's check; one reader then
+reads the whole storyboard before the family and hands in a table
+(`docs/feed-studio.md`).
 
 `feed pages [id]` exposes materialized chapters in order plus the explicit
 `chapters[].hardships` annotations (kind, people, description). Missing
 annotations are reported as unassessed pages; no deaths are inferred from prose.
+`familiar feed rhythm [id]` measures the full text in the source language and
+reports separate children's words, paragraphs, look and play beats, draft
+frames, the longest uninterrupted paragraph run and feed medians. Two advisory
+counts give chapters naming a tree person in the first paragraph and chapters
+with a placed paper cut (`R:`). The investigation links to the strip of these
+beats on the local desk.
+The six advisory settings are `story.max_words` (200),
+`story.max_paragraph_words` (55), `story.max_text_run` (2),
+`story.min_look_do` (3, including frames), `story.max_kids_words` (80)
+and `story.max_no_do_run` (1). Folded side stories and supplementary text
+do not count toward the chapter's rhythm.
 `feed accept ID --stage reading --pages CHAPTER_ID ...` updates only those
 pages; a whole-feed acceptance omits --pages. Unknown ids fail without writing.
 `feed doc ID KEY --index READING --source SOURCE --where LOCATOR` creates an
@@ -702,7 +742,7 @@ names to local ids). Reading and literal fields must be supplied by a reader.
 Original bytes are preserved under originals/<id>/; the record id is the intake
 id. Claims cite that id. Torn text stays in fields/reading and doubt.
 
-`intake gedcom file --id id --living-years 110 --as-of YYYY-MM-DD` accepts UTF-8
+`intake gedcom file --id id --living-years 100 --as-of YYYY-MM-DD` accepts UTF-8
 GEDCOM, preserves original bytes under imports/<id>/ and emits an import
 manifest. Supported individual names, sex, inline notes, dated/placed events,
 family spouses, children and union events normalize into snapshot forms.
@@ -744,6 +784,11 @@ promote the imported claims to accepted facts.
 **Probable branches in the tree.** Two links draw a found branch above a family person
 before it is proven; the drawing follows the weight (0.5+ solid, 0.3–0.5 dotted, below
 0.3 not drawn). The weight is the weight of the version, not a confidence in each link.
+- *Accepted identity with a weight*: below 0.9 the merge weighs on exactly the links a line crosses
+  between the two cards. Parents known by one card hang over the children known by the other with no
+  more than the merge's weight; when the card with the parents knows children too, the other card's
+  children carry the cap instead. Links within one card, an identity from 0.9 and a family's own
+  confirmation change nothing; a lower weight written on a link stays.
 - *Probable identity*: a `merges[]` entry with `status: "probable"`, `weight` 0.3–0.5,
   `basis` and `sources`. The found card leaves the tree (its id becomes an alias, its
   facts are not merged); its parents hang above the family person on a junction with the
@@ -845,7 +890,8 @@ still require the literal `written` name. Attaching a card invents neither.
 | Field | Required | Meaning | Publication |
 |---|---|---|---|
 | `id, told_by, date` | R | Telling id, narrator, telling date | never (research only) |
-| `items[]` | R | id, text, strength (firm/hearsay), witness (how teller could know) | never (research only) |
+| `items[]` | R | id, text, strength (firm/hearsay), witness (how teller could know), layers (skeleton/attribute) | never (research only) |
+| `blanks[]` | O | person and the field the telling left empty | never (research only) |
 
 **Read record (`records/**/*.json`)**
 
@@ -1118,7 +1164,7 @@ emits one object to place inside that array.
 |---|---|---|---|
 | `id, title, text, people[], records[]` | R | Identity, prose, local person symbols, document references (doc, pick) | declared chapter projection; unknown fields never |
 | `text_kids` | R when kids.layer=separate_text | Separate children prose | declared chapter projection; unknown fields never |
-| `year, part, kind, more, ask, picture, flow[], facts[], variants[], places[]` | O | Date/division, expansion, kids block, art, placement, evidence and places; map nullable | declared chapter projection; unknown fields never |
+| `year, part, kind, more, ask, picture, flow[], facts[], variants[], places[]` | O | Date/division, expansion, kids block, art, placement, evidence and places; map nullable | declared chapter projection; draft frames only at home |
 
 **Feed document (`documents.json`, keyed by document id)**
 
@@ -1133,6 +1179,51 @@ evidence edges reference its id without redeclaring it in evidence sources.
 |---|---|---|---|
 | `record, caption, source, snippets[]` | R | Record id, caption, attribution, snippets (asset nullable, field, read) | declared document projection; never for living subjects |
 | `full, where, fictional` | O | Full image nullable, locator, invented marker | declared document projection; never for living subjects |
+
+Each `flow` entry follows paragraph `after` (zero-based). A draft frame or
+activity can start the chapter at `after: -1`. For example:
+
+```json
+{"after": 0, "placeholder": {"kind": "map", "ratio": [4, 3], "says": "The island and its harbour"}}
+{"after": 2, "do": {"kind": "game", "key": "ferrolho/amaro-1921"}}
+```
+
+Frame kinds are `period-picture`, `drawing`, `map` and `family-photograph`.
+`ratio` gives width and height as positive integers, and `says` is one line.
+In `do`, `game` names an entry in `play.json` `games`. `spots` and `pano`
+name the matching asset key under `spots` or `panos` for the chapter picture or
+a figure. The short children's text uses its own paragraphs and keeps the
+order of the chapter's beats. Blank lines mark the author's paragraphs.
+Continuous children's prose can be split at sentence boundaries for the layout.
+An external release names the chapters whose frames need replacing or removal.
+
+A game with one step and one plain answer opens that answer in place. Give it a
+`route` in its entry under `games` to make the answer follow a route on an
+existing chapter picture or figure:
+
+```json
+{
+  "title": "Trace the route",
+  "steps": [{"q": "Follow the ship from the island to the mainland.", "choices": [
+    {"text": "Show the answer", "outcome": "The ship crossed from the island to the mainland."}
+  ]}],
+  "truth": {"text": "Amaro paid for the passage himself."},
+  "route": {
+    "asset": "/pictures/vaqueira-crossing.png",
+    "points": [
+      {"x": 18, "y": 68, "label": "Ilha Vaqueira"},
+      {"x": 81, "y": 32, "label": "Mainland"}
+    ]
+  }
+}
+```
+
+Use the picture's registered reader asset and list the stops in travel order.
+Open the picture in an image editor, point at each stop and divide its pixel
+offset from the upper left by the full width or height, then multiply by 100.
+`x` runs right and `y` runs down. Labels may use the game's language rows.
+The existing answer button works while the map is a draft, with the picture and
+points added together when it is ready.
 
 Chapter `extras[]` carries title/text/more/kids, records and a picture (catalogue
 key or image object). An image `orig` may be a local asset string (projected as
@@ -1150,6 +1241,8 @@ Missing subjects beside living people is an unverified association signal.
 
 Records optionally carry `subjects[] = {person, role, written}` for every person
 in a marriage, census or newspaper. Legacy `person` and `people` remain valid.
+The optional boolean `subjects_complete` attests that the listed `subjects`
+cover the whole document, including people written only by initials.
 An index-entry can have `saved_result: null`: it is a locator with an unsaved
 result, never proof of a read original. A non-null saved_result is a local file
 path, included in the immutable input snapshot and dependency fingerprint.
@@ -1196,7 +1289,11 @@ are presentation decisions, never research events or life-status evidence.
 birth (`tree/birth_guess.py`, setting `tree.first_child_age`): the first known
 child minus a parent's usual age at a first child, else a spouse, brothers and
 sisters, then parents; a real date beats a chain of guesses and one timeline
-keeps a guessed parent older than every child. It is computed at each reader
+keeps a guessed parent older than every child. Dated things the card itself tells
+(a wedding, a baptism, service told by a fact firm or weighted from 0.3) hold the
+estimate at or before the latest year they allow, unless close relatives' real years
+leave no such year: then the estimate keeps to the relatives and `instance check`
+says so. Life assessment never uses these bounds. It is computed at each reader
 build after the restriction, rounded to five years, dead-only in a public
 projection, and is never stored, a research bound or life-status evidence.
 An edition fact list replaces the curated list, retaining only additional facts
@@ -1660,6 +1757,12 @@ subject completeness in prose requires review. Approval dependencies include
 permission and restricted-vocabulary contents. Research packets preserve graph
 contribution locators; owner decisions are staged separately from primary inputs.
 Zero-read observations can be recorded as access-gap, never as negative evidence.
+"No record", "unread" and "no access from home" are three outcomes: the access ledger
+holds the books of each place with their state, the plan and the search map show them
+apart; a copy the archive sells is a step from a chair (`copy`, with `price` and what is still
+missing in `needs`), and a closed road proposes a reading-room order or a letter
+(`docs/research-coverage.md`). The ledger is the one truth; `ACCESS.md` beside it is its
+print, renewed with every verdict.
 
 <!-- PRD_ANCHOR: SOURCE-SEARCH -->
 ### Bounded source search and host access
@@ -1721,6 +1824,50 @@ Relatives groups open conversation prompts by living witness and ranks them by
 their aim and its current version. The desk shows prompts in the matching feed
 step and person card. Private ask feedback stays in research memory with
 `visibility: search-only`. It cannot enter the family reader or hosted desk.
+
+<!-- PRD_ANCHOR: BLANKS -->
+**A card with blanks is an invitation.** Three layers make up what a family tells: the
+*skeleton* (who is whose parent, surnames, villages, a father's name read from a child's
+patronymic) holds; *attributes* (years, the form of an old name, deaths, the number of
+brothers and sisters) drift; an *empty field* means nobody asked or somebody was not sure.
+Intake stores `layers` on every memory item and an empty table cell as a `blanks[]` entry
+(`person`, `field`); tellings taken in earlier are read by the same rule.
+
+On the signed-in desk the card of a direct ancestor shows what it lacks as unfilled lines
+of the card itself: name, patronymic (where the main language has one), year of birth, wife
+or husband; with two of them missing also occupation, brothers and sisters. One tap opens the
+ordinary remark form with the person and the field already named. A leading guess stands in
+the line: an open version option from 0.3 that says which field it would fill (`guess`:
+`person`, `field`, `value`), or the probable father the tree draws with a dotted link. "Yes"
+sends one remark (`confirm`), "it was..." opens the form (`decline` with the words). The remark
+arrives in the same inbox; `intake feedback-draft` carries its person, field, answer and version.
+*Horizon:* the person, or a child of theirs, was born within `research.witness_horizon_years`
+(or that child is alive); the person is established deceased for a guess, the line's horizon is not closed
+(`family horizon`) and every link down to the family weighs 0.5 or more. Nobody alive knew an
+older ancestor: that card stays silent. A card with a story, with its name and year, or with a
+field an open ask covers or a relative already spoke to, offers nothing there.
+
+`research plan` names a *thin link* of a line (a person with no year and an incomplete name,
+or only a name read from a patronymic): what is missing, our guess, the skeleton to lean on and
+the attributes to loosen. If no relative saw the card, the next step is to show it; the place
+and the small lists by occupation (`role-lists`) come before surname bases. `instance check`
+advises when a line has 30 or more journal rows and such a card was never put before a relative.
+
+<!-- PRD_ANCHOR: AMENDMENTS -->
+**An amendment is a proposal beside the original.** `family/amendments/<id>.json` (path key
+`amendments`, `research form amendment`, one command `research amend`) names a person, a field,
+the original (`text` as told or read, `source`: memory item or record), the proposed `value`,
+its `weight`, `basis`, `sources` and `state` (`proposed`, `confirmed`, `declined`). Nothing
+edits the original. From weight 0.5 the card tells the proposal; below it the original leads;
+either way "More" keeps the two side by side. The desk offers a proposal from 0.3 on the card
+within the same horizon: "as it was told ... we think ...". The local owner or a
+signed-in owner or tree-linked relative can answer the exact offer. The private
+inbox keeps the literal answer, its sender, the card and an `amendment_revision`
+checked against the delivered offer. A restatement needs a new yes. The owner
+can reopen a refusal. Declined proposals and proposals quoting withheld sources
+stay out of reader files. The public projection carries only a safe leading
+reading, with no pair or reasoning. A death in an amendment is a presentation
+reading. Life assessment uses the attributed source event itself.
 
 The owner's Documents page keeps prepared external letters beside family asks.
 `family/correspondence` (or `paths.correspondence`) stores recipient, channel
@@ -1818,7 +1965,7 @@ metadata on requests and revalidates only when the build record changes; damaged
 builds refuse delivery. Both local servers use persistent HTTP, long private
 caching for hashed shell assets and conditional ETags for stable URLs.
 Loopback-only listening also accepts `localhost` and `*.localhost` with matching
-same-origin feedback (for example `http://family.localhost:8771/`). Local feedback
+same-origin feedback (for example `http://family.localhost:8768/`). Local feedback
 accepts consecutive messages without a ten-second pause.
 
 `desk/show.json` projects the investigation as cumulative counters, source-type
@@ -1874,11 +2021,54 @@ subsequent desk builds, never modifying the accepted graph. A small family gets
 seven initial places; “I do not know” leaves a place open. `reviewed_pending`
 ids in the show clear browser copies after the researcher reads the inbox.
 Every screen (tree, families, person card, search, investigation and a full-screen
-feed step) offers a quiet lower-right “Remark”. Desktop hover or click opens a
-small card; phones use a bottom sheet. It reserves the lower edge without covering
-tree controls, minimap or navigation. Drafts survive closing and browser reload.
+feed step) offers “Remark”: on wide screens quietly at the lower right, on phones
+as the first line of the page top's “More”, so the lower row keeps its four
+places. Click opens a small card; phones use a bottom sheet. Drafts survive closing and browser reload.
 An unnamed or incomplete name has a direct “Give a name” action (`name_person`).
 Card corrections, new relatives and question answers use the same sender and inbox.
+
+A remark, a card correction, a feed-step remark and an answer to an ask can carry
+pictures: a quiet paperclip beside the words opens the phone's camera or gallery,
+and a computer takes files or a drop. Thumbnails fill as each file leaves; a
+picture alone is a whole remark. Only a signed-in relative of a personal desk, or
+the host on loopback, sees the control; the shared login sends words only.
+`desk/attachments.py` is the one rule for both paths, and the hosted function
+carries it verbatim: a file is a JPEG, PNG, WebP, HEIC/HEIF, AVIF, TIFF or PDF by
+its first bytes, never by its name, which stays display text; at most 30 MB a
+file, 10 files and 100 MB a message, 40 files and 300 MB a sender a day. A refused
+file is marked and named in plain words. The other pictures can still arrive.
+
+The browser sends the words under a stable remark ID before reading or sending
+any pictures. The first stored text is acknowledged independently, including
+when a sender edits the text after losing the acknowledgement. Each picture is
+reserved and committed separately. The browser reuses the reservation and sends
+only missing parts when the person chooses the file again from that receipt.
+The rolling quota and reservation are updated together. A personal grant lasts
+up to 35 minutes and can be renewed for the same file within 24 hours.
+`PUT /api/feedback/file` takes immutable parts of up to 1 MiB. Loopback checks
+Host and Origin and stages parts under `.state`; hosted staging expires under
+`feedback-rate/`. Signing out clears the browser cookies even if the attempt to
+revoke the server-side grants fails. The signed session has a one-hour lifetime.
+
+The server checks length, type and SHA-256 before completing a picture. A file
+is identified by its digest within its sender's remark. A picture-only remark
+appears when the first original is accepted. Older inbox envelopes remain
+readable and the text and accepted bytes stay immutable.
+
+`desk fetch-feedback` brings the envelope and each completed original home
+independently. Failed reads of completed originals are reported by remark and
+file. New bytes are stored by digest under `originals/feedback/<id>/`, with
+stable local file numbers in `added.json`. Existing numbered originals stay
+at their original paths. Old upload declarations without completed originals
+are skipped when fetching a 0.53.1 envelope.
+`familiar family next` counts files waiting and `familiar intake attachment`
+lists them. `familiar intake attachment ID` takes them into the gallery with the
+remark's person, the first line or file name as caption, and the signed sender
+as provenance. The host can override these fields. A worker renders new pixels
+for family display, including the first page of a PDF. It receives the original
+without the host's environment or other open handles. It decodes inside a
+Windows AppContainer, Linux Landlock and seccomp, or macOS Seatbelt policy.
+The untouched original stays private. The `images` extra installs the decoders.
 
 Every message includes `page` (path, query and anchor), `screen`, stable `person`,
 `question`, `feed`, one-based `step`, actual `text_mode` (`kids` or `full`),

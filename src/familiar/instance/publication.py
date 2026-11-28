@@ -2,11 +2,13 @@
 # PURPOSE: Declare reader fields and seal distinct public and non-publishable host-private projections.
 # PRD_REF: docs/PRD.md#FORMS
 # INVARIANTS:
+# - draft frames and photographs with unnamed faces have no public reader path [review: engine lead]
 # - publication asset failures retain each unique URL across feeds [review: engine lead]
 # - both reader modes exclude protected documents and their record-linked card details [review: engine lead]
 # - photo treatments inherit original privacy [review: engine lead]
 # - living name parts inferred by researchers are omitted from canonical names; reported kin wording remains permissible kinship [review: engine lead]
-# - the person's `coverage` (where it was looked for) is declared for the host-private reader only and is dropped from every public projection [review: engine lead]
+# - the delivered public graph has only bundle-local references for protected people and closed sources [test: tests/gate/test_data_guarantees.py::test_life_decision_scope]
+# - the person's `coverage` (where it was looked for) and `amendments` (what was told beside what we propose) are declared for the host-private reader only and are dropped from every public projection [review: engine lead]
 # - undeclared nested fields have no publication path [test: tests/gate/test_data_guarantees.py::test_f5_undeclared_reader_fields_stay_private]
 # - declared strings remain literal NFC text; only restricted-list data shape is checked, not text style [review: engine lead]
 # - spouse union weights reach the reader unchanged [review: engine lead]
@@ -59,13 +61,15 @@ SCHEMAS['image'] = fields('caption alt title description source credit holder li
 SCHEMAS['restoration-comparison'] = fields('attempts chosen_attempt reduced_width_px blur_radius_px mean_absolute_error', 'scalar')
 SCHEMAS['restoration-recipe'] = fields('model date prompt original_sha256 sha256') | fields('original_asset', 'reference') | fields('version', 'scalar') | fields('invented', ['text']) | fields('crop', ['scalar']) | fields('comparison', 'restoration-comparison')
 SCHEMAS['restoration-version'] = fields('id', 'scalar') | fields('asset', 'reference') | fields('caption disclosure label') | fields('recipe', 'restoration-recipe')
-SCHEMAS['image'] |= fields('id primary', 'scalar') | fields('versions', ['restoration-version'])
+SCHEMAS['image'] |= fields('id primary unidentified_people', 'scalar') | fields('versions', ['restoration-version'])
 SCHEMAS['link'] = fields('label title text') | fields('url kind', 'scalar')
 SCHEMAS['place'] = fields('name note') | fields('url', 'scalar')
 SCHEMAS['variant'] = fields('title text more') | fields('version', 'scalar')
 SCHEMAS['kids'] = fields('title text')
 SCHEMAS['hardship'] = fields('kind description') | fields('people', ['reference'])
 SCHEMAS['flow'] = fields('after record figure', 'scalar')
+SCHEMAS['flow']['placeholder'] = Field('placeholder')
+SCHEMAS['placeholder'] = fields('kind', 'scalar') | fields('ratio', ['scalar']) | fields('says')
 SCHEMAS['node'] = fields('name year') | fields('id', 'reference')
 SCHEMAS['small-tree'] = fields('parents children', ['node']) | fields('highlight', ['reference'])
 SCHEMAS['clan-family'] = fields('head spouse', 'reference') | fields('kids', ['reference'])
@@ -81,9 +85,14 @@ SCHEMAS['choice'] = fields('text outcome icon gain')
 SCHEMAS['draw'] = fields('low high button stampLow stampHigh') | fields('from to cut', 'scalar')
 SCHEMAS['game-step'] = fields('q') | fields('choices', ['choice']) | fields('draw', 'draw')
 SCHEMAS['game-truth'] = fields('text') | fields('record', 'reference')
-SCHEMAS['game'] = fields('title intro kids reward') | fields('steps', ['game-step']) | fields('truth', 'game-truth')
+SCHEMAS['route-point'] = fields('x y', 'scalar') | fields('label')
+SCHEMAS['game-route'] = fields('asset', 'reference') | fields('points', ['route-point'])
+SCHEMAS['game'] = (fields('title intro kids reward') | fields('steps', ['game-step'])
+                   | fields('truth', 'game-truth') | fields('route', 'game-route'))
 SCHEMAS['image'] |= fields('spots', ['spot']) | fields('pano', 'pano')
 SCHEMAS['chapter']['game'] = Field('game')
+SCHEMAS['flow']['do'] = Field('activity')
+SCHEMAS['activity'] = fields('kind key', 'scalar') | fields('game', 'game') | fields('picture', 'image')
 SCHEMAS['world-person'] = fields('id person_id', 'reference') | fields('name kin') | fields('card_status', 'scalar')
 SCHEMAS['world-home'] = fields('id', 'reference') | fields('place') | fields('lat lon group', 'scalar')
 SCHEMAS['world-chapter'] = fields('feed id', 'reference')
@@ -102,17 +111,24 @@ SCHEMAS['surname-display'] = fields('clan', 'reference') | fields('form origin')
 SCHEMAS['person']['surnameDisplay'] = Field('surname-display')
 SCHEMAS['person'] |= fields('namePresentation', 'name-presentation') | fields('confirmation', 'confirmation') | fields('retiredFacts', ['retired-fact']) | fields('public_fact status') | fields('identityAliases', ['reference']) | fields('living_basis author imported_context', policy='never')
 SCHEMAS['birth-guess-anchor'] = fields('id', 'reference') | fields('year guessed age offset', 'scalar')
-SCHEMAS['birth-guess'] = fields('year exact relation', 'scalar') | fields('anchors', ['birth-guess-anchor'])
+SCHEMAS['birth-guess-told'] = fields('year kind latest before', 'scalar')
+SCHEMAS['birth-guess'] = fields('year exact relation', 'scalar') | fields('anchors', ['birth-guess-anchor']) | fields('told', 'birth-guess-told')
 SCHEMAS['person']['birthGuess'] = Field('birth-guess')
 SCHEMAS['probable-identity'] = fields('alias', 'reference') | fields('weight', 'scalar') | fields('name basis') | fields('sources', ['reference'])
 SCHEMAS['person']['probableIdentities'] = Field(['probable-identity'])
+SCHEMAS['possible-card'] = (fields('birth death summary') | fields('names', ['text']) | fields('facts', ['fact']) | fields('events', ['event'])
+                            | fields('papers', ['reference']) | fields('media', ['image']))
+SCHEMAS['probable-identity']['card'] = Field('possible-card', 'host-private')
 # Where the person was looked for: the host-private reader only, never a public field.
 SCHEMAS['coverage-source'] = fields('title') | fields('id', 'reference') | fields('outcome last strength identified recordRead surnameSearch placeSearch planComplete missingMore', 'scalar') | fields('forms missingForms', ['text'])
 SCHEMAS['coverage-never'] = fields('title') | fields('id', 'reference')
 SCHEMAS['coverage'] = fields('searched found identified recheck neverMore', 'scalar') | fields('sources', ['coverage-source']) | fields('never', ['coverage-never'])
 SCHEMAS['person']['coverage'] = Field('coverage', 'host-private')
+# What was told or read and what we propose instead: the family's own card, never a public field.
+SCHEMAS['amendment'] = fields('original value basis') | fields('id', 'reference') | fields('field origin state weight leading revision', 'scalar') | fields('sources', ['reference'])
+SCHEMAS['person']['amendments'] = Field(['amendment'], 'host-private')
 SCHEMAS['person'] |= fields('story storyMore') | fields('illustrations', ['image']) | fields('relationshipUncertain', 'scalar')
-SCHEMAS['image'] |= fields('sid sourceSid originalAsset', 'reference') | fields('photo', 'scalar') | fields('mentionRole basis')
+SCHEMAS['image'] |= fields('sid sourceSid originalAsset', 'reference') | fields('photo cardOnly', 'scalar') | fields('mentionRole basis') | fields('crop face', ['scalar'])
 SCHEMAS['name-presentation'] = fields('display full sourceName note patronymic maidenSurname byLanguage') | fields('isWoman isWife surnameUnknown maidenStatus', 'scalar') | fields('maidenSources', ['reference'])
 SCHEMAS['confirmation'] = fields('basis') | fields('level research identityAccepted', 'scalar') | fields('sources', ['reference'])
 SCHEMAS['retired-fact'] = SCHEMAS['fact'] | fields('retiredBecause')
@@ -127,6 +143,7 @@ SCHEMAS['card-review'] = fields('text') | fields('kind likelihood', 'scalar') | 
 SCHEMAS['card-status'] = fields('origin in_original_tree in_current_ancestry family_memory', 'scalar') | fields('badges', ['badge']) | fields('review', 'card-review') | fields('confirmed', ['fact']) | fields('documented_relationships candidate_relationships', ['edge'])
 SCHEMAS['graph'] = fields('people', ('map', 'person')) | fields('sources', ('map', 'source')) | fields('edges associations', ['edge']) | fields('families', ['family']) | fields('feeds', ['feed']) | fields('research', 'research') | fields('root narrator defaultViewer', 'reference') | fields('readerLabels', ('map', 'text')) | fields('identityAliases', ('map', 'reference')) | fields('cardStatuses', ('map', 'card-status'))
 SCHEMAS['graph']['worldMap'] = Field('world')
+SCHEMAS['graph']['presentationAliases'] = Field(('map', 'reference'), 'host-private')
 SCHEMAS['profile-family'] = fields('id', 'reference') | fields('source_language fictional', 'scalar') | fields('title') | fields('languages', ['reference'])
 SCHEMAS['profile'] = fields('schema_version', 'scalar') | fields('data', 'reference') | fields('family', 'profile-family') | fields('reader_names', ('map', 'name-row'))
 SCHEMAS['host-text'] = fields('text') | fields('people', ['reference'])
@@ -144,7 +161,7 @@ SCHEMAS['record'] = fields('interest', policy='never') | fields('id', 'reference
 # Storage-only forms have explicit never rules; diagnostics are not reader outputs.
 STORAGE_ONLY = {
     'archive-rights': 'schema_version kind holder declared_by declared_at effective_from permissions living_subject_consent',
-    'memory': 'id told_by date narrator items visibility', 'version': 'interest id title line people status unknown_weight versions tests updated summary advice',
+    'memory': 'id told_by date narrator items visibility blanks', 'version': 'interest id title line people status unknown_weight versions tests updated summary advice',
     'case': 'id question state waiting_on story_level basis narrative outcome waiting budget second_looks',
     'search': 'interest id at by source question query hits coverage meaning strict control saved result result_state provenance candidate_forms',
     'correspondence': 'id title subject recipient channel destination follow_up language text people question request sender state sent replies closed_at priority cost cost_note kind how relevance aim',
@@ -252,13 +269,14 @@ def restrict_graph(instance, graph, *, host_private=False):
     from familiar.tree.surnames import apply as surname_display
     surname_display(instance, graph, read_json(instance.path('tree_metadata'), {}))
     from .subjects import attribute_documents
-    attribute_documents(instance, graph)
-    graph = private_graph(instance, graph, host_private=host_private)
+    withheld = attribute_documents(instance, graph, family_display=host_private)
+    graph = private_graph(instance, graph, host_private=host_private, withheld=withheld, amendments=True)
     if host_private:
         return graph
     privacy = load(instance.path('privacy'), {})
     known = _known_people(instance)
     for pid, person in list(graph.get('people', {}).items()):
+        person.pop('probableIdentities', None)
         if life_status(known.get(pid, {'id': pid}), privacy) == 'dead':
             # The imported living flag is a source classification; a reader gets
             # the effective assessment, including the common age horizon.
@@ -292,11 +310,11 @@ def restrict_graph(instance, graph, *, host_private=False):
         if any(pid and life_status(known.get(pid, {'id': pid}), privacy) != 'dead' for pid in members):
             family['events'] = []
             family.pop('basis', None)
-    from .subjects import closure
+    from .subjects import closure, protected_record
     for sid, source in list(graph.get('sources', {}).items()):
         resolved = closure(instance, source, shape='source', people=known)
         if (any(life_status(known[pid], privacy) != 'dead' for pid in resolved.people) or
-                any(record.get('privacy') == 'living-possible' for record in resolved.records.values())):
+                any(map(protected_record, resolved.records.values()))):
             graph['sources'][sid] = {key: val for key, val in source.items() if key in {'id', 'kind'}}
     for collection in ('edges', 'associations'):
         for edge in graph.get(collection, []):
@@ -305,16 +323,60 @@ def restrict_graph(instance, graph, *, host_private=False):
                 for key in ('text', 'note', 'basis'):
                     edge.pop(key, None)
     if 'feeds' in graph:
-        graph['feeds'] = [restrict_feed(instance, feed) for feed in graph['feeds']]
+        from .narrative import restrict_feed as project_narrative
+        graph['feeds'] = [project_narrative(instance, feed) for feed in graph['feeds']]
     return graph
 
 
 def restrict_feed(instance, feed):
     from .narrative import restrict_feed as project_narrative
     from .subjects import attribute_documents
-    graph = {'feeds': [copy.deepcopy(feed)]}
-    attribute_documents(instance, graph)
-    return project_narrative(instance, private_graph(instance, graph, host_private=False)['feeds'][0])
+    from familiar.tree.builder import _build
+    from .edition import apply
+    graph = apply(instance, _build(instance))
+    graph['feeds'] = [copy.deepcopy(feed)]
+    withheld = attribute_documents(instance, graph)
+    return project_narrative(instance, private_graph(
+        instance, graph, host_private=False, withheld=withheld)['feeds'][0])
+
+
+def public_references(instance, value, *, graph=None):
+    """Replace storage ids after checks have bound the canonical references."""
+    from familiar.checks.engine import _known_people, life_status
+    from familiar.tree.life import _participants
+
+    known = _known_people(instance)
+    graph = graph or {}
+    sources = graph.get('sources', {})
+    aliases = graph.get('identityAliases', {})
+    reserved = known.keys() | sources.keys() | aliases.keys()
+    replacements = {}
+
+    def assign(ids, kind):
+        number = 0
+        for ident in ids:
+            if ident in replacements:
+                continue
+            number += 1
+            while (opaque := f'public-{kind}-{number}') in reserved:
+                number += 1
+            replacements[ident] = opaque
+
+    people = {row['id']: row for row in known.values() if life_status(row, {}) != 'dead'}
+    assign(sorted(people, key=lambda pid: ((confirmed_name(people[pid]) or '').casefold(), pid)), 'person')
+    absorbed = {row['id']: row for target in set(aliases.values()) if target in known
+                for row in _participants(known[target])}
+    assign((pid for pid in sorted(aliases) if life_status(absorbed.get(pid, {}), {}) != 'dead'), 'alias')
+    assign((sid for sid, source in sources.items() if source.keys() <= {'id', 'kind'}), 'source')
+
+    def rewrite(node):
+        if isinstance(node, dict):
+            return {replacements.get(k, k): rewrite(v) for k, v in node.items()}
+        if isinstance(node, list):
+            return [rewrite(v) for v in node]
+        return replacements.get(node, node) if isinstance(node, str) else node
+
+    return rewrite(value)
 
 
 def scan(instance, value, shape, *, host_private=False):
@@ -334,8 +396,12 @@ def scan(instance, value, shape, *, host_private=False):
         from .subjects import closure
         closure(instance, projected, shape=shape)
     if shape == 'graph' and not host_private:
+        projected.pop('presentationAliases', None)
+        from .subjects import protected_record
         for person in projected.get('people', {}).values():
-            person.pop('coverage', None)  # the host-private display field has no public path
+            person.pop('probableIdentities', None)
+            person.pop('coverage', None)  # the host-private display fields have no public path
+            person.pop('amendments', None)
         from familiar.checks.engine import _known_people, generated, life_status
 
         from .subjects import closure
@@ -350,7 +416,7 @@ def scan(instance, value, shape, *, host_private=False):
             if image.get('kind') == 'document-scan' and not image.get('record'):
                 raise ValueError('TRUST-10: tree document scan needs a canonical corpus record')
             if image_subjects.records and (any(life_status(known[pid], privacy) != 'dead' for pid in subjects) or
-                    any(record.get('privacy') in {'living', 'living-possible'} for record in image_subjects.records.values())):
+                    any(map(protected_record, image_subjects.records.values()))):
                 raise ValueError('TRUST-06: living person document cannot be shown as a tree image')
             if generated(image) and (image.get('role') in {'portrait', 'document'} or image.get('is_portrait') or
                     image.get('subject_living') or image.get('subject_child') or
@@ -380,34 +446,147 @@ def scan(instance, value, shape, *, host_private=False):
     return projected
 
 
-def private_graph(instance, graph, *, host_private=True):
-    """Exclude protected documents and addresses from every family display."""
-    from familiar.checks.engine import _known_people, life_status, load
+def quotation_filter(instance, records):
+    """Detect a telling literal span, including a cropped or translated reading."""
+    from familiar.checks.engine import load, record_path, strings
+    from familiar.reader.graph import card_memory
 
-    from .subjects import closure
+    def fragments(text, minimum):
+        # Count whole words. Part of a district or province name can otherwise
+        # turn an ordinary birthplace into a quotation from an unrelated sheet.
+        words = list(re.finditer(r"[^\W_]+(?:[-’'][^\W_]+)*", text))
+        for start, word in enumerate(words):
+            length = len(word.group())
+            end = start + 1
+            while end < len(words) and length < minimum:
+                length += len(words[end].group()) + 1
+                end += 1
+            if length >= minimum:
+                yield ' '.join(w.group().casefold() for w in words[start:end]), word.start(), words[end - 1].end()
+
+    # A citation can also accompany an ordinary name or a researcher's own
+    # argument. Only an explicitly quoted passage uses the shorter threshold.
+    withheld, cited = set(), {}
+    translations = card_memory(instance).values() if records else ()
+    for rid in records:
+        record = load(record_path(instance, rid), {})
+        lines = {line.strip() for text in strings([record.get('reading'), record.get('fields')])
+                 for line in text.splitlines() if line.strip()}
+        lines |= {texts[line] for texts in translations for line in lines if line in texts}
+        cited[rid] = {part for line in lines for part, _, _ in fragments(line, 16)}
+        withheld.update(part for line in lines for part, _, _ in fragments(line, 40))
+
+    def redact(text, sources=()):
+        matches = []
+        if withheld and len(text) >= 40:
+            matches.extend((a, b) for part, a, b in fragments(text, 40) if part in withheld)
+        selected = [cited[sid] for sid in sources if sid in cited]
+        if selected:
+            for quote in re.finditer(r'«([^»]+)»|“([^”]+)”|„([^”]+)”|"([^"]+)"', text):
+                start = quote.start(quote.lastindex)
+                matches.extend((start + a, start + b) for part, a, b in fragments(quote[quote.lastindex], 16)
+                               if any(part in terms for terms in selected))
+        pieces, stop = [], 0
+        for start, end in sorted(matches):
+            if not pieces or start > stop + 1:
+                pieces.extend((text[stop:start], '…'))
+            stop = max(end, stop)
+        return ''.join([*pieces, text[stop:]]) if pieces else text
+    return redact
+
+
+def private_graph(instance, graph, *, host_private=True, withheld=(), amendments=False):
+    """Exclude protected documents and addresses from every family display."""
+    from familiar.checks.engine import _known_people, life_status, load, record_path, strings
+
+    from .restorations import period_pair
+    from .subjects import closure, fileless_memory, historical_records, protected_record
     known = _known_people(instance, family_display=host_private)
     privacy = load(instance.path('privacy'), {})
     addresses = set()
 
+    def dead(pid):
+        return life_status(known.get(pid, {'id': pid}), privacy) == 'dead'
+
     if host_private:
         for pid, person in graph.get('people', {}).items():
-            if life_status(known.get(pid, {'id': pid}), privacy) == 'dead':
-                person['living'] = False
+            status = life_status(known.get(pid, {'id': pid}), privacy)
+            if status == 'unknown':
+                person.pop('living', None)
+            else:
+                person['living'] = status == 'living'
+    for person in graph.get('people', {}).values():
+        person.pop('amendments', None)
 
-    def unsafe_document(node, shape):
-        if node.get('_document_private'):
+    def blocked_id(ref):
+        return ('source', ref) in withheld or ('record', ref) in withheld
+
+    literal_readings = {}
+
+    def unsafe_document(node, shape, *, chapter=False):
+        if node.get('_document_private') or (not node.get('excerpt') and ('record', node.get('record')) in withheld):
             return True
         resolved = closure(instance, node, shape=shape, people=known)
-        return (not resolved.people or any(life_status(known[p], privacy) != 'dead' for p in resolved.people)
-                or any(r.get('privacy') in {'living', 'living-possible'} for r in resolved.records.values()))
+        attributed = (resolved.people or shape == 'image' and period_pair(node)
+                      or host_private and chapter and historical_records(resolved))
+        unsafe = (not attributed or any(life_status(known[p], privacy) != 'dead' for p in resolved.people)
+                  or any(map(protected_record, resolved.records.values())))
+        if not unsafe and shape == 'document' and node.get('excerpt'):
+            # Closure checked these exact literal fields and their own people.
+            # Only their read strings are independent of the withheld full sheet.
+            fields = resolved.records[node['record']]['fields']
+            for part in [node, *node.get('parts', []), *node.get('snippets', [])]:
+                if part.get('field') in fields and part.get('read') == fields[part['field']]:
+                    literal_readings[id(part)] = part['read']
+        return unsafe
 
-    def walk(node, key=''):
+    sources = graph.get('sources', {})
+    dropped_sources = {sid for sid, source in sources.items()
+                       if blocked_id(sid) or not (host_private and fileless_memory(source) and not source.get('_document_attributed'))
+                       and unsafe_document(source, 'source')}
+    blocked_papers = {sid for sid in dropped_sources if (
+        sources[sid].get('record') or sources[sid].get('asset') or sources[sid].get('kind') in
+        {'document', 'document-scan', 'archive-record', 'home-paper', 'index-entry'})}
+    paper_ids = {sid: sources[sid].get('record') or sid for sid in dropped_sources}
+    blocked_assets = {ref for kind, ref in withheld if kind == 'asset'}
+    if not host_private:
+        from .gallery import photographs
+        blocked_assets.update('/' + name for name, photo in photographs(instance).items()
+                              if photo.get('unnamed_faces') or photo.get('show') == 'private')
+    # Literal copies carried to a different narrative field have the same
+    # protection as a typed citation. Short common field values are handled
+    # through the citation, where their meaning is known.
+    records = {ref for kind, ref in withheld if kind == 'record'}
+    quotes_record = quotation_filter(instance, records)
+    inline_assets = re.compile(r'''(?:src=["']|href=["']|\]\()(/[^"'\s)<>]+)''')
+
+    def safe_text(text, cited=()):
+        if text in blocked_assets:
+            return ''
+        if blocked_assets:
+            text = inline_assets.sub(lambda match: match[0].replace(match[1], '#') if match[1] in blocked_assets else match[0], text)
+        return quotes_record(text, cited)
+
+    def cites_withheld(node):
+        return any(('record', s) in withheld or s in blocked_papers
+                   for s in [*(node.get('sources') or []), *(node.get('provenance') or [])])
+
+    def walk(node, key='', cited=()):
         if isinstance(node, list):
-            return [walk(v, key) for v in node if not isinstance(v, dict) or not excluded(v, key)]
+            return [walk(v, key, cited) for v in node if not isinstance(v, dict) or not excluded(v, key)]
         if isinstance(node, dict):
-            return {k: walk(v, k) for k, v in node.items() if k.casefold() not in {'address', 'addr', 'адрес'}
+            withhold_basis = key in {'facts', 'retiredFacts', 'events', 'names'} and cites_withheld(node)
+            if withhold_basis:
+                cited = [paper_ids.get(sid, sid) for sid in
+                         [*(node.get('sources') or []), *(node.get('provenance') or [])] if blocked_id(sid) or sid in blocked_papers]
+            return {k: literal_readings[id(node)] if k == 'read' and id(node) in literal_readings else walk(v, k, cited)
+                    for k, v in node.items() if k.casefold() not in {'address', 'addr', 'адрес'}
+                    and not (key == 'flow' and k == 'placeholder' and not host_private)
+                    and not (withhold_basis and k in {'basis', 'source_text', 'note', 'cause'})
                     and not (isinstance(v, dict) and excluded(v, k))}
-        return node
+        if isinstance(node, str) and key in {'id', 'record', 'sources', 'provenance', 'sid', 'sourceSid'} and node in sources:
+            return node
+        return safe_text(node, cited) if isinstance(node, str) else node
 
     # Where a dead person lived is family history, not an address: the locality stays.
     # Explicit address events, and every residence of a living or unknown person, remain excluded.
@@ -418,6 +597,11 @@ def private_graph(instance, graph, *, host_private=True):
                   and not {e.get('type'), e.get('tag')} & {'address', 'ADDR'}}
 
     def excluded(node, key):
+        if key == 'truth' and ('asset', node.get('record')) in withheld:
+            return True
+        if any(node.get(k) in blocked_assets for k in ('asset', 'full', 'originalAsset', 'url')
+               if isinstance(node.get(k), str)):
+            return True
         if event_kind(node) == 'address':
             if id(node) in localities:
                 return False
@@ -433,21 +617,45 @@ def private_graph(instance, graph, *, host_private=True):
             resolved = closure(instance, node, shape='image', people=known)
             if any(life_status(known[p], privacy) != 'dead' for p in resolved.people):
                 return True
-        if key == 'facts' and node.get('record'):
+        if key == 'notes' and cites_withheld(node):
+            return True
+        if key in {'facts', 'retiredFacts'} and node.get('record'):
             return unsafe_document(node, 'fact')
         if key == 'records' or node.get('kind') == 'document-scan' or (key in {'media', 'illustrations', 'figures', 'picture'} and (node.get('record') or node.get('photo') is False)):
-            return unsafe_document(node, 'document' if key == 'records' else 'image')
+            return unsafe_document(node, 'document' if key == 'records' else 'image', chapter=key in {'records', 'figures', 'picture'})
         return False
 
     for feed in graph.get('feeds', []) if host_private else []:
         from .narrative import restrict_feed
         feed.update(restrict_feed(instance, feed, host_private=True))
-    for sid, source in list(graph.get('sources', {}).items()):
-        if unsafe_document(source, 'source'):
-            graph['sources'][sid] = {k: v for k, v in source.items() if k in {'id', 'kind'}}
+    if amendments and instance.path('amendments').is_dir():
+        from familiar.tree.amendments import apply
+        from .memory_visibility import require_displayable, select
+        memory = select(instance)
+        tellings = {row['id'] for _, telling in memory[0] for row in [telling, *telling.get('items', [])]}
+
+        def safe_source(sid):
+            if blocked_id(sid) or sid in memory[1]:
+                return False
+            if record_path(instance, sid).is_file():
+                return not unsafe_document({'record': sid}, 'source')
+            return sid in tellings or sid in graph['sources'] and sid not in dropped_sources
+
+        def visible(row):
+            if not dead(row['person']) or not all(safe_source(s) for s in (row['original']['source'], *row.get('sources', []))):
+                return False
+            try:
+                require_displayable(instance, row, selection=memory)
+            except ValueError:
+                return False
+            return all(safe_text(s) == s for s in strings([row['original']['text'], row['basis'], row['value']]))
+
+        apply(instance, graph, visible=visible, shown=host_private)
+    for sid in dropped_sources:
+        graph['sources'][sid] = {k: v for k, v in graph['sources'][sid].items() if k in {'id', 'kind'}}
     graph = walk(graph)
-    from familiar.reader.experiences import protect_game_documents
-    protect_game_documents(graph)
+    from familiar.reader.experiences import protect_game_media
+    protect_game_media(graph)
 
     def redact(node):
         if isinstance(node, dict):
@@ -470,10 +678,10 @@ def media_omissions(instance, feeds):
     graph = _build(instance)
     graph['feeds'] = copy.deepcopy(feeds)
     play(instance, graph)
-    attribute_documents(instance, graph)
+    withheld = attribute_documents(instance, graph)
     known, privacy = _known_people(instance), load(instance.path('privacy'), {})
     rows = []
-    shown = private_graph(instance, copy.deepcopy(graph))
+    shown = private_graph(instance, copy.deepcopy(graph), withheld=withheld)
     for feed, visible_feed in zip(graph['feeds'], shown['feeds']):
         def chapter_media(chapter, visible, cid):
             for field in ('records', 'picture', 'figures'):

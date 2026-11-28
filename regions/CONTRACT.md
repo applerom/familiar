@@ -31,8 +31,7 @@ build time; changing them requires the ordinary shell rebuild, not a network
 fetch. They contain no family examples. This is bundled-shell vocabulary;
 runtime replacement from a family's custom pack is not implemented.
 
-The JSON object contains `title`, `intro`, `example`, `noExample`,
-`chooseViewer`, `archaic`, `maybe`, `path`, `groups`, `terms`, `labels`,
+The JSON object contains `title`, `intro`, `all`, `archaic`, `maybe`, `path`, `groups`, `terms`, `labels`,
 `fallback` and `genitive`. A term has a unique stable `id`, `word`, short
 `explanation`, group key, optional `archaic: true` and a `match` array of
 semantic descriptors. All fields of a descriptor must match; alternatives are

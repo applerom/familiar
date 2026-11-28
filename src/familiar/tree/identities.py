@@ -7,8 +7,10 @@
 # - final edges have existing endpoints and resolved evidence [review: engine lead]
 # - merged links retain their evidence and existing conflict [review: engine lead]
 # - materialized aliases point only to active canonical people [review: engine lead]
-# - a probable identity (from 0.3, or on the main line) hides the found card without merging facts; its parents hang on a junction with the version weight [review: engine lead]
-# - a probable identity's card dates its birth by a document, never by an estimate, whichever card holds it [review: engine lead]
+# - a probable identity keeps independent people and adds only hypothetical parent links [review: engine lead]
+# - an identity accepted by evidence below 0.9 caps only the links a line crosses between the two cards; links within one card and the family's own confirmation stay whole [review: engine lead]
+# - only accepted identities enter the alias index or transfer attributed facts [test: tests/gate/test_data_guarantees.py::test_only_recorded_events_open_a_card]
+# - withdrawing a marked snapshot card requires a reason and leaves a reversible source [review: engine lead]
 # CHANGES_WITH:
 # - docs/PRD.md#INSTANCE
 # :END_MODULE_CONTRACT
@@ -17,26 +19,50 @@
 import copy
 import re
 
-from familiar.tree.birth_guess import birth_date
-
 # When two edges collapse into one, the stronger claim survives; a conflict is never overwritten.
 EDGE_RANK = {"hypothesis": 1, "export": 2, "verified": 3, "conflict": 4}
+FIRM_IDENTITY = 0.9
+DRAWN_LINK = 0.30
 # A document's own spelling of a name: shown in the card's "More" with its source, never on a tile.
 DOCUMENT_NAME_TYPES = {"recorded", "as-written", "indexed"}
-
-# An estimate, a range or a bound is not a document's date: a dated record of the other card is stronger.
-_ROUGH = re.compile(r"^(ABT|EST|CAL|BEF|AFT|FROM|BET|about|circa|ca\.|около|примерно|до|после|ok\.|około)\b|^[~≈<>]|\?", re.I)
-_YEAR = re.compile(r"\b(1\d{3}|20\d{2})\b")
+DELETION_MARK = re.compile(r"[\s\-–—]*(?:удалить|delete|usunąć)[\s.!]*", re.IGNORECASE)
 
 
-def _birth(person):
-    """The card's birth date and whether a document gives it as such (not an estimate, a range or an age)."""
-    date = str(birth_date(person) or "").strip()
-    event = next((e for e in person.get("events", []) if str(e.get("date", "")).strip() == date), {})
-    if not _YEAR.search(date):
-        return "", False
-    return date, not (_ROUGH.search(date) or event.get("approximate"))
+def marked_for_deletion(person):
+    return bool(DELETION_MARK.fullmatch(person.get("name") or ""))
 
+
+def _withdraw_snapshot_cards(data, decisions):
+    """Remove only a marked import card whose links are covered by the decision."""
+    people = data["people"]
+    withdrawn = set()
+    for item in decisions:
+        pid, sources = item["person"], set(item.get("sources", []))
+        person = people.get(pid, {})
+        if (pid not in data.get("_snapshotPeople", ()) or not marked_for_deletion(person)
+                or not item.get("reason") or not sources or not sources <= data["sources"].keys()
+                or pid == data.get("root") or pid in data["identityAliases"].values()
+                or any(pid in (pair["a"], pair["b"]) for pair in data["distinct"])):
+            raise ValueError(f"Cannot withdraw snapshot card {pid}: review the deletion mark, references and sources")
+        links = [e for e in data["edges"] if pid in (e["child"], e["parent"])]
+        if (person.get("facts") or person.get("events") or person.get("notes") or person.get("probableIdentities")
+                or any(e.get("status") != "export" or not set(e.get("sources", [])) <= sources for e in links)
+                or any(pid in (a.get("from"), a.get("to")) for a in data.get("associations", []))):
+            raise ValueError(f"Cannot withdraw snapshot card {pid}: review its evidence first")
+        withdrawn.add(pid)
+    if not withdrawn:
+        return
+    data["_withdrawnSnapshotCards"] = sorted(withdrawn)
+    data["edges"] = [e for e in data["edges"] if not withdrawn.intersection((e["child"], e["parent"]))]
+    for family in data.get("families", []):
+        for key in ("husband", "wife"):
+            if family.get(key) in withdrawn:
+                family.pop(key)
+        family["children"] = [pid for pid in family["children"] if pid not in withdrawn]
+    for pid in withdrawn:
+        del people[pid]
+        data.get("cardStatuses", {}).pop(pid, None)
+        data.get("gallerySelection", {}).pop(pid, None)
 
 # RES-19: a disputed merge stays the leading version and must say what story may lie behind the conflict
 # and what would test it, so a later pass can pick it up. A wrong merge is withdrawn, not reviewed.
@@ -137,12 +163,8 @@ def correct_family_edges(edges, families, corrections, aliases=None, labels=None
         ]
 
 
-def _probable_identity(data, decision, aliases):
-    """A probable identity (from 0.3, or below it on the family's main line): the found person's card leaves the tree and the found parents hang above
-    the family's person on a junction carrying the version's weight. Facts are not merged; the found card stays
-    in its contribution and is named in `probableIdentities`. Below 0.3 the two cards stay apart unless the decision
-    is on the family's `main_line`. From 0.5 it may stay probable: the researcher keeps the facts apart. Returns True
-    when the alias was applied."""
+def _probable_identity(data, decision):
+    """A junction can suggest kinship, while both people retain their own evidence."""
     target, alias = decision["canonical"], decision["alias"]
     weight = decision.get("weight")
     if not isinstance(weight, (int, float)) or not decision.get("basis") or not decision.get("sources"):
@@ -150,40 +172,66 @@ def _probable_identity(data, decision, aliases):
     if any(s not in data["sources"] for s in decision["sources"]):
         raise ValueError("Unresolved identity source")
     main = decision.get("main_line") is True
-    if weight < 0.3 and not main:
-        return False
-    people, edges = data["people"], data.get("edges", [])
-    other = people[target]
-    has = {e["child"] for e in edges if e["parent"] == target}
-    kept = []
-    for e in edges:
-        if e["child"] == alias:
-            # The junction: the found parents become this person's parents with the weight of the version.
-            e.update(status="hypothesis", weight=weight, identity=alias, **({"main_line": True} if main else {}),
-                     sources=list(dict.fromkeys(e.get("sources", []) + decision["sources"])))
-        elif e["parent"] == alias:
-            if e["child"] in has:
-                continue
-            w = e.get("weight")
-            e["weight"] = min(w, weight) if isinstance(w, (int, float)) else weight
-            e["status"] = "hypothesis"
-        kept.append(e)
-    edges[:] = kept
-    found = people.pop(alias)
-    # The tile dates the person by the document: a recorded birth beats an empty or estimated one of the family's
-    # card, so the child stands in the row by the year the record gives. The found card's other facts stay apart.
-    (dated, exact), (own, own_exact) = _birth(found), _birth(other)
-    if dated and not own_exact and (exact or not own):
-        event = {"type": "birth", "date": dated if exact or _ROUGH.search(dated) else "ABT " + dated,
-                 "identity": alias, "sources": list(decision["sources"])}
-        other["events"] = [event] + [e for e in other.get("events", [])]
-        if "birth" in (other.get("cardPresentation") or {}):
-            other["cardPresentation"].update(birth=event["date"], birthKind="source" if exact else "inferred")
-    other.setdefault("probableIdentities", []).append(
-        {"alias": alias, "weight": weight, "basis": decision["basis"], "name": found.get("name", ""),
+    if weight < DRAWN_LINK and not main:
+        return
+    people, edges = data["people"], data["edges"]
+    people[target].setdefault("probableIdentities", []).append(
+        {"alias": alias, "weight": weight, "basis": decision["basis"], "name": people[alias].get("name", ""),
          "sources": list(decision["sources"])})
-    aliases[alias] = target
-    return True
+    existing = {(edge["child"], edge["parent"]) for edge in edges}
+    junction = []
+    for edge in edges:
+        if edge.get("identity") or edge.get("status") in {"rejected", "disproved", "conflict"}:
+            continue
+        child, parent = edge["child"], edge["parent"]
+        if alias not in (child, parent):
+            continue
+        child, parent = (target if pid == alias else pid for pid in (child, parent))
+        if child == parent or (child, parent) in existing:
+            continue
+        link = {**edge, "child": child, "parent": parent, "status": "hypothesis", "identity": alias}
+        if "from" in link:
+            link["from"] = parent
+        if "to" in link:
+            link["to"] = child
+        own_weight = edge.get("weight")
+        link["weight"] = min(own_weight, weight) if isinstance(own_weight, (int, float)) else weight
+        if main:
+            link["main_line"] = True
+        link["sources"] = list(dict.fromkeys(edge.get("sources", []) + decision["sources"]))
+        junction.append(link)
+        existing.add((child, parent))
+    edges.extend(junction)
+
+
+def _carry_weight(data, decision, own, alias):
+    """An identity accepted at 0.6 ties what one card knows above the person to what the other knows below: exactly
+    the links a line crosses there weigh no more than the merge. Links within one card never depended on it, and a
+    firm identity (from 0.9) is one person: a long line does not fade by its merges."""
+    weight = decision.get("weight")
+    if type(weight) not in (int, float) or not 0 <= weight < FIRM_IDENTITY:
+        return
+    edges = [e for e in data.get("edges", []) if e.get("status") not in ("conflict", "rejected", "disproved")]
+    sides = (own, {alias})
+    up = [[e for e in edges if e.get("child") in side] for side in sides]
+    down = [[e for e in edges if e.get("parent") in side]
+            + [f for f in data.get("families", []) if f.get("children")
+               and f.get("status") not in ("conflict", "rejected", "disproved")
+               and {f.get("husband"), f.get("wife")} & side] for side in sides]
+    if bool(up[0]) == bool(up[1]):
+        return  # parents on both cards or on none: nothing hangs on the merge alone
+    above = 0 if up[0] else 1
+    other = 1 - above
+    # A recorded wedding on the other card identifies the groom or bride
+    # through this junction. It does not provide children on that side.
+    married = any(f.get("husband") and f.get("wife") and f.get("status") in {"verified", "export"}
+                  and {f["husband"], f["wife"]} & sides[other] for f in data.get("families", []))
+    if not (down[other] or married):
+        return
+    # The parents hang on the junction; when their own card also knows children, only the other card's children do.
+    for row in down[other] if down[above] and down[other] else up[above]:
+        if type(row.get("weight")) not in (int, float) or row["weight"] > weight:
+            row["weight"] = row["mergeWeight"] = weight
 
 
 def _apply_identities(data, decisions, labels=None):
@@ -192,7 +240,7 @@ def _apply_identities(data, decisions, labels=None):
     if any(alias in data['people'] or target not in data['people'] for alias, target in aliases.items()):
         raise ValueError('Imported identity aliases must target an active canonical person')
     people = data["people"]
-    probable = set()
+    probable = []
     for decision in decisions.get("merges", []):
         target, alias = decision["canonical"], decision["alias"]
         if target == alias or target not in people or alias not in people:
@@ -200,8 +248,7 @@ def _apply_identities(data, decisions, labels=None):
         if target in aliases or alias in aliases:
             raise ValueError("Chained identity decisions require an explicit review")
         if decision.get("status") == "probable":
-            if _probable_identity(data, decision, aliases):
-                probable.add(alias)
+            probable.append(decision)
             continue
         # Two ways to accept an identity (author, 28.10.2026): family confirmation where the family has its
         # own knowledge (roughly the XX century after ~1926), or the research decision by the weight of the
@@ -218,6 +265,8 @@ def _apply_identities(data, decisions, labels=None):
         if any(s not in data["sources"] for s in decision["sources"]):
             raise ValueError("Unresolved identity source")
         check_review(decision)
+        if status == "accepted_evidence":
+            _carry_weight(data, decision, {target, *(a for a, t in aliases.items() if t == target)}, alias)
         p, other = people[target], people[alias]
         for field in ('name', 'summary', 'birth'):
             if not isinstance(decision.get(field), str) or not decision[field]:
@@ -318,6 +367,16 @@ def _apply_identities(data, decisions, labels=None):
             prior["sources"] = list(dict.fromkeys(prior.get("sources", []) + e.get("sources", [])))
             if EDGE_RANK.get(e.get("status"), 0) > EDGE_RANK.get(prior.get("status"), 9):
                 prior["status"] = e["status"]
+            # One link both cards know: a merge caps only what it brought, so the claim without it keeps its weight.
+            for capped, whole in ((prior, e), (e, prior)):
+                if "mergeWeight" in capped and "mergeWeight" not in whole:
+                    own = whole.get("weight")
+                    if own is None:
+                        prior.pop("weight", None)
+                    else:
+                        prior["weight"] = max(own, capped["weight"])
+                    prior.pop("mergeWeight", None)
+                    break
     data["edges"] = list(unique.values())
     for a in data.get("associations", []):
         for key in ("from", "to"):
@@ -348,8 +407,6 @@ def _apply_identities(data, decisions, labels=None):
     data["familyCorrections"] = corrections
     selection = data.get("gallerySelection", {})
     for alias, target in aliases.items():
-        if alias in probable:
-            continue
         for item in selection.pop(alias, []):
             if item not in selection.setdefault(target, []):
                 selection[target].append(item)
@@ -415,6 +472,12 @@ def _apply_identities(data, decisions, labels=None):
         resolved_distinct.append({**item, "a": a, "b": b})
     data["distinct"] = resolved_distinct
     data["identityAliases"] = aliases
+    for decision in probable:
+        target, alias = resolve(decision["canonical"]), resolve(decision["alias"])
+        if target != alias:
+            _probable_identity(data, {**decision, "canonical": target, "alias": alias})
+    _withdraw_snapshot_cards(data, decisions.get("withdraw_snapshot_cards", []))
+    data.pop("_snapshotPeople", None)
     validate_graph(data)
     return data
 

@@ -40,7 +40,7 @@ h1,h2{font-family:var(--font-story);font-weight:400;line-height:1.25}
 .person-row:hover{background:#ecf0e6}
 .person-row strong{display:block;line-height:1.25}
 .person-row small{display:block;color:var(--muted);font-size:12px;line-height:1.3}
-.av{flex:none;display:grid;place-items:center;border-radius:50%;background:var(--b,#9fb39a);color:#fff;font:700 14px/1 Manrope;width:38px;height:38px}
+.av{flex:none;display:grid;place-items:center;border-radius:50%;background:var(--b,#5b7562);color:#fff;font:700 19px/1 Manrope;width:38px;height:38px}
 
 /* tree stage */
 .tree-body{flex:1;min-height:0;display:flex;overflow:hidden}
@@ -63,6 +63,7 @@ h1,h2{font-family:var(--font-story);font-weight:400;line-height:1.25}
 .history-fog.cut{height:62px;background:linear-gradient(#eee5d7f2 10%,#eee5d7a0 55%,transparent)}
 .tile-position{position:absolute;left:0;top:0;transition:transform .5s cubic-bezier(.2,.75,.2,1),width .5s,height .5s;animation:fade .45s}
 .resizing .tile-position{transition:none;animation:none}
+.tree-knot{position:absolute;left:50%;top:50%;width:8px;height:8px;translate:-50% -50%;border:1px solid #899b85;border-radius:50%;background:var(--tree-paper);pointer-events:none}
 /* A generation nobody has found yet: a band of haze with the line running through it as dots. */
 .tile-gap{pointer-events:none;opacity:var(--depth-opacity,1)}
 .tree-gap{position:absolute;inset:-4px -12px;border-radius:50%;background:radial-gradient(ellipse 50% 50% at center,#e6dccbf2 22%,#e9e0d0a8 58%,transparent 100%)}
@@ -73,6 +74,14 @@ h1,h2{font-family:var(--font-story);font-weight:400;line-height:1.25}
 .tree-tile.weak:hover,.tree-tile.weak:focus-visible{opacity:.8}
 .tile-gap.weak .tree-gap{inset:-10px -22px;background:radial-gradient(ellipse 50% 50% at center,#e2d7c4f7 30%,#e6dccbc0 62%,transparent 100%)}
 .tile-gap.weak .tree-gap::after{opacity:.4}
+/* The missing generation right below the couple: one more child in their row, unnamed. A card's outline in haze,
+   its colour stripe faded, the dotted line running through it; a tap goes on along the line. */
+.tile-place .tree-gap{inset:-6px -10px;padding:0;border:0;border-radius:45%;cursor:pointer;pointer-events:auto;
+  background:radial-gradient(ellipse 52% 56% at center,#e2d6c2f0 30%,#e6dccbb8 62%,#e9e0d04d 84%,transparent 100%)}
+.tile-place .tree-gap::after{top:6px;bottom:6px}
+.tile-place .tree-gap:hover,.tile-place .tree-gap:focus-visible{filter:brightness(.97) saturate(1.3)}
+.tile-place.weak .tree-gap{inset:-10px -16px}
+.tile-place .gap-hint{left:50%;top:auto;bottom:7px;translate:-50% 0;font-size:11.5px}
 /* Who may stand in that generation: a pale name beside the haze, never a card. */
 .gap-hint{position:absolute;left:calc(50% + 7px);top:50%;translate:0 -50%;pointer-events:auto;margin:0;padding:0 2px;border:0;background:none;font-family:inherit;font-style:italic;font-weight:500;font-size:calc(11.5px * var(--s,1));line-height:1.1;white-space:nowrap;color:color-mix(in srgb,var(--b,#7d8a78) 55%,#6f6a60);opacity:.8;cursor:pointer;text-shadow:0 0 3px var(--tree-paper,#fbf8f1),0 0 3px var(--tree-paper,#fbf8f1)}
 .gap-hint:hover,.gap-hint:focus-visible{opacity:1;text-decoration:underline}
@@ -104,7 +113,7 @@ button.tree-tile:hover,button.tree-tile:focus-visible,.tree-tile[aria-current="t
 .tile-provenance i{font-style:normal}.tile-provenance .growth-confirm{color:var(--green)}.tile-provenance .doc-open{opacity:.55}
 .stack-back{position:absolute;inset:0;border:1px solid var(--tree-border);background:#fffdf8;border-radius:8px;pointer-events:none;opacity:var(--depth-opacity,1)}
 .maiden{color:var(--muted);font-weight:400}
-.av.line-kin{color:#233a31}
+.av.line-kin{color:#0c1a14}
 .controls{position:absolute;right:14px;bottom:12px;display:flex;flex-direction:row;align-items:center;gap:7px;z-index:6}
 .controls button{width:46px;height:46px;border-radius:50%;background:#fff;border:1px solid #d9ddcf;box-shadow:0 2px 10px #28463420;font-size:22px;line-height:1;color:var(--ink);display:grid;place-items:center}
 .controls .lvl{display:flex;align-items:baseline;gap:2px;height:38px;padding:0 3px;color:var(--ink);font:600 16px/38px var(--font-ui);text-shadow:0 0 6px var(--tree-paper),0 0 6px var(--tree-paper)}
@@ -322,16 +331,6 @@ blockquote small{color:var(--muted)}blockquote p{margin:4px 0 0}
 .card-summary{margin:12px 0 0;font:400 16px/1.55 var(--font-story);color:var(--ink)}
 .kin-viewer{margin-top:18px}
 .coverage summary span.cov-line{display:block;margin-top:2px;font:500 13px var(--font-ui);letter-spacing:0;text-transform:none;color:var(--ink)}
-.cov-list{list-style:none;margin:6px 0 4px;padding:0}
-.cov-list li{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:2px 8px;align-items:start;padding:8px 0;border-top:1px solid #eceae0}
-.cov-list b{display:block;font-weight:600;overflow-wrap:anywhere}
-.cov-mark{font-weight:700;text-align:center;color:var(--muted)}
-.cov-found .cov-mark{color:var(--green)}.cov-zero-uncontrolled .cov-mark{color:var(--amber)}.cov-gap .cov-mark{color:#a3452f}
-.cov-what small,.cov-when small{display:block;font-size:11.5px;line-height:1.35;color:var(--muted);overflow-wrap:anywhere}
-.cov-when{display:flex;flex-direction:column;align-items:flex-end;gap:3px;white-space:nowrap}
-.cov-dots{display:inline-flex;gap:3px;font-style:normal}
-.cov-dots u{display:block;width:7px;height:7px;border-radius:50%;border:1px solid #b8b5a6;background:transparent;text-decoration:none}.cov-dots u.on{background:var(--green);border-color:var(--green)}
-.cov-never{margin:6px 0 4px;font-size:12.5px;line-height:1.5}
 .story-simple p{overflow-wrap:anywhere}
 
 /* stories page */
@@ -351,7 +350,7 @@ blockquote small{color:var(--muted)}blockquote p{margin:4px 0 0}
 .story-card:hover{box-shadow:0 8px 24px #2846341f;transform:translateY(-2px)}
 .story-card img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;background:#eef0e6}
 .story-card.pic-record img{object-fit:cover;object-position:left top;background:#fbf7ea}
-.story-card strong .av{display:inline-grid;width:30px;height:30px;font-size:13px;margin:0 9px 0 0;vertical-align:middle}
+.story-card strong .av{display:inline-grid;width:34px;height:34px;border:2px solid var(--rule);background:var(--paper-deep);color:var(--ink);font-size:15px;margin:0 9px 0 0;vertical-align:middle}
 .story-card .story-text{display:flex;flex-direction:column;gap:4px;padding:12px 16px 14px;line-height:1.35}
 .story-card strong{font-size:16px;display:flex;align-items:center}
 .story-card .story-text>small{font-size:12px;color:var(--muted)}
@@ -459,7 +458,7 @@ html:has(.feed-viewer),html:has(.feed-viewer) body{overflow:hidden}
 /* feed v3: inline records and figures, fact chips, family diagram */
 .feed-record{margin:16px 0 4px;padding:10px 10px 8px;border-radius:14px;background:#fbf7ea;color:#2b2a22}
 .feed-record img{display:block;width:100%;height:auto;border-radius:8px;border:1px solid #e0d9c4}
-.feed-record figcaption{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin-top:8px;font-size:13px;line-height:1.35}
+.feed-record figcaption{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin-top:8px;font-size:13px;line-height:1.35;overflow-wrap:anywhere}
 .feed-record figcaption small{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#7a7462;font-weight:700;width:100%}
 .feed-record figcaption b{font-weight:600}
 .feed-record figcaption em{font-style:normal;color:#6b6555;font-size:12px}
@@ -467,6 +466,10 @@ html:has(.feed-viewer),html:has(.feed-viewer) body{overflow:hidden}
 .feed-index{border:1px dashed #c9b36a}
 .feed-index .feed-read{margin-top:0}
 .feed-figure{margin:16px 0 4px}
+.feed-placeholder{display:grid;place-items:center;margin:16px 0 22px;border-radius:12px;
+ background:#e4e3df;color:#343632;text-align:center;padding:18px;box-sizing:border-box}
+.feed-placeholder figcaption{max-width:min(100%,32ch);min-width:0;overflow-wrap:anywhere;font:500 16px/1.4 var(--font-ui,sans-serif)}
+.feed-placeholder small{display:block;margin-top:6px;color:#555851;font-size:13px}
 .feed-figure img{display:block;width:100%;height:auto;border-radius:12px}
 /* a small object (an order, a cross, a badge): shown at its natural, modest size, not across the screen */
 .feed-figure.small .feed-figure-frame{width:34%;max-width:170px;margin:0 auto}
@@ -499,7 +502,6 @@ html:has(.feed-viewer),html:has(.feed-viewer) body{overflow:hidden}
 .feed-head{gap:8px}
 .feed-head small{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .feed-head .language-picker,.feed-head .feed-x{flex:none}
-@media(max-width:540px){.feed-head{flex-wrap:wrap}.feed-head small{flex-basis:100%}}
 .feed-mode{display:flex;flex:none;padding:3px;border-radius:999px;background:#ffffff14;border:1px solid #ffffff26}
 .feed-mode button{min-height:30px;padding:3px 11px;border-radius:999px;color:#d7dfd6;font:700 12px Manrope}
 .feed-mode button.on{background:#f1d98a;color:#1a1408}
@@ -553,7 +555,6 @@ html:has(.feed-viewer),html:has(.feed-viewer) body{overflow:hidden}
 .feed-toc button span{flex:none;min-width:76px;color:#9fb5a8;font-size:12px;padding-top:2px}
 .feed-toc button:hover{background:#ffffff14}
 .feed-toc button.on{color:#f1d98a;background:#ffffff10}
-@media(max-width:540px){.feed-head .feed-count{flex-basis:calc(100% - 56px)}.feed-head .feed-x{order:1}.feed-head .feed-reader,.feed-head .feed-mode,.feed-head .language-picker{order:2}}
 
 /* light documents (author, 24.10.2026): highlighted words in a reading, sources listed under «Подробнее» */
 .feed-read mark{background:#ffe27a;color:inherit;padding:0 2px;border-radius:3px}
@@ -561,7 +562,7 @@ html:has(.feed-viewer),html:has(.feed-viewer) body{overflow:hidden}
 .story-more li{margin:4px 0;line-height:1.45}
 .feed-src{margin-top:12px}
 .feed-src b{display:block;font-size:11px;letter-spacing:.07em;text-transform:uppercase;opacity:.75}
-.feed-src li{font-size:13px;opacity:.9}
+.feed-src li{font-size:13px;opacity:.9;overflow-wrap:anywhere}
 
 /* one text for all ages (author, 25.10.2026): a child's question or "did you know" inside the chapter */
 .feed-ask{margin:14px 0;padding:10px 14px;background:#eaf4ff;color:#1d2a38;border-left:4px solid #4a90d9;border-radius:8px}
@@ -851,39 +852,174 @@ h1,h2{font-weight:500}
 .private-chip{font:600 11px/1.2 var(--font-ui);color:var(--ink-mute);border:1px solid var(--rule);border-radius:999px;padding:5px 9px;white-space:nowrap;flex:none}
 html:has(.private-chip){padding-top:0!important}
 body:has(.private-chip)>#host-private-notice{display:none}
-@media(max-width:819px){.top{display:grid;grid-template-columns:minmax(0,1fr) 44px auto;gap:4px 8px;padding-block:8px}.top .brand{grid-area:1/1;min-width:0}.top .private-chip{grid-area:2/1/3/-1;justify-self:start;margin-left:38px}.top .search-btn{grid-area:1/2;margin-left:0}.top .language-picker{grid-area:1/3;margin-left:0}.feed-head .private-chip{order:2}}
+.feed-head .feed-options-toggle{display:none}
+.feed-options{display:contents}
+@media(max-width:819px){.top{display:grid;grid-template-columns:minmax(0,1fr) 44px auto;gap:4px 8px;padding-block:8px}.top .brand{grid-area:1/1;min-width:0}.top .private-chip{grid-area:2/1/3/-1;justify-self:start;margin-left:38px}.top .search-btn{grid-area:1/2;margin-left:0}.top .language-picker{grid-area:1/3;margin-left:0}}
 @media(max-width:540px){
- .feed-head{gap:4px 8px}
- .feed-head .feed-count{order:0;flex:1 1 0;min-width:0}
- .feed-head .private-chip{order:1}
- .feed-head .feed-x{order:2;width:36px;height:36px}
- .feed-head::after{content:'';order:3;flex-basis:100%;height:0}
- .feed-head .feed-reader,.feed-head .feed-mode,.feed-head .chest,.feed-head .language-picker{order:4}
- .feed-head .feed-reader{max-width:46vw}
- .feed-head .feed-mode{flex:0 1 auto;min-width:0}
- .feed-head .language-picker{margin-left:auto}
+ .feed-head{position:relative;gap:4px}
+ .feed-head .feed-x,.feed-head .feed-options-toggle{display:block;flex:none;width:48px;height:48px}
+ .feed-options{display:none}
+ .feed-options.open{position:absolute;inset:100% 8px auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:6px 8px;padding:8px;
+  background:var(--sheet);border:1px solid var(--rule);border-radius:14px;box-shadow:var(--lift-1);z-index:4}
+ .feed-options .chest{position:static}
+ .feed-options .chest-pop{top:100%;right:0}
+ .feed-options .language-picker{margin-left:0}
 }
+
+.feed-game.game-brief{box-shadow:none}
+.game-brief h3{font-size:1rem}
+.game-answer p:first-child{margin-top:10px}
+.route-board{position:relative;margin:12px 0 8px}
+.route-board img{display:block;width:100%;height:auto;border-radius:8px}
+.route-line{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.route-line polyline{fill:none;stroke:var(--act);stroke-width:4px;stroke-linejoin:round;stroke-linecap:round}
+.feed-game .route-board button{position:absolute;display:grid;place-items:center;width:44px;height:44px;min-height:44px;padding:0;transform:translate(-50%,-50%);touch-action:none}
+.route-board button::before{content:'';position:absolute;inset:6px;z-index:-1;border:2px solid var(--act);border-radius:50%;background:var(--sheet)}
+.route-board button{color:var(--act);font-weight:700}
+.route-board button[aria-current]{z-index:1}
+.route-board button[aria-current]::before{box-shadow:0 0 0 3px var(--sheet)}
+.route-board button[aria-pressed=true]{color:var(--sheet)}
+.route-board button[aria-pressed=true]::before{background:var(--act)}
 
 /* A relation names a person whose given name has not reached us. */
 .unnamed{font-style:italic}
 .lb-reading{margin:0;padding:12px 20px;max-height:24dvh;overflow:auto;white-space:pre-wrap;font-family:var(--font-story)}
 
-/* Pack-owned kinship vocabulary; the same explanation works with mouse and touch. */
-.kinship-explanation{font-size:14px;line-height:1.55;max-width:100%;overflow-wrap:anywhere}
-.kinship-explanation summary{cursor:pointer;font-weight:600;color:var(--green)}
-.kinship-explanation p{margin:10px 0;font-weight:400}.kinship-explanation a{font-size:13px}
-.kinship-path{color:var(--muted);font-size:12px}.tree-kinship{color:var(--green)!important}
+/* Kinship words live where they occur: a tap opens the meaning and the way to this person, name by name. */
+.kinship-explanation{font-size:17px;line-height:1.5;max-width:100%;overflow-wrap:anywhere}
+.kinship-explanation summary{display:inline-flex;align-items:center;min-height:48px;padding:4px 16px;border-radius:24px;background:#fff6e2;border:1px solid #ecd49c;color:#5c4515;font-weight:600;cursor:pointer;list-style:none}
+.kinship-explanation summary::-webkit-details-marker{display:none}
+.kinship-explanation summary::after{content:'?';display:inline-grid;place-items:center;width:24px;height:24px;margin-left:10px;border-radius:50%;background:#ecd49c;color:#4b3a12;font:700 14px/1 var(--font-ui)}
+.kinship-explanation[open] summary::after{content:'×'}
+.kinship-explanation>div{margin:8px 0 4px;padding:14px 16px;border-radius:14px;background:#fffaf0;border:1px solid #efdcb0}
+.kinship-explanation p{margin:0 0 10px;font-size:18px}
+.kinship-explanation a{display:inline-flex;align-items:center;min-height:48px;font-size:17px}
+.kinship-path{list-style:none;margin:0 0 6px;padding:0;font-size:17px;line-height:1.4;color:var(--ink-soft)}
+.kinship-path li{position:relative;padding:4px 0 4px 22px}
+.kinship-path li::before{content:'';position:absolute;left:4px;top:12px;width:8px;height:8px;border-radius:50%;background:var(--ember)}
+.kinship-path li:not(:last-child)::after{content:'';position:absolute;left:7px;top:20px;bottom:-8px;border-left:2px solid #ecd49c}
+.tree-kinship{color:var(--green)!important}
 .kinship-words{width:min(100%,1100px);margin-inline:auto;padding-bottom:100px}
-.kinship-words .lead{max-width:720px}.kinship-viewer{padding:12px 0;border-block:1px solid var(--line)}
-.kinship-groups{display:flex;flex-wrap:wrap;gap:8px 20px;margin:24px 0}
 .kinship-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:12px 28px}
-.kinship-word{padding:14px 0;border-top:1px solid var(--line);scroll-margin-top:20px;overflow-wrap:anywhere}
-.kinship-word h3{margin:0;font:600 16px Manrope}.kinship-word h3 small{font-size:12px;font-weight:400;color:var(--muted)}
-.kinship-word p{margin:6px 0}.kinship-word .note{font-size:12px;color:var(--muted)}
-.kinship-example{font-size:13px;color:var(--green)}.kinship-example small{display:block;color:var(--muted);font-size:12px;margin-top:6px}
-.kinship-words section{scroll-margin-top:20px}.kinship-word:target{background:var(--surface,#fff);outline:2px solid var(--green)}
-@media(max-width:760px){.tabs-bottom{overflow-x:auto;justify-content:flex-start}.tabs-bottom button{flex:1 0 66px}.kinship-words{padding-inline:20px}.kinship-words h1{font-size:30px}.kinship-groups{font-size:13px}}
+.kinship-word{padding:16px 0;border-top:1px solid var(--line);scroll-margin-top:20px;overflow-wrap:anywhere;font-size:18px}
+.kinship-word h3{margin:0;font:600 20px var(--font-ui)}.kinship-word h3 small{font-size:15px;font-weight:400;color:var(--muted)}
+.kinship-word p{margin:6px 0 10px}
+.kinship-words section{scroll-margin-top:20px}.kinship-word:target{outline:2px solid var(--green)}
+
+/* The family's papers: whole sheets on a table, large; one paper over the page with its reading. */
+.paper-modes{display:flex;gap:8px;margin:0 0 20px}
+.paper-modes button{flex:1 1 0;min-height:52px;padding:6px 10px;border:1px solid var(--rule);border-radius:14px;background:var(--sheet);color:var(--ink);font:600 17px/1.2 var(--font-ui)}
+.paper-modes button.on{background:var(--act);border-color:var(--act);color:#fff}
+.paper-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:18px 14px}
+.paper-tile{display:flex;flex-direction:column;gap:8px;min-width:0;text-align:left;color:var(--ink)}
+.paper-sheet{display:flex;align-items:center;justify-content:center;height:190px;padding:8px;border:1px solid var(--rule);border-radius:var(--r-xs);background:var(--doc-paper);box-shadow:var(--lift-1);overflow:hidden}
+.paper-sheet img{display:block;max-width:100%;max-height:172px;object-fit:contain}
+.paper-sheet img.strip{flex:none;max-width:none;margin-inline:0 auto}
+.paper-sheet i{width:60%;height:60%;background:repeating-linear-gradient(var(--rule) 0 2px,transparent 2px 16px)}
+.paper-tile:hover .paper-sheet,.paper-tile:focus-visible .paper-sheet{border-color:var(--act)}
+.paper-title{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;font:400 16px/1.35 var(--font-story);overflow-wrap:anywhere}
+.paper-person,.paper-era{margin:0 0 34px}
+.paper-era h2{margin:0 0 12px;font:500 26px/1.2 var(--font-story)}
+.paper-who{display:block;width:100%;min-height:52px;margin:0 0 10px;padding:6px 0;border-bottom:1px solid var(--rule);text-align:left}
+.paper-who strong{display:block;font:500 22px/1.25 var(--font-story);color:var(--ink)}
+.paper-who small{display:block;margin-top:2px;font-size:16px;color:var(--ink-soft)}
+.wide-btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:52px;margin:14px 0 0;padding:8px 16px;border:1px solid var(--act);border-radius:14px;color:var(--act);background:var(--sheet);font:600 17px/1.2 var(--font-ui);text-decoration:none}
+.wide-btn:hover{background:var(--act-soft)}
+@media(min-width:821px){.wide-btn{width:auto;min-width:280px;max-width:360px}.paper-modes button{flex:0 0 190px}}
+.paper-view{position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;background:var(--paper);color:var(--ink)}
+.paper-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:none;min-height:60px;padding:6px var(--gutter);border-bottom:1px solid var(--rule);background:var(--sheet)}
+.paper-back{min-height:48px;padding:6px 18px 6px 12px;border:1px solid var(--rule);border-radius:14px;background:var(--paper);color:var(--ink);font:600 18px/1.2 var(--font-ui)}
+.paper-bar span{color:var(--ink-soft);font:500 16px/1 var(--font-ui)}
+.paper-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.paper-column{max-width:820px;margin:0 auto;padding:16px var(--gutter) 60px}
+.paper-large{margin:0 0 16px}
+.paper-large figcaption{margin:0 0 6px;color:var(--ink-soft);font-size:16px}
+.paper-large button{display:block;width:100%;cursor:zoom-in;background:var(--paper-deep);border-radius:var(--r-xs)}
+.paper-large img{display:block;width:100%;height:auto;border-radius:var(--r-xs);box-shadow:var(--lift-1)}
+.paper-column h2{margin:0 0 8px;font:500 24px/1.25 var(--font-story);overflow-wrap:anywhere}
+.paper-column h3{margin:22px 0 10px;font:600 18px/1.3 var(--font-ui);color:var(--ink-soft)}
+.paper-reading .document-reading{padding:16px;border-radius:var(--r-xs);background:var(--doc-paper);color:var(--doc-ink);font:400 18px/1.55 var(--font-story);overflow-wrap:anywhere}
+.paper-reading p{margin:0 0 10px;white-space:pre-wrap}
+.paper-reading table{width:100%;table-layout:fixed;border-collapse:collapse}
+.paper-reading th,.paper-reading td{padding:8px 6px;text-align:start;vertical-align:top;border-bottom:1px solid var(--rule)}
+.paper-reading th{width:36%;font-weight:600}
+.paper-remark{margin:18px 0 0}.paper-remark:empty{display:none}
+.paper-turn{display:flex;gap:12px;margin:30px 0 0}
+.paper-turn button{flex:1;min-height:52px;border:1px solid var(--rule);border-radius:14px;background:var(--sheet);color:var(--act);font:600 17px/1.2 var(--font-ui)}
+.paper-turn button:disabled{visibility:hidden}
+.feed-paper{display:block;width:100%;cursor:zoom-in}
+.feed-chip.person span{display:block;text-align:left}.feed-chip.person small{display:block;font-size:15px;line-height:1.3;color:var(--ink-soft);font-weight:400}
+.lightbox{z-index:90}
+
+@media(max-width:760px){.kinship-words{padding-inline:20px}.kinship-groups{font-size:13px}}
 /* A second way up the data admit: one quiet line under the parents, names as links. */
 .second-way{display:block;margin:.3em 0 .5em;color:#6b6457;font-size:.92em;line-height:1.4}
 .second-way .link,.ov-card .second-way .link{display:inline;min-height:0;margin:0;padding:0;border:0;border-radius:0;background:none;font:inherit;color:inherit;text-decoration:underline dotted;text-underline-offset:2px;cursor:pointer}
 .ov-card small.second-way{margin:4px 0 0}
+.cov-list{list-style:none;margin:0 0 10px;padding:0}.cov-list li{padding:8px 0;border-top:1px solid var(--rule)}.cov-list b{display:block;font-weight:500}.cov-list small{font-size:15px;color:var(--ink-soft)}
+
+/* The floor of a phone page: text a grandmother reads without glasses, targets a thumb does not miss.
+   Rule CRAFT-PLAIN-PAGES; measured in the interface walk, not by a test. */
+@media(max-width:820px){
+ :root{--head:65px}
+ body{font-size:18px}
+ .page h1{font-size:32px}
+ .page .lead,.families .line-head,.page .note,.panel .note,.rows .note,.search-sheet .note,.card-summary,.fact p,.ask,.ask p,.story,.story p,.story-more p,.story.layered .story-simple p,.connection-lead,.evidence,.evidence p,.cov-list li,.life-list li,.me-pick p,.ov-head p,.ov-foot,.second-way,.identity-summary,form p,.whats-new .update span,.feed-cover-text span:not(.st-dot),.story-card p{font-size:18px;line-height:1.5}
+ .group h3,.panel .eyebrow,.evidence summary,.card-more h4,.whats-new h2,.results h2{font:600 17px/1.35 var(--font-ui);letter-spacing:0;text-transform:none;color:var(--ink-soft)}
+ .fact h4{font-size:18px}.evidence summary,.story-more summary,.fact summary,.life-list summary,.pair-how summary,.feed-extra summary{display:flex;align-items:center;min-height:48px;font-size:17px}
+ .panel .who strong{font-size:19px}.panel .who small{font-size:16px}.peek-docs{font-size:16px}.panel .chev{font-size:20px}
+ .chip{min-height:52px;padding:8px 14px}.chip b{font-size:18px}.chip small,.chip .maiden,.person-row strong .maiden{font-size:15px}
+ .more,.more.wide{min-height:48px;font-size:17px}.link,.kin .link{min-height:48px;font-size:18px;text-align:left}
+ .source-links a,.source-links .link{display:inline-flex;align-items:center;min-height:48px;font-size:17px}
+ .kin small,.kin-viewer small{display:flex;flex-wrap:wrap;align-items:center;gap:0 14px;font-size:16px}.kin span{font-size:16px}
+ .sur{min-height:52px}.sur b{font-size:18px}.sur>small,.sur b .var{font-size:15px}
+ .people-tools .search input,.page select,.people-tools select,.me-pick input,.search input{height:52px;font-size:18px}.people-tools .more.wide{min-height:52px}
+ .person-row{min-height:60px}.person-row strong{font-size:18px}.person-row small{font-size:15.5px}.av{width:46px;height:46px}
+ .icon-btn,.ov-close,.lb-head button,.lb-foot button{width:48px;height:48px}.ov-lines button{min-height:48px}.ov-lines b{font-size:15px}.ov-lines small,.ov-legend{font-size:15px}.lb-foot a{min-height:48px;display:inline-flex;align-items:center}.lb-head p{font-size:17px}.lb-reading{font-size:18px}
+ .controls{gap:3px}.controls button{width:48px;height:48px}.minimap{width:100px}.minimap small{font-size:12px}
+ .fact-pics button{width:96px;height:120px}.thumb{width:150px}.thumb img{width:150px;height:180px}.thumb span{font-size:15px}
+ .show-person-family{min-height:48px;font-size:16px}.person-undo{min-height:48px;font-size:16px}
+ .feed-cover-text small,.feed-cover-text em,.story-card small,.story-card .story-text>small,.story-card em,.update small{font-size:15px}.story-card strong{font-size:18px}.feed-cover-text em{font-size:17px}.update b{font-size:18px}
+ .album button p,.story-pics figcaption,.feed-figure figcaption,.feed-record figcaption,.feed-record figcaption em,.feed-record figcaption a,.pair-how{font-size:16px}
+ .life-list b{width:96px;font-size:16px}.life-list li span{font-size:18px}
+ .feed-hits button{min-height:52px}.feed-hits small{font-size:15px;letter-spacing:0;text-transform:none}.feed-hits b{font-size:18px}.feed-hits span{font-size:16px}
+ .paper-title{font-size:17px}
+ .language-picker{min-height:48px;font-size:16px}
+ .feed-head{min-height:56px}.feed-head .feed-count,.feed-head .feed-reader,.feed-head .chest-chip,.feed-head .feed-x,.feed-mode button,.feed-head .feed-mode button{min-height:48px}.feed-head .feed-x{width:48px;height:48px}
+ .feed-head small,.feed-head .feed-reader,.feed-head .chest-chip,.feed-head .feed-mode button{font-size:15px}
+ .feed-foot button{min-height:48px;font-size:17px}.feed-foot span{font-size:16px}.feed-toc button{min-height:48px;font-size:17px}.feed-toc small,.feed-toc button span{font-size:15px}
+ .feed-chip{min-height:48px;font-size:17px}.feed-kind{font-size:14px}.feed-gens p,.feed-gens .feed-kin,.feed-ask,.feed-more p,.feed-src,.feed-facts,.feed-place{font-size:17px}.feed-gens small{font-size:14px}.feed-read{font-size:18px}
+ .feed-next small{font-size:15px}.feed-next span{font-size:18px}.story-more.feed-extra p{font-size:18px}
+ .panel .whats-new h2,.page .whats-new h2{font-size:22px;font-family:var(--font-story);font-weight:500}
+ .paper-title,.feed-figure figcaption,.feed-ask p,.feed-game p,.feed-facts .feed-fact,.feed-src li,.feed-place span,.feed-kin{font-size:18px;line-height:1.45}
+ .feed-ask b,.feed-src b,.feed-places small,.feed-game b,.feed-game small{font-size:16px;letter-spacing:0;text-transform:none}
+ .feed-credit-btn{width:48px;height:48px}.game-go.big,.feed-game button,.feed-variants button{min-height:48px;font-size:17px}
+ .feed-viewer .feed-game p,.feed-viewer .feed-record figcaption em{font-size:18px}.feed-figure figcaption a,.feed-record figcaption a{display:inline-flex;align-items:center;min-height:48px;font-size:17px}
+ .feed-figure-orig{width:92px}.feed-figure-orig img{height:60px}.feed-figure-orig span{font-size:14px;padding:5px 0}
+ .feed-gens li:not(.on) b,.feed-gens li:not(.on) small{display:none}.feed-gens li.on b{max-width:none;overflow:visible;font-size:15px}.feed-gens li.on small{font-size:14px;color:var(--ink-soft);opacity:1}
+ .feed-gens p span,.feed-gens .feed-kin span{font-size:15px;letter-spacing:0;text-transform:none}.feed-gens p,.feed-gens .feed-kin{font-size:18px}
+ .kinship-explanation summary{font-size:18px}.chip small,.chip .maiden,.person-row small,.person-row strong .maiden,.story-card .story-text>small{font-size:16px}.confirmation-mark{font-size:15px}
+}
+/* A face first (U81): the family's own photograph stands for the person where the reader may see one, in the gold
+   ring of the tree's couples; without one the card keeps its letter and the tile its name, no empty frame. */
+.face{position:relative;display:block;overflow:hidden;width:100%;height:100%;background:#e7e1d3}
+.face img{display:block}
+.card-face{flex:none;display:block;padding:0;border:0;border-radius:50%;background:none;cursor:zoom-in}
+.card-face .face{border-radius:50%;box-shadow:0 0 0 2px var(--sheet),0 0 0 3.5px var(--gold)}
+.card-face:hover .face,.card-face:focus-visible .face{box-shadow:0 0 0 2px var(--sheet),0 0 0 4.5px var(--gold)}
+.header-face{width:112px;height:112px;margin:0 0 16px}
+.peek-face{width:60px;height:60px;margin:8px 0 6px 14px}
+.panel-peek.with-face .peek{padding-left:12px}
+.thumb .face{width:108px;height:136px;border-radius:12px;border:1px solid #e0e3d6}
+.tile-face{position:absolute;left:-13px;top:-15px;width:40px;height:40px;border-radius:50%;overflow:hidden;pointer-events:none;
+ box-shadow:0 0 0 2px var(--tree-paper),0 0 0 3.5px var(--gold),0 2px 7px #46351e30;opacity:var(--depth-opacity,1)}
+.tile-with-face .tree-tile{padding-left:24px}
+.tile-named .tree-tile{padding:0 3px;border-inline-start-width:2px;border-radius:3px;font-size:var(--name-font);line-height:1;box-shadow:none}
+.tile-named strong,.tile-distant.tile-named:not(.tile-whole) strong{white-space:nowrap;overflow:visible;text-overflow:clip}
+.lb-crop{position:absolute;left:0;top:0;transform-origin:0 0;overflow:hidden;opacity:0;transition:opacity .25s}.lb-crop.ready{opacity:1}
+.lb-crop img{transform:none}
+@media(max-width:820px){.thumb .face{width:150px;height:180px}}
+/* A book with no picture yet is a calm page of paper with its line's colour, not a dark empty tile. */
+.feed-cover.plain{min-height:180px;background:linear-gradient(165deg,#f3ecdd 0%,#e7dcc6 100%);color:var(--ink);border:1px solid var(--rule)}
+.feed-cover.plain .feed-cover-text{padding-top:40px;background:none}
+.feed-cover.plain .feed-cover-text small{color:var(--ink-mute)}.feed-cover.plain .feed-cover-text span{color:var(--ink-soft)}.feed-cover.plain .feed-cover-text em{color:var(--act)}

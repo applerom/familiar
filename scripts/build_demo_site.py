@@ -21,15 +21,16 @@ def language_link(out, href, label, *, investigation_only=False):
                 + html.escape(label) + '</a>')
         text = text.replace('<span id="desk-feedback-entry"></span>',
                             '<span id="desk-feedback-entry">' + link + '</span>')
+        # A phone's lower row holds only its places: the same link opens the quieter list there.
+        text = text.replace('<nav id="desk-more" hidden>', '<nav id="desk-more" hidden><a href="'
+                            + html.escape(href, quote=True) + '"><span>' + html.escape(label) + '</span></a>')
         path.write_text(text, encoding='utf-8', newline='')
 
 
 def build_family(root, family, out, environment, *, public_reader=False):
     command = [shutil.which('familiar') or 'familiar', '--root', str(family)]
-    # Acceptance is committed family data; builds never create reader verdicts.
-    with tempfile.TemporaryDirectory(prefix='familiar-demo-reader-') as directory:
-        subprocess.run(command + ['reader', 'export', '--output', directory], cwd=root,
-                       check=True, timeout=600, env=environment)
+    # The public-reader demo needs its committed independent reading. The
+    # fictional writing demo uses the desk to show frames still in progress.
     subprocess.run(command + ['desk', 'export-demo', '--output', str(out)]
                    + (['--public-reader'] if public_reader else []), cwd=root,
                    check=True, timeout=600, env=environment)
@@ -52,8 +53,7 @@ def main():
             shutil.copytree(source, family, ignore=shutil.ignore_patterns(
                 '.secrets', '.build', 'build-cache', 'snapshots', 'export', '__pycache__'))
             build_family(root, family, destination, environment, public_reader=name == 'ru')
-    # The English reader HTML and its accepted bytes stay unchanged. Its
-    # investigation is a derived page, so the reciprocal link belongs there.
+    # The English demo's reciprocal link belongs in the investigation.
     language_link(out, 'ru/', 'По-русски', investigation_only=True)
     language_link(out / 'ru', '../', 'English')
 

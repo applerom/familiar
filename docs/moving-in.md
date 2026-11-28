@@ -96,6 +96,19 @@ The family desk shows the photograph in each identified person's Documents and
 photos section and in Photos. Public views omit frames with living or unknown
 subjects.
 
+A photograph leads the card of each person on it. On a group frame, mark where
+each named face is, as fractions of the picture's width and height
+(`x,y,width,height`); the card and the tree then show that face. A print
+re-shot by phone can show only the print with `--crop`; the original stays
+whole and opens one tap further. Both can be added later by running the command
+again on the original file with nothing else:
+
+```sh
+familiar --root ./my-family intake photo ./portrait.jpg --face archive-tree-I1=0.12,0.30,0.25,0.18 --face archive-tree-I2=0.58,0.33,0.25,0.18 --crop 0,0.25,1,0.5
+```
+
+In a table, use the optional columns `faces` (`ID=x,y,w,h;ID=x,y,w,h`) and `crop`.
+
 ## Compare the result to the source
 
 ```sh

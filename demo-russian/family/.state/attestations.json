@@ -2,73 +2,73 @@
   "feed:volga-1941/__feed__@ru": {
     "page": "feed:volga-1941/__feed__",
     "language": "ru",
-    "reviewer": "u60-claude-opus-5.5",
-    "author": "russian-demo-original-author",
-    "digest": "853ddd019fe4f1725484aef5688ffece309d98a5d904e9c734f1e25c64f9d0c8",
-    "safety_digest": "0b3bac1cabbed9f67d3a58844b1843c36687dceeba811c0d2f252b5e1d1f6bf9",
+    "reviewer": "r25-claude-opus-5-5",
+    "author": "u88-codex-gpt-6.2-sol",
+    "digest": "442ddf7b250c36db4d5a7c5f450f8fb28de042066f3620817db1f8ad0ac55c0a",
+    "safety_digest": "744221837d8262fe487beef171e766ba7436c273fee0f656671085af8067e7c6",
     "rules": [
       "R1",
       "R2",
       "R3",
       "R4"
     ],
-    "inspection_digest": "c70c07b0f61fcb8334e09a02f6287cf8acd7d12333b6d2a3684aa703b0bb78b6",
+    "inspection_digest": "7dd544e907787d94e59d127308d6fbf1906ef008bdfb4bc8b83f91212757be82",
     "verdict": "pass",
-    "at": "2026-11-22T13:10:46.344294+00:00",
+    "at": "2026-11-28T08:48:10.734634+00:00",
     "stage": "reading"
   },
   "reader:file:reader-profile.json@ru": {
     "page": "reader:file:reader-profile.json",
     "language": "ru",
-    "reviewer": "u60-claude-opus-5.5",
-    "author": "russian-demo-original-author",
-    "digest": "232f527d2c390ff93182e2eb44000fcf3d843a984997970e58a0acbc04bb11a0",
-    "safety_digest": "0b3bac1cabbed9f67d3a58844b1843c36687dceeba811c0d2f252b5e1d1f6bf9",
+    "reviewer": "r25-claude-opus-5-5",
+    "author": "u88-codex-gpt-6.2-sol",
+    "digest": "b980762bcd838647afb758cd6f739ec06b93973221455ff4d5ac4e8d67465801",
+    "safety_digest": "744221837d8262fe487beef171e766ba7436c273fee0f656671085af8067e7c6",
     "rules": [
       "R1",
       "R2",
       "R3",
       "R4"
     ],
-    "inspection_digest": "4d7225cc823a0a1781a7de75007ad38fa03e5f8d52d3ce225af012383bfc6da8",
+    "inspection_digest": "e33bd798ee40c5b1f0e4b5aa773638d52e0277a6216c6908a48a479f9f35d25e",
     "verdict": "pass",
-    "at": "2026-11-22T13:10:46.344294+00:00",
+    "at": "2026-11-28T08:48:10.734634+00:00",
     "stage": "reading"
   },
   "feed:volga-1941/gnadenflur-1941@ru": {
     "page": "feed:volga-1941/gnadenflur-1941",
     "language": "ru",
-    "reviewer": "u60-claude-opus-5.5",
-    "author": "russian-demo-original-author",
-    "digest": "235f8e7f845dc31f7d283cc7398b4a7c2c29ae277778b5ac80120d3eaffee3f6",
-    "safety_digest": "0b3bac1cabbed9f67d3a58844b1843c36687dceeba811c0d2f252b5e1d1f6bf9",
+    "reviewer": "r25-claude-opus-5-5",
+    "author": "u88-codex-gpt-6.2-sol",
+    "digest": "3a7b284686403ac4bbc5911ee3a6951c906d223c06298de5bf54ddbc5a33d136",
+    "safety_digest": "744221837d8262fe487beef171e766ba7436c273fee0f656671085af8067e7c6",
     "rules": [
       "R1",
       "R2",
       "R3",
       "R4"
     ],
-    "inspection_digest": "0d3810699934d69cf72f729a597abaa4978bc478e98701e349732e50f16c5113",
+    "inspection_digest": "c2e0d64c8f3e148934df4549f7d7fc1c53268ee623ca81a17d0d69672c499fd6",
     "verdict": "pass",
-    "at": "2026-11-22T13:10:46.344294+00:00",
+    "at": "2026-11-28T08:48:10.734634+00:00",
     "stage": "reading"
   },
   "reader:tree@ru": {
     "page": "reader:tree",
     "language": "ru",
-    "reviewer": "u60-claude-opus-5.5",
-    "author": "russian-demo-original-author",
-    "digest": "ae5037a90b2ca0b9a40ffe6e79cffd1705b7674d19f1dd7fd7c0270e4c6f8d52",
-    "safety_digest": "0b3bac1cabbed9f67d3a58844b1843c36687dceeba811c0d2f252b5e1d1f6bf9",
+    "reviewer": "r25-claude-opus-5-5",
+    "author": "u88-codex-gpt-6.2-sol",
+    "digest": "14ffb51b6036ade95c1e0c9627884d7a9167c63f884c553dd29892e219bec53c",
+    "safety_digest": "744221837d8262fe487beef171e766ba7436c273fee0f656671085af8067e7c6",
     "rules": [
       "R1",
       "R2",
       "R3",
       "R4"
     ],
-    "inspection_digest": "59b746f7444782918f70a2c59e1dc4352b331a5fa89af386f70729007e1b36aa",
+    "inspection_digest": "d04ba24cc57388e6df9ba267522a2266863603c0d245bfbeb2d31b445291ded6",
     "verdict": "pass",
-    "at": "2026-11-22T13:10:46.344294+00:00",
+    "at": "2026-11-28T08:48:10.734634+00:00",
     "stage": "reading"
   }
 }

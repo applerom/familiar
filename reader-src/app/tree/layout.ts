@@ -1,4 +1,4 @@
-import type {Model, Slot} from './model';
+import {isPerson,type Model,type Slot} from './model';
 
 export type Tile = {
   id: string; x: number; y: number; w: number; h: number;
@@ -7,6 +7,11 @@ export type Tile = {
   gap?: boolean;
   /** On a missing generation: who in the tree may stand there (the possible ancestor's own child of a fitting age). */
   hint?: string;
+  /** The missing generation right below the possible ancestor: an unnamed child of the couple, drawn as haze of a
+   * card's size in the children's row, not as a band on a line. */
+  place?: boolean;
+  /** Where a tap on the haze leads: along the line, to the person at its other end. */
+  opens?: string;
   /** On the family's main line, reached by an assumption rather than a document: a light haze behind the card. */
   assumed?: boolean;
 };
@@ -20,7 +25,7 @@ export type Layout = {
   axis: number; rootBottom: number; familyBottom: number; horizon: boolean; cut: boolean; linkOffset: number;
   visible: Set<string>; peopleCount: number; tightest: number;
 };
-type Ancestor = {id: string; gen: number; status: string; x: number; weight: number; parents: Ancestor[]; gap?: boolean; hint?: string; color?: string; main?: boolean; assumed?: boolean};
+type Ancestor = {id: string; gen: number; status: string; x: number; weight: number; parents: Ancestor[]; gap?: boolean; hint?: string; color?: string; main?: boolean; assumed?: boolean; place?: boolean; opens?: string};
 const DOUBT: Record<string, number> = {probable: 1, hypothesis: 2, weak: 3};
 /** A branch is as firm as its weakest link below: ancestors above a probable link stay probable. */
 const weaker = (a: string, b: string) => (DOUBT[a] || 0) >= (DOUBT[b] || 0) ? a : b;
@@ -48,7 +53,7 @@ function wrapped(name: string, room: number) {
 }
 
 function rootsFor(m: Model, center: string) {
-  const mate = m.spouses(center).find(id => !m.info[id].placeholder);
+  const mate = m.spouses(center).find(id => isPerson(m.info[id]));
   if (!mate) return [center];
   return m.husbands.has(mate) && !m.husbands.has(center) ? [mate, center] : [center, mate];
 }
@@ -80,9 +85,11 @@ function ancestorRows(m: Model, roots: string[], level: number) {
         // Missing generations keep their rows, so the ancestor and everyone above stand at their own generation.
         let below = child;
         const second = m.secondWay(child.id);
+        const hint = second?.kind === 'between' && second.above === slot.id ? second.via : undefined;
         for (let i = 1; i <= gap; i++) {
+          // The generation right below the possible ancestor is one of the couple's children, nobody knows which.
           const haze: Ancestor = {...person(`gap:${child.id}:${slot.id}:${i}`, gen + i, status), gap: true, color: m.tone(slot.id)?.color, main,
-            hint: i === gap && second?.kind === 'between' && second.above === slot.id ? second.via : undefined};
+            hint: i === gap ? hint : undefined, place: i === gap, opens: i === gap ? slot.id : undefined};
           links.push({child: below, parent: haze, status});
           below.parents.push(haze);
           row(gen + i).push(haze);
@@ -94,6 +101,17 @@ function ancestorRows(m: Model, roots: string[], level: number) {
         below.parents.push(parent);
         row(gen + 1 + gap).push(parent);
         people.set(slot.id, parent);
+        // Seen from below, the haze hangs from a couple: the wife or husband the unnamed child most likely had too.
+        const mates = gap ? m.spouses(slot.id).filter(id => !m.info[id].placeholder) : [];
+        const mate = hint ? mates.find(id => m.parents(hint).slots.some(s => s?.id === id)) : mates.length === 1 ? mates[0] : undefined;
+        if (!mate) continue;
+        const other = people.get(mate);
+        if (other) { links.push({child: below, parent: other, status}); continue; }
+        const partner = {...person(mate, gen + 1 + gap, status), main};
+        links.push({child: below, parent: partner, status});
+        below.parents[m.husbands.has(mate) ? 'unshift' : 'push'](partner);
+        row(gen + 1 + gap).push(partner);
+        people.set(mate, partner);
       }
     }
   }
@@ -179,6 +197,7 @@ export function layoutTree(m: Model, center: string, viewport: number, level = d
     const base = gen === 0 ? 68 : 58;
     const h = compact ? Math.max(8, Math.round(54 * scale))
       : Math.max(base, wrapped(name, Math.floor((w - 25) / (font * .58))) * font * 1.22 + 33);
+    if (m.info[id]?.knot) return {id, gen, status, w: Math.min(w, GAP_W), h: 14, scale, compact, fade: 1, x: 0, y: 0, stackLayers: 0};
     const stackLayers = id && gen >= 0 && w >= 40 ? m.siblingLayers(id) : 0;
     return {id, gen, status, w, h, scale, compact, fade: gen < HISTORY_LEVEL ? 1 : .34 + scaleFor(gen) * .66,
       x: 0, y: 0, stackLayers, color: id ? m.tone(id)?.color : undefined};
@@ -195,7 +214,7 @@ export function layoutTree(m: Model, center: string, viewport: number, level = d
     : tone(ordered[i - 1]) !== tone(ordered[i]) && !(narrow && gen < HISTORY_LEVEL) ? 52 : 30) * (gen < HISTORY_LEVEL ? 1 : scaleFor(gen));
   const needOf = (ordered: Ancestor[], gen: number) => {
     const fullGap = gapsOf(ordered, gen), full = fullWidth(gen);
-    return ordered.reduce((sum, n, i) => sum + (n.gap ? GAP_W : full) + (i ? fullGap(i) : 0) + (n.gap ? 0 : m.siblingLayers(n.id) * STACK_STEP), 0);
+    return ordered.reduce((sum, n, i) => sum + (n.gap && !n.place || m.info[n.id]?.knot ? GAP_W : full) + (i ? fullGap(i) : 0) + (n.gap ? 0 : m.siblingLayers(n.id) * STACK_STEP), 0);
   };
   const split = (row: Ancestor[]) => [0, 2, 1].map(crown => row.filter(n => crownOf(n.id) === crown));
   // The sky rises from between the couple (for a centre alone, from the centre's tile); within that window it stands
@@ -235,7 +254,8 @@ export function layoutTree(m: Model, center: string, viewport: number, level = d
       const cards = ordered.map(n => {
         const tile = card(n.gap ? '' : n.id, gen, n.status, w, gen >= HISTORY_LEVEL || fit < 1);
         if (n.assumed) tile.assumed = true;
-        return n.gap ? {...tile, id: n.id, w: Math.min(w, Math.max(10, Math.round(GAP_W * Math.min(1, depth)))), stackLayers: 0, color: n.color, gap: true, hint: n.hint} : tile;
+        return n.gap ? {...tile, id: n.id, w: n.place ? w : Math.min(w, Math.max(10, Math.round(GAP_W * Math.min(1, depth)))), stackLayers: 0, color: n.color,
+          gap: true, hint: n.hint, place: n.place, opens: n.opens} : tile;
       });
       // A couple whose parents are drawn stands apart, each under the own parents, so the branches rise evenly;
       // with nobody above, the two stand close.
@@ -367,13 +387,12 @@ export function layoutTree(m: Model, center: string, viewport: number, level = d
   }
 
   const visible = new Set(tiles.filter(tile => !tile.gap).map(tile => tile.id));
-  const extras = m.spouses(center).filter(id => !m.info[id].placeholder);
+  const extras = m.spouses(center).filter(id => isPerson(m.info[id]));
   // A possible child with no missing generation between is a child: it stands in the row beside the others.
   const children = new Set(roots.flatMap(id => [...m.children(id), ...m.descendantsBelow(id).filter(({slot}) => !slot.gap).map(({id}) => id)]));
   // The form of a child's link, as for a parent's: the main line an assumption at most probable, a weak origin weak.
   const own = (slot: Slot) => slot.main ? m.connectionLevel(slot) === 1 ? m.connectionStatus(slot) : 'probable'
     : slot.weak ? 'weak' : m.connectionStatus(slot);
-  const spans: number[][] = [], downs: number[][] = [];
   let lower = rootBottom + (narrow ? 30 : 40);
   let familyBottom = rootBottom;
   // Keep the closer part of each row readable on a phone; wider families can pan to the remaining children.
@@ -386,16 +405,56 @@ export function layoutTree(m: Model, center: string, viewport: number, level = d
     };
     const row = [...ids].filter(id => !visible.has(id)).sort((a, b) => side(a) - side(b) || m.bySeniority(a, b));
     const w = narrow ? 148 : 158;
+    // The way down from a nest's anchor through missing generations. The generation below the couple is one more child
+    // of theirs, nobody knows which: it takes a place of its own in the children's row, as haze of a card's size, and
+    // the family's person hangs from that haze, never from a named child. The place stands beside the child the data
+    // name as the one who may stand there; with nobody named, in the middle of the row, leaning to nobody.
+    const ways = kind !== 'child' ? [] : [...new Map(roots.flatMap(anchor => m.descendantsBelow(anchor)
+      .filter(({id, slot}) => slot.gap && !visible.has(id) && !ids.has(id)).map(way => {
+        const second = m.secondWay(way.id);
+        return [way.id, {...way, anchor, hint: second?.kind === 'between' && second.above === anchor ? second.via : undefined}] as const;
+      }))).values()];
+    const order = [...row];
+    for (const way of ways) {
+      const after = way.hint ? order.indexOf(way.hint) : -1;
+      order.splice(after >= 0 ? after + 1 : Math.ceil(order.length / 2), 0, way.id);
+    }
+    const slotAt = (i: number) => axis + (i - (order.length - 1) / 2) * (w + 18) - w / 2;
+    // The place stands under the couple's ring, so the line goes straight down, as far as the row keeps the screen as
+    // full as before; a wide row pans sideways, and moves at least so far that the place is on the screen.
+    let shift = 0;
+    if (ways.length) {
+      const first = slotAt(order.indexOf(ways[0].id)), anchor = tileById.get(ways[0].anchor)!;
+      const under = (roots.length === 2 && rootJoint ? rootJoint.x : midX(anchor)) - w / 2 - first;
+      const [l, r] = [axis - budget / 2 - slotAt(0), axis + budget / 2 - slotAt(order.length - 1) - w];
+      shift = Math.max(Math.min(l, r), Math.min(Math.max(l, r), under));
+      shift = Math.min(shift, axis + budget / 2 - w - first);
+      shift = Math.max(shift, axis - budget / 2 - first);
+    }
     const wideChildren = new Map<string, {x: number; y: number; status: string; stops: number[]}>();
-    row.forEach((id, i) => {
+    const places: {way: typeof ways[number]; haze: Tile}[] = [];
+    order.forEach((id, i) => {
+      const way = ways.find(way => way.id === id);
+      if (way) {
+        const status = own(way.slot), color = m.tone(id)?.color, anchor = tileById.get(way.anchor)!;
+        const from = roots.length === 2 && rootJoint ? rootJoint : {x: midX(anchor), y: anchor.y + anchor.h, bottom: anchor.y + anchor.h};
+        const haze: Tile = {...card('', -1, status, w), id: `gap-down:${id}:1`, x: slotAt(i) + shift, y: lower, color, gap: true, place: true, hint: way.hint, opens: id};
+        // Out of the ring straight down past the couple's cards first, so a place off to the side never runs along them.
+        const stem = Math.min(lower - 12, from.bottom + 6), mid = (stem + lower) / 2;
+        links.push({key: haze.id, d: `M${from.x},${from.y} V${stem} C${from.x},${mid} ${midX(haze)},${mid} ${midX(haze)},${lower}`,
+          gen: 1, status, kind: 'child', color, ids: [id, ...roots]});
+        tiles.push(haze);
+        places.push({way, haze});
+        familyBottom = Math.max(familyBottom, haze.y + haze.h);
+        return;
+      }
       const parents = m.parents(id);
       const parentSlots = [...parents.slots, ...parents.extra];
       const slot = parentSlots.find(p => p?.id === center) || parentSlots.find(p => p && roots.includes(p.id));
       const status = kind === 'union' ? m.connectionStatus(m.spouseConnection(center, id)) : slot ? own(slot) : 'export';
       const tile = card(id, -1, status, w);
       if (slot?.main && kind === 'child' && !['export', 'verified'].includes(status)) tile.assumed = true;
-      tile.x = axis + (i - (row.length - 1) / 2) * (w + 18) - w / 2;
-      spans.push([tile.x, tile.x + w]);
+      tile.x = slotAt(i) + shift;
       tile.y = lower;
       const focus = tileById.get(kind === 'child' && slot ? slot.id : center)!;
       const shared = kind === 'child' && roots.length === 2 && roots.every(pid => parents.slots.some(p => p?.id === pid));
@@ -424,40 +483,26 @@ export function layoutTree(m: Model, center: string, viewport: number, level = d
       links.push({key: 'children:' + key, d, gen: 1, status, kind: 'child', ids: []});
       joint -= 3;
     }
-    if (row.length) lower = familyBottom + 26;
-  }
-
-  // The way down from a nest's anchor: the missing generations as haze, then the family's person, one tap away.
-  const centerTile = tileById.get(center);
-  m.descendantsBelow(center).filter(({id}) => !visible.has(id)).forEach(({id, slot}) => {
-    if (!centerTile) return;
-    const status = own(slot);
-    const color = m.tone(id)?.color;
-    // Below the children: the line runs behind their row, as it runs through one of them nobody knows which, so the
-    // haze never stands straight under one child: it takes the nearest half step between them or beside the row.
-    const w = narrow ? 148 : 158;
-    const at = (k: number) => midX(centerTile) - w / 2 + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * (w + 18) / 2;
-    let k = 0;
-    while (spans.some(([a, b]) => at(k) + w / 2 > a - 6 && at(k) + w / 2 < b + 6) || downs.some(([a, b]) => at(k) < b + 18 && at(k) + w > a - 18)) k++;
-    const x = at(k);
-    downs.push([x, x + w]);
-    let from = {x: midX(centerTile), y: centerTile.y + centerTile.h};
-    let y = lower;
-    const second = m.secondWay(id);
-    for (let i = 1; i <= (slot.gap || 0); i++) {
-      const haze: Tile = {id: `gap-down:${id}:${i}`, gen: -1, status, w: GAP_W, h: 34, scale: 1, compact: true, fade: 1, x: x + w / 2 - GAP_W / 2, y, stackLayers: 0, color, gap: true,
-        hint: i === 1 && second?.kind === 'between' && second.above === center ? second.via : undefined};
-      links.push({key: haze.id, d: curve(from.x, from.y, x + w / 2, y), gen: 1, status, kind: 'child', color, ids: [center, id]});
-      tiles.push(haze);
-      from = {x: x + w / 2, y: y + haze.h};
-      y += haze.h + 14;
+    // Below each place, straight down its own column: further missing generations as bands of haze, then the person.
+    const rowBottom = familyBottom;
+    for (const {way, haze} of places) {
+      const {id} = way, status = own(way.slot), color = haze.color, x = midX(haze);
+      let from = haze.y + haze.h, y = rowBottom + 26;
+      for (let i = 2; i <= (way.slot.gap || 0); i++) {
+        const band: Tile = {id: `gap-down:${id}:${i}`, gen: -1, status, w: GAP_W, h: 34, scale: 1, compact: true, fade: 1, x: x - GAP_W / 2, y, stackLayers: 0, color, gap: true};
+        links.push({key: band.id, d: `M${x},${from} V${y}`, gen: 1, status, kind: 'child', color, ids: [id, ...roots]});
+        tiles.push(band);
+        from = y + band.h;
+        y += band.h + 14;
+      }
+      const tile = {...card(id, -1, status, w), x: haze.x, y};
+      links.push({key: 'down:' + id, d: `M${x},${from} V${y}`, gen: 1, status, kind: 'child', color, ids: [id, ...roots]});
+      tiles.push(tile);
+      visible.add(id);
+      familyBottom = Math.max(familyBottom, tile.y + tile.h);
     }
-    const tile = {...card(id, -1, status, w), x, y};
-    links.push({key: 'down:' + id, d: curve(from.x, from.y, x + w / 2, y), gen: 1, status, kind: 'child', color, ids: [center, id]});
-    tiles.push(tile);
-    visible.add(id);
-    familyBottom = Math.max(familyBottom, tile.y + tile.h);
-  });
+    if (order.length) lower = familyBottom + 26;
+  }
 
   const bounds = (cards: Tile[]): Box => ({
     x0: Math.min(...cards.map(tile => tile.x)),
@@ -476,7 +521,7 @@ export function layoutTree(m: Model, center: string, viewport: number, level = d
     for (const tile of tiles) tile.x += offset;
     for (const b of [box, near, frame]) { b.x0 += offset; b.x1 += offset; }
   }
-  const peopleCount = m.familyPeople.has(center) ? m.familyPeople.size : m.connectedFrom([center]).size;
+  const peopleCount = m.familyPeople.has(center) ? m.familyPeople.size : [...m.connectedFrom([center])].filter(id => isPerson(m.info[id])).length;
   return {
     tiles, links, width: Math.max(viewport + offset, box.x1 + PAD), height: box.y1 + PAD,
     box, near, frame, axis: axis + offset, rootBottom, familyBottom, horizon, cut: cut.length > 0, linkOffset: offset, visible, peopleCount, tightest,

@@ -49,7 +49,7 @@ def _materialize(instance, folder):
     dependencies = [ids, instance.languages, instance.source_language, instance.config.get('settings'),
                     instance.config.get('feed'),
                     {name: read(folder / (name + '.json')) for name in
-                     ('feed', 'chapters', 'pictures', 'documents', 'translations', 'links', 'names')},
+                     ('feed', 'chapters', 'pictures', 'documents', 'translations', 'links', 'names', 'play')},
                     [{k: v for k, v in pack['data'].items() if k != 'desk'}
                      for pack in [*instance.packs, *instance.language_pack_data.values()]],
                     (instance.root / 'exceptions.toml').read_text(encoding='utf-8')

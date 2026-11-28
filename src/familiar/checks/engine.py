@@ -66,8 +66,11 @@ def record_path(instance, value):
     missing = instance.path('records') / '__unresolved_record__'
     if not isinstance(value, str) or any(c in value for c in '/\\'):
         return missing
+    from familiar.instance.gate import shared
     from familiar.instance.subjects import normalized
-    return next((p for p in instance.path('records').rglob('*.json') if normalized(p.stem) == normalized(value)), missing)
+    def records():
+        return {normalized(p.stem): p for p in instance.path('records').rglob('*.json')}
+    return shared(instance, 'record-paths', records).get(normalized(value), missing)
 
 
 def media_exists(instance, asset):
@@ -80,10 +83,18 @@ def life_status(person, privacy):
         return 'living'
     if person.get('life_assessment'):
         return person['life_assessment']['status']
-    if type(person.get('living')) is bool:
-        return 'living' if person['living'] else 'dead'
+    from familiar.tree.life import decision_scope, explicit_alive, recorded
+    if explicit_alive(person):
+        return 'living'
+    decision = next((row for row in reversed(privacy.get('life_decisions', []))
+                     if row.get('person') == ident and not row.get('revoked')
+                     and decision_scope(row) == 'everywhere'), None)
+    if decision:
+        return decision['status']
+    if person.get('living') is False and person.get('life_origin') != 'gedcom':
+        return 'dead'
     events = person.get('events', [])
-    if any(e.get('type') == 'death' or e.get('tag') == 'DEAT' for e in events):
+    if any((e.get('type') == 'death' or e.get('tag') == 'DEAT') and recorded(e) for e in events):
         return 'dead'
     # Graph facts carry localized labels, so never guess a date's meaning from prose.
     return 'unknown'

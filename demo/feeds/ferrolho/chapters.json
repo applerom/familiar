@@ -1,36 +1,73 @@
 [
   {
     "id": "amaro-1921",
-    "year": "1921",
-    "part": null,
-    "title": "One word in the column of who paid",
-    "kind": "fate",
+    "year": "March 1921",
+    "part": 0,
+    "title": "The address in his pocket",
     "people": [
       "AMARO",
       "JOAQUINA",
       "MANUEL"
     ],
-    "text": "Amaro Ferrolho was twenty-three when he left Lajedo do Vento. He was a labourer, and he paid for the crossing himself. On the ship's list, in the column that asks who paid, the clerk wrote one word: Self.\n\nHis mother Joaquina stayed in the village. On the list she is the nearest relative, the person the officers would write to if anything happened to her son on the far side of the ocean.\n\nIn his pocket Amaro carried an address: cousin Manuel Tavares, 14 Rope Walk Street, Quarry Bend. A cousin and a street were all the map he had. The clerk copied them onto line fourteen, and Amaro walked off the pier into a town of brick mills.\n\nFor the next forty years the cotton mill was his day. The family remembers him walking there every morning, the man who had once paid his own way across an ocean.",
-    "more": "- The passenger list of the ship, 1921 (invented for the demo), gives his age, work, village, his mother, the cousin he was going to, and that he paid the passage himself.\n- By the list he was born about 1898; the family remembers 1899. An age said aloud to a clerk often differs by a year.\n- The forty years in the mill are family memory.\n- The pier and the brick mills are the setting of the port town, not a record about Amaro.\n- This family is invented: there is no such island, ship or town.",
-    "ask": "For children: Amaro paid for his own ticket across the ocean. If you could take only one small bag, what would you put in it?\n\nFind it: on the ship's list, which word tells who paid?\n\nGame: Amaro steps off the ship with an address in his pocket. Who does he go to: the captain, cousin Manuel, or a hotel? The list says: cousin Manuel.",
-    "picture": null,
-    "records": [
-      {
-        "doc": "rec-santa-ludovina-1921-14",
-        "title": "Invented record: line 14 of the ship's list",
-        "index_base": 0,
-        "pick": [
-          1,
-          0
-        ]
-      }
-    ],
+    "prose": {
+      "text": [
+        {
+          "text": "At the bend in the path Amaro could still see his mother's house. He had saved for his own fare. The street in Quarry Bend was only four words on a slip of paper, and he ran his finger over them once more before putting it away.",
+          "people": []
+        },
+        {
+          "text": "Twelve days later he followed the mill whistle up from the pier. At number fourteen Manuel had left the door on the latch.",
+          "people": []
+        }
+      ],
+      "ask": [
+        {
+          "text": "What would you put in your pocket on a long trip?",
+          "people": []
+        }
+      ],
+      "more": [
+        {
+          "text": "- The invented passenger list gives the March crossing, the address and who paid.\n- Our version: the pause on the path, the whistle and the latch.",
+          "people": []
+        }
+      ]
+    },
     "flow": [
+      {
+        "after": -1,
+        "placeholder": {
+          "kind": "map",
+          "ratio": [
+            3,
+            2
+          ],
+          "says": "The island path to the harbour and the long crossing to Quarry Bend."
+        }
+      },
       {
         "after": 0,
         "record": 0
+      },
+      {
+        "after": 0,
+        "do": {
+          "kind": "game",
+          "key": "ferrolho/amaro-1921"
+        }
       }
     ],
+    "figures": [],
+    "records": [
+      {
+        "doc": "rec-santa-ludovina-1921-14",
+        "title": "Passenger list of the SS Santa Ludovina, 1921, line 14",
+        "pick": [
+          1
+        ]
+      }
+    ],
+    "kind": "fate",
     "facts": [
       "Sailed in March 1921, aged twenty-three",
       "Paid his own passage",
@@ -62,41 +99,78 @@
         "name",
         "kinship"
       ]
-    }
+    },
+    "kids": {
+      "text": "Amaro took a ship across the sea. He carried his cousin Manuel's address on a slip of paper.",
+      "people": []
+    },
+    "text": "At the bend in the path Amaro could still see his mother's house. He had saved for his own fare. The street in Quarry Bend was only four words on a slip of paper, and he ran his finger over them once more before putting it away.\n\nTwelve days later he followed the mill whistle up from the pier. At number fourteen Manuel had left the door on the latch.",
+    "ask": "What would you put in your pocket on a long trip?",
+    "more": "- The invented passenger list gives the March crossing, the address and who paid.\n- Our version: the pause on the path, the whistle and the latch."
   },
   {
     "id": "rosa-1925",
     "year": "1925",
-    "part": null,
-    "title": "A girl from the point",
-    "kind": "fate",
+    "part": 0,
+    "title": "Thread in the window",
     "people": [
-      "ROSA",
-      "HELENA",
       "AMARO",
-      "MANUEL"
+      "HELENA",
+      "MANUEL",
+      "ROSA"
     ],
-    "text": "In April a girl was born in Quarry Bend, and two weeks later she was carried to the Church of the Holy Ghost. Her name was Helena. Her father was Amaro Ferrolho, and her mother was Rosa Calhau.\n\nThe godfather held the baby over the font. It was Manuel Tavares, very likely the cousin whose address Amaro had carried across the ocean four years before. The same name appears on both papers.\n\nThe clerk wrote where each parent came from. For Amaro: Lajedo do Vento. For Rosa: Ponta d... and there the paper is folded, and along the fold it tore. Two places on the islands begin that way.\n\nOne is Ponta do Moinho, an hour's walk from Amaro's village across the fields. If Rosa came from there, their families could have known each other for years, and the girl followed a boy she knew.\n\nThe other is Ponta das Garças, on the neighbouring island, where many families were called Calhau. If that version is right, Rosa may have crossed two waters, first the strait and then the ocean, to marry a man from another island.\n\nRosa never learned to read, so she never wrote down which it was. What she left is a garden of kale behind the house in Quarry Bend, grown the way it grew on the islands.",
-    "more": "- Helena's baptism certificate of 1925 (invented for the demo) names her parents, their home villages and the godparents.\n- Rosa's birthplace is torn off after \"Ponta d\". Ponta do Moinho is the more likely reading, about one chance in two; Ponta das Garças is the alternative, about one in three; the rest is left for a place nobody has thought of yet.\n- The godfather is very likely the cousin from the ship's list: the same name in the same town, four years apart.\n- The arrivals index of the port for 1919-1926 does not show Rosa under six spellings, her married name among them. About a fifth of the ship lists of those years are not in the index, so she may well have come on a ship whose list was never indexed.\n- Rosa's death certificate would name her birthplace; a relative can ask the town for it.\n- The garden and that Rosa could not read are family memory.\n- This family is invented: there is no such parish, island or town.",
-    "ask": "For children: Rosa's home village is hidden in a torn fold. If one end of your name were torn off, could your friends still guess it?\n\nFind it: who is the godfather, and where did you meet him before?\n\nGame: Rosa came from a 'Ponta d...'. Choose: the village an hour's walk from Amaro's, or the island across the water. A paper from the town hall may help us find out.",
-    "picture": null,
+    "prose": {
+      "text": [
+        {
+          "text": "Rosa held the small sleeve against the daylight and picked out a loose thread. Across the roofs a mill whistle told her Amaro would be home before supper. Their daughter Helena was already asleep, with both fists closed.",
+          "people": []
+        },
+        {
+          "text": "Rosa set the finished sleeve across the back of a chair. When the baby woke, she took her to the window to watch for Amaro.",
+          "people": []
+        }
+      ],
+      "ask": [
+        {
+          "text": "How do you know when someone you are waiting for is nearly home?",
+          "people": []
+        }
+      ],
+      "more": [
+        {
+          "text": "- Helena's 1925 baptism certificate and the tear are invented for the demo.\n- Our version: the sleeve and the wait at the window.",
+          "people": []
+        }
+      ]
+    },
+    "flow": [
+      {
+        "after": -1,
+        "placeholder": {
+          "kind": "drawing",
+          "ratio": [
+            3,
+            2
+          ],
+          "says": "Rosa mends Helena's sleeve beside a window with a view of the mill roof."
+        }
+      },
+      {
+        "after": 0,
+        "record": 0
+      }
+    ],
+    "figures": [],
     "records": [
       {
         "doc": "doc-helena-baptism",
-        "title": "Invented paper: Helena's baptism certificate",
-        "index_base": 0,
+        "title": "Certificate of baptism of Helena, 1925",
         "pick": [
-          0,
           1
         ]
       }
     ],
-    "flow": [
-      {
-        "after": 2,
-        "record": 0
-      }
-    ],
+    "kind": "fate",
     "facts": [
       "Helena born in Quarry Bend in April 1925",
       "Godfather: Manuel Tavares, very likely the cousin from the ship's list",
@@ -150,6 +224,73 @@
         "name",
         "kinship"
       ]
-    }
+    },
+    "kids": {
+      "text": "Rosa mended Helena's sleeve. Then they watched for Amaro to come home from the mill.",
+      "people": []
+    },
+    "text": "Rosa held the small sleeve against the daylight and picked out a loose thread. Across the roofs a mill whistle told her Amaro would be home before supper. Their daughter Helena was already asleep, with both fists closed.\n\nRosa set the finished sleeve across the back of a chair. When the baby woke, she took her to the window to watch for Amaro.",
+    "ask": "How do you know when someone you are waiting for is nearly home?",
+    "more": "- Helena's 1925 baptism certificate and the tear are invented for the demo.\n- Our version: the sleeve and the wait at the window."
+  },
+  {
+    "id": "lantern-1925",
+    "year": "1925",
+    "part": 0,
+    "title": "The lantern at number fourteen",
+    "people": [],
+    "prose": {
+      "text": [
+        {
+          "text": "When the fog rolled up Rope Walk Street, the houses looked alike from the pier. Rosa put a lantern on the table while Amaro went to meet Manuel. Four years earlier a scrap of paper had been enough to get Amaro to that door.",
+          "people": []
+        },
+        {
+          "text": "When the men came in, Rosa turned the lantern down. The kettle had only just begun to sing.",
+          "people": []
+        }
+      ],
+      "ask": [
+        {
+          "text": "Where would you leave a light for someone coming home after dark?",
+          "people": []
+        }
+      ],
+      "more": [
+        {
+          "text": "- Our version: the whole lantern scene is invented. The address is the one on the demo ship's list.",
+          "people": []
+        }
+      ]
+    },
+    "flow": [
+      {
+        "after": -1,
+        "placeholder": {
+          "kind": "drawing",
+          "ratio": [
+            3,
+            2
+          ],
+          "says": "A lantern on the sill, with a spare hook by the garden gate."
+        }
+      },
+      {
+        "after": 0,
+        "do": {
+          "kind": "game",
+          "key": "ferrolho/lantern-1925"
+        }
+      }
+    ],
+    "figures": [],
+    "records": [],
+    "kids": {
+      "text": "Fog covered the street. Rosa had a lantern to guide Amaro and Manuel home.",
+      "people": []
+    },
+    "text": "When the fog rolled up Rope Walk Street, the houses looked alike from the pier. Rosa put a lantern on the table while Amaro went to meet Manuel. Four years earlier a scrap of paper had been enough to get Amaro to that door.\n\nWhen the men came in, Rosa turned the lantern down. The kettle had only just begun to sing.",
+    "ask": "Where would you leave a light for someone coming home after dark?",
+    "more": "- Our version: the whole lantern scene is invented. The address is the one on the demo ship's list."
   }
 ]

@@ -1,0 +1,14 @@
+{
+  "_about": "Save as family/amendments/<id>.json (path key amendments), or let `research amend` write it: one proposal is one command. A proposal stands beside a family statement or a document reading and never edits it. person: tree id. field: name, patronymic, birth, death, place, spouse, occupation, siblings or other. original: text (literally what was told or read) and source (memory item or record that says so). value: what we propose instead. weight: from 0.5 the card tells the proposal and keeps the original in \"More\"; below it the original leads. basis: the stone, the act, a relative's later word, in words the family reads. sources: records or memory items of the basis. state: proposed; confirmed or declined by a relative. The owner or a tree-linked relative with a personal login can answer the exact issued offer. The owner can reopen a refusal. The literal reply stays in the inbox. at: when proposed or restated; an earlier answer does not count for a restated proposal. value, basis and original.text may be a row by language; a birth or death value is one literal date.",
+  "id": "bea-death",
+  "person": "bea-telling-bea-person",
+  "field": "death",
+  "original": {"text": "Bea died in 1955", "source": "bea-memory-name"},
+  "value": "1957",
+  "weight": 0.85,
+  "basis": "The stone in the village cemetery gives 1957.",
+  "sources": ["bea-paper"],
+  "state": "proposed",
+  "by": "collector-a",
+  "at": "2026-11-24T09:00:00+00:00"
+}

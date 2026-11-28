@@ -1,11 +1,11 @@
 <!--
 START_MODULE_CONTRACT: MOD-DEMO-FEED
-PURPOSE: Give one complete feed of two chapters in the shape the reader app builds from, so a first chapter can be reached and shown without any real family.
+PURPOSE: Show how three fictional chapter strips become a desk feed with draft frames, a cut, a route and an open choice.
 PRD_REF: docs/PRD.md#USE-CASES
 INVARIANTS:
 - every person symbol, document, cut-out and flow position of a chapter resolves [review: engine lead]
-- each chapter has a story text, a "More" list ending on the invented mark, and a "For children" block [review: cold reviewer]
-- a cut-out shown in the feed reads exactly as the field of its record [review: engine lead]
+- each chapter has a story text, a "More" list marking what the story supposes, and a "For children" block [review: cold reviewer]
+- each cut draws on a literal field of an invented record [review: engine lead]
 - the story tells scenes from the documents and "More" names what each scene stands on, judged by the reviewer role [review: reviewer]
 CHANGES_WITH:
 - MOD-DEMO-RECORDS (record paths in documents.json)
@@ -14,6 +14,10 @@ CHANGES_WITH:
 :END_MODULE_CONTRACT
 -->
 # Contract of `feeds/ferrolho/`
+
+Edit `studio/chapters/NN-slug.md`, then run `familiar --root demo feed chapters ferrolho`.
+Use `familiar --root demo feed storyboard ferrolho` for a phone-width reading with strips.
+The fictional desk shows the frames that still need a picture.
 
 - `feed.json`: `id`, `title`, `lead` (ends with the invented mark), `period`,
   `line`, `cover` (null: no pictures), `people[]` (symbols), `profile` (`anchor`,

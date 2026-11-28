@@ -176,7 +176,14 @@ def dependencies(instance, *, public=False, research_only=False):
                     if capture.is_file():
                         break
 
-    for path in reference_paths(instance):
+    paths = reference_paths(instance)
+    if not research_only:
+        from familiar.tree.amendments import read as proposals
+        for path, row, problem in proposals(instance):
+            if not problem and row.get('state') != 'declined':
+                paths.add(path)
+                refs.add(normalized(row['original']['source']))
+    for path in paths:
         read(path)
     records, candidates = set(), list(record_root.rglob('*.json'))
     searches = []

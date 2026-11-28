@@ -47,6 +47,72 @@ unknown"; a row that does not name its series but used a series' online source
 for its place counts as "depth unknown" there too. `instance check` advises on
 an unknown series id or depth; it never refuses.
 
+## The access ledger (agents, lead)
+
+A journal row says what was searched. It cannot say what exists and cannot be
+opened: a parish book that lies in a reading room leaves no rows, so "not tried",
+"tried, no record" and "exists, no access from home" used to look the same. The
+ledger (`research/access.json`, path key `access`, form `research form access`)
+says, per place and kind of paper: what years, which holder and call number, and
+one state with its date, author and report:
+
+| State | Means |
+|---|---|
+| `home` | opens from home, not finished (`read` of `of`) |
+| `copy` | the archive sells a copy remotely: `price`, and in `needs` what is still missing to order it (sheet numbers) |
+| `room` | no access from home: only in the archive's reading room |
+| `letter` | no access from home: the archive answers letters |
+| `unknown` | not settled where it is, or whether it survives |
+| `read` | read, with `read`/`of` when counted |
+| `none` | nothing to read: lost, or this holder or site has none |
+
+**At hand-in** an executor records each verdict in one command; the same place,
+kind and years (or `--id`) change the row instead of adding one:
+
+```
+familiar research access record --place "Ponta do Moinho" --line Calhau --kind parish \
+  --years 1911-1915 --state room --holder "Invented diocesan archive" --reference "books 5-6" \
+  --look-for "Children of a Calhau household" --by collector-a --report research/2026-11-12/README.md
+familiar research access record --id a1 --state read --read 31 --of 31 --by collector-b
+familiar research access [--line Calhau] [--place "Ponta do Moinho"]
+familiar research access record --id a7 --state copy --price "3 dollars a page" --needs "page numbers" --by collector-b
+familiar research access --order        # copies to order, then the reading-room list
+familiar research access --markdown --save   # the whole ledger as ACCESS.md beside it; every later verdict renews it
+familiar research access note "What we have read so far." --section "The narrator's lines"
+familiar research access note --place "Ponta do Moinho" --section "The narrator's lines"
+```
+
+There is one ledger, the JSON. The page is its print: every row with its verdict's date,
+author and report, the copies with price and what is missing to order them, the reading-room
+list in `order`. Words around the rows (the header, a section, a place, `--room` above the
+list) are kept in the ledger by `access note`. `--save` never overwrites a page kept by hand,
+and `instance check` says when the page is not the print of the ledger. Words may be given as
+a JSON row by language: `--look-for '{"en": "...", "pl": "..."}'`.
+
+A verdict "does not open from home" is a finding: it goes into the ledger the same
+day with its call numbers, and nobody walks that road again until access changes.
+A row marked `--doubtful` (the book may not hold our place) neither opens nor
+closes a road. Years and depth read inside one book stay in the series list.
+
+- `research plan` puts the books of the line's places above its approaches, each
+  with its state. When nothing of the place opens from home, approaches that stand
+  on the books read "no access from home", the next step is the reading-room order
+  or the letter, and no pass over name bases follows; what costs nothing (a home
+  paper, a map of record keepers) is kept beside it as "Meanwhile". A copy that can be
+  ordered is no closed road: the next step orders it with its price, or finds out what `needs`
+  names. Books that open
+  from home come before a question or a letter. A line without ledger rows says
+  "not tried".
+- `instance check` advises, never refuses: when a version, a top-level note in
+  `research/` (the strategy) or the desk's plan says a line is exhausted or a person
+  not found while the ledger holds unread books of its place, and the same passage
+  does not say what is unread; and when a line has many journal rows and no ledger
+  row for its place. "Exhausted" is written about a kind of source, with the years
+  read, never about a line.
+- The family reads the same on the search map: per place, what we have read and
+  where the rest lies, and the reading-room list to take along. `look_for` is read
+  by relatives and never names the living; `note` stays with the research.
+
 ## Forms and the identity score (agents)
 
 `research forms Морецкий Lunografow [--kind surname|place|given_name] [--year Y]`
@@ -100,6 +166,10 @@ A weight below 0.3 is a normal entry in that table. Add a link to the family
 only when there is a reason for it. Inventory work goes deeper from an
 already linked frontier. This approach builds toward the frontier from the
 earliest local records.
+
+A line has a place when the access ledger, a version from 0.3 up or a told fact gives
+one, whatever its cards record; it has a parish when the ledger's parish books name
+their church, and a registrar when the ledger holds a row answered by letter.
 
 Set optional `play` on new journal rows to the method ID, for example
 `"play": "keeper-forms"`. Record the usual query, scope and result. When
@@ -257,6 +327,9 @@ off the line's fit sit behind one more.
   rules it out; none recorded leaves it as "only if the line was ...", never a
   hole. An emigration or other episode still needs `episodes` or
   `planning_requires`.
+- **Books of the place** (the access ledger, above): what was read, where the rest
+  lies, and the reading-room list. The page exists in each reader language that has
+  its translations.
 - **Read next**: the empty cells, as runs of years, ranked by value — the
   years in which a record of that kind can name the people of the line's open
   questions and its frontier (their birth windows; marriages 15–45 years

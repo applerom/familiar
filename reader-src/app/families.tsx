@@ -1,6 +1,6 @@
 'use client';
 import {useMemo,useState,type ReactNode} from 'react';
-import {clanKey,genderForm,lineTitle,placeLabel,type Model,type Row} from './tree/model';
+import {isPerson,clanKey,genderForm,lineTitle,placeLabel,type Model,type Row} from './tree/model';
 import {plural,type Language} from './i18n';
 import {findPeople,searchKey} from './search';
 type Group={key:string;name:string;variants:string[];people:string[];from?:number;to?:number;places:string[];gen:number;version:number};
@@ -23,7 +23,7 @@ function groupBySurname(m:Model,people:Row,ids:Iterable<string>,gen:(id:string)=
   const f=forms.get(g.key)||forms.set(g.key,new Map()).get(g.key)!;f.set(sur,(f.get(sur)||0)+1)};
  // A clan the family named (surname decision) is one group in every spelling and language; otherwise the male,
  // female and maiden forms of one spelling are one family (Корнеев, Корнеева), and a one-letter variant joins it.
- for(const id of ids){const i=m.info[id];if(!i||i.placeholder)continue;const sur=i.surnameKey;if(!sur)continue;const clan=i.clan||clans.get(fold(clanKey(sur)));const key=clan?'clan:'+clan:fold(clanKey(sur));if(clan&&i.clanSurname)clanForm.set(key,i.clanSurname);
+ for(const id of ids){const i=m.info[id];if(!isPerson(i))continue;const sur=i.surnameKey;if(!sur)continue;const clan=i.clan||clans.get(fold(clanKey(sur)));const key=clan?'clan:'+clan:fold(clanKey(sur));if(clan&&i.clanSurname)clanForm.set(key,i.clanSurname);
   let g=groups.get(key);
   if(!g&&!clan&&key.length>=7)for(const o of groups.values())if(!o.key.startsWith('clan:')&&dist(o.key,key)<=1){g=o;break}
   if(!g){g={key,name:sur,variants:[],people:[],places:[],gen:gen(id),version:0};groups.set(key,g)}
@@ -49,7 +49,7 @@ export default function Families({data,model,connected,group,go,labels,language,
   const isLine=(g:Group)=>lineKeys.has(g.key)||[g.name,...g.variants].map(fold).some(k=>taken.some(t=>t===k||(k.length>=7&&dist(t,k)<=1)));
   return groupBySurname(model,data.people,[...connected].filter(id=>!inside.has(id)&&(!lines.length||!model.homes.includes(id))),()=>0,()=>false).filter(g=>!isLine(g)).sort((a,b)=>b.people.length-a.people.length||a.name.localeCompare(b.name))},[lines,connected,model,data]);
  const needle=query.trim().toLocaleLowerCase();
- const results=useMemo(()=>{const keep=(id:string)=>scope==='all'||group(id)===scope;const ids=needle?findPeople(data.people,model,needle,keep).map(h=>h.id):list?Object.keys(data.people).filter(id=>model.info[id]&&!model.info[id].placeholder&&keep(id)):[];return ids.map(id=>data.people[id] as Row).sort((a,b)=>model.info[a.id].short.localeCompare(model.info[b.id].short,language))},[needle,list,scope,data,model,group,language]);
+ const results=useMemo(()=>{const keep=(id:string)=>scope==='all'||group(id)===scope;const ids=needle?findPeople(data.people,model,needle,keep).map(h=>h.id):list?Object.keys(data.people).filter(id=>isPerson(model.info[id])&&keep(id)):[];return ids.map(id=>data.people[id] as Row).sort((a,b)=>model.info[a.id].short.localeCompare(model.info[b.id].short,language))},[needle,list,scope,data,model,group,language]);
  const n=(k:number)=>`${k} ${plural(k,labels.personsForms,language)}`;
  const span=(g:Group)=>g.from===undefined?'':g.from===g.to?String(g.from):`${g.from}–${g.to}`;
  const chips=(gs:Group[],prefix:string)=><div className="surnames">{gs.map(g=>{const k=prefix+g.key;return <button key={k} className={'sur'+(open===k?' on':'')+(g.version===g.people.length&&g.version?' ver':'')} aria-expanded={open===k} onClick={()=>setOpen(open===k?'':k)}><b>{g.name}{g.variants.length>0&&<small className="var"> · {labels.alsoSpelled} {g.variants.join(', ')}</small>}</b><small>{[n(g.people.length),span(g),g.places.slice(0,2).join(', ')].filter(Boolean).join(' · ')}</small></button>})}</div>;

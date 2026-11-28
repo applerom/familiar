@@ -9,11 +9,11 @@ import {readerStorage,profile,inLanguage} from './reader-profile';
  *    Spots are the same `Spot` boxes, in percent of the whole panorama; the viewer turns them into angles.
  *  - The chest (`localStorage` «reader-chest»): every found thing and every finished game; ChestChip shows «🧰 12 / 40» in the feed.
  *  - Sound: WebAudio, synthesised, no files; «без звука» is remembered («reader-play-mute»). */
-import {createContext,useCallback,useContext,useEffect,useLayoutEffect,useRef,useState,type CSSProperties,type ReactNode,type MouseEvent as ReactMouseEvent} from 'react';
+import {createContext,useCallback,useContext,useEffect,useLayoutEffect,useRef,useState,type CSSProperties,type ReactNode,type MouseEvent as ReactMouseEvent,type PointerEvent as ReactPointerEvent} from 'react';
 import {createPortal} from 'react-dom';
 import {plural,type Language} from './i18n';
 import type {Row} from './tree/model';
-import type {Feed,Game,GameStep,Picture,Spot} from './feed';
+import type {Feed,Game,GameStep,Picture,Route,Spot} from './feed';
 
 const tr=(x:Row|string|undefined,language:string):string=>inLanguage(x,language);
 /** A 360° room behind a picture (`play/*.json` → `panos`, see `scripts/feed-play.py`). */
@@ -78,6 +78,7 @@ function feedPrizes(feed:Feed){
   const pics=[c.picture,...(c.figures||[]).flatMap(f=>[f,f.ours]),...(c.extras||[]).flatMap(x=>[x.picture,x.picture?.ours])].filter(Boolean) as Picture[];
   for(const p of pics){(p.spots||[]).forEach((s,k)=>s.find&&keys.add(`find:${p.asset}#${k}`));const pn=p.pano;if(pn)(pn.spots||[]).forEach((s,k)=>s.find&&keys.add(`find:${pn.asset}#${k}`))}
   if(c.game)keys.add(`game:${feed.id}/${c.id||inLanguage(c.year,'')}`);
+  for(const beat of c.flow||[])if(beat.do?.kind==='game')keys.add(`game:${beat.do.key}`);
  }
  return keys;
 }
@@ -184,9 +185,75 @@ export function SpotFrame({spots,kids,offer,labels,language,className,asset='',p
 }
 
 /* ---------- GameCard ---------- */
+function RouteTrace({route,language,onComplete,onError}:{route:Route;language:Language;onComplete:()=>void;onError:()=>void}){
+ const [passed,setPassed]=useState(0);const progress=useRef(0);
+ const [tip,setTip]=useState<{x:number;y:number}|null>(null);
+ const pointer=useRef<number|null>(null);
+ const accept=(index:number)=>{
+  if(index!==progress.current)return false;
+  progress.current=index+1;setPassed(index+1);
+  if(index+1===route.points.length){setTip(null);onComplete()}
+  return true;
+ };
+ const move=(event:ReactPointerEvent<HTMLDivElement>)=>{
+  if(event.pointerId!==pointer.current||progress.current===route.points.length)return;
+  const hit=document.elementFromPoint(event.clientX,event.clientY)?.closest<HTMLButtonElement>('[data-route-point]');
+  if(hit&&event.currentTarget.contains(hit))accept(Number(hit.dataset.routePoint));
+  if(progress.current===route.points.length)return;
+  const rect=event.currentTarget.getBoundingClientRect();
+  const percent=(position:number,start:number,length:number)=>Math.max(0,Math.min(100,100*(position-start)/length));
+  setTip({x:percent(event.clientX,rect.left,rect.width),y:percent(event.clientY,rect.top,rect.height)});
+ };
+ const stop=()=>{pointer.current=null;setTip(null)};
+ const line=[...route.points.slice(0,passed),...(tip?[tip]:[])];
+ return <div className="route-board" onPointerMove={move} onLostPointerCapture={stop}>
+  <img src={route.asset} alt="" draggable={false} onError={onError}/>
+  <svg className="route-line" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+   <polyline points={line.map(p=>[p.x,p.y].join(',')).join(' ')} vectorEffect="non-scaling-stroke"/>
+  </svg>
+  {route.points.map((p,i)=><button key={i} type="button" data-route-point={i} aria-current={i===passed?'step':undefined}
+   aria-label={[i+1,tr(p.label,language)].filter(Boolean).join(' · ')} aria-pressed={i<passed}
+   style={{left:p.x+'%',top:p.y+'%'}} onClick={()=>accept(i)}
+   onPointerDown={e=>{
+    if(!e.isPrimary||e.button!==0||!accept(i))return;
+    pointer.current=e.pointerId;
+    e.currentTarget.parentElement?.setPointerCapture(e.pointerId);
+   }}>{i+1}</button>)}
+ </div>;
+}
+
+/** A question with one authored answer can open it in place, including while its map is a draft. */
+function AnswerCard({game,kids,language,id,step}:{game:Game;kids:boolean;language:Language;id:string;step:GameStep}){
+ const feed=useContext(PlayFeed);
+ const [opened,setOpened]=useState(false);const [broken,setBroken]=useState(false);
+ const answer=step.choices![0];
+ const route=broken?undefined:game.route;
+ const open=()=>{setOpened(true);chestAdd(`game:${id}`,{label:game.reward||game.title,feed,kind:'game'})};
+ const prompt=tr(kids?(step.kids||game.kids||step.q):step.q,language)||tr(game.intro,language);
+ return <section className="feed-game game-brief">
+  <h3>{tr(game.title,language)}</h3>
+  {prompt&&<p>{prompt}</p>}
+  {route?<RouteTrace route={route} language={language} onComplete={open} onError={()=>setBroken(true)}/>
+    :<button className="game-go" aria-expanded={opened} onClick={()=>opened?setOpened(false):open()}>{tr(answer.text,language)}</button>}
+  <div className="game-answer" aria-live="polite">{opened&&<>
+   {[tr(kids&&answer.kids?answer.kids:answer.outcome,language),tr(kids&&game.truth.kids?game.truth.kids:game.truth.text,language)]
+    .flatMap(t=>t.split(/\n{2,}/)).filter(Boolean).map((t,i)=><p key={i}>{t}</p>)}
+  </>}</div>
+ </section>;
+}
+
+export function GameCard(props:{game:Game;kids:boolean;labels:Row;language:Language;doc:(asset:string)=>ReactNode;id:string}){
+ const {game}=props;
+ const [step]=game.steps;
+ const choice=step?.choices?.[0];
+ return game.steps.length===1&&step.choices?.length===1&&!step.draw&&!choice?.icon&&!choice?.gain&&!game.truth.record
+  ?<AnswerCard {...props} step={step}/>
+  :<StoryGameCard {...props}/>;
+}
+
 /** «Сыграй за …»: steps one by one. A choice shows its outcome (and may put a thing into the hero's bundle); a lot is drawn from a drum:
  *  it shakes, the number slows down digit by digit, then a stamp. At the end a closed chest: the chapter's real document is the treasure. */
-export function GameCard({game,kids,labels,language,doc,id}:{game:Game;kids:boolean;labels:Row;language:Language;doc:(asset:string)=>ReactNode;id:string}){
+function StoryGameCard({game,kids,labels,language,doc,id}:{game:Game;kids:boolean;labels:Row;language:Language;doc:(asset:string)=>ReactNode;id:string}){
  const feed=useContext(PlayFeed);
  const [stage,setStage]=useState(-1);const [pick,setPick]=useState<number|null>(null);const [roll,setRoll]=useState<number|null>(null);
  const [phase,setPhase]=useState<'idle'|'shake'|'spin'|'land'>('idle');const [bag,setBag]=useState<{icon?:string;gain:Row|string}[]>([]);const [opened,setOpened]=useState(false);

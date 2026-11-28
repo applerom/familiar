@@ -17,12 +17,13 @@ import pl from '../../../regions/pl/kinship.json';
 import en from '../../../regions/demo-english/kinship.json';
 import type {Relation} from './model';
 export type Term={id:string;word:string;explanation:string;group:string;archaic?:boolean;match?:Record<string,string|number>[]};
-export type Lexicon={title:string;intro:string;example:string;noExample:string;chooseViewer:string;archaic:string;maybe:string;path:string;labels:Record<string,any>;fallback:Record<string,string>;genitive:Record<string,string>;groups:Record<string,string>;terms:Term[]};
+export type Lexicon={title:string;intro:string;all:string;archaic:string;maybe:string;path:string;labels:Record<string,any>;fallback:Record<string,string>;genitive:Record<string,string>;groups:Record<string,string>;terms:Term[]};
 const packs:Record<string,Lexicon>={ru,pl,en};
 export const kinshipLexicon=(language:string):Lexicon|undefined=>packs[language];
 /** A semantic descriptor, independent of language. The table owns every displayed word. */
 export function kinshipTerm(r:Relation,language:string):Term|undefined{
  const pack=kinshipLexicon(language);if(!pack)return;
+ if(r.viaSpouse===''||(!r.g&&(r.kind==='spouse'||r.spouseOf)))return;
  const source=r.spouseOf||r;
  const key:Record<string,string|number>={kind:source.kind,n1:source.n1,n2:source.n2,g:r.g,
   viewerG:r.viewerG||'',branchG:r.branchG||'',collateralG:r.collateralG||'',viaSpouse:r.viaSpouse||'',

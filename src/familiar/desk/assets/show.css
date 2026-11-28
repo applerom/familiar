@@ -282,8 +282,8 @@ img,svg{display:block;max-width:100%}
 .familiar-show .log .more-row{padding-left:76px}.familiar-show .more-row ol>li{margin-left:-76px}
 .familiar-show summary{cursor:pointer;color:var(--ink-mute);font-size:var(--t-sm);padding:12px 0}
 .familiar-show #show-teasers{margin-top:var(--s6)}
-.familiar-show #desk-nav a{border:0;background:transparent;font-family:var(--font-ui)}
 .familiar-show .desk-extra{margin:0 0 50px}
+.familiar-show .desk-extra a{display:inline-flex;align-items:center;min-height:48px}
 .familiar-show .show>.rail{position:static}
 .familiar-show .work-volume{margin:28px 0 0;color:var(--ink-mute);font:400 var(--t-sm)/1.6 var(--font-ui)}
 .familiar-show .log small{margin-left:0}
@@ -331,3 +331,14 @@ img,svg{display:block;max-width:100%}
 #show-log{scroll-margin-top:80px}
 @media(max-width:767px){.familiar-show .counts{grid-template-columns:repeat(2,minmax(0,1fr))}.familiar-show .counts div,.familiar-show .counts div:first-child{grid-column:auto}.familiar-show .counts b,.familiar-show .counts div:first-child b{font-size:28px}.counts div{padding:10px}.familiar-show .counts span{font-size:11px}.familiar-show .show>.rail{order:-1}}
 .added ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}.added li{padding:12px 14px;border:1.5px dashed var(--ember);border-radius:12px;background:var(--sheet)}.added li p{margin:0 0 4px;white-space:pre-line;font:16px/1.45 var(--font-story)}.added li small{font:700 11px/1.3 var(--font-ui);color:var(--ember-text)}
+
+/* The first screen in plain words; the workshop starts below its own heading. */
+.show-intro{padding:var(--s4) 0 var(--s5);max-width:760px}
+.show-intro h1{font:500 34px/1.15 var(--font-story);margin:0 0 var(--s3)}
+.show-intro>p{font:400 20px/1.5 var(--font-story);color:var(--ink-soft);margin:0 0 var(--s4)}
+.show-intro h2{font:500 22px/1.25 var(--font-story);margin:var(--s5) 0 var(--s2)}
+.show-intro ul{list-style:none;margin:0;padding:0}
+.show-intro li{padding:12px 0;border-top:1px solid var(--rule);font:400 18px/1.45 var(--font-ui)}
+.show-intro li a{display:block;min-height:24px;padding:12px 0;margin:-12px 0;color:var(--act)}
+.show-workshop{margin:var(--s6) 0 0;padding-top:var(--s5);border-top:2px solid var(--rule);font:500 22px/1.25 var(--font-story);color:var(--ink-mute)}
+.since-title{font:500 26px/1.2 var(--font-story);margin:var(--s2) 0 var(--s4);text-wrap:balance}

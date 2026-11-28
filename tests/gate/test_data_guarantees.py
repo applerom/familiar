@@ -1,18 +1,19 @@
-"""Representative data and privacy failures with a successful control."""
 import copy
 import hashlib
 import json
 from datetime import date
+from pathlib import Path
 
 import pytest
 from PIL import Image
 
 from familiar.feeds import service
 from familiar.instance.gate import evaluate, publication
-from familiar.instance.publication import restrict_graph
+from familiar.instance.publication import restrict_graph, scan
 from familiar.instance.review import attest, review_ticket
 from familiar.instance.validation import _forms, check
-from familiar.instance.writer import read_generation
+from familiar.instance.writer import mutate, publish, read_generation
+from familiar.tree.builder import _build, build
 
 
 def edit(family, relative, change):
@@ -22,8 +23,24 @@ def edit(family, relative, change):
     path.write_text(json.dumps(value, ensure_ascii=False), encoding='utf-8')
 
 
+def test_draft_frames_stay_home(family):
+    edit(family, 'feeds/ferrolho/chapters.json', lambda chapters: chapters[0]['flow'].append({
+        'after': 1, 'placeholder': {'kind': 'map', 'ratio': [4, 3], 'says': 'The island and its harbour'}}))
+    with pytest.raises(ValueError, match='home-only.*ferrolho/amaro-1921'):
+        publication(family, 'reader', for_review=True)
+
+
+def test_play_in_flow(family):
+    game = {'title': 'Where does the ship go?', 'steps': [], 'truth': {'text': 'To the mainland'}}
+    mutate(family, {family.path('feeds') / 'ferrolho/play.json': {'games': {'riddle': game | {
+        'route': {'asset': '/unshown.png', 'points': [{'x': 12, 'y': 60}, {'x': 75, 'y': 30}]}}}}})
+    edit(family, 'feeds/ferrolho/chapters.json', lambda chapters: chapters[0]['flow'].append({
+        'after': 1, 'do': {'kind': 'game', 'key': 'riddle'}}))
+    chapter = json.loads(publication(family, 'reader-private').files()['graph.json'])['feeds'][0]['chapters'][0]
+    assert chapter['flow'][-1] == {'after': 1, 'do': {'kind': 'game', 'key': 'riddle', 'game': game}}
+
+
 def test_f1_shown_reference_resolves(family):
-    from familiar.instance.writer import mutate
     from familiar.research.delivery import contribute, document
     contribute(family, {'id': 'new-person', 'schema': 1, 'author': 'researcher', 'people': {'p-new': {'name': 'Invented Ancestor'}}})
     record = json.loads(next(family.path('records').rglob('*.json')).read_text(encoding='utf-8'))
@@ -35,7 +52,7 @@ def test_f1_shown_reference_resolves(family):
 
 
 def test_waiting_contribution_is_quarantined_then_applied_and_never_quietly_lost(family):
-    from familiar.tree.builder import build
+
     path = family.path('contributions') / 'researcher/claim.json'
     path.parent.mkdir(parents=True)
     union = {'id': 'new-union', 'husband': 'p-amaro', 'wife': 'p-new', 'status': 'hypothesis', 'text': 'Named as spouses.', 'basis': 'The document names the wife.', 'sources': ['paper'], 'weight': .4}
@@ -58,40 +75,99 @@ def test_waiting_contribution_is_quarantined_then_applied_and_never_quietly_lost
             publish()
 
 
-def test_probable_identity_dates_the_card_by_the_document():
-    from familiar.tree.identities import _apply_identities
-    # The family's card has only a guess; the found baptism record has the date: the tile takes the document's.
-    data = {'sources': {'s': {}}, 'people': {'kept': {'name': 'Invented'}, 'found': {'name': 'Invented', 'events': [{'type': 'birth', 'date': '1849-10-07'}]},
-            'aged': {'name': 'Invented', 'events': [{'type': 'birth', 'date': '1772', 'approximate': True}]}, 'other': {'name': 'Invented', 'events': [{'type': 'birth', 'date': 'ABT 1760'}]}}, 'edges': []}
-    merges = [{'canonical': 'kept', 'alias': 'found', 'status': 'probable', 'weight': .4, 'basis': 'b', 'sources': ['s']},
-              {'canonical': 'other', 'alias': 'aged', 'status': 'probable', 'weight': .4, 'basis': 'b', 'sources': ['s']}]
-    people = _apply_identities(data, {'merges': merges})['people']
-    assert people['kept']['events'][0]['date'] == '1849-10-07' and people['other']['events'][0]['date'] == 'ABT 1760'
+def test_estimate_agrees_with_what_the_card_tells(family):
+    from familiar.tree import birth_guess
+    def card(weight, child='1930', text='Amaro was wounded in 1915.'):
+        people = {p: {'id': p, 'sex': 'M', 'names': [{'given': p.title()}], 'facts': [], 'events': []} for p in ('grandfather', 'amaro', 'son')}
+        graph = {'people': people, 'edges': [{'parent': 'amaro', 'child': 'son', 'status': 'export'}, {'parent': 'grandfather', 'child': 'amaro', 'weight': .4}], 'families': []}
+        people['son']['events'], people['amaro']['facts'] = [{'type': 'birth', 'date': child}], [{'text': text, 'label': 'The war', 'status': 'hypothesis', 'weight': weight}]
+        said = []; birth_guess.apply(family, graph, host_private=True); birth_guess.check(family, graph, lambda where, message: said.append(message))
+        return [people[p]['birthGuess']['year'] for p in ('amaro', 'grandfather')], said
+    plain, moved = card(.29), card(.4)
+    assert moved[0][0] == 1895 < plain[0][0] and moved[0][1] < plain[0][1] and not moved[1]
+    assert card(.4, text='His father was wounded in 1915.') == card(.4, text='The front came in 1915.') == plain
+    assert card(.4, child='1975')[0] == card(.1, child='1975')[0] and '1975' in card(.4, child='1975')[1][0]
 
 
 def test_f2_record_subject_cannot_be_omitted(family):
-    scan = {'photo': False, 'asset': '/shared-scan.jpg'}
-    graph = {'people': {'p-amaro': {'id': 'p-amaro', 'media': [scan]}}, 'sources': {}}
-    for private in (False, True):
-        assert restrict_graph(family, copy.deepcopy(graph), host_private=private)['people']['p-amaro']['media']
-    graph['people']['p-daniel'] = {'id': 'p-daniel', 'media': [scan]}
-    for private in (False, True):
-        assert not restrict_graph(family, copy.deepcopy(graph), host_private=private)['people']['p-amaro']['media']
+    from familiar.reader.documents import _local_sources
+    def telling(graph):
+        graph['sources']['voice'] = {'id': 'voice', 'kind': 'memory', 'text': 'A private telling'}
+    assert 'A private telling' not in json.dumps(publication(family, 'tree', tree_enrich=telling, for_review=True).data())
     record = family.path('records') / 'clip.json'
-    for subject in ('p-amaro', 'p-daniel'):
-        record.write_text(json.dumps({'id': 'clip', 'subjects': [subject]}), encoding='utf-8')
-        doc = {'record': 'clip', 'subjects': [subject], 'asset': '/clip.png'}
-        graph = {'people': {}, 'feeds': [{'id': 'story', 'chapters': [{'id': 'face', 'people': ['p-amaro', 'p-daniel'], 'records': [doc]}]}]}
-        for private in (False, True):
-            shown = restrict_graph(family, copy.deepcopy(graph), host_private=private)['feeds'][0]['chapters'][0]
-            assert bool(shown['records']) == (subject == 'p-amaro')
-    graph['feeds'][0]['chapters'][0]['records'][0]['subjects'] = ['p-amaro']
+    def sheet(private, *, subjects, complete, weight=None):
+        case = json.loads(Path(__file__).with_name('fixtures').joinpath('document-context.json').read_bytes())
+        record.write_text(json.dumps(case['record'] | {'type': 'census', 'subjects': subjects, 'subjects_complete': complete}), encoding='utf-8')
+        graph = case['graph']
+        if weight is not None:
+            graph['edges'][0].update(sources=['clip'], weight=weight)
+        shown = restrict_graph(family, graph, host_private=private)
+        pages, _ = _local_sources(family, shown, {}, host_private=private)
+        records = shown['feeds'][0]['chapters'][0]['records']
+        assert records[-1]['read'] == case['record']['fields']['place'] and (len(records) == 2) == bool(pages)
+        assert ('both witnesses' in str(shown['people']['p-amaro']['notes'])) == bool(pages)
+        person = shown['people']['p-amaro']
+        assert person['name'] == case['record']['fields']['fate']
+        assert person['facts'][0]['text'] == ('missing in action; «both witnesses beside»' if pages else 'missing in action; «…»')
+        assert {sid: 'text' in shown['sources'][sid] for sid in ('son', 'voice')} == {'son': private, 'voice': private}
+        game = shown['feeds'][0]['chapters'][0].get('game', {})
+        assert bool(game.get('truth', {}).get('record')) == (private and bool(pages))
+        return bool(pages)
+    for private in (False, True):
+        assert sheet(private, subjects=['p-amaro'], complete=True, weight=.29)
+        assert not sheet(private, subjects=['p-amaro'], complete=False)
+        assert not sheet(private, subjects=['p-amaro'], complete=True, weight=.30)
     with pytest.raises(ValueError, match='subjects disagree'):
-        restrict_graph(family, graph)
+        sheet(False, subjects=['p-daniel'], complete=True)
+
+
+@pytest.mark.parametrize('scenario', ['historical', 'citation', 'same'])
+def test_only_recorded_events_open_a_card(family, scenario):
+    fixture = Path(__file__).with_name('fixtures').joinpath('parent-life.json').read_text(encoding='utf-8')
+    case = json.loads(fixture.replace('RECENT', str(date.today().year - 60)).replace('OLDER', str(date.today().year - 90)))[scenario]
+    edit(family, 'tree/snapshot/people.json', lambda g: g.update(people=[p for p in g['people'] if p['id'] not in case['expected']] + case['people']))
+    edit(family, 'tree/evidence.json', lambda g: g['edges'].extend(case['edges']))
+    edit(family, 'records/home/doc-helena-baptism.json', lambda r: r.update(case['record']))
+    edit(family, 'family/amendments/walter-death.json', lambda p: p.update(weight=1, state='confirmed'))
+    family.path('identity_decisions').write_text(json.dumps({'merges': case.get('merges', [])}), encoding='utf-8')
+    for private in (False, True):
+        people = _build(family, family_display=private)['people']
+        assert {p: people[p]['life_assessment']['status'] for p in case['expected']} == {p: modes[int(private)] for p, modes in case['expected'].items()}
+        if 'sealed_living' in case:
+            graph = json.loads(publication(family, 'reader-private' if private else 'reader', for_review=True).files()['graph.json'])
+            shown = next(p for p in graph['people'].values() if p['name'] == people['p-citer']['name'])
+            assert shown.get('living') is case['sealed_living']
+    if scenario == 'same':
+        assert graph['identityAliases']['p-named'] == 'p-citer' and not graph.get('presentationAliases')
+        assert [e['weight'] for e in graph['edges'] if 'p-citer' in (e['parent'], e['child'])] == [.5, .99]
+        decision = case['merges'][0] | {'status': 'probable', 'weight': .45}
+        family.path('identity_decisions').write_text(json.dumps({'merges': [decision]}), encoding='utf-8')
+        paper = 'doc-candidate'
+        edit(family, 'tree/evidence.json', lambda g: g['sources'].append({'id': paper, 'kind': 'home-paper', 'record': paper}))
+        edit(family, 'tree/snapshot/people.json', lambda g: next(p for p in g['people'] if p['id'] == 'p-named').update(
+            living=False, events=[{'type': 'birth', 'date': 'ABT 1890'}, {'type': 'baptism', 'date': '1891', 'provenance': [paper]}]))
+        edit(family, 'tree/snapshot/people.json', lambda g: next(p for p in g['people'] if p['id'] == 'p-citer').update(living=False))
+        for protected in (False, True):
+            (family.path('records') / f'home/{paper}.json').write_text(json.dumps(case['candidate_paper'] | {'privacy': 'living-possible' if protected else 'dead'}), encoding='utf-8')
+            graph = json.loads(publication(family, 'reader-private').files()['graph.json'])
+            match, = graph['people']['p-citer']['probableIdentities']
+            assert 'p-named' not in graph['people'] and graph['presentationAliases'] == {'p-named': 'p-citer'}
+            assert match['weight'] == .45 and match['card']['birth'] == 'ABT 1890'
+            assert (paper in match['card']['papers'], bool(graph['sources'][paper].get('asset'))) == (not protected, not protected)
+
+
+
+def test_only_visible_amendments_leave_the_inbox(family):
+    path = 'family/amendments/walter-death.json'
+    literal = json.loads((family.root / path).read_bytes())['basis']
+    assert literal.encode() in publication(family, 'reader-private').files()['graph.json']
+    edit(family, 'records/home/doc-helena-baptism.json', lambda row: row.update(privacy='living-possible'))
+    for change in ({'state': 'declined'}, {'state': 'proposed', 'weight': 1, 'sources': ['doc-helena-baptism']}):
+        edit(family, path, lambda row: row.update(change))
+        assert literal.encode() not in b''.join(publication(family, 'reader-private').files().values())
 
 
 def test_photo_treatment_stays_local_for_living_subject(family, monkeypatch):
-    from familiar.instance.publication import scan
     family.path('media').mkdir(exist_ok=True)
     for name in ('original.png', 'treated.png'):
         Image.new('RGB', (12, 16)).save(family.path('media') / name)
@@ -101,7 +177,6 @@ def test_photo_treatment_stays_local_for_living_subject(family, monkeypatch):
     for private in (False, True):
         shown = scan(family, restrict_graph(family, copy.deepcopy(graph), host_private=private), 'graph', host_private=private)
         assert bool(shown['feeds'][0]['chapters'][0]['figures']) == private
-    from pathlib import Path
     from familiar.checks.engine import _known_people
     from familiar.instance.restorations import preserve
     original = json.loads((Path(__file__).parents[2] / 'forms/photo-restoration.json').read_bytes())
@@ -116,6 +191,22 @@ def test_photo_treatment_stays_local_for_living_subject(family, monkeypatch):
         for broken in ({'kind': 'photo-restoration'}, dict(original, ours=dict(original['ours'], versions=[]))):
             with pytest.raises(ValueError, match='original|recipe'): scan(family, {'people': {'p-amaro': {'id': 'p-amaro', 'illustrations': [broken]}}}, 'graph', host_private=private)
     with pytest.raises(ValueError, match='append-only'): preserve(original, dict(original, ours=dict(original['ours'], versions=[])))
+    frame = family.path('records') / 'invented-period-frame.json'
+    period = dict(original, kind='period-picture', record=frame.stem, subjects=[], unidentified_people=True)
+    graph['feeds'][0]['chapters'][0]['figures'] = [period]
+    record = {'id': frame.stem, 'kind': 'index-entry', 'title': 'Fictional harbour', 'date': '1915',
+              'source': {'holder': 'Invented archive', 'locator': 'Print 12'}}
+    frame.write_text(json.dumps(record), encoding='utf-8')
+    shown = scan(family, restrict_graph(family, copy.deepcopy(graph)), 'graph')
+    assert shown['feeds'][0]['chapters'][0]['figures'][0]['ours']['orig']['subjects'] == []
+    for change, error in (({'date': str(date.today().year)}, 'capture date'),
+                          ({'privacy': 'living-possible'}, 'protected original'),
+                          ({'subjects': ['p-daniel']}, 'deceased')):
+        frame.write_text(json.dumps(record | change), encoding='utf-8')
+        for private in (False, True):
+            with pytest.raises(ValueError, match=error):
+                restrict_graph(family, copy.deepcopy(graph), host_private=private)
+    graph['feeds'][0]['chapters'][0]['figures'] = [original]
     known = _known_people(family)
     for subject, status in (('p-daniel', 'living'), ('p-amaro', 'unknown')):
         original['subjects'] = [subject]; known[subject]['life_assessment'] = {'status': status}
@@ -137,7 +228,6 @@ def test_f3_public_name_and_kinship_and_private_address_exclusion(family):
     chapter = publication(family, 'feeds').data()[0]['chapters'][0]
     assert chapter['text']['en'] == 'The public story.\n\nThe public story continues.'
     assert [p['name']['en'] for p in chapter['places']] == ['Public village']
-    from familiar.instance.writer import publish
     capture = family.root / 'fictional-paper.png'
     Image.new('RGB', (2200, 400)).save(capture)
     edit(family, 'records/home/doc-helena-baptism.json', lambda r: r.update(
@@ -146,7 +236,7 @@ def test_f3_public_name_and_kinship_and_private_address_exclusion(family):
     graph = json.loads(private.files()['graph.json'])
     assert [e['type'] for e in graph['people']['p-daniel']['events']] == ['birth']
     assert 'Private detail.' in graph['feeds'][0]['chapters'][0]['text']['en']
-    assert 'asset' not in graph['sources']['doc-helena-baptism'] and not graph['feeds'][0]['chapters'][0]['records']
+    assert 'asset' not in graph['sources']['doc-helena-baptism'] and {d['record'] for d in graph['feeds'][0]['chapters'][0]['records']} == {'rec-santa-ludovina-1921-14'}
     with pytest.raises(ValueError, match='not for publication or clean release'):
         publish(family, family.root / 'rejected', private)
     edit(family, 'family/privacy.json', lambda p: p.update(living=[]))
@@ -154,10 +244,22 @@ def test_f3_public_name_and_kinship_and_private_address_exclusion(family):
     scan = json.loads(files['graph.json'])['sources']['doc-helena-baptism']['image'][1:]
     assert scan in files and json.loads(files['bundle.json'])['files'][scan]['source_sha256'] == hashlib.sha256(capture.read_bytes()).hexdigest()
     for target, alias, flag in [('p-modern', 'p-amaro', {}), ('p-amaro', 'p-modern', {}), ('p-modern', 'p-amaro', {'living': True}), ('p-amaro', 'p-modern', {'living': True})]:
-        edit(family, 'tree/snapshot/people.json', lambda p: p.update(people=[r for r in p['people'] if r['id'] != 'p-modern'] + [dict(id='p-modern', name='Invented', events=[{'type': 'birth', 'date': '1990'}], **flag)]))
+        edit(family, 'tree/snapshot/people.json', lambda p: p.update(people=[r for r in p['people'] if r['id'] != 'p-modern'] + [dict(id='p-modern', name='Invented', events=[{'type': 'birth', 'date': '1810' if flag else '1990'}], **flag)]))
         family.path('identity_decisions').write_text(json.dumps({'merges': [dict(canonical=target, alias=alias, status='accepted_family_confirmation', sources=['doc-helena-baptism'], name='Invented', summary='Duplicate', birth='1990')]}), encoding='utf-8')
         shown = restrict_graph(family, {'identityAliases': {alias: target}, 'people': {target: {'id': target, 'name': 'Invented', 'facts': [{'text': 'PRIVATE MERGED FACT'}]}, 'p-daniel': {'id': 'p-daniel'}}})
         assert 'PRIVATE MERGED FACT' not in json.dumps(shown)
+
+
+def test_life_decision_scope(family):
+    ident = 'p-daniel'
+    edit(family, 'tree/snapshot/people.json', lambda g: next(p for p in g['people'] if p['id'] == ident).update(
+        living=None, events=[{'type': 'birth', 'date': str(date.today().year - 70)}]))
+    decision = {'person': ident, 'status': 'dead', 'by': 'host', 'at': '2025-01-01'}
+    for scope, basis in [('home', 'Family age judgement'), ('everywhere', 'Recorded death')]:
+        family.path('privacy').write_text(json.dumps({'life_decisions': [decision | {'scope': scope, 'basis': basis}]}), encoding='utf-8')
+        assert _build(family, family_display=True)['people'][ident]['life_assessment']['status'] == 'dead'
+        graph = publication(family, 'reader', for_review=True).files()['graph.json']
+        assert (ident.encode() in graph) is (scope == 'everywhere')
 
 
 def test_f4_acceptance_requires_auditable_strong_grounds(family):
@@ -170,12 +272,10 @@ def test_f4_acceptance_requires_auditable_strong_grounds(family):
 
 
 def test_f5_undeclared_reader_fields_stay_private(family, monkeypatch, capsys):
-    from familiar.instance.publication import scan
     row = {'id': 'fictional-letter', 'text': 'PRIVATE LETTER'}
     shown = scan(family, {'correspondence': row, 'people': {'p-amaro': {'id': 'p-amaro', 'name': 'Example', 'author': 'SECRET'}}}, 'graph')
     assert shown['people']['p-amaro']['name'] == 'Example' and all(word not in json.dumps(shown) for word in ('SECRET', 'PRIVATE LETTER'))
     import contextlib, io, subprocess, sys, textwrap
-    from pathlib import Path
     from types import SimpleNamespace as NS
     from familiar.desk.build import hosted_files
     files = {'desk/correspondence.html': b'PRIVATE LETTER', 'index.html': b'<a data-desk-label="nav_correspondence" href="/desk/correspondence.html">Letters</a>', 'desk/feedback.json': b'{"private":{"reply":"PRIVATE LETTER"}}'}
@@ -191,6 +291,7 @@ def test_f5_undeclared_reader_fields_stay_private(family, monkeypatch, capsys):
     runtime = {}; exec(textwrap.dedent(block), runtime)
     event = {'rawPath': '/api/feedback', 'requestContext': {'http': {'method': 'POST'}}, 'headers': {'content-type': 'application/json'}, 'body': json.dumps(private | {'sender': {'role': 'owner', 'sub': 'spoofed'}})}
     assert runtime['handler'](event, None)['statusCode'] == 403
+    assert runtime['handler'](event | {'body': json.dumps(private | {'page': '/', 'kind': 'confirm', 'subject': 'amendment:example'})}, None)['statusCode'] == 403
     event.update(requestContext={'http': {'method': 'GET'}}, queryStringParameters={'subject': row['id']})
     assert json.loads(runtime['handler'](event, None)['body']) == {'items': [{'subject': row['id'], 'text': 'Ordinary'}]}
     from familiar.desk import aws
@@ -264,7 +365,7 @@ def test_f8_review_binds_exact_bytes(family, tmp_path):
     attest(family, 'feeds', reviewer='reader', author='writer', ticket=ticket)
     out = tmp_path / 'checked'
     service.build(family, out)
-    edit(family, 'feeds/ferrolho/chapters.json', lambda cs: cs[0].update(text='Edited while reading'))
+    edit(family, 'feeds/ferrolho/chapters.json', lambda cs: cs[0]['prose']['text'][0].update(text='Edited while reading'))
     with pytest.raises(ValueError, match='review material changed'):
         attest(family, 'feeds', reviewer='reader', author='writer', ticket=ticket)
 

@@ -45,12 +45,6 @@
 .mail-detail [role=status] { color: var(--act); }
 .mail-pane { display: none; }
 .mailbox button:focus-visible { outline: 2px solid var(--act); outline-offset: 2px; }
-@media(max-width:819px) {
-  body:has(.mailbox) .page-top { grid-template-columns: minmax(0,1fr) auto auto; }
-  body:has(.mailbox) .page-search:empty, body:has(.mailbox) .page-language:empty { display: none; }
-  body:has(.mailbox) .page-brand { font-size: 17px; }
-  body:has(.mailbox) #desk-nav { scrollbar-width: none; }
-}
 @media(min-width:960px) {
   .mail-now { padding-inline: 18px; }
   .mail-now ol { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); }

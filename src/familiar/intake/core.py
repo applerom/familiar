@@ -8,6 +8,7 @@
 # - imported tree claims remain hypotheses with source text through merge and undo [review: engine lead]
 # - attributed union notes preserve unsupported GEDCOM phrases in the snapshot [review: engine lead]
 # - memory narrator references and per-component name inferences stay attached through canonical intake [review: engine lead]
+# - every memory statement is stored with its layers, and an empty cell of a table as an explicit blank [review: engine lead]
 # - person-bound archive notes retain literal text, testimony and uncertainty without inventing events [review: engine lead]
 # CHANGES_WITH:
 # - MOD-FAMILY-GATE (the shared family boundary contract)
@@ -15,6 +16,7 @@
 # - MOD-TREE-BUILDER (canonical snapshot display fields)
 # - MOD-INTAKE-NAMES (cross-script candidate comparison)
 # - MOD-INTAKE-GEDCOM (literal phrase notes)
+# - MOD-INTAKE-LAYERS (skeleton, attribute, blank)
 # :END_MODULE_CONTRACT
 import hashlib
 import json
@@ -82,6 +84,9 @@ def ingest(instance, data, kind, original=None, accepted_by=None, own=False):
     require_assertions(data)
     visibility = data.get('visibility', 'family')
     if kind == 'memory':
+        from . import layers
+        if why := layers.problem(data):
+            raise ValueError(why)
         from .feedback import ask_private
         for item in data.get('items', []):
             locator = item.get('original', '')
@@ -191,6 +196,11 @@ def ingest(instance, data, kind, original=None, accepted_by=None, own=False):
         notes = [dict(n, provenance=basis(n), plain=n["text"]) for n in row.get("notes", [])]
         if pid in known:
             person = known[pid]
+            if kind == 'memory' and row.get('living') is True:
+                from familiar.tree.life import explicit_alive
+                if explicit_alive(row):
+                    person.update(living=True, life_origin=kind)
+                    person.pop('living_basis', None)
             for key, values in [("names", names), ("events", events), ("notes", notes)]:
                 person[key].extend(v for v in values if v not in person[key])
             if names and kind != 'gedcom':
@@ -231,6 +241,7 @@ def ingest(instance, data, kind, original=None, accepted_by=None, own=False):
                 "sex": row.get("sex"),
                 "living": row.get("living"),
                 "life_origin": kind,
+                **({"living_basis": row["living_basis"]} if row.get("living_basis") else {}),
                 "names": names,
                 "events": events,
                 "notes": notes,
@@ -291,8 +302,11 @@ def ingest(instance, data, kind, original=None, accepted_by=None, own=False):
             memory.update({k: data[k] for k in ('people', 'families', 'narrator') if k in data and data[k]})
         if data.get('narrator') in refs:
             memory['narrator'] = refs[data['narrator']]
+        if data.get('blanks'):
+            memory['blanks'] = [dict(blank, person=refs.get(blank['person'], blank['person'])) for blank in data['blanks']]
         for item in memory["items"]:
             item.setdefault('witness', data['told_by'])
+            item['layers'] = layers.of(item, data)
             pid = item.get('person')
             if pid in refs:
                 item['person'] = refs[pid]

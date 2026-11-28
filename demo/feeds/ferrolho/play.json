@@ -1,0 +1,74 @@
+{
+  "spots": {},
+  "games": {
+    "ferrolho/amaro-1921": {
+      "title": {
+        "en": "Trace the route"
+      },
+      "intro": {
+        "en": "Can you get Amaro to his cousin's door?"
+      },
+      "steps": [
+        {
+          "q": {
+            "en": "Can you get Amaro to his cousin's door?"
+          },
+          "choices": [
+            {
+              "text": {
+                "en": "Show the answer"
+              },
+              "outcome": {
+                "en": "Lajedo do Vento -> Vila Franca da Vaqueira -> Quarry Bend -> Rope Walk Street\n\nDown to the harbour, across the water and uphill from the mill town's pier."
+              }
+            }
+          ]
+        }
+      ],
+      "truth": {
+        "text": {
+          "en": "Manuel was waiting at the end of the street."
+        }
+      }
+    },
+    "ferrolho/lantern-1925": {
+      "title": {
+        "en": "Choose"
+      },
+      "intro": {
+        "en": "Where would you put the lantern so they could find the house?"
+      },
+      "steps": [
+        {
+          "q": {
+            "en": "Where would you put the lantern so they could find the house?"
+          },
+          "choices": [
+            {
+              "text": {
+                "en": "In the window"
+              },
+              "outcome": {
+                "en": "At the window, the light stays dry and you see it from halfway up the street."
+              }
+            },
+            {
+              "text": {
+                "en": "At the gate"
+              },
+              "outcome": {
+                "en": "At the gate, you can find the latch even if the fog hides the house."
+              }
+            }
+          ]
+        }
+      ],
+      "truth": {
+        "text": {
+          "en": "We have no story of where Rosa put hers. Which would work at your house?"
+        }
+      }
+    }
+  },
+  "panos": {}
+}

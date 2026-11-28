@@ -1,5 +1,457 @@
 # Changelog
 
+## 0.64.2 — 28 November 2026
+
+- `method/living-history.md` is shorter and speaks in one voice and one
+  language: what a family asked for is retold by its meaning, without
+  quotations. It gains a line for the fact checker: correct facts and
+  readings, leave the writer's staging. A brief carries the meaning and the
+  reason, in the lead's own words.
+
+## 0.64.1 — 28 November 2026
+
+- We draw the chosen reader beside their spouse, with the children below.
+  Spouse labels use the person's known sex from the tree. When it is unknown,
+  the label stays neutral.
+- The Russian demo opens with a shorter family header. Its cover and chapter
+  tell Emma's journey, with a child's question and a literal excerpt from her
+  1994 rehabilitation certificate.
+- Data: The Russian demo uses the existing 0.58.1 life-decision scope step.
+  Older feed catalogs still build and need no conversion to chapter files.
+
+## 0.64.0 — 28 November 2026
+
+- We open the tree at the chosen reader, with their parents above and
+  children below. The home control still takes the reader to the home couple.
+- Nameless import cards that connect relatives draw as quiet knots. Search,
+  the people count and the reader picker skip them.
+- Data: `tree/identity-decisions.json` can record `withdraw_snapshot_cards`.
+  Each entry names the marked snapshot person, the reason and sources.
+  Instance check asks about outstanding marks. Removing the decision
+  restores the card and its links from the frozen snapshot.
+- We can manage relatives' personal logins from the loopback desk. A new
+  initial password is shown on issue and expires after thirty days.
+
+## 0.63.1 — 27 November 2026
+
+- `method/living-history.md` explains pictures made from old photographs. A
+  tinted copy of a blurred frame is the accuracy bias in images. We draw the
+  place alive on a day of its time and keep the original one tap away as the
+  proof. The page names what never changes: nothing impossible for the place,
+  the same person in a portrait, no drawn picture captioned as a photograph.
+
+## 0.63.0 — 27 November 2026
+
+- The method now says what its rules are for. `method/living-history.md` is
+  read first by every role that makes or judges what a family reads: what the
+  family came for, the agent's bias toward accuracy named virtue by virtue
+  with what each produced, the three layers that put accuracy in its place,
+  and the swings of our corrections.
+- A feed begins with its cast. The researcher hands the writer
+  `studio/fates.md`: who the feed follows, each life by its papers, the
+  turns, how it was done there and then, the neighbours, the holes. The
+  place comes next, as what these people saw. Then a family-wide table gives
+  each shared event of the century to one feed's side, the plan is a list of
+  fates, and three chapters are shown before thirty are written.
+- A person known without his paper is told by his version. A chapter of the
+  place alone stands only where nobody of the family is known yet, and it is
+  short. The hero's own paper stands in his chapter as the proof.
+- Feed rules say what they were written against, so the next agent does not
+  over-apply them. Two rules join the catalogue: `CRAFT-FATES-OF-OUR-PEOPLE`
+  and `CRAFT-FEEDS-DIVIDE-THE-CENTURY`.
+
+## 0.62.0 — 27 November 2026
+
+- Data: Studio cuts take optional `caption=` on `R:` lines. Legacy strips
+  still import. Period restorations with unidentified people may use a dated
+  corpus capture to establish the frame's age.
+- We can restore a picture of a place and open the original in one tap.
+  Unidentified people in a period frame need a corpus capture date at
+  least a century old. The frame itself retains its source and protections.
+- Each family question appears once in a feed, at the first chapter naming
+  its person or at the end of the relevant feed.
+- A studio cut takes its caption from the chapter strip. We report a
+  missing caption to the writer. The archive reference is under More.
+- `feed rhythm` counts chapters that name someone from the tree in the
+  opening paragraph and chapters with a placed paper cut.
+
+## 0.61.2 — 27 November 2026
+
+- We weigh the joints between facts. "The same surname", "next door",
+  "reached", "stayed home" join two true facts into a claim; a writer looks
+  up the weight of that link before the sentence stands, tells a link with no
+  weight as a coincidence or cuts it, and hands in `studio/joints.md` for the
+  researcher's check. A story does not claim where a person was, that they
+  stayed or what they thought when the sources read whole do not name them.
+- A reader's pass joins the feed method after the fact-check: one reader, the
+  whole feed on a phone, six questions, a table instead of edits.
+  `docs/feed-studio.md` holds the questions and the table.
+- We say "our version" of a place once in a feed, where it is first needed,
+  not in every chapter. Kinship counts from one seat for the whole site, the
+  owner's; an in-law's line goes by first name. Before writing a decade, a
+  writer reads the family's other feeds of the same years.
+- `TASTE-READER-NEUTRAL` and `TASTE-NARRATOR-VOICE` follow: one seat
+  instead of a household name, one bridge and one plain "we do not know".
+
+## 0.61.1 — 27 November 2026
+
+- We corrected the feed method after two families' feeds were written by it
+  alone. A line whose village is only a version tells its region as fact,
+  and its village by weight. Two rival origins are told as two true roads
+  with one repeated bridge and an open end. Kin is named the way the house
+  names them, the same in every feed. Hard history is told once, truthfully
+  and at a child's height. A wonder told in a neighbouring feed is retold
+  only from this place's side. A kept image becomes a pin by a named step,
+  and a writer lists what was stated "by general history" for the checker.
+- The studio's flags, `import.json` and `mentions` move from `story-scenario`
+  to `docs/feed-studio.md`, so the skill keeps its length.
+  `TASTE-READER-NEUTRAL` and `TASTE-NARRATOR-VOICE` name the household
+  name and the bridge sentence as allowed.
+
+## 0.61.0 — 27 November 2026
+
+- Data: `studio/chapters/` files and `studio/import.json` are optional authoring
+  inputs. Existing feed catalogs remain readable.
+- We carry the writer's chapter files into a feed with `familiar feed chapters`
+  and read the whole draft on a phone with `familiar feed storyboard`. Its
+  strips and rhythm notes help plan the next pass.
+- A writer keeps a chapter's id when the filename changes. An open choice
+  gives each option its own reply and brings them together in a closing line.
+  We can show a kept cut with its reading in the studio while it waits for
+  a corpus record. A reader's paper caption shows the archive reference
+  and leaves file paths in the research.
+- The invented family's writing demo now follows Amaro's route and Rosa's
+  lantern in three chapter files. The fictional desk can show its draft
+  frames, and ordinary reader releases keep their finished-view check.
+- The desk consumes the checked private reader and correspondence directly,
+  saving repeated input checks during the build.
+
+## 0.60.1 — 27 November 2026
+
+- We write a feed in the order that worked at home: the place, the family's
+  river and the wonders of the place by decade, then the plan of the whole,
+  every chapter as a strip in a plain file, the whole read as one, facts
+  checked, and only then pictures and translations. `story-scenario` is
+  rewritten whole and states the chapter file that writers and scripts share.
+- A paper is a pin, at most one in a chapter, never its turn or title. A time
+  with no family paper yet is told through its place as an honest version.
+  What any family of the kind shares is an aside, not a feature. The rhythm
+  measures stay a guide. `CRAFT-COMMON-NOT-FEATURE` is new; five story rules,
+  `story-text` and the feed author's sheet are restated to match.
+
+## 0.60.0 — 27 November 2026
+
+- Data: An optional `route` on a `play.json` game places labelled points on a
+  chapter image. Existing games still work.
+- We can read a short paragraph with a child, look at a picture or play, then
+  keep reading in the writer's order. Draft frames speak quietly, and the
+  phone leaves the reader, mode, chest and language one tap away.
+- A child can trace a route across a chapter picture or tap its stops.
+  A question with one answer opens it in place, including while a map is a draft.
+- We check the same letters once per desk build and use the checked list in
+  every reader language. A desk without letters skips that snapshot.
+
+## 0.59.0 — 27 November 2026
+
+- Data: Optional `flow` entries in `chapters.json` place draft frames and
+  activities after paragraphs. Existing chapter text and placements still work.
+- We can read a rough chapter at home with grey frames at their intended
+  positions and play a chapter's game between its paragraphs. The investigation
+  shows each feed as a strip, and `familiar feed rhythm` measures the spacing.
+  Rhythm advice leaves the family check valid. Draft frames keep the feed home.
+- A tentative family link cannot use the shorter age horizon to open a card.
+  Photographs with unnamed faces stay home. A delivered portrait uses the
+  marked face's own image bytes. At home, a tap still opens the whole photograph.
+
+## 0.58.1 — 26 November 2026
+
+- We keep a life event on the family card even when its source mentions an
+  inventory. The family can find a likely second card by its written name.
+  Its own account stays under the likely match, with papers and dates limited
+  to what the two cards can show.
+- We keep age judgements made for the family inside its view. Public reader ids
+  for protected people and closed papers are local to the bundle. We require
+  complete participant lists on public census and annex papers.
+- We point the author to passages that may need paragraph-level people. An
+  attributed public alternative can tell names and kinship in the same place.
+- Data: `instance check` and `instance upgrade` locate decisions whose author
+  must confirm `home` or `everywhere`. Existing unscoped death decisions continue
+  to serve the family view.
+
+## 0.58.0 — 26 November 2026
+
+- A face leads the card. Where the reader may see a family photograph of the
+  person, the card's head shows the face instead of a letter, in the gold ring
+  of the tree's couples; one tap opens the photograph whole with its caption, and
+  the original is one tap further. A restored portrait stands with its original.
+  Photos come before papers on the card. Without a photograph the letter stays.
+- The host marks each named face on a group photograph and can show only the
+  print of a photograph re-shot by phone: `intake photo --face ID=x,y,w,h` and
+  `--crop x,y,w,h`, as fractions of the picture, also later on the attached
+  original. The received bytes are never changed.
+- Near tiles of the tree carry the face of a person who has one. A small tile
+  in a crowded row shows the given name where the row leaves room for it.
+- An in-law is named in the family's words from the kinship table: "прабабушка
+  жены", "жена двоюродного брата", "wife's grandfather"; the long explanation
+  stays one tap away.
+- Relatives: each person we would ask is one card with the face or the letter,
+  the first question large and the others under "ещё 8".
+- Stories: a book without a cover opens with its first picture or document or
+  a calm paper page; "What's new" says each thing once; a long line of stories
+  shows four and the rest one tap away. A person's own papers come before papers
+  that only mention them.
+- Data: photo entries may carry optional `faces` and `crop`; existing entries
+  need no carry-over.
+
+## 0.57.4 — 26 November 2026
+
+- We show one family card when a likely double reaches the tree's drawing
+  threshold. The second card's visible dates and papers remain a possibility
+  alongside the family's own account. Life assessment still uses each card separately.
+- We hide empty letter and weight-change sections, show a preview of PDF papers,
+  put archive checks in the card's details and use kinship words for questions on a relative's own card.
+- We give a paper intake example and let the host record why a photo was sent
+  and choose whether it goes in the gallery, on a card or in the archive.
+- Data: existing photo entries keep their gallery placement. The display choice,
+  purpose and sheet/unnamed-face marks are optional, so no carry-over is needed.
+
+## 0.57.3 — 25 November 2026
+
+- We transfer a paper's participants and dates only through accepted identities.
+  A possible namesake keeps their own card and evidence. Their suggested kinship
+  remains a hypothesis, with the identity explanation on the family's desk.
+- We keep written family feedback out of document delivery, including when it
+  has been copied into a home paper. The family account can still tell the kinship.
+- We label a chapter's original text when its translation is missing.
+- Data: no migration.
+
+## 0.57.2 — 25 November 2026
+
+- We use a paper's date only for the participants recorded on the paper. A
+  citation from another person's event, claim or family link leaves that
+  person's age unchanged. An attributed parent link can still carry the
+  child's own recorded event.
+- Data: no migration. Record established participants on the corpus record
+  when its date supplies their age bound.
+
+## 0.57.1 — 25 November 2026
+
+- We use dated participation and recorded events on family relationships to
+  set a latest possible birth year. An import precaution or a merged card with
+  missing evidence uses the ordinary 100-year public and 75-year family rules.
+  The family's declaration and a relative's refusal survive a merge.
+- We keep separately attributed literal fields readable when a full sheet is
+  withheld. A shortened public story still shows its surviving papers.
+- Data: no migration. A date in free text needs an attributed event to bound
+  the age of a participant whose status is unknown.
+
+## 0.57.0 — 25 November 2026
+
+- The lower row of every page holds at most four places, each an icon and a word:
+  tree, relatives, stories, papers. What a family does not have is not there; `desk
+  build` stops at a fifth. On a phone the row is 72 px instead of two rows of 104,
+  and nothing in it scrolls sideways. Everything else (surnames, map, how the search
+  goes, the host's search map and letters, the remark, language, notice and version)
+  opens from "More" in the page top, which desk pages now always have: names by
+  language used to break it there, and the way home with it.
+- "Show me the papers" has one answer. Papers stand in the lower row: by person, the
+  nearest to the reader first, by decade, and the photographs beside them. A paper
+  opens large over the page with whose it is and what it says; Back returns to the
+  same place on the same page. Cards and chapters open papers the same way. The page
+  shows what the delivered graph carries and asks for nothing more. The archive
+  letters that were called "Documents" are called letters.
+- A kinship word explains itself where it stands: a tap gives its plain meaning and
+  the way to this person, name by name; lists and chapters put the meaning beside a
+  rarer word. "Kinship words" is no menu entry, is reached from an explanation and
+  lists only words somebody in the shown tree answers to. Meanings no longer count
+  generations: "father of your grandfather or grandmother".
+- The investigation starts with three plain sentences and what this family looks for
+  now, found lately and can be helped with; the detail below is unchanged. "Where we
+  looked" on a card says it in words.
+- A phone page has a floor: body text from 18 px, targets from 48 px, contrast AA.
+  Rule `CRAFT-PLAIN-PAGES` says what a family's page may carry. The shell does not
+  build with a workshop word or an apology for emptiness in its strings or in a
+  bundled pack's desk words (`reader-src/plain-words.json`).
+- Data: nothing to carry over. `#view=photos` is now a tab of `#view=papers`; a
+  language pack's `nav_kinship` and `nav_photos` are no longer read, `nav_papers`,
+  `remark_write` and the `intro` lines of `desk.show` fall back to English until
+  translated.
+
+## 0.56.2 — 25 November 2026
+
+- We use a child's recorded birth and a confirmed parent link when assessing
+  the parent's age. Weak events and proposed links keep their uncertainty.
+- We keep family recollections, historical names and ordinary phrases readable.
+  Papers cited by a family relationship and recognizable passages from a
+  protected reading follow the document's privacy through the desk and reader.
+- We keep a relative's refusal when the card they answered on is merged.
+
+## 0.56.1 — 25 November 2026
+
+- We assess life from attributed events and explicit family decisions. Card
+  estimates, identity guesses and proposed readings keep their presentation role.
+- A document cited from a protected person's card stays withheld unless its
+  corpus record attests complete subjects and the citation is an inference about
+  someone else. The document page, scan, quotation and book use that decision.
+- A visible amendment can be answered on the local desk or by a personal
+  sign-in. The answer binds the offered revision and person. The owner can
+  reopen a refusal. Declined and withheld proposals stay out of reader files.
+- Guesses are offered only for established deceased people. Search pages and
+  plan text omit protected names. A marriage without children contributes no
+  downward link when weighting a merged identity.
+- Data: existing records and inbox envelopes are preserved. Set
+  `subjects_complete: true` only after reviewing the whole document and naming
+  every subject in its corpus record. Earlier taps stay as literal testimony.
+  Build the desk again to issue offers that can settle a proposal.
+
+## 0.56.0 — 25 November 2026
+
+- A document stays on the card of the man it is about. When its source or record lists
+  its `subjects`, a fact on a living son's card that only infers from it ("his father was
+  …") no longer takes it away. Without stated subjects, when the living person's own name
+  or event cites it, or when its own words name that person, it stays closed as before.
+  `instance check` names each paper that is off a card for such a fact alone and shows the
+  line that states its subjects.
+- An estimated year of birth agrees with the story on the same card. A soldier of 1915 is
+  no longer "born about 1905" because his children came late: dated things the card tells
+  (a wedding, a baptism, service in a fact firm or weighted from 0.3) hold the estimate
+  back, "More" says why, and a parent estimated from that child moves with it. Where they
+  cannot agree with the years of close relatives, `instance check` says so in one line.
+  The protection of the living never uses these bounds.
+- The research plan no longer says "not applicable · a place" about a line whose village
+  the access ledger lists. A line has a place when the ledger, a version from 0.3 or a told
+  fact gives one, a parish when the ledger's books name their church, a registrar when a
+  row is answered by letter.
+- One access ledger, not two. `research access --markdown --save` prints the whole ledger
+  as `ACCESS.md` with the date, author and report of each verdict, prices, what is missing
+  to order a copy, and the reading-room list; every later verdict renews the page.
+  `research access note` keeps the words around the rows. A page kept by hand is never
+  overwritten, and `instance check` says when the two differ. A copy with an `order` now
+  stands in the reading-room list too.
+- Data: nothing to carry over; `title`, `about`, `sections`, `room` and a place's `about`
+  and `section` in `research/access.json` are optional. A family that already keeps a page
+  named ACCESS.md by hand is told in one line.
+
+## 0.55.0 — 25 November 2026
+
+- A bare card now invites. On the family desk the card of an ancestor whom somebody
+  alive may have known shows what it lacks as unfilled lines of the card: name,
+  patronymic, year of birth, wife or husband, occupation, brothers and sisters. A tap
+  opens the usual remark form with the person and the line already named. Where we hold
+  a guess, it stands in the line and one tap says "yes, so it was". A card that already
+  tells who this was stays quiet, and so does an ancestor nobody alive could have known
+  or a line the family closed.
+- A correction is kept beside the original. `research amend` records what was told or
+  read, what we propose instead, its weight and why. From 0.5 the card tells the proposal
+  and keeps the first word under "More"; a relative confirms or declines it with one tap.
+- What a family tells is taken in with its layer: parents, surnames and villages hold,
+  years and name forms drift, an empty cell means nobody asked. The research plan names a
+  thin link, what to lean on and what to loosen, and its first step is to show the relatives
+  the card; the place and the new "small lists by occupation" come before surname bases.
+  `instance check` hints when a long search never did that.
+- The weight of a merge reaches the tree: below 0.9 it caps exactly the links a line
+  crosses between the two cards. Links read from one document stay as firm as they were.
+- The access ledger knows a copy the archive sells remotely (`copy`, with a price and
+  what is still missing to order it). The plan says "order a copy" or "find out" instead
+  of sending anybody to the reading room.
+- Data: nothing to carry over. `family/amendments/`, `guess` in a version option, `layers`
+  and `blanks` in a telling and the `copy` state are optional. A family with merges weighed
+  below 0.9 sees some links between the merged cards drawn with the weight of the merge.
+
+## 0.54.0 — 25 November 2026
+
+- "Nothing found" and "we could not open it" no longer look alike. A family now
+  keeps an access ledger: for each village, which books exist, which we have read
+  (so many of so many), which open from home, which lie in a reading room or are
+  answered by letter, and which nobody has located yet. An agent records one
+  verdict with one command, `familiar research access record`.
+- The research plan shows the books of the line's villages first. Where nothing
+  opens from home it says so, with the archive and call number, and the next step
+  is the reading-room order or the letter rather than one more pass over name
+  bases.
+- `instance check` speaks up when a version or a strategy note says a line is
+  exhausted while its village still has unread books, and when a long search never
+  asked which books exist. It is a hint and stops nothing.
+- The search map tells the family where the books lie and what we have read, and
+  ends with a list a relative could take to the reading room: archive, call number,
+  what to look for. The page opens in each language the family reads.
+- Data: nothing to carry over; `research/access.json` is a new optional file
+  (`familiar research form access`).
+
+## 0.53.3 — 23 November 2026
+
+- If your earlier words already arrived, your edited text stays in the box
+  so you can send it too. Photos that still need to go stay in the tray and
+  can be sent again with the same receipt.
+- A moving upload keeps going on a slow connection. Each part has up to
+  45 seconds without progress and up to 5 minutes in all.
+
+## 0.53.2 — 23 November 2026
+
+- The desk delivers your words first. If a picture stalls, the same receipt
+  shows which files you can choose again. Each file finishes on its own and
+  a retry picks up the missing parts, including on a slow phone connection.
+- Signing out clears the cookies on the computer even if the file store is
+  unavailable. Taking in a scan opens the original inside an operating-system
+  sandbox and makes a new picture for the family.
+- Data: no conversion is needed. Old messages and originals keep their paths.
+  New originals are filed beside their remark as they arrive. Update the
+  personal desk before publishing the new browser files.
+
+## 0.53.1 — 23 November 2026
+
+- A second tap or a broken connection keeps the first receipt and resumes
+  with the parts the cabinet still needs. A finished remark is charged once.
+  Pictures use the signed-in desk itself, and signing out closes its slots.
+- The host brings the words home even when a photograph needs another fetch.
+  Each failed file is named by remark and number, and a later fetch fills in
+  files beside envelopes saved by an older engine.
+- Taking in a photograph from a remark preserves the original in private and
+  gives the family a fresh display picture. The images extra includes the
+  first-page PDF renderer. Answers have one paperclip.
+- Personal provision stages its full template in the owned private bucket.
+  Data: run `instance upgrade` to re-render already adopted attachments from
+  0.53.0. Their original bytes, gallery URLs and inbox envelopes stay in place.
+
+## 0.53.0 — 23 November 2026
+
+- A relative can send a scan or a photograph with a remark. Wherever a remark is
+  written today — the remark sheet on a card or a feed step, a card correction,
+  an answer to an ask — a quiet paperclip opens the phone's camera or gallery; on
+  a computer, files or a drop. A picture alone is a whole remark. The thumbnails
+  fill as each file leaves, and the receipt is the same quiet "Received".
+- Only a signed-in relative (personal logins) or the host on his own computer
+  can attach; the shared password sends words only. A file is taken by what it
+  is, not by its name: photographs and scans (JPEG, PNG, WebP, iPhone HEIC,
+  AVIF, TIFF, PDF), up to 30 MB a file, 10 files a message, 40 a day. A refused
+  file says why in plain words and the text stays.
+- On a personal cloud desk the phone sends the file straight to the family's
+  private inbox through a short signed upload, so a 12 MB photograph fits.
+  `desk fetch-feedback` brings the originals home byte for byte, beside the
+  words; nothing appears on the site until the host takes it in with
+  `familiar intake attachment ID` — the person, caption and sender come from the
+  remark. `familiar family next` says how many files wait.
+- An iPhone HEIC photograph and the first page of a PDF scan now make a display
+  picture in the photo intake; the `images` extra adds `pillow-heif`.
+- The personal desk's template body stays under CloudFormation's limit: comments
+  are left out of the composed function code.
+- Data: nothing to carry over. A cloud desk with personal logins needs
+  `desk provision` once to accept files; logins and the inbox stay.
+
+## 0.52.2 — 23 November 2026
+
+- The way down from a couple through a generation nobody has found no longer
+  reads as "son of the first child". The missing generation is one more child
+  of the couple: a haze of a card's size in their children's row, hanging from
+  their ring, and the family's person hangs straight below that haze, never
+  from a named child. The haze stands beside the child the data name as the
+  one who may stand there, with his given name in it; with nobody named, in the
+  middle of the row. Further missing generations are bands of haze below it,
+  and a tap on the haze goes on along the line. Seen from below, the haze hangs
+  from the couple, not from the husband alone.
+- A fact a decision retired no longer puts its papers on the person's card.
+- Data: nothing to carry over.
+
 ## 0.52.1 — 22 November 2026
 
 - The search map reads at a glance on a real family, not only on the demo. A

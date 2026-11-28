@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Входы для родных</title>
+<style>
+ body{margin:2rem auto;padding:0 1rem;max-width:42rem;font:1rem/1.5 system-ui,sans-serif;color:#234036;background:#fbf8f1}
+ a{color:inherit} h1{font-family:Georgia,serif} ul{padding:0;list-style:none}
+ li,section{padding:1rem 0;border-top:1px solid #c9d0c6} small{display:block;margin:.2rem 0 .7rem}
+ button,select{max-width:100%;padding:.48rem;margin:.2rem .35rem .2rem 0;font:inherit}
+ output{display:block;white-space:pre-wrap;user-select:all}
+</style>
+<body>
+ <a href="/">← К дереву</a>
+ <h1>Входы для родных</h1>
+ <section id="handout" hidden>
+  <output id="credentials" aria-live="polite"></output>
+  <button id="copy" type="button">Скопировать логин и пароль</button>
+  <button id="dismiss" type="button">Скрыть</button>
+ </section>
+ <label for="person">Кому открыть вход</label>
+ <select id="person" disabled></select>
+ <button id="add" type="button" disabled>Создать вход</button>
+ <p id="status" role="status"></p>
+ <ul id="users"></ul>
+ <script defer src="/desk/local-users.js"></script>
+</body>
+</html>

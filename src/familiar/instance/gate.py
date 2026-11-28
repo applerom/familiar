@@ -2,6 +2,7 @@
 # PURPOSE: Separate own-item intake validation from family-wide publication form guarantees.
 # PRD_REF: docs/PRD.md#FORMS
 # INVARIANTS:
+# - draft frames may be read locally and prevent external release of their feeds [test: tests/gate/test_data_guarantees.py::test_draft_frames_stay_home]
 # - public output adapters share the full class-F verdict; private displays validate their selected record inputs [review: engine lead]
 # - chapter media omissions report the host and reader projections as advice [review: engine lead]
 # - every engine function that mutates, publishes or reads family data is a registered boundary and serializes only the sealed projection [review: engine lead]
@@ -134,12 +135,12 @@ def require_assertions(value):
         raise ValueError('; '.join(errors))
 
 
-def evaluate(instance, registry=None):
+def evaluate(instance, registry=None, *, editorial=False):
     with fixed_inputs():
-        return _evaluate(instance, registry)
+        return _evaluate(instance, registry, editorial=editorial)
 
 
-def _evaluate(instance, registry=None):
+def _evaluate(instance, registry=None, *, editorial=False):
     from familiar.checks.engine import _inspect_family
     from familiar.rules.cascade import Registry
     from familiar.rules.roles import method_root
@@ -181,14 +182,23 @@ def _evaluate(instance, registry=None):
     if not result['blocked']:
         from familiar.feeds.service import _materialize, folders
 
+        from .narrative import prose_review
         from .publication import scan, scan_assets
         asset_errors, asset_seen = [], set()
         try:
             for folder in folders(instance):
                 data, details = _materialize(instance, folder)
+                if editorial:
+                    from familiar.feeds.rhythm import advice, measure
+                    result['findings'].append(dict(certainty='review', rule='UNWEIGHTED', check='feed-rhythm',
+                        scope='feed:' + folder.name, chapter_id=None, location=folder.name,
+                        mode='advise', exception=None, message=advice(data, *measure(instance, data, registry))))
                 result['findings'].extend(dict(certainty='review', rule='UNWEIGHTED', check='unweighted',
                     scope='feed:' + folder.name, chapter_id=None, location=folder.name,
                     mode='advise', exception=None, message=note) for note in details.get('advice', []))
+                result['findings'].extend(dict(certainty='review', rule='TRUST-06', check='narrative-attribution',
+                    scope='feed:' + folder.name, chapter_id=None, location=where,
+                    mode='advise', exception=None, message=note) for where, note in prose_review(instance, data))
                 from .publication import media_omissions
                 for row in media_omissions(instance, [data]):
                     result['findings'].append(dict(certainty='review', rule='TRUST-06', check='media-omitted',
@@ -241,8 +251,10 @@ def publication(instance, kind, feed=None, *, for_review=False, tree_enrich=None
     import json
 
     from familiar.feeds import service
+    from familiar.feeds.flow import require_finished
 
-    from .publication import _seal, restrict_graph, scan, scan_assets
+    from .publication import _seal, public_references, restrict_graph, scan, scan_assets
+    from .review import _output_uses, _review_manifest, _review_units
     from .writer import snapshot
 
     if tree_enrich is not None and (kind != 'tree' or not callable(tree_enrich)):
@@ -269,7 +281,6 @@ def publication(instance, kind, feed=None, *, for_review=False, tree_enrich=None
             return result
         if kind == 'host':
             from .host_text import _build
-            from .review import _review_manifest, _review_units
             data, source_review, uses = _build(active, host_view, selection, feed)
             data = scan(active, data, 'host-text')
             files = {'host.txt': (data['text'] + '\n').encode('utf-8')}
@@ -283,6 +294,7 @@ def publication(instance, kind, feed=None, *, for_review=False, tree_enrich=None
             data, reports = [], {}
             for folder in service.folders(active, feed):
                 result, _ = service._materialize(active, folder)
+                require_finished([result])
                 data.append(scan(active, result, 'feed'))
                 reports[folder.name] = service._inspect(active, folder)
             for report in reports.values():
@@ -290,6 +302,8 @@ def publication(instance, kind, feed=None, *, for_review=False, tree_enrich=None
                 report['output'] = {'state': CLEAN, 'inputs': inputs}
             if active.config.get('family', {}).get('fictional'):
                 reports = {'_about': 'Build status of an invented family.', 'fictional': True, **reports}
+            uses = _output_uses(active, kind, data, feed)
+            data = public_references(active, data)
             files = {name: (json.dumps(value, ensure_ascii=False, allow_nan=False, sort_keys=True, indent=2) + '\n').encode()
                      for name, value in [('feeds.json', data), ('status.json', reports)]}
         elif kind == 'tree':
@@ -300,12 +314,14 @@ def publication(instance, kind, feed=None, *, for_review=False, tree_enrich=None
                 source.pop('image', None)  # Only the checked reader document projection writes this field.
             data = scan(active, restrict_graph(active, graph), 'graph')
             scan_assets(active, data)
+            uses = _output_uses(active, kind, data, feed)
+            data = public_references(active, data, graph=data)
             files = {'graph.json': encode(data).encode('utf-8')}
         elif kind in {'reader', 'reader-private'}:
             from familiar.reader.assets import catalog, dependencies, used_assets
             from familiar.reader.documents import _local_sources
             from familiar.reader.export import encode, external_links
-            from familiar.reader.graph import _assemble
+            from familiar.reader.graph import _assemble, show_probable_identities
             from familiar.rules.cascade import Registry
             from familiar.rules.roles import method_root
             media = catalog(active)
@@ -315,17 +331,40 @@ def publication(instance, kind, feed=None, *, for_review=False, tree_enrich=None
                 from familiar.research.coverage_display import attach
                 attach(instance, graph)
             documents, scan_sources = _local_sources(active, graph, media, host_private=private)
+            if private:
+                show_probable_identities(graph)
             allowed = Registry(method_root() / 'rules', active).resolve_setting('media.external_embeds').value
             graph = external_links(graph, allowed)
-            graph = scan(active, graph if private else restrict_graph(active, graph), 'graph', host_private=private)
+            graph = scan(active, graph, 'graph', host_private=private)
             family = dict(active.config['family'])
             family.setdefault('fictional', False)
             profile = scan(active, {'schema_version': 1, 'family': family, 'data': 'graph.json', 'reader_names': {}}, 'profile')
+            # An older desk can register the very page we now generate. Its
+            # references should resolve to the newly checked reading.
+            for name in media.keys() & documents.keys():
+                legacy = media[name][0]
+                owner = graph['sources'].get(legacy.get('source_id'), {})
+                if legacy.get('kind') == 'record-page' and owner.get('asset') == '/' + name:
+                    del media[name]
             if clash := sorted(media.keys() & documents.keys()):
                 raise ValueError(f'{len(clash)} registered media rows in media/manifest.json export a document page '
                                  f'the engine now generates ({", ".join(clash[:3])}{", ..." if len(clash) > 3 else ""}); '
                                  'run `familiar instance upgrade` or remove those rows (the files stay)')
+            faces = {}
+            if not private:
+                from .gallery import external_faces, photographs
+                from .writer import reader_media
+
+                uses = _output_uses(active, kind, graph, feed)
+                graph, faces, originals = external_faces(
+                    graph, photographs(active), lambda name: reader_media(media[name][1], media[name][0], name))
+                media = {name: item for name, item in media.items() if name not in originals}
+                if faces.keys() & (media.keys() | documents.keys()):
+                    raise ValueError('A face rendition takes a registered reader asset name')
+                documents.update(faces)
             used = dependencies(used_assets(graph, media.keys() | documents.keys()), media, documents)
+            if not private:
+                graph = public_references(active, graph, graph=graph)
             files = {'graph.json': encode(graph), 'reader-profile.json': encode(profile),
                      **{key: value for key, value in documents.items() if key in used}}
             for name in sorted(used):
@@ -346,7 +385,6 @@ def publication(instance, kind, feed=None, *, for_review=False, tree_enrich=None
         if private:
             review = {'kind': kind, 'state': 'host-private', 'unreviewed': []}
             if for_review:
-                from .review import _output_uses, _review_manifest, _review_units
                 # Review the exact local projection, using the reader's existing
                 # units and binding. Never transfer approval of different bytes.
                 review = _review_manifest(active, _review_units(active, 'reader', graph, files),
@@ -355,9 +393,7 @@ def publication(instance, kind, feed=None, *, for_review=False, tree_enrich=None
             result = _seal(inputs, files, data, verdict, review)
             result.check(instance)
             return result
-        from .review import _output_uses, _review_manifest, _review_units
         content = graph if kind == 'reader' else data
-        uses = _output_uses(active, kind, content, feed)
         review = _review_manifest(active, _review_units(active, kind, content, files), uses)
         if kind == 'reader' and not for_review and review['state'] == PREVIEW:
             raise GateBlocked('Unreviewed reader pages: ' + ', '.join(review['unreviewed']))

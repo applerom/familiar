@@ -1,13 +1,13 @@
 ---
 name: story-text
-description: Write chapters from an accepted scenario: a voice that tells rather than argues, documents that support the scene instead of being retold, versions as scenes, a children's layer, and "More" for everything else.
+description: Voice the chapters of an accepted strip: a voice that tells rather than argues, papers as pins instead of retold documents, versions as scenes, a children's layer, and "More" for everything else.
 ---
 <!--
 START_MODULE_CONTRACT: MOD-SKILL-STORY-TEXT
-PURPOSE: Let a feed author of any family turn scenario rows into pages that read aloud as a story while every scene keeps its support one tap away.
+PURPOSE: Let a feed author of any family turn the strip's chapter files into pages that read aloud as a story while every scene keeps its support one tap away.
 PRD_REF: docs/PRD.md#PIPELINE
 INVARIANTS:
-- a chapter is written from its scenario row, and the order reaches documents only after the row and the first draft [review: cold reviewer]
+- a chapter is voiced from its strip file, and a paper is a pin placed where the scene meets it, never the turn [review: cold reviewer]
 - a frame counts as read only when the author looked at the image of the cut-out; a placeholder is not a reading [review: cold reviewer]
 - every rewrite example puts a person who acts in place of a record, a reference or an investigator [review: cold reviewer]
 - the children's layer follows the feed's setting, for each of its values [review: cold reviewer]
@@ -24,12 +24,13 @@ CHANGES_WITH:
 -->
 # Story text
 
-The scenario already chose the hero, the turn and the support. Your job is the
-voice: a page a parent reads aloud without stumbling and a child follows to
-the end. The story stands in the text; what it stands on waits in "More".
+The strip already holds the chapter: its paragraphs, the things to look at,
+the one paper and the game (`story-scenario`). Your job is the voice: a page
+a parent reads aloud without stumbling and a child follows to the end. The
+story stands in the text; what it stands on waits in "More".
 
-**Inputs:** the scenario, the research notes and versions of the feed, the
-records and their images, the region pack, the resolved rules of the feed.
+**Inputs:** the chapter files of the strip, the research notes and versions of
+the feed, the records and their images, the region pack, the resolved rules.
 
 **Output:** chapters in the chapter form (text, "More", children's layer,
 records and their place in the flow, facts, variants, places) and the feed's
@@ -57,23 +58,24 @@ it, and say which in your report.
 1. **Settings.** Run `familiar rules for feed-author --feed <id>` and note
    what shapes the page: reader age, `kids.layer`, name form, frames per
    chapter, number density.
-2. **The row.** Take one chapter's scenario row. Reread the last paragraph of
-   the chapter before it: the two must read as one.
-3. **First draft from the row.** Open on the hero and what they care about, not
-   on the village or the year. Keep the page on one choice: the set-up, the
-   turn the row names, what follows, and a last line that pulls to the next
-   page (CRAFT-ARC). Write the leading version as it happened; two versions of
-   near equal weight become the plot of one scene, as in the demo's chapter
-   with the torn place name.
-4. **Documents.** Only now place the records the row names. Enter each with
+2. **The chapter.** Take one chapter file of the strip. Reread the last
+   paragraph of the chapter before it: the two must read as one.
+3. **The voice.** Open on the hero and what they care about, not on the
+   village or the year. Keep the family moment and its wonder in one scene
+   (CRAFT-EVENT-FIT), and a last line that pulls to the next page (CRAFT-ARC).
+   Keep the strip's beats in place. Write the leading version as it happened;
+   two versions of near equal weight become the plot of one scene, as in the
+   demo's chapter with the torn place name.
+4. **Documents.** Place the record the chapter's `R` line names. Enter it with
    `familiar feed doc`, then read the frame yourself on the image of the
    cut-out it made. If a tool returned a placeholder or an error instead of
-   the image, the frame is not read: say so and do not write its reading. Find
-   the one visible detail that turns the scene and tell it with the words and
-   numbers on the cut-out; place the cut-out right after that paragraph. A
-   phrase of the paper a reader cannot follow is explained in one sentence by
-   what it meant for the person, or left out. A record you have only from
-   an index appears as its index entry, never as a cut-out (TRUST-01).
+   the image, the frame is not read: say so and do not write its reading. The
+   paper is a pin (CRAFT-DOCUMENT-SUPPORTS): tell what the scene needs from it,
+   the name, the place, the year, with the words on the cut-out, and place it
+   right after that paragraph. A phrase of the paper a reader cannot follow is
+   explained in one sentence by what it meant for the person, or left out. A
+   record you have only from an index appears as its index entry, never as a
+   cut-out (TRUST-01).
 5. **World through people.** Every paragraph of history is retold as what
    someone of the family saw, heard, held or paid (CRAFT-WORLD-THROUGH-PEOPLE).
    For the daily detail of a scene ask the pack (RP-22), only for the part the
@@ -121,9 +123,9 @@ Typical first drafts and what they become. From the fictional family:
 
 | Before | After |
 |---|---|
-| The passenger list of 1921 records that the passage was paid by the passenger himself. | On the ship's list, in the column that asks who paid, the clerk wrote one word: Self. |
+| The passenger list of 1921 records that the passage was paid by the passenger himself. | He was a labourer, and he paid for the crossing himself. |
 | Apparently the godfather was the same cousin, but we cannot be sure. | The godfather held the baby over the font. It was Manuel Tavares, the same cousin whose address Amaro had carried across the ocean four years before. |
-| The certificate states the mother's birthplace as "Ponta d" with the rest illegible. | For Rosa: Ponta d... and there the paper is folded, and along the fold it tore. |
+| The certificate states the mother's birthplace as "Ponta d" with the rest illegible. | One is Ponta do Moinho, an hour's walk from Amaro's village across the fields. If Rosa came from there, their families could have known each other for years, and the girl followed a boy she knew. |
 | Mill towns of the region employed large numbers of island immigrants in this period. | For the next forty years the cotton mill was his day. |
 
 The doubt in the second line does not vanish: it moves to "More" as a plain
@@ -131,8 +133,8 @@ sentence about how likely the godfather is the cousin.
 
 ## Forks
 
-- **The draft translates the document paragraph by paragraph.** Stop. Keep the
-  one detail that turns the scene; the rest of the reading lives under the
+- **The draft translates the document paragraph by paragraph.** Stop. Keep
+  what the scene needs from it; the rest of the reading lives under the
   cut-out and in "More" (CRAFT-DOCUMENT-SUPPORTS).
 - **The scene needs more than its support carries.** Tell it with its weight in
   "More", or ask the lead for scene-support research. A paper is never

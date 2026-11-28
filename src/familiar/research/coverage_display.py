@@ -63,7 +63,11 @@ def attach(instance, graph):
         blocks = person_blocks(instance)
     except Exception:  # noqa: BLE001 - the display is optional; a broken journal is reported by `instance check`
         return graph
+    sources = graph.get('sources', {})
+    withheld = {sid for sid, source in sources.items() if source.keys() <= {'id', 'kind'}}
     for pid, block in blocks.items():
         if pid in graph['people']:
+            for key in ('sources', 'never'):
+                block[key] = [row for row in block[key] if row['id'] not in withheld]
             graph['people'][pid]['coverage'] = block
     return graph

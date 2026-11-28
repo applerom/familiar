@@ -1,40 +1,48 @@
 import {useMemo} from 'react';
 import {kinshipLexicon,kinshipTerm,type Term} from './tree/kinship';
-import {relationPhrase,type Model,type Relation,type Row} from './tree/model';
+import {isPerson,describeRelation,inLawWords,relationPhrase,type Model,type Relation,type Row} from './tree/model';
 
-/** The public reader graph is the only source of names and example paths. */
+/** Words every child knows need no explanation beside them; a rarer one carries it. */
+const EVERYDAY=/^(ancestor-[12]|descendant-[12]|collateral-1|uncle|nephew|spouse)-/;
+export function kinNote(relation:Relation,language:string){const term=kinshipTerm(relation,language);return term&&!EVERYDAY.test(term.id)?term.explanation:''}
+/** The way from the reader to this person, name by name. */
+const way=(relation:Relation,model:Model)=>(relation.path||[]).filter(id=>isPerson(model.info[id])).map(id=>model.info[id].short);
+const Way=({names,label}:{names:string[];label:string})=><ol className="kinship-path" aria-label={label}>{names.map((name,k)=><li key={k}>{name}</li>)}</ol>;
+/** A kinship word where it occurs: a tap says what it means and shows the way in this family's own tree. */
 export function KinshipExplanation({relation,model,labels,language}:{relation:Relation;model:Model;labels:Row;language:string}){
- const pack=kinshipLexicon(language),term=kinshipTerm(relation,language);
+ const pack=kinshipLexicon(language),term=kinshipTerm(relation,language),inLaw=term?undefined:inLawWords(relation,language);
  if(!pack)return <span>{relationPhrase(relation,labels,language)}</span>;
- const path=(relation.path||[]).filter(id=>model.info[id]&&!model.info[id].placeholder).map(id=>model.info[id].short).join(' → ');
+ const names=way(relation,model);
  return <details className="kinship-explanation" key={language+relation.path?.join(':')}>
-  <summary title={term?`${term.word}: ${term.explanation}`:undefined}>{relationPhrase(relation,labels,language)}</summary>
-  {term&&<p><b>{term.word}</b>: {term.explanation}{term.archaic&&<> · <em>{pack.archaic}</em></>}</p>}
-  {path&&<p className="kinship-path"><b>{pack.path}</b><br/>{path}</p>}
-  <a href={'#view=kinship'+(term?'&word='+encodeURIComponent(term.id):'')}>{pack.title} →</a>
+  <summary>{relationPhrase(relation,labels,language)}</summary>
+  <div>{term&&<p><b>{term.word}</b>: {term.explanation}{term.archaic&&<> · <em>{pack.archaic}</em></>}</p>}
+  {!term&&inLaw&&<p><b>{inLaw.base!.word}</b>: {inLaw.base!.explanation}<br/>{describeRelation(relation,labels,language,true)}</p>}
+  {names.length>1&&<Way names={names} label={pack.path}/>}
+  {term&&<a href={'#view=kinship&word='+encodeURIComponent(term.id)}>{pack.all} →</a>}</div>
  </details>;
 }
 
-export default function KinshipWords({model,me,language,labels,go}:{model:Model;me:string;language:string;labels:Row;go:(id:string,details?:boolean)=>void}){
- const pack=kinshipLexicon(language);
+/** The words this family needs, each with its own person. A word nobody in the shown tree answers to is not listed. */
+export default function KinshipWords({model,me,language,go}:{model:Model;me:string;language:string;go:(id:string,details?:boolean)=>void}){
+ const pack=kinshipLexicon(language),from=me&&model.info[me]&&!model.info[me].placeholder?me:model.homes[0]||'';
  const examples=useMemo(()=>{
   const found=new Map<string,{id:string;relation:Relation}>();
-  if(!pack||!model.info[me]||model.info[me].placeholder)return found;
+  if(!pack||!from)return found;
   for(const person of Object.values(model.info)){
-   if(person.placeholder||person.id===me)continue;
-   const relation=model.relation(me,person.id);if(!relation)continue;
+   if(!isPerson(person)||person.id===from)continue;
+   const relation=model.relation(from,person.id);if(!relation)continue;
    const term=kinshipTerm(relation,language);if(term&&!found.has(term.id))found.set(term.id,{id:person.id,relation});
   }
   return found;
- },[model,me,language,pack]);
- if(!pack)return null;
- const termRow=(term:Term)=>{const example=examples.get(term.id);return <article id={'word-'+term.id} key={term.id} className="kinship-word">
+ },[model,from,language,pack]);
+ if(!pack||!examples.size)return null;
+ const row=(term:Term)=>{const {id,relation}=examples.get(term.id)!,names=way(relation,model);return <article id={'word-'+term.id} key={term.id} className="kinship-word">
   <h3>{term.word}{term.archaic&&<small> · {pack.archaic}</small>}</h3><p>{term.explanation}</p>
-  {example?<p className="kinship-example">{pack.example}: <button className="link" onClick={()=>go(example.id,true)}>{model.info[example.id].short}</button>{!example.relation.sure&&<> · {pack.maybe.trim()}</>}<small>{(example.relation.path||[]).map(id=>model.info[id]?.short).filter(Boolean).join(' → ')}</small></p>:<p className="note">{model.info[me]?pack.noExample:pack.chooseViewer}</p>}
+  {names.length>2&&<Way names={names} label={pack.path}/>}
+  <button className="chip" onClick={()=>go(id,true)}><b>{model.info[id].short}</b></button>
  </article>};
- return <section className="page kinship-words"><h1>{pack.title}</h1><p className="lead">{pack.intro}</p>
-  {model.info[me]&&<p className="kinship-viewer">{labels.meFrom}: <button className="link" onClick={()=>go(me,true)}>{model.info[me].short}</button></p>}
-  <nav className="kinship-groups" aria-label={pack.title}>{Object.entries(pack.groups).map(([id,title])=><a key={id} href={'#view=kinship&group='+id} onClick={()=>requestAnimationFrame(()=>document.getElementById('kin-group-'+id)?.scrollIntoView())}>{title}</a>)}</nav>
-  {Object.entries(pack.groups).map(([group,title])=><section key={group} id={'kin-group-'+group}><h2>{title}</h2><div className="kinship-grid">{pack.terms.filter(t=>t.group===group).sort((a,b)=>Number(examples.has(b.id))-Number(examples.has(a.id))||a.word.localeCompare(b.word,language)).map(termRow)}</div></section>)}
+ const groups=Object.entries(pack.groups).map(([group,title])=>({title,terms:pack.terms.filter(t=>t.group===group&&examples.has(t.id))})).filter(g=>g.terms.length);
+ return <section className="page kinship-words"><h1>{pack.title}</h1><p className="lead">{pack.intro.replace('{name}',model.info[from].short)}</p>
+  {groups.map(g=><section key={g.title}><h2>{g.title}</h2><div className="kinship-grid">{g.terms.map(row)}</div></section>)}
  </section>;
 }

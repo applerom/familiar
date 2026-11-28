@@ -11,6 +11,7 @@
 # :END_MODULE_CONTRACT
 import hashlib
 import io
+import math
 import re
 from contextlib import closing
 from pathlib import Path
@@ -129,6 +130,25 @@ def _jpeg(image):
     return out.getvalue()
 
 
+def first_page(raw):
+    """A scan sent as PDF shows as its first page; None without the PDF reader."""
+    try:
+        import pypdfium2 as pdf
+        with pdf.PdfDocument(raw) as source, closing(source[0]) as page:
+            width, height = page.get_size()
+            if not all(math.isfinite(side) and side > 0 for side in (width, height)):
+                return None
+            with closing(page.render(scale=min(2, WEB_SIDE / max(width, height)),
+                                     may_draw_forms=False, draw_annots=False)) as bitmap:
+                return _jpeg(bitmap.to_pil())
+    except (ImportError, OSError, ValueError, IndexError):
+        return None
+    except Exception as error:  # pypdfium2 raises its own error type for a damaged file
+        if type(error).__name__ == 'PdfiumError':
+            return None
+        raise
+
+
 def _pdf(raw, number):
     import pypdfium2 as pdf
 
@@ -164,6 +184,11 @@ def derivative(raw, *, pdf=False, page=None):
         from PIL import Image
     except ImportError:
         return None
+    try:
+        from pillow_heif import register_heif_opener
+        register_heif_opener()  # A phone photograph (HEIC, AVIF) opens like any other picture.
+    except ImportError:
+        pass
     try:
         if pdf:
             from pypdfium2 import PdfiumError

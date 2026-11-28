@@ -79,11 +79,29 @@ test('a possible ancestor stands above missing generations and a weak one is not
     expect(tree.tiles.find(tile => tile.id === 'stranger')?.status).toBe('weak');
     expect(tree.tiles.filter(tile => ['elder', 'elder-father', 'found-mother'].includes(tile.id)).every(tile => tile.status === 'probable')).toBe(true);
     expect(tree.visible.has(haze[0].id)).toBe(false);
-    const down = layoutTree(model, 'elder', width, 2);
-    expect([down.tiles.filter(tile => tile.gap).length, down.visible.has('grandfather')]).toEqual([3, true]);
-    // The way down through missing generations never hangs straight under one known child.
-    const [son, way] = ['elder-son', 'grandfather'].map(id => down.tiles.find(tile => tile.id === id)!);
-    expect(Math.abs(son.x - way.x)).toBeGreaterThan(son.w / 2);
+  }
+  // The way down through missing generations ran behind the first child's card and read as "his son". It keeps clear of
+  // every named child's card, with one child or many: the missing one is a place of its own in their row.
+  const along = (d: string) => {
+    const [x0, y, ...r] = d.match(/-?[\d.]+/g)!.map(Number);
+    const y0 = r.length === 7 ? r.shift()! : y; // a straight stem out of the ring, then the curve
+    const [ax, ay, bx, by, x3, y3] = r.length === 1 ? [x0, y0, x0, r[0], x0, r[0]] : r;
+    return Array.from({length: 41}, (_, i) => { const t = i / 40, u = 1 - t;
+      return [u ** 3 * x0 + 3 * u * u * t * ax + 3 * u * t * t * bx + t ** 3 * x3, u ** 3 * y0 + 3 * u * u * t * ay + 3 * u * t * t * by + t ** 3 * y3]; });
+  };
+  for (const n of [1, 4, 9]) {
+    for (let i = Object.keys(people).filter(id => id.startsWith('son')).length + 1; i < n; i++) { people['son' + i] = {id: 'son' + i, sex: 'M', name: 'Person son' + i, events: [{tag: 'BIRT', date: String(1830 + i * 2)}]}; edges.push({child: 'son' + i, parent: 'elder', role: 'отец', status: 'export'}); }
+    const model = buildModel({root: 'home', people, edges, associations});
+    for (const width of [390, 1440]) {
+      const down = layoutTree(model, 'elder', width, 2);
+      expect([down.tiles.filter(tile => tile.gap).length, down.visible.has('grandfather')]).toEqual([3, true]);
+      const kids = down.tiles.filter(tile => tile.gen < 0 && !tile.gap && tile.id !== 'grandfather');
+      expect([kids.length, down.tiles.find(tile => tile.place)?.y]).toEqual([n, kids[0].y]);
+      for (const link of down.links.filter(link => link.ids.includes('grandfather'))) for (const [at, y] of along(link.d)) {
+        const x = at + down.linkOffset;
+        expect(kids.filter(k => x > k.x - 4 && x < k.x + k.w + 4 && y > k.y - 4 && y < k.y + k.h + 4).map(k => k.id)).toEqual([]);
+      }
+    }
   }
 });
 

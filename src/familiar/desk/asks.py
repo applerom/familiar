@@ -5,6 +5,7 @@ from collections import defaultdict
 from datetime import UTC, date, datetime, timedelta
 from html import escape
 
+from familiar.instance import blanks
 from familiar.instance.asks import (VISIBLE, WANTS, closed_line, context, current, horizons, latest_feedback, row_lines,
                                     validate, waiting)
 from familiar.instance.correspondence import aim_versions
@@ -35,24 +36,27 @@ def years(person):
     return born + ('\u2013' + died if died else '')
 
 
+def exact_day(raw):
+    """The day an ISO or imported date names, or None."""
+    try:
+        return date.fromisoformat(raw)
+    except ValueError:
+        parts = raw.upper().split()
+        try:
+            return date(int(parts[2]), 'JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC'.split().index(parts[1]) + 1,
+                        int(parts[0])) if len(parts) == 3 else None
+        except ValueError:
+            return None
+
+
 def birthday(person, today, w, name=''):
     for event in person.get('events', []):
         raw = event.get('date', '')
         if (event.get('type') != 'birth' or event.get('open_question') or not isinstance(raw, str)
                 or event.get('status') in {'possible', 'hypothesis', 'candidate'}):
             continue
-        try:
-            born = date.fromisoformat(raw)
-        except ValueError:
-            try:
-                parts = raw.upper().split()
-                months = 'JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC'.split()
-                born = date(int(parts[2]), months.index(parts[1]) + 1, int(parts[0])) if len(parts) == 3 else None
-            except (ValueError, IndexError):
-                continue
-            if born is None:
-                continue
-        if born > today:
+        born = exact_day(raw)
+        if born is None or born > today:
             continue
         for year in (today.year, today.year + 1):
             try:
@@ -65,27 +69,37 @@ def birthday(person, today, w, name=''):
     return ''
 
 
-def matching_steps(about, subjects, graph, data):
+def matching_steps(row, subjects, graph, data):
     def pattern(value):
         return re.compile(r'(?<!\w)' + re.escape(value.casefold()) + r'(?!\w)') if value else None
 
     language = data.instance.source_language
-    line = surname_keys(about.get('line'), language)
-    line_pattern, place_pattern = pattern(about.get('line')), pattern(about.get('place'))
+    about, aim = row['about'], row['aim']
+    line_name = about.get('line') or aim.get('line')
+    line = surname_keys(line_name, language)
+    line_pattern, place_pattern = pattern(line_name), pattern(about.get('place'))
     aliases = graph.get('identityAliases', {})
+    primary = about.get('person')
+    targets = {aliases.get(primary, primary)} if primary else subjects
     for feed in graph.get('feeds', []):
+        chapters = feed.get('chapters', [])
+        if not chapters:
+            continue
         same_line = bool(line & surname_keys(feed.get('line'), language))
-        for index, chapter in enumerate(feed.get('chapters', []), 1):
-            named = {aliases.get(pid, pid) for pid in chapter.get('people', [])}
-            if same_line or subjects & named:
+        related = same_line
+        for index, chapter in enumerate(chapters, 1):
+            named = {aliases.get(pid, pid) for pid in [chapter.get('person'), *chapter.get('people', [])] if pid}
+            if targets & named:
                 yield feed['id'], str(index)
-                continue
+                break
             if line_pattern or place_pattern:
                 fragments = [chapter.get(k) for k in ('title', 'text', 'more')]
                 fragments.extend(p.get('name') for p in chapter.get('places', []))
                 message = '\n'.join(data.text(value).casefold() for value in fragments if value)
-                if any(p and p.search(message) for p in (line_pattern, place_pattern)):
-                    yield feed['id'], str(index)
+                related = related or any(p and p.search(message) for p in (line_pattern, place_pattern))
+        else:
+            if related:
+                yield feed['id'], 'end'
 
 
 def subjects_for(row, aliases):
@@ -101,7 +115,7 @@ def project(active, graph, delivery, w, *, today=None, feedback=(), language=Non
 
     today = today or date.today()
     week_ago = datetime.now(UTC) - timedelta(days=7)
-    w = w['asks']
+    words_blanks, w = w['blanks'], w['asks']
     root = active.path('asks')
     paths, names = listing(root, '**/*.json')
     inputs = {p: p.read_bytes() for p in paths}
@@ -124,8 +138,9 @@ def project(active, graph, delivery, w, *, today=None, feedback=(), language=Non
     aliases = graph.get('identityAliases', {})
     live = {pid: data.name(pid) for pid in graph.get('people', {})
             if people.get(pid, {}).get('life_assessment', {}).get('status') == 'living'}
-    feedback = latest_feedback(feedback)
-    entries, found_by_child, stale, seen = [], [], set(), set()
+    heard = list(feedback)
+    feedback = latest_feedback(heard)
+    entries, found_by_child, stale, seen, placed = [], [], set(), set(), []
     for path, raw in inputs.items():
         if path == horizon_path:
             continue
@@ -137,6 +152,7 @@ def project(active, graph, delivery, w, *, today=None, feedback=(), language=Non
         seen.add(identity)
         response = feedback.get(identity)
         state, last, expired = current(row, response)
+        placed.append(row | {'state': state})
         if (state == 'answered' and last and response[2].get('kind') == 'ask_answer'
                 and response[2].get('via_child') and not row.get('tender')):
             found_by_child.append(row)
@@ -181,7 +197,7 @@ def project(active, graph, delivery, w, *, today=None, feedback=(), language=Non
             entries.append((row, item))
     rank(active, data, entries, versions, {'settled': '{what}', 'settled_unknown': ''}, stale_asks=stale)
     ranked = sorted(((r, i) for r, i in entries if not i['shelved']), key=lambda pair: (-pair[1]['score'], pair[1]['id']))
-    groups, cards, steps = defaultdict(list), defaultdict(list), defaultdict(dict)
+    groups, cards, steps = defaultdict(list), defaultdict(list), defaultdict(lambda: defaultdict(list))
     reminders = []
     for row, item in ranked:
         holder = item['holder']
@@ -198,21 +214,89 @@ def project(active, graph, delivery, w, *, today=None, feedback=(), language=Non
                  'child': item['child']}
         subject_ids = subjects_for(row, aliases)
         for pid in sorted(subject_ids & graph.get('people', {}).keys()):
-            cards[pid].append(entry)
-        for feed, index in matching_steps(row['about'], subject_ids, graph, data):
-            steps[feed].setdefault(index, entry)
+            cards[pid].append(entry | {'own_question': item['question']} if pid == holder else entry)
+        for feed, index in matching_steps(row, subject_ids, graph, data):
+            steps[feed][index].append(entry)
     child_steps = defaultdict(set)
     for row in found_by_child:
-        for feed, index in matching_steps(row['about'], subjects_for(row, aliases), graph, data):
+        for feed, index in matching_steps(row, subjects_for(row, aliases), graph, data):
             child_steps[feed].add(index)
     summaries = [{'id': item['id'], 'text': item['question'], 'holder': item['name'],
                   'lane': (row['aim'].get('version') or '')} for row, item in ranked if item['state'] in VISIBLE][:3]
     links = {'cards': dict(cards), 'steps': dict(steps), 'child_steps': {k: sorted(v) for k, v in child_steps.items()}}
+    if graph.get('people'):
+        links['blanks'] = invitations(active, graph, data, placed, heard, words_blanks, w['months'], language, tr, local_name)
+        paths, names = listing(active.path('versions'), '**/*.json')
+        inputs.update({p: p.read_bytes() for p in paths})
+        listings[(active.path('versions'), '**/*.json')] = names
     require_displayable(active, [list(groups.values()), reminders, links])
-    return render(language, groups, w), links, reminders, summaries, inputs, listings
+    return render(language, groups, w, faces(graph, groups)), links, reminders, summaries, inputs, listings
 
 
-def render(language, groups, w):
+def faces(graph, groups):
+    """{holder: CSS} for the family's own photograph of each person we ask, the marked face first."""
+    found = {}
+    for holder in groups:
+        media = [m for m in (graph.get('people', {}).get(holder) or {}).get('media', [])
+                 if m.get('photo') and m.get('kind') == 'family-photograph' and str(m.get('asset', '')).startswith('/')]
+        media.sort(key=lambda m: (not (m.get('is_portrait') or m.get('face')), len(m.get('subjects') or [1])))
+        if not media:
+            continue
+        m = media[0]
+        x, y, w, h = m.get('face') or m.get('crop') or (0, 0, 1, 1)
+        place = (f'background-size:{100 / w:.2f}% {100 / h:.2f}%;background-position:'
+                 f'{x / (1 - w) * 100 if w < 1 else 50:.2f}% {y / (1 - h) * 100 if h < 1 else 30:.2f}%'
+                 if m.get('face') or m.get('crop') else 'background-size:cover;background-position:50% 30%')
+        found[holder] = f"background-image:url('{escape(m['asset'])}');{place}"
+    return found
+
+
+def invitations(active, graph, data, asks, feedback, w, months, language, tr, local_name):
+    """{person: slots}: what a thin card lacks, and what we propose to amend, each one tap from the remark form."""
+    family = blanks.Family(active, graph, living={
+        data.people[pid]['id'] for pid in graph['people']
+        if data.people.get(pid, {}).get('life_assessment', {}).get('status') == 'living'})
+    from familiar.instance.subjects import protected_names
+    deceased = {pid for pid, person in graph['people'].items() if person.get('living') is False}
+    names = protected_names(active)
+    result = defaultdict(list)
+
+    def slot(pid, field, subject, **more):
+        label = w['field_' + field + ('_' + (family.sex(pid) or 'm') if field == 'spouse' else '')]
+        name = local_name(pid, graph['people'][pid].get('treeName') or graph['people'][pid].get('name', ''))
+        values = {'person': name, 'field': label, 'value': more.get('guess', '')}
+        result[pid].append({'label': label, 'subject': subject, 'start': w['start'].format(**values), **more,
+                            **({'yes': w['yes_text'].format(**values)} if more.get('guess') else {})})
+
+    def told(value, field, pid):
+        shown = text(value, pid)
+        if field in {'birth', 'death'} and (day := exact_day(shown)):
+            return f"{day.day} {months[day.month - 1]} {day.year}"
+        return shown
+
+    def text(value, pid):
+        return value.get(language) or tr(data.text(value, [pid])) if isinstance(value, dict) else tr(data.text(value, [pid]))
+
+    for pid, person in graph['people'].items():
+        for row in person.get('amendments', []) if pid in deceased and family.askable(pid) else ():
+            if row['state'] == 'proposed' and row['weight'] >= blanks.GUESS_FROM:
+                guess, original = told(row['value'], row['field'], pid), text(row['original'], pid)
+                if not names.search(guess) and not names.search(original):
+                    slot(pid, row['field'], 'amendment:' + row['id'], guess=guess,
+                         told=w['told' if row['origin'] == 'memory' else 'read'].format(value=original),
+                         amendment_revision=row['revision'])
+    for pid, items in blanks.offers(family, data.rows['versions'], feedback, asks).items():
+        for item in items:
+            guess = (item.get('guess') or {}) if pid in deceased else {}
+            value = local_name(guess['person'], guess['value']) if guess.get('person') else told(guess['value'], item['field'], pid) if guess else ''
+            if not guess.get('person') and names.search(value):
+                value, guess = '', {}
+            slot(pid, item['field'], f"blank:{pid}:{item['field']}",
+                 **({'guess': value} if value else {}), **({'version': guess['version']} if guess.get('version') else {}))
+    return {pid: items for pid, items in result.items() if items}
+
+
+def render(language, groups, w, portraits=None):
     """A conversation, not a form: what we think, then one field for how it really was."""
     def label(key):
         return escape(w[key])
@@ -223,7 +307,7 @@ def render(language, groups, w):
             return f'<a class="ask-who" href="/#person={escape(about["person"])}">{inner}</a>'
         return f'<span class="ask-who">{inner}</span>'
 
-    def card(item):
+    def card(item, first=False):
         hints = ''.join(f'<button type="button" class="ask-hint" data-hint="{escape(hint)}">{escape(hint)}</button>'
                         for hint in item['hints'])
         opener = escape(item['opener'])
@@ -232,24 +316,31 @@ def render(language, groups, w):
         opener = f'<p class="ask-opener">{opener}</p>' if opener else ''
         tender = f'<p class="ask-tender">{label("tender_notice")}</p>' if item['tender'] else ''
         child = f'<span class="ask-child" hidden>{escape(item["child"])}</span>' if item['child'] else ''
-        photo = ('<details class="ask-photo"><summary>' + label('photo_button') + '</summary><p>'
-                 + label('photo_note') + '</p><p>' + escape(item['photo_note']) + '</p></details>') if 'photo' in item['wants'] else ''
+        photo = ('<p class="ask-photo">' + escape(item['photo_note']) + '</p>'
+                 if 'photo' in item['wants'] and item['photo_note'] else '')
         mark = ' data-tender="true"' if item['tender'] else ''
         status = label('saved_will_ask') if item['state'].startswith('will_ask:') else ''
-        return (f'<details id="ask-{escape(item["id"])}" class="ask-card" data-ask="{escape(item["id"])}" '
+        return (f'<details id="ask-{escape(item["id"])}" class="ask-card{" ask-first" if first else ""}" data-ask="{escape(item["id"])}" '
                 f'data-context="{item["context"]}"{mark}><summary>{tile(item["tile"])}'
                 f'<span class="ask-q"><span class="ask-adult">{escape(item["question"])}</span>{child}</span></summary>'
                 f'<div class="ask-body">{opener}' + (f'<div class="ask-hints">{hints}</div>' if hints else '') + tender
                 + f'<form class="ask-answer"><label>{label("write")}<textarea required maxlength="6000" rows="3"></textarea></label>'
-                + f'<div class="ask-send"><button type="submit" class="ask-primary">{label("send")}</button>{photo}</div></form>'
+                + photo + f'<div class="ask-send"><button type="submit" class="ask-primary">{label("send")}</button></div></form>'
                 + f'<p class="ask-status" role="status">{status}</p></div></details>')
 
     sections = []
     for items in groups.values():
         lines = ' · '.join(escape(line) for line in dict.fromkeys(i['line'] for i in items) if line)
-        sections.append(f'<section class="ask-holder"><header><span aria-hidden="true">{escape(items[0]["name"][:1])}</span>'
+        # One person, one card: whom to ask before what to ask; the first question large, the others folded.
+        face = (portraits or {}).get(items[0]['holder'])
+        avatar = (f'<span class="ask-face" style="{face}" aria-hidden="true"></span>' if face
+                  else f'<span aria-hidden="true">{escape(items[0]["name"][:1])}</span>')
+        rest = items[1:]
+        more = (f'<details class="ask-more"><summary>{escape(w["more_questions"].format(n=len(rest)))}</summary>'
+                + ''.join(card(item) for item in rest) + '</details>') if rest else ''
+        sections.append(f'<section class="ask-holder"><header>{avatar}'
                         f'<div><h2>{escape(items[0]["name"])}</h2>' + (f'<small>{lines}</small>' if lines else '')
-                        + '</div></header>' + ''.join(card(item) for item in items) + '</section>')
+                        + '</div></header>' + card(items[0], True) + more + '</section>')
     content = (f'<div class="ask-page"><p class="ask-lead">{label("lead")}</p><p class="ask-today" hidden></p>'
                f'<div class="ask-modes" hidden><button type="button" data-action="kids" aria-pressed="false">{label("kids")}</button></div>'
                + (''.join(sections) if sections else f'<p class="ask-empty">{label("empty")}</p>') + '</div>')

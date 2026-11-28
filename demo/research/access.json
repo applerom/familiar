@@ -1,0 +1,46 @@
+{
+  "_about": "Invented for the Familiar demo: which papers of the islands and of Quarry Bend exist, which were read and how to reach the rest. Form: research form access.",
+  "fictional": true,
+  "schema_version": 1,
+  "places": [
+    {
+      "place": "Ponta do Moinho, Ilha Vaqueira",
+      "lines": ["Calhau"],
+      "books": [
+        {"id": "a1", "kind": "parish", "title": "Baptisms", "years": "1880-1910", "state": "home",
+         "online": "invented island parish books online", "read": 6, "of": 31, "unit": "years",
+         "at": "2026-11-12", "by": "collector-demo"},
+        {"id": "a2", "kind": "parish", "title": "Baptisms", "years": "1911-1915", "state": "room",
+         "holder": "Invented diocesan archive of Ilha Vaqueira", "reference": "books 5-6", "order": 1,
+         "look_for": "Children of a Calhau household: Rosa's younger brothers and sisters",
+         "at": "2026-11-12", "by": "collector-demo"},
+        {"id": "a3", "kind": "parishioners", "title": "Confession rolls", "years": "1890-1905", "state": "unknown",
+         "at": "2026-11-12", "by": "collector-demo"}
+      ]
+    },
+    {
+      "place": "Lajedo do Vento, Ilha Vaqueira",
+      "lines": ["Ferrolho"],
+      "books": [
+        {"id": "a4", "kind": "army", "title": "Recruitment rolls", "years": "1918", "state": "room",
+         "holder": "Invented district archive of Ilha Vaqueira", "reference": "box 12", "order": 2,
+         "look_for": "Amaro Ferrolho: his father's name and the house",
+         "at": "2026-11-12", "by": "collector-demo"}
+      ]
+    },
+    {
+      "place": "Quarry Bend",
+      "lines": ["Ferrolho"],
+      "books": [
+        {"id": "a5", "kind": "civil", "title": "Death certificates", "years": "1968; 1981", "state": "letter",
+         "holder": "Town clerk of Quarry Bend", "at": "2026-11-12", "by": "collector-demo",
+         "note": "A relative may request them; the 1981 one names Rosa's birthplace."},
+        {"id": "a7", "kind": "tax", "title": "Poll tax lists", "years": "1922-1930", "state": "copy",
+         "holder": "Town clerk of Quarry Bend", "price": "3 dollars a page", "needs": "page numbers of Mill Street",
+         "look_for": "Amaro Ferrolho and who lived with him", "at": "2026-11-25", "by": "collector-demo"},
+        {"id": "a6", "kind": "web", "title": "Mill payrolls", "state": "none", "at": "2026-11-12", "by": "collector-demo",
+         "note": "Invented: burned in 1936."}
+      ]
+    }
+  ]
+}

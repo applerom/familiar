@@ -2,8 +2,9 @@
 import {memo,useCallback,useEffect,useLayoutEffect,useMemo,useRef,useState,type CSSProperties,type ReactNode,type RefObject} from 'react';
 import {STACK_STEP,WHOLE,fitView,layoutTree,levelRange,type Layout} from './layout';
 import {useZoomPan} from './use-zoom-pan';
-import {lifeLabel,type Model,type Row} from './model';
+import {isPerson,lifeLabel,type Model,type Row} from './model';
 import {growthWords} from './growth';
+import {Face} from './portrait';
 
 type TileActions = {
   open: (id: string) => void;
@@ -15,6 +16,34 @@ const weak = (status: string) => status === 'weak' ? ' weak' : '';
 // What a compact tile can carry at its size on the screen: the whole name with the years,
 // the given name with a year, an initial, or nothing but its colour.
 const SHORT = 40, INITIAL = 13;
+// A face rides on a near tile only when the tile is a card a finger can see it on.
+const FACE_FROM = 84;
+/**
+ * Given names for the small tiles of a crowded row, where they fit: shorter names claim their room first, a tile
+ * that keeps its initial takes only its own width, and a name never runs into its neighbour or past the picture.
+ */
+function smallNames(layout: Layout, model: Model, zoom: number) {
+  const small = (t: Layout['tiles'][number]) => !t.gap && !model.info[t.id]?.knot && t.compact && t.scale * zoom < WHOLE && t.w * zoom < SHORT;
+  const given = (id: string) => (model.info[id]?.givenName || model.info[id]?.treeName || '').split(' ')[0];
+  const rows = new Map<number, Layout['tiles']>();
+  for (const tile of layout.tiles) if (!tile.gap) rows.set(tile.y, [...rows.get(tile.y) || [], tile]);
+  const half = new Map(layout.tiles.map(t => [t.id, t.w / 2]));
+  const names = new Map<string, {name: string; font: number; w: number}>();
+  const order = layout.tiles.filter(t => small(t) && given(t.id)).sort((a, b) => given(a.id).length - given(b.id).length);
+  for (const tile of order) {
+    const row = rows.get(tile.y)!.slice().sort((a, b) => a.x - b.x), i = row.indexOf(tile);
+    const mid = (t: Layout['tiles'][number]) => t.x + t.w / 2, cx = mid(tile), gap = 4 / zoom;
+    const left = i ? cx - mid(row[i - 1]) - half.get(row[i - 1].id)! - gap : cx;
+    const right = i < row.length - 1 ? mid(row[i + 1]) - half.get(row[i + 1].id)! - cx - gap : layout.width - cx;
+    const name = given(tile.id), room = 2 * Math.min(left, right, 90);
+    const font = Math.min(tile.w * .46, 12 / zoom, (room - 10) / (name.length * .64));
+    if (font * zoom < 8.5) continue;
+    const w = Math.max(tile.w, Math.ceil(name.length * font * .64 + 10));
+    half.set(tile.id, w / 2);
+    names.set(tile.id, {name, font, w});
+  }
+  return names;
+}
 
 const TreeTiles = memo(function TreeTiles({layout,model,center,hot,labels,actions,zoom,drawn}: {
   layout: Layout; model: Model; center: string; hot: string; labels: Row;
@@ -22,6 +51,7 @@ const TreeTiles = memo(function TreeTiles({layout,model,center,hot,labels,action
 }) {
   const lang = labels.languageCode;
   const words = growthWords[lang] || growthWords.en;
+  const named = useMemo(() => smallNames(layout, model, zoom), [layout, model, zoom]);
   return <>
     <svg key={drawn} className="tree-links" width={layout.width} height={layout.height} aria-hidden="true">
       <g transform={`translate(${layout.linkOffset} 0)`}>{layout.links.map(link =>
@@ -34,24 +64,38 @@ const TreeTiles = memo(function TreeTiles({layout,model,center,hot,labels,action
       const {id, gen, stackLayers} = tile;
       const distant = tile.compact;
       const whole = !distant || tile.scale * zoom >= WHOLE;
-      const mini = !whole && tile.w * zoom < SHORT;
+      // A small tile carries the given name when its row leaves room for it, widening around its own centre;
+      // only where even that does not fit does it fall back to an initial.
+      const label = named.get(id);
+      const mini = !whole && tile.w * zoom < SHORT && !label;
+      const w = label ? label.w : tile.w;
       const style = {
-        transform: `translate(${tile.x}px,${tile.y}px)`, width: tile.w, height: tile.h, '--b': tile.color, '--s': tile.scale,
+        transform: `translate(${tile.x - (w - tile.w) / 2}px,${tile.y}px)`, width: w, height: tile.h, '--b': tile.color, '--s': tile.scale,
         '--c': Math.min(1.05, Math.max(.62, tile.w / 66)), '--w': tile.w, '--depth-opacity': tile.fade,
+        ...(label ? {'--name-font': `${label.font}px`} : {}),
       } as CSSProperties;
       // A generation nobody has found yet: haze with the dotted line running through it, no card and no words.
       // When the tree holds someone of a fitting age for that generation, the haze carries the name, quietly.
-      if (tile.gap) return <div key={id} className={`tile-position tile-gap${weak(tile.status)}`} style={style} data-gen={gen} aria-hidden={tile.hint ? undefined : 'true'}>
-        <span className="tree-gap"/>
+      // The generation right below a possible ancestor is a place among the couple's children: haze of a card's size,
+      // and a tap on it goes on along the line.
+      if (tile.gap) return <div key={id} className={`tile-position tile-gap${tile.place ? ' tile-place' : ''}${weak(tile.status)}`} style={style} data-gen={gen}
+        aria-hidden={tile.hint || tile.opens ? undefined : 'true'}>
+        {tile.opens ? <button className="tree-gap" title={model.info[tile.opens].short} aria-label={model.info[tile.opens].short} onClick={() => actions.current.open(tile.opens!)}/>
+          : <span className="tree-gap"/>}
         {tile.hint && <button className="gap-hint" title={model.info[tile.hint].short} onClick={() => actions.current.open(tile.hint!)}>{model.info[tile.hint].givenName || model.info[tile.hint].short.split(' ')[0]}</button>}
       </div>;
       const person = model.info[id];
-      const life = !person.connector && (person.birthText || person.deathText) ? lifeLabel(person, labels, lang) : '';
-      const year = person.birthText || person.deathText;
+      if (person.knot) return <div key={id} className="tile-position" style={style} aria-hidden="true">
+        <span className="tree-knot"/>
+      </div>;
+      const dates = model.tileDates(id);
+      const year = dates.birth || dates.death;
+      const life = !person.connector && year ? lifeLabel({...person, birthText: dates.birth, deathText: dates.death}, labels, lang) : '';
       const growth = person.growth;
       const confirmed = growth.confirmed.length > 0;
-      const title = [person.fullName, life, confirmed ? words.confirmed : growth.treeMemory ? words.tree : growth.memory ? words.memory : growth.found ? words.found : ''].filter(Boolean).join(' · ');
-      return <div key={id} className={`tile-position${distant ? ' tile-distant' : ''}${distant && whole ? ' tile-whole' : ''}${mini ? ' tile-mini' : ''}`} style={style} data-gen={gen}>
+      const title = [person.fullName, life, dates.possible ? labels.sameAs : '', confirmed ? words.confirmed : growth.treeMemory ? words.tree : growth.memory ? words.memory : growth.found ? words.found : ''].filter(Boolean).join(' · ');
+      const portrait = !distant && tile.w * zoom >= FACE_FROM ? person.portrait : undefined;
+      return <div key={id} className={`tile-position${distant ? ' tile-distant' : ''}${distant && whole ? ' tile-whole' : ''}${mini ? ' tile-mini' : ''}${label ? ' tile-named' : ''}${portrait ? ' tile-with-face' : ''}`} style={style} data-gen={gen}>
         {tile.assumed && <span className="assumed-haze" aria-hidden="true"/>}
         {Array.from({length: stackLayers}, (_, i) => {
           const offset = (stackLayers - i) * STACK_STEP;
@@ -63,14 +107,16 @@ const TreeTiles = memo(function TreeTiles({layout,model,center,hot,labels,action
           onPointerEnter={event => { if (event.pointerType === 'mouse') actions.current.hover(id); }}
           onPointerLeave={() => actions.current.hover('')}>
           {mini ? tile.w * zoom >= INITIAL && <strong>{(person.givenName || person.treeName).slice(0, 1)}</strong>
+            : label ? <strong>{label.name}</strong>
             : <strong>{whole ? person.treeName : person.givenName || person.treeName}</strong>}
-          {mini ? null : whole ? life && <small className={person.guess ? 'guess' : undefined}>{life}</small>
-            : year && !person.connector && <small className={person.guess ? 'guess' : undefined}>{year}</small>}
+          {mini || label ? null : whole ? life && <small className={person.guess || dates.possible ? 'guess' : undefined}>{life}</small>
+            : year && !person.connector && <small className={person.guess || dates.possible ? 'guess' : undefined}>{year}</small>}
           {!distant && (confirmed || growth.firmMemory) && <span className="tile-provenance" aria-hidden="true">
             <i className="growth-confirm">✓</i>
             {confirmed && <i>▤</i>}
           </span>}
         </button>
+        {portrait && <span className="tile-face" aria-hidden="true"><Face key={portrait.asset} portrait={portrait}/></span>}
       </div>;
     })}
     {layout.horizon && <div className={`history-fog${layout.cut ? ' cut' : ''}`} aria-hidden="true"/>}
@@ -174,22 +220,23 @@ export default function TreeStage({model,id,go,labels,onVisible,children}: {
     if (level < range.max) return setWant(level + 1);
     const back = trail.current.pop();
     if (back) return move(back.id, back.want);
-    const home = homeward.get(id);
+    let home = homeward.get(id);
+    while (home && model.info[home.id].knot) home = homeward.get(home.id);
     if (home) move(home.id, home.kind === 'down' ? level + 1 : home.kind === 'up' ? level - 1 : level);
     else setBumped(n => n + 1);
-  }, [level,range,homeward,id,move]);
+  }, [level,range,homeward,id,move,model]);
   const closer = useCallback((at?: {x: number; y: number}) => {
     const hit = at && layout?.tiles.reduce<{tile: Layout['tiles'][number] | null; far: number}>((best, tile) => {
       const x = (at.x - t.x) / t.k, y = (at.y - t.y) / t.k;
       const far = Math.hypot(Math.max(tile.x - x, 0, x - tile.x - tile.w), Math.max(tile.y - y, 0, y - tile.y - tile.h));
       return far < best.far ? {tile, far} : best;
     }, {tile: null, far: 24 / t.k}).tile;
-    if (hit && hit.gen !== 0) {
+    if (hit && isPerson(model.info[hit.id]) && hit.gen !== 0) {
       trail.current.push({id, want});
       move(hit.id, hit.gen > 0 ? level - hit.gen : level);
     } else if (level > 1) setWant(level - 1);
     else setBumped(n => n + 1);
-  }, [layout,t,id,want,level,move]);
+  }, [layout,t,id,want,level,move,model]);
   const canWiden = level < range.max || trail.current.length > 0 || homeward.has(id);
   wheel.current = (direction, at) => direction > 0 ? farther() : closer(at);
   // A pinch scales the picture under the fingers; past a fair stretch it becomes the same single step.
@@ -211,9 +258,10 @@ export default function TreeStage({model,id,go,labels,onVisible,children}: {
       if (event.defaultPrevented || el.closest('input, textarea, select, dialog, .overview, .lightbox') ||
           event.metaKey || event.ctrlKey || event.altKey) return;
       const [father,mother] = model.parents(id).slots;
-      const sibs = [...model.siblings(id),id].sort(model.bySeniority);
-      const i = sibs.indexOf(id), mate = model.spouses(id)[0];
-      const to = event.key === 'ArrowUp' ? (father || mother)?.id : event.key === 'ArrowDown' ? model.children(id)[0] :
+      const selectable = (pid: string) => isPerson(model.info[pid]);
+      const sibs = [...model.siblings(id).filter(selectable),id].sort(model.bySeniority);
+      const i = sibs.indexOf(id), mate = model.spouses(id).find(selectable);
+      const to = event.key === 'ArrowUp' ? [father,mother].find(slot=>slot&&selectable(slot.id))?.id : event.key === 'ArrowDown' ? model.children(id).find(selectable) :
         event.key === 'ArrowLeft' ? sibs[i-1] || mate : event.key === 'ArrowRight' ? sibs[i+1] || mate : '';
       if (to) { event.preventDefault(); go(to); }
       else if (event.key === '+' || event.key === '=') closer();

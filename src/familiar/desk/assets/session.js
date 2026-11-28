@@ -7,18 +7,18 @@ window.familiarDeskIdentity.then(user => {
   if (!user) return;
   document.documentElement.dataset.deskRole = user.role;
   if (user.role === 'reader') {
-    document.querySelectorAll('[href="/desk/progress.html"],[href="/desk/correspondence.html"]').forEach(n => n.remove());
+    document.querySelectorAll('[href="/desk/progress.html"],[href="/desk/correspondence.html"],[href="/desk/search-map.html"]').forEach(n => n.remove());
   }
   if (user.role === 'owner') {
     const access = document.createElement('a'); access.href = '/desk/access.html';
     access.textContent = 'Доступ';
     if (location.pathname === access.pathname) access.setAttribute('aria-current', 'page');
-    document.querySelector('#desk-nav')?.append(access);
+    document.querySelector('#desk-more')?.prepend(access);
   }
-  const slot = document.querySelector('#desk-notice');
-  if (slot) {
+  const more = document.querySelector('#desk-more');
+  if (more) {
     const logout = document.createElement('a'); logout.href = '/auth/logout';
-    logout.textContent = 'Выйти / Sign out'; logout.style.marginInlineStart = '12px';
-    slot.append(logout);
+    logout.textContent = 'Выйти / Sign out';
+    more.querySelector('.desk-colophon').before(logout);
   }
 });

@@ -16,7 +16,7 @@
     <INVARIANT REVIEW="engine lead">Sources may be registered without a reader update.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Sources resolve across contributions regardless of file order or mutual source dependencies; only applied packages commit graph data.</INVARIANT>
     <INVARIANT REVIEW="engine lead">An intake source has one declaration owner; duplicate diagnostics identify the contribution and configured evidence file and explain reference-only evidence.</INVARIANT>
-    <INVARIANT REVIEW="engine lead">Life bounds include direct verified/export parent edges regardless of parent sex, exclude hypothetical edges, and never propagate estimated generations. Dated canonical record roles supply conservative birth bounds without resolving hypothetical identities.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">A recorded event bounds its participant and their parent once, over a verified/export link or a relationship weighted at least 0.30. Dates of estimates and identity proposals provide no bound.</INVARIANT>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-TREE-CONTRIBUTIONS"/>
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-TREE-REVISIONS"/>
     <INVARIANT REVIEW="engine lead">A documentary decision updates only its named relationship, retains superseded facts and places newly read events ahead of imported estimates in reader delivery without rewriting the snapshot.</INVARIANT>
@@ -32,14 +32,18 @@
     <REL TYPE="DEPENDS_ON" TARGET="MOD-TREE-LIFE"/>
   </MODULE_TREE_BUILDER>
   <MODULE_TREE_LIFE ID="MOD-TREE-LIFE" FILE="src/familiar/tree/life.py" STATE="IMPLEMENTED">
-    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_f3_public_name_and_kinship_and_private_address_exclusion">A merge preserves each participant's independent protection in either direction, including explicit living flags; only a canonical life decision can resolve it. Contradictory death dates remain visible conflicts.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">The shorter family age horizon uses recorded life evidence.</INVARIANT>
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_f3_public_name_and_kinship_and_private_address_exclusion">A merge preserves explicit declarations and refusals on either participant. Missing evidence follows the ordinary age horizons. Contradictory dated deaths remain visible conflicts.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Privacy life declarations on merged ids follow their active successors.</INVARIANT>
     <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_f3_public_name_and_kinship_and_private_address_exclusion">The family age horizon permits documents without changing public disclosure or overriding explicit living decisions.</INVARIANT>
     <INVARIANT REVIEW="engine lead">An explicit unknown decision retains protection in family display.</INVARIANT>
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_life_decision_scope">Only an everywhere death decision grants the same disclosure to the public and the family.</INVARIANT>
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_only_recorded_events_open_a_card">Recorded events set life status before proposals and presentation dates are applied. Import precautions carry no family declaration.</INVARIANT>
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_only_recorded_events_open_a_card">A paper dates its own participants. Citations and family links alone cannot lend its date to another card.</INVARIANT>
     <!-- Life assessment consumes only records adopted by authored family references, never unrelated collector drafts. -->
   </MODULE_TREE_LIFE>
   <MODULE_TREE_CONTRIBUTIONS ID="MOD-TREE-CONTRIBUTIONS" FILE="src/familiar/tree/contributions.py" STATE="IMPLEMENTED">
-    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_dropped_contribution_blocks_delivery">Contributed spouse unions retain weight, basis and sources atomically with existing or newly added people.</INVARIANT>
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_waiting_contribution_is_quarantined_then_applied_and_never_quietly_lost">Contributed spouse unions retain weight, basis and sources atomically with existing or newly added people.</INVARIANT>
     <INVARIANT REVIEW="engine lead">An existing unnamed person can receive sourced name parts through people, retaining the earlier name in working nameHistory.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Reader update order uses recorded dates and source ids so a clean archive preserves inspected bytes across filesystems.</INVARIANT>
     <!-- A replay cannot reactivate the same literal fact/evidence claim kept in retiredFacts. -->
@@ -47,7 +51,12 @@
   </MODULE_TREE_CONTRIBUTIONS>
   <MODULE_TREE_REVISIONS ID="MOD-TREE-REVISIONS" FILE="src/familiar/tree/revisions.py" STATE="IMPLEMENTED"/>
   <MODULE_TREE_IDENTITIES ID="MOD-TREE-IDENTITIES" FILE="src/familiar/tree/identities.py" STATE="IMPLEMENTED">
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_only_recorded_events_open_a_card">An accepted merge below 0.9 weighs only on the links a line crosses between the two cards.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">A source-backed withdrawal removes a marked import card and its import links from the active tree while preserving the frozen snapshot.</INVARIANT>
   </MODULE_TREE_IDENTITIES>
+  <MODULE_TREE_AMENDMENTS ID="MOD-TREE-AMENDMENTS" FILE="src/familiar/tree/amendments.py" STATE="IMPLEMENTED">
+    <INVARIANT TEST="tests/gate/test_desk_guarantees.py::test_bare_card_invites_and_a_tap_settles_the_amendment">A personally attributed answer settles the issued revision and person. A relative cannot override a refusal.</INVARIANT>
+  </MODULE_TREE_AMENDMENTS>
   <MODULE_TREE_CANONICAL ID="MOD-TREE-CANONICAL" FILE="src/familiar/tree/canonical.py" STATE="IMPLEMENTED">
     <!-- Clan-name decisions, unlike editorial card decoration, change the graph's effective names. -->
   </MODULE_TREE_CANONICAL>

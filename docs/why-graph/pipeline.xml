@@ -21,6 +21,7 @@
     <REL TYPE="IMPLEMENTED_BY" TARGET="MOD-FEED-CLI"/>
   </FEATURE_FEED_BUILD>
   <MODULE_FEED ID="MOD-FEED-BUILDER" FILE="src/familiar/feeds/builder.py" STATE="IMPLEMENTED">
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_play_in_flow">An authored flow entry binds a game at its own paragraph.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Photo treatments bind to canonical subjects and their real original frame.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Person membership resolves the working tree and identity successors.</INVARIANT>
     <!-- Weighted person/source/asset failures block; new unweighted holes advise. Profile, alphabet, cover-required and layout lint are removed. -->
