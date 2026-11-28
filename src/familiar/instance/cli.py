@@ -29,6 +29,8 @@ def register(commands):
     selection.add_argument('--path', action='append', help='Own JSON/JSONL file or directory, relative to family root; repeatable')
     selection.add_argument('--prefix', help='Own path/filename prefix, relative to family root')
     actions.add_parser("paths")
+    citations = actions.add_parser('keep-citations', help='Preserve files cited under tmp/ in captures/evidence/')
+    citations.add_argument('--dry-run', action='store_true', help='List the proposed transfers without writing')
     upgrade = actions.add_parser('upgrade', help='Carry stored forms over to the installed release')
     upgrade.add_argument('--dry-run', action='store_true', help='Report what would change; write nothing')
     release = actions.add_parser('record-release', help='Record an installed wheel and its source commit')
@@ -98,6 +100,16 @@ def run(args):
             print(f"upgrade: {'nothing to carry over' if not found else f'{len(found)} steps'}"
                   f"{' (dry run, nothing written)' if found and args.dry_run else ''}; pinned "
                   f"{instance.engine_version or 'none'}, installed {__version__}; next: instance check")
+            return 0
+        if args.action == 'keep-citations':
+            from .citations import preserve
+            kept, missing, files = preserve(instance, apply=not args.dry_run)
+            for name, target in sorted(kept.items()):
+                print(f'{name} -> {target}')
+            for name in missing:
+                print(f'MISSING: {name}')
+            action = 'would preserve' if args.dry_run else 'preserved'
+            print(f'{action}: {len(kept)} files; {len(files)} citation files; {len(missing)} missing')
             return 0
         if args.action == "check":
             from .validation import check

@@ -168,6 +168,7 @@ def closure(instance, value, *, shape='chapter', documents=None, pictures=None, 
     """Author lists add subjects; no route can subtract a linked record's subjects."""
     from familiar.checks.engine import _known_people, load, record_path
 
+    from .gate import shared
     from .publication import SCHEMAS
     from .gallery import photograph
     known = _known_people(instance) if people is None else people
@@ -192,15 +193,19 @@ def closure(instance, value, *, shape='chapter', documents=None, pictures=None, 
             walk(documents[rid], 'document')
             return
         path = record_path(instance, rid)
-        if not path.is_file():
-            raise ValueError('TRUST-01: unknown canonical record id: ' + str(rid))
-        data = load(path, {})
-        if excerpt is not None:
-            data = _excerpt(data, excerpt)
+        def read():
+            if not path.is_file():
+                raise ValueError('TRUST-01: unknown canonical record id: ' + str(rid))
+            return load(path, {})
+
+        # Closure consumers read the normalized record. Each excerpt is still
+        # derived separately with its own literal fields and subjects.
+        full = shared(instance, ('closure-record', path), read)
+        data = full if excerpt is None else _excerpt(full, excerpt)
         if rid not in result.records or excerpt is None:
             result.records[rid] = data
         elif result.records[rid].get('excerpt'):
-            result.records[rid] = _excerpt(load(path, {}), list(dict.fromkeys(result.records[rid]['excerpt'] + excerpt)))
+            result.records[rid] = _excerpt(full, list(dict.fromkeys(result.records[rid]['excerpt'] + excerpt)))
         for pid in explicit_subjects(data):
             person(pid)
 
@@ -491,7 +496,6 @@ def attribute_documents(instance, graph, *, family_display=False):
     parents, subjects, uses, protected = {}, {}, [], set()
     mentioned = None if family_display else shared(
         instance, 'public-protected-names', lambda: protected_names(instance, include_short=True))
-    paper_safety = {}
 
     @cache
     def dead(pid):
@@ -502,9 +506,8 @@ def attribute_documents(instance, graph, *, family_display=False):
             return True
         if family_display or record.get('excerpt'):
             return False
-        if rid not in paper_safety:
-            paper_safety[rid] = unreviewed_group(record) or bool(mentioned.search(written({}, record)))
-        return paper_safety[rid]
+        return shared(instance, ('public-paper-safety', rid),
+                      lambda: unreviewed_group(record) or bool(mentioned.search(written({}, record))))
 
     def root(key):
         parents.setdefault(key, key)
@@ -543,7 +546,8 @@ def attribute_documents(instance, graph, *, family_display=False):
         resolved = closure(instance, value, shape=shape, people=known)
         if 'excerpt' not in node and (record := resolved.records.get(node.get('record'))):
             from familiar.reader.scans import selected_capture
-            _, capture = selected_capture(instance, record)
+            _, capture = shared(instance, ('attribution-capture', node['record']),
+                                lambda: selected_capture(instance, record))
             if capture:
                 keys.append(('capture', capture))
         if shape in {'document', 'image'} and node.get('subjects') and not node.get('_document_attributed') and node.get('record') in resolved.records:

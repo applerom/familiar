@@ -131,6 +131,7 @@
     <INVARIANT REVIEW="engine lead">Both hosted modes exclude owner receipts from the common feedback projection.</INVARIANT>
     <INVARIANT REVIEW="engine lead">A public-reader fictional demo wraps the accepted public projection; it never substitutes the host-private reader.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Every desk language renders the same checked correspondence projection.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">A build from a separate Git checkout names pending family inputs before work starts.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-READER-EXPORT"/>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-DESK-MODEL"/>
   </MODULE_DESK_BUILD>

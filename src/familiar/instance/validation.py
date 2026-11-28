@@ -86,7 +86,7 @@ def validate_changes(instance, paths):
     selected = set()
     for path in paths:
         selected.add(str(path))
-        if path.is_relative_to(instance.path('originals')):
+        if any(path.is_relative_to(instance.path(key)) for key in ('originals', 'captures')):
             continue  # A received JSON file remains opaque evidence, just like a scan.
         if path.parent == instance.path('tree_snapshot'):
             selected.add(str(path.parent))
@@ -206,6 +206,12 @@ def _check_and_explain(instance):
     result['valid'] = not verdict['blocked']
     result['errors'] = [{'location': f['location'], 'message': f['message']} for f in verdict['findings'] if f['mode'] == 'block' and f['certainty'] == 'finding']
     result['advice'] = [f for f in verdict['findings'] if f['mode'] != 'block']
+    from .citations import temporary_references
+    for name, file in sorted(temporary_references(instance).items()):
+        location = file.relative_to(instance.root) if file.is_relative_to(instance.root) else file
+        result['advice'].append({'check': 'temporary-citations',
+            'location': f'{name} ({location.as_posix()})',
+            'message': 'Evidence cited under a temporary path. Run instance keep-citations --dry-run.'})
     if result['valid']:
         from familiar.tree.builder import read_graph, read_json
         from familiar.tree.surnames import findings, name_findings

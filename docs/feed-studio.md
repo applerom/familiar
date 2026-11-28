@@ -16,7 +16,10 @@ phone-width reading page with the strips. Run from the family root or pass
 - `feed chapters --out DIR` writes draft catalogs to a separate directory for
   inspection; without `--out` it updates the feed.
 - `feed storyboard` renders the chapters already written while the rest are
-  still coming.
+  coming. A studio `plan.md` supplies the title from its first heading and
+  the introduction from its `## Lead` section (or the equivalent heading
+  used in the Russian plans). Use `--host-paths FILE` with the host map
+  when original photographs live outside the family and no wrapper sets it.
 
 ## The chapter file
 
@@ -41,13 +44,17 @@ The feed's `feed.json` supplies the title and lead. Optional
 `studio/import.json` sets:
 
 - `parts`: start chapter number to part title;
-- `chapter_count`: when the full sequence is expected;
 - `cuts`: corpus record id to registered media export (the researcher adds
   it when a kept frame becomes a cut);
 - `exports`: studio file to registered media export;
 - `mentions`: person id to `[chapter numbers or ids, pattern]`. A matching
   passage puts the person's chip under the chapter, and the reader's
   "For whom?" choice shows the kinship of that person to whoever reads.
+
+The import counts the numbered files in the selected studio. Existing
+`chapter_count` values are ignored. When the image extra is installed,
+an import points out cuts that shrink to a very thin strip on a 390 px phone.
+Use `**words**` in a reading to highlight them.
 
 Existing image lists and per-feed credits can be read there. The storyboard
 accepts available chapters even when the planned sequence is incomplete.

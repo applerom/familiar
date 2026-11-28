@@ -10,10 +10,11 @@
 # - MOD-FAMILY-WRITER (desk storage)
 # :END_MODULE_CONTRACT
 import json
+import subprocess
 from datetime import date
 from pathlib import Path
 
-from familiar.instance.model import Instance
+from familiar.instance.model import DEFAULTS, Instance
 from familiar.instance.packs import bundled_root, read
 
 
@@ -40,6 +41,44 @@ def publication(instance):
 def source(instance):
     config = settings(instance)
     return Instance((instance.root / config.get('source', '.')).resolve())
+
+
+def excluded_work(instance):
+    """Compare a separate Git desk source to the family that the writer just edited."""
+    served = (instance.root / settings(instance).get('source', '.')).resolve()
+    if served == instance.root or not (served / '.git').exists():
+        return None
+
+    def git(root, *args):
+        return subprocess.run(['git', '-C', str(root), *args], capture_output=True,
+                              check=True, timeout=10).stdout.decode('utf-8')
+
+    active = source(instance)
+    paths = ['familiar.toml', 'exceptions.toml']
+    bulk = {'captures', 'originals', 'media_archive'}
+    for key in DEFAULTS.keys() - {'build', 'state', 'export'} - bulk - active.host_paths.keys():
+        if (path := instance.path(key)).is_relative_to(instance.root):
+            paths.append(path.relative_to(instance.root).as_posix())
+    feeds = instance.path('feeds')
+    if feeds.is_relative_to(instance.root):
+        feed_prefix = feeds.relative_to(instance.root).as_posix() + '/'
+        paths.append(f':(exclude,glob){feed_prefix}*/studio/**')
+    else:
+        feed_prefix = None
+    try:
+        commit = git(served, 'rev-parse', 'HEAD').strip()
+        changed = git(instance.root, 'diff', '--no-renames', '--name-only', '-z', commit, '--', *paths)
+        added = git(instance.root, 'ls-files', '--others', '--exclude-standard', '-z', '--', *paths)
+    except (OSError, subprocess.SubprocessError, UnicodeError):
+        return None
+    names = sorted(set((changed + added).split('\0')) - {''},
+                   key=lambda name: (not (feed_prefix and name.startswith(feed_prefix)), name))
+    if names:
+        listed = ', '.join(names[:12])
+        extra = f' (+{len(names) - 12} more)' if len(names) > 12 else ''
+        return (f'Desk source {commit[:12]} excludes family changes in {listed}{extra}. '
+                'Commit pending inputs and update the desk source to include them.')
+    return None
 
 
 def output(instance):

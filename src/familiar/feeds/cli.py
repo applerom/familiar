@@ -21,7 +21,9 @@ from .service import build, folders, inspect
 
 def execute(args):
     try:
-        instance = Instance(args.root)
+        host_map = getattr(args, 'host_paths', None)
+        instance = Instance(args.root, host_paths=json.loads(host_map.read_text(encoding='utf-8-sig'))
+                            if host_map is not None else None)
         if args.feed_command == 'restorations':
             from familiar.instance.restorations import inventory
             print(json.dumps(inventory(instance), ensure_ascii=False, indent=2))
@@ -179,6 +181,9 @@ def register(commands):
         command = sub.add_parser(name, help=help_text)
         command.add_argument('feed')
         command.add_argument('--studio', help='Studio folder relative to the family root')
+        if name == 'storyboard':
+            command.add_argument('--host-paths', type=Path,
+                                 help='Explicit host path map for out-of-tree media and originals')
         command.add_argument('--config', type=Path, help='Use this import.json instead of the studio settings')
         command.add_argument('--source-ref', help='Read studio files and image lists from a family Git commit')
         command.add_argument('--out', type=Path, help='Scratch directory for chapters, or HTML file for storyboard')

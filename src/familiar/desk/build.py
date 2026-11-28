@@ -448,6 +448,10 @@ class CheckedDesk:
 def build(instance):
     import sys
 
+    from .model import excluded_work
+
+    if message := excluded_work(instance):
+        print(f'WARNING: {message}', flush=True)
     if message := instance.engine_warning():
         print(f'WARNING: {message}', file=sys.stderr)
     from familiar.instance.gate import QUARANTINE

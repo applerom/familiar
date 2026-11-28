@@ -178,9 +178,10 @@ EVENT_KINDS = {'BIRT': 'birth', 'DEAT': 'death', 'MARR': 'marriage',
 
 
 def event_kind(event):
-    value = event.get('type') or event.get('tag')
-    if any(EVENT_KINDS.get(event.get(key), event.get(key)) == 'address' for key in ('type', 'tag')):
+    kind, tag = event.get('type'), event.get('tag')
+    if EVENT_KINDS.get(kind) == 'address' or EVENT_KINDS.get(tag) == 'address':
         return 'address'
+    value = kind or tag
     return EVENT_KINDS.get(value, value)
 
 
@@ -334,7 +335,10 @@ def restrict_feed(instance, feed):
     from familiar.tree.builder import read_graph
     from familiar.tree.contributions import _clone
     from .edition import apply
-    graph = apply(instance, _clone(read_graph(instance)))
+    from .gate import shared
+    base = shared(instance, 'edition-attribution-graph',
+                  lambda: apply(instance, _clone(read_graph(instance))))
+    graph = _clone(base)
     graph['feeds'] = [copy.deepcopy(feed)]
     withheld = attribute_documents(instance, graph)
     return project_narrative(instance, private_graph(
@@ -492,18 +496,20 @@ def quotation_filter(instance, records):
         matches = []
         if withheld and len(text) >= 40:
             matches.extend((a, b) for part, a, b in spans(text, 40) if part in withheld)
-        selected = [cited[sid] for sid in sources if sid in cited]
+        selected = [cited[sid] for sid in sources if sid in cited] if sources else ()
         if selected:
             for quote in re.finditer(r'«([^»]+)»|“([^”]+)”|„([^”]+)”|"([^"]+)"', text):
                 start = quote.start(quote.lastindex)
                 matches.extend((start + a, start + b) for part, a, b in spans(quote[quote.lastindex], 16)
                                if any(part in terms for terms in selected))
+        if not matches:
+            return text
         pieces, stop = [], 0
         for start, end in sorted(matches):
             if not pieces or start > stop + 1:
                 pieces.extend((text[stop:start], '…'))
             stop = max(end, stop)
-        return ''.join([*pieces, text[stop:]]) if pieces else text
+        return ''.join([*pieces, text[stop:]])
     return redact
 
 
@@ -576,7 +582,7 @@ def private_graph(instance, graph, *, host_private=True, withheld=(), amendments
     def safe_text(text, cited=()):
         if text in blocked_assets:
             return ''
-        if blocked_assets:
+        if blocked_assets and '/' in text:
             text = inline_assets.sub(lambda match: match[0].replace(match[1], '#') if match[1] in blocked_assets else match[0], text)
         return quotes_record(text, cited)
 
@@ -719,7 +725,8 @@ def media_omissions(instance, feeds):
                         'action': 'document' if field == 'records' or resolved.records else 'picture'})
             truth = chapter.get('game', {}).get('truth', {}).get('record')
             if truth and truth != visible.get('game', {}).get('truth', {}).get('record'):
-                cause = next((r for r in reversed(rows) if r['chapter'] == cid and r['view'] == 'host'), {})
+                cause = next((r for r in reversed(rows)
+                              if r['feed'] == feed['id'] and r['chapter'] == cid and r['view'] == 'host'), {})
                 rows.append(dict(cause, feed=feed['id'], chapter=cid, view='host',
                                  field='game', item=truth, label=cause.get('label', truth), reason=cause.get('reason', 'withheld document'), action='document'))
             for index, extra in enumerate(chapter.get('extras', [])):

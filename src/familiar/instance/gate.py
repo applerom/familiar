@@ -183,8 +183,9 @@ def _evaluate(instance, registry=None, *, editorial=False):
         from familiar.feeds.service import _materialize, folders
 
         from .narrative import prose_review
-        from .publication import scan, scan_assets
+        from .publication import media_omissions, scan, scan_assets
         asset_errors, asset_seen = [], set()
+        feeds = []
         try:
             for folder in folders(instance):
                 data, details = _materialize(instance, folder)
@@ -199,11 +200,7 @@ def _evaluate(instance, registry=None, *, editorial=False):
                 result['findings'].extend(dict(certainty='review', rule='TRUST-06', check='narrative-attribution',
                     scope='feed:' + folder.name, chapter_id=None, location=where,
                     mode='advise', exception=None, message=note) for where, note in prose_review(instance, data))
-                from .publication import media_omissions
-                for row in media_omissions(instance, [data]):
-                    result['findings'].append(dict(certainty='review', rule='TRUST-06', check='media-omitted',
-                        scope='feed:' + row['feed'], chapter_id=row['chapter'], location=row['field'],
-                        mode='advise', exception=None, message=f"{row['view']}: {row['field']} {row['item']} withheld: {row['reason']}. Clarify life status; use a deceased-only public picture, or separate a deceased-only excerpt. Full living documents stay excluded.", **{'omission': row}))
+                feeds.append(data)
                 projected = scan(instance, data, 'feed')
                 scan_assets(instance, projected, errors=asset_errors, seen=asset_seen)
                 from familiar.checks.engine import inspect_text
@@ -214,6 +211,12 @@ def _evaluate(instance, registry=None, *, editorial=False):
                 result['findings'].extend(inspect_text(registry,
                     {k: v for k, v in data.items() if k != 'chapters'},
                     f'feed:{folder.name}', shape='feed', coverage=coverage))
+            # The local desk reads all feeds together. Reuse one host projection
+            # for its advice while still validating each public feed separately.
+            for row in media_omissions(instance, feeds) if feeds else ():
+                result['findings'].append(dict(certainty='review', rule='TRUST-06', check='media-omitted',
+                    scope='feed:' + row['feed'], chapter_id=row['chapter'], location=row['field'],
+                    mode='advise', exception=None, message=f"{row['view']}: {row['field']} {row['item']} withheld: {row['reason']}. Clarify life status; use a deceased-only public picture, or separate a deceased-only excerpt. Full living documents stay excluded.", omission=row))
         except (ValueError, OSError, TypeError, KeyError, AttributeError) as exc:
             result['blocked'], result['valid'] = True, False
             message = str(exc)

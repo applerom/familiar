@@ -28,12 +28,17 @@
     <INVARIANT REVIEW="engine lead">Image kinds distinguish a real-photo treatment from a generated drawing.</INVARIANT>
     <INVARIANT REVIEW="engine lead">All person references resolve applied contributions and identity successors; invalid ids name the working-tree commands.</INVARIANT>
     <INVARIANT REVIEW="engine lead">A correspondence aim resolves its people and linked research version.</INVARIANT>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-TEMP-CITATIONS"/>
     <INVARIANT REVIEW="engine lead">Rejected tree contributions are blocking data findings with file, claim and cause, including selected-file checks.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-TREE-BUILDER"/>
     <INVARIANT REVIEW="engine lead">A saved controlled zero may support a weak against argument only within its recorded read scope; positive arguments still require findings, and refusals or dubious queries supply no negative evidence.</INVARIANT>
     <PRD_REF>docs/PRD.md#FORMS</PRD_REF>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-ARCHIVE-RIGHTS"/>
   </MODULE_INSTANCE_VALIDATION>
+  <MODULE_TEMP_CITATIONS ID="MOD-TEMP-CITATIONS" FILE="src/familiar/instance/citations.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Temporary citations yield advice. Transferring their evidence preserves bytes, rejects collisions and keeps locators for missing files.</INVARIANT>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-FAMILY-WRITER"/>
+  </MODULE_TEMP_CITATIONS>
   <MODULE_DISPLAY_INPUTS ID="MOD-DISPLAY-INPUTS" FILE="src/familiar/instance/display.py" STATE="IMPLEMENTED">
     <!-- Shared adoption closure selects records and referenced search files recursively for validation, life assessment and every output dependency watch. Unknown journal numeric metadata is allowed; stored finite probabilities, source references and adoption closure remain core data guarantees. -->
     <!-- Writer-owned build-local reference indexes bind input metadata. Each

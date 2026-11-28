@@ -1,6 +1,7 @@
 """Render a studio strip as a private, self-contained reading layout."""
 
 import os
+import re
 from html import escape
 from urllib.parse import quote
 
@@ -17,6 +18,12 @@ def image_url(path, out):
     if path.drive != out.drive:
         return path.as_uri()
     return quote(os.path.relpath(path, out.parent).replace(os.sep, '/'), safe='/')
+
+
+def marked_reading(text):
+    parts = re.split(r'\*\*(.+?)\*\*', text)
+    return ''.join(f'<mark>{escape(part)}</mark>' if index % 2 else escape(part)
+                   for index, part in enumerate(parts))
 
 
 class Page:
@@ -40,7 +47,13 @@ class Page:
             source = item['file']
             rel = self.importer.export(source)
             if rel.startswith('family-photos/'):
-                path = self.instance.media_file('/' + rel)
+                try:
+                    path = self.instance.media_file('/' + rel)
+                except ValueError as exc:
+                    if 'originals' not in self.instance.host_paths and 'original checksum mismatch' in str(exc):
+                        raise ValueError(f'{exc}. If originals are outside the instance, pass --host-paths '
+                                         'with the host path map.') from exc
+                    raise
             else:
                 path = self.local_file(source) or self.importer.media_file(rel)
             caption = escape(item['caption'])
@@ -65,9 +78,9 @@ class Page:
         url = image_url(path, self.out)
         image = f'<img src="{escape(url)}" alt="" loading="lazy">' if url else ''
         title = f'<figcaption>{escape(caption)}</figcaption>' if caption else ''
-        cut = f'<p>{escape(item["cut"])}</p>' if 'cut' in item else ''
+        cut = f'<p>{marked_reading(item["cut"])}</p>' if 'cut' in item else ''
         return (f'<figure class="record">{title}{image}{cut}'
-                f'<p>{escape(item["reading"])}</p></figure>')
+                f'<p>{marked_reading(item["reading"])}</p></figure>')
 
     def game(self, item):
         options = item['options']
@@ -121,6 +134,8 @@ def render(instance, loaded, out):
         return escape(value.get(page.language, '') if isinstance(value, dict) else value)
 
     title = localized('title')
+    lead = localized('lead')
+    introduction = ''.join(f'<p>{part}</p>' for part in lead.split('\n\n') if part)
     links = ''.join(f'<li><a href="#{ch["id"]}">{escape(ch["title"])}</a></li>' for ch in page.chapters)
     strip_rows = []
     symbols = {'T': '¶', 'L': '▧', 'frame': '□', 'R': '▤', 'D': '?'}
@@ -132,7 +147,7 @@ def render(instance, loaded, out):
         '<meta name="viewport" content="width=device-width, initial-scale=1">'
         '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; '
         'img-src file:; style-src \'unsafe-inline\'; base-uri \'none\'; form-action \'none\'">'
-        f'<title>{title}</title><style>{CSS}</style><main><h1>{title}</h1><p>{localized("lead")}</p>'
+        f'<title>{title}</title><style>{CSS}</style><main><h1>{title}</h1>{introduction}'
         f'<nav aria-label="{page.words[0]}"><ol>{links}</ol></nav>'
         + ''.join(page.chapter(ch) for ch in page.chapters)
         + f'<h2>{page.words[1]}</h2><ol class="strips">{"".join(strip_rows)}</ol>'
@@ -152,7 +167,7 @@ figcaption{padding:.35rem 0;color:#4a544f}
 .frame{display:grid;place-items:center;text-align:center;padding:1.2rem;max-height:480px;
 background:repeating-linear-gradient(135deg,#e0dcd3 0 12px,#d8d3ca 12px 24px);border-radius:6px}
 .record,.game{border:1px solid #e3d3b7;border-radius:12px;background:#fbf4dc;padding:.7rem .85rem;margin:0 0 1em}
-.record p,.game p{margin:.4rem 0}
+.record p,.game p{margin:.4rem 0}.record mark{background:#f3dc8a;color:inherit}
 .game{background:#fff7eb;border-color:#e5c9a6;font:16px/1.5 system-ui,sans-serif}
 .game b{color:#794619}.game details{background:#fffdf8;border:1px solid #ebd7ba;border-radius:8px;margin:.5rem 0;padding:.4rem .55rem}
 .game .closing{display:none;color:#3c503f}.game:has(details[open]) .closing{display:block}

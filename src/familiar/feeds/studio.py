@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import csv
+import io
 import json
 import re
 from hashlib import sha256
@@ -176,6 +177,23 @@ def parse(path, source):
     return chapter
 
 
+def plan_head(text):
+    lines = text.splitlines()
+    head = {}
+    for n, line in enumerate(lines):
+        if line.startswith('# ') and 'title' not in head:
+            head['title'] = line[2:].split(' · ', 1)[0].strip().strip('«»')
+        if re.match(r'^## (Lead|Лента в пяти фразах|Как перескажет ребёнок)\b', line, re.I):
+            prose = []
+            for paragraph in lines[n + 1:]:
+                if paragraph.startswith('#'):
+                    break
+                prose.append(paragraph)
+            head['lead'] = '\n'.join(prose).strip()
+            break
+    return head
+
+
 def load(instance, feed, studio=None, config=None, source_ref=None, *, draft=False):
     if not ID.fullmatch(feed):
         raise ValueError('Invalid feed id: ' + feed)
@@ -219,6 +237,11 @@ def load(instance, feed, studio=None, config=None, source_ref=None, *, draft=Fal
         meta = {'id': feed, 'title': config.get('title', heading)}
     if meta['id'] != feed:
         raise ValueError(f'{folder / "feed.json"}: expected feed id {feed}')
+    if draft:
+        plans = sources.files(studio, 'plan.md')
+        if plans:
+            head = plan_head(sources.text(plans[0]))
+            meta = {**meta, 'lead': '', **head}
     return folder, sources, config, chapters, meta
 
 
@@ -294,6 +317,7 @@ class Importer:
         self.play = {'spots': {}, 'games': {}, 'panos': old_play.get('panos', {})}
         self.pictures, self.documents, self.notes = {}, {}, []
         self.new_media = {}
+        self.checked_cut_widths = set()
 
     def people(self, raw, passage):
         matches = []
@@ -432,6 +456,29 @@ class Importer:
         self.assets[rel] = row
         return rel
 
+    def cut_width(self, rel, where):
+        if rel in self.checked_cut_widths:
+            return
+        self.checked_cut_widths.add(rel)
+        try:
+            from PIL import Image
+        except ImportError:
+            return  # The image extra is optional unless a derivative must be made.
+        data = self.new_media.get(self.media / rel)
+        if data is None:
+            if not (path := self.media_file(rel)):
+                return
+            data = self.sources.data(path)
+        try:
+            with Image.open(io.BytesIO(data)) as image:
+                width, height = image.size
+        except (OSError, Image.DecompressionBombError):
+            return  # The existing media validation handles unreadable assets.
+        # Roughly 336 CSS pixels of usable width on a 390 px phone.
+        if height * 336 < width * 24:
+            self.notes.append(f'ADVICE: {where}: cut {rel} shrinks below 24 px high on a '
+                              '390 px phone; crop to the words being read')
+
     def record(self, item, where, raw):
         from familiar.checks.engine import record_path
         rid = item.get('record')
@@ -464,6 +511,8 @@ class Importer:
             self.sources.data(local)
         if rid and record.get('id') != rid:
             raise ValueError(f'{where}: record ID differs from {rid}')
+        if asset:
+            self.cut_width(relative(asset.lstrip('/')), where)
         reading = '\n\n'.join(item[field] for field in ('cut', 'reading') if field in item)
         source = record.get('source', {})
         defaults = {'source': source.get('holder', ''), 'where': source.get('locator', '').split('; archive:', 1)[0]}
@@ -637,9 +686,6 @@ def translations(old, meta, chapters, pictures, play, language, languages):
 
 
 def compile_chapters(instance, folder, sources, config, raw, meta):
-    expected = config.get('chapter_count')
-    if expected is not None and [ch['n'] for ch in raw] != list(range(expected)):
-        raise ValueError(f'Expected chapters 00 through {expected - 1:02d}, once each')
     importer = Importer(instance, sources, folder, config)
     old = {ch['id']: ch for ch in sources.json(folder / 'chapters.json', [])}
     starts = part_starts(config, meta, raw, old, instance.source_language)

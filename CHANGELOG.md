@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.67.0 — 28 November 2026
+
+- We import the numbered chapters the studio holds. The storyboard uses the
+  studio plan, highlights words in paper readings and accepts a host path map
+  for original photographs kept outside the family.
+- A desk built from a separate Git checkout names the feed and other authored
+  inputs it excludes. A chapter import points out very wide paper cuts.
+- We identify temporary paths cited in records and search journals.
+  `instance keep-citations` keeps the bytes in the family captures directory
+  and updates their locators. Missing files keep their current citation.
+- Instance checks share the host media projection across feeds. Each public
+  feed still goes through its own projection and media checks.
+
 ## 0.66.1 — 28 November 2026
 
 - A feed is made in the order its first whole use showed. After the fact
