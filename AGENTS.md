@@ -87,7 +87,8 @@ doubt is drawn by form (dotted line, approximate year) and reasoned one tap away
 page stays silent. A caution an engineer finds prudent is a reason to fix the data or the display, not a line for
 the family. Rule `CRAFT-HOME-NOT-COURT` says the same to every role that writes for the family.
 
-Показ работы агентов (статистика, ход работы) строится только из уже существующих следов работы; он не добавляет исследователям ни одного шага, поля или проверки — грубые числа лучше налога на исследование.
+Pages that show the agents' work (statistics, progress) are built only from traces the work already leaves;
+they add no step, field or check for researchers. Rough numbers beat a tax on research.
 
 ---
 
