@@ -1,5 +1,5 @@
 {
-  "_about": "research document FILE.json --author researcher. record is a canonical corpus record. subjects are existing canonical person IDs. snippets are optional; file is relative to this form. Each cut-out needs its own caption and literal read. Use a new record ID; existing originals, records and contributions are never replaced. This attaches a document, without deciding identity or kinship.",
+  "_about": "research document FILE.json --author researcher. record is a canonical corpus record. Give existing canonical person IDs in subjects, or leave subjects empty and give record.place_scope with place and surname as written. Place-scoped readings count for the locality and can be linked to people later. Snippets are optional; file is relative to this form. Each cut-out needs its own caption and literal read. Use a new record ID; existing originals, records and contributions are never replaced.",
   "record": {
     "id": "bea-marriage",
     "kind": "archive-record",

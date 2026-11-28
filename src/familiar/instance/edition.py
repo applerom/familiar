@@ -21,6 +21,11 @@ CARD_FIELDS = {'name', 'namePresentation', 'cardPresentation', 'story', 'storyMo
 
 def cards(instance):
     """Optional file or directory; legacy people/feeds/updates envelopes select only people."""
+    from .gate import shared
+    return shared(instance, 'edition-cards', lambda: _cards(instance))
+
+
+def _cards(instance):
     from .publication import project
     from .subjects import normalized
     result = {}

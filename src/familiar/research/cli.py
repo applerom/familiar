@@ -36,7 +36,7 @@ def register(commands):
     vocabulary.set_defaults(run=print_vocabulary)
     contribution = actions.add_parser('contribute', help='Apply a sourced contribution or documentary decision JSON')
     contribution.add_argument('input', type=Path)
-    doc = actions.add_parser('document', help='Attach a literal corpus record and captioned cut-outs to people')
+    doc = actions.add_parser('document', help='Save a literal corpus record and cut-outs for tree subjects or a place and surname')
     doc.add_argument('input', type=Path)
     doc.add_argument('--author', required=True)
     replay = actions.add_parser('replay', help='Replay a local captured response; no network access')
@@ -66,9 +66,9 @@ def register(commands):
     migrate.add_argument('--legacy', action='append', metavar='PATH', help='Legacy SEARCHES*.jsonl file or directory inside the family (default: research/team)')
     cover = actions.add_parser('coverage', help='Searches, read records and remaining gaps by person, source or family line')
     cover.add_argument('--person', help='One person: every source with dates and executors')
-    cover.add_argument('--family', action='store_true', help='The whole person-by-source matrix (the default)')
+    cover.add_argument('--family', action='store_true', help='The whole person-by-source matrix')
     cover.add_argument('--recheck', nargs='?', type=int, const=15, metavar='N', help='The N most useful cells to look at again (default 15)')
-    cover.add_argument('--line', help='Limit --recheck to one surname line or its starting person ID')
+    cover.add_argument('--line', help='One surname line or its starting person ID; also filters --recheck')
     cover.add_argument('--lines', action='store_true', help='Ancestral chains, open questions and coverage gaps by surname line')
     cover.add_argument('--json', action='store_true', help='JSON instead of markdown')
     cover.add_argument('--save', action='store_true', help='Also store the matrix and full queue in coverage.json in the instance state directory')
@@ -185,10 +185,10 @@ def run_migrate(args):
 def run_coverage(args):
     from .coverage import coverage
     try:
-        if args.line is not None and (args.recheck is None or args.lines or args.person):
-            raise ValueError('--line goes with --recheck')
+        if args.line is not None and (args.lines or args.person or args.family):
+            raise ValueError('--line cannot be combined with --lines, --person or --family')
         data, text = coverage(Instance(args.root), person=args.person, queue=args.recheck, lines=args.lines, save=args.save,
-                              line=args.line)
+                              line=args.line, family=args.family)
         print(json.dumps(data, ensure_ascii=False, indent=1) if args.json else text)
         return 0
     except (ValueError, OSError, KeyError, TypeError) as exc:

@@ -61,16 +61,21 @@ def generated(pic):
             (pic.get('kind') != 'photo-treatment' and '/gen/' in pic.get('asset', '')))
 
 
-def record_path(instance, value):
-    # Only stable record IDs, never path aliases or arbitrary family JSON.
-    missing = instance.path('records') / '__unresolved_record__'
-    if not isinstance(value, str) or any(c in value for c in '/\\'):
-        return missing
+def record_paths(instance):
     from familiar.instance.gate import shared
     from familiar.instance.subjects import normalized
     def records():
         return {normalized(p.stem): p for p in instance.path('records').rglob('*.json')}
-    return shared(instance, 'record-paths', records).get(normalized(value), missing)
+    return shared(instance, 'record-paths', records)
+
+
+def record_path(instance, value):
+    # Only stable record IDs, never path aliases or arbitrary family JSON.
+    from familiar.instance.subjects import normalized
+    missing = instance.path('records') / '__unresolved_record__'
+    if not isinstance(value, str) or any(c in value for c in '/\\'):
+        return missing
+    return record_paths(instance).get(normalized(value), missing)
 
 
 def media_exists(instance, asset):
@@ -102,16 +107,16 @@ def life_status(person, privacy):
 
 def _known_people(instance, *, family_display=False):
     # Only a writer-owned immutable snapshot permits this in-memory index.
-    from familiar.tree.builder import _build, people_index
+    from familiar.tree.builder import people_index, read_graph
     immutable = getattr(instance, '_immutable_snapshot', False)
     cached = getattr(instance, '_known_cache', {}) if immutable else {}
     if family_display in cached:
         return cached[family_display]
     from familiar.instance.gate import shared
-    graph = shared(instance, ('known-people', family_display), lambda: _build(instance, family_display=family_display))
     # References in immutable imported records remain usable after an explicit
     # merge; every lookup resolves to the active card's canonical id.
-    result = people_index(graph)
+    result = shared(instance, ('known-people', family_display),
+                    lambda: people_index(read_graph(instance, family_display=family_display)))
     if immutable:
         cached[family_display] = result
         instance._known_cache = cached
@@ -153,8 +158,6 @@ def _inspect(ctx, chapter, documents, pictures, instance, people):
             if field.shape == 'image' and isinstance(child, dict):
                 yield from variants(child)
     pics = [item for pic in pics for item in variants(pic)]
-    visible = {k: chapter.get(k) for k in ('title', 'text', 'more', 'ask', 'facts', 'variants')}
-    text = '\n'.join(strings(visible))
     if check == 'document-reference-resolves':
         for n, ref in enumerate(refs):
             doc = documents.get(ref.get('doc'))
@@ -226,7 +229,6 @@ def _inspect(ctx, chapter, documents, pictures, instance, people):
                     if re.match(r'^(?:https?:)?//', asset):
                         yield f'media[{n}].{key}', 'Document or picture is hot-linked.'
                     else:
-                        path = (instance.path('media') / asset.lstrip('/')).resolve()
                         if not media_exists(instance, asset):
                             yield f'media[{n}].{key}', 'Local media file is missing.'
             for snippet in item.get('snippets', []):

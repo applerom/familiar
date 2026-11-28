@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.65.0 — 28 November 2026
+
+- We start research coverage with the books and sources still open to read from home, by line.
+  `--line` shows where to read. `--family` opens the person-by-source matrix. The journal tells how
+  many searches without a person document reading at a particular place.
+- The plan finds ledger entries through the line's people and places as well as its surname.
+  The access command shows partial reading and counts where recorded.
+- Instance check puts missing document images near the top and groups repeated advice with examples.
+  Research lookups and instance checks reuse work within a command.
+- Data: `research document` accepts `record.place_scope` with a place and surname when there are no
+  tree subjects. These readings count for that place. `instance upgrade` preserves old readings
+  and points out incomplete explicit scopes.
+
 ## 0.64.3 — 28 November 2026
 
 - The files agents read at their start are kept short by a rhythm, not by

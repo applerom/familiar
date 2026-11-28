@@ -106,10 +106,26 @@ def scoped_life_decisions(instance, apply):
             if (message := life_decision_scope_message(index, decision))]
 
 
+def corpus_place_scope(instance, apply):
+    """Preserve old corpus readings. Only the author can assign a missing place or surname."""
+    from familiar.research.coverage_evidence import place_scope
+
+    lines = []
+    for path in sorted(instance.path('records').rglob('*.json')):
+        try:
+            record = json.loads(path.read_text(encoding='utf-8-sig'))
+        except (OSError, ValueError):
+            continue
+        if isinstance(record, dict) and 'place_scope' in record and not place_scope(record):
+            lines.append(f'{path}: specify the place and surname in place_scope from the reading')
+    return lines
+
+
 STEPS = [
     ('0.41.0', 'generated document pages replace registered copies', generated_record_pages),
     ('0.53.1', 'render photographs received with remarks before family display', received_photographs),
     ('0.58.1', 'name the scope of life decisions with the author', scoped_life_decisions),
+    ('0.65.0', 'preserve corpus readings and name incomplete place scopes', corpus_place_scope),
 ]
 
 

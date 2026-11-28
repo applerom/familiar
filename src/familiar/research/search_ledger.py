@@ -18,6 +18,7 @@ import math
 import re
 from collections import Counter
 from fnmatch import fnmatchcase
+from functools import lru_cache
 from urllib.parse import unquote_plus
 
 from familiar.desk.search_volume import ALIASES, Sources, domain, name_key
@@ -66,6 +67,7 @@ class Resolver:
     def __init__(self, instance):
         self.catalog = Sources(instance)
         self.known = set(self.catalog.sources) | set(ALIASES)
+        self._resolved_text = lru_cache(maxsize=4096)(self._resolve_text)
 
     def source(self, text):
         """(id, hint): an id of the catalogue, or None with the nearest id as advice."""
@@ -76,6 +78,9 @@ class Resolver:
             return None, None
         if not isinstance(text, str) or not text.strip():
             return None, None
+        return self._resolved_text(text)
+
+    def _resolve_text(self, text):
         if METHOD.search(text):
             return None, None
         text = {'pamyat': 'pamyat-naroda', 'ww1': 'gwar', 'szukaj': 'szukajwarchiwach', 'web': 'web-search'}.get(text, text)
@@ -164,9 +169,10 @@ class Tree:
             from familiar.tree.builder import _build
             graph = _build(instance)
         self.groups = given_groups(instance)
-        surname_groups = given_groups(instance, 'surname')
+        self.surname_groups = given_groups(instance, 'surname')
         self.shown = {norm(f['text']): f['text'] for e in _entries(instance) for f in e['forms']}
         self.people, self.stems, self.exact = {}, {}, {}
+        self.latin_form = lru_cache(maxsize=8192)(latin_form)
         for pid, person in graph['people'].items():
             surnames, givens = {}, set()
             for name in person.get('names', []) or []:
@@ -175,14 +181,14 @@ class Tree:
                 if name.get('given'):
                     givens.update(tokens(name['given']))
             for form, shown in list(surnames.items()):
-                for variant in surname_groups.get(form, set()):
+                for variant in self.surname_groups.get(form, ()):
                     surnames.setdefault(variant, self.shown.get(variant, shown))
             for form in list(givens):
                 givens |= self.groups.get(form, set())
             required = dict(surnames) | {f: self.shown[f] for f in givens if f in self.shown}
-            givens |= {latin_form(form) for form in givens} - {''}
+            givens |= {self.latin_form(form) for form in givens} - {''}
             for form, shown in list(surnames.items()):
-                if latin := latin_form(form):
+                if latin := self.latin_form(form):
                     surnames.setdefault(latin, shown)
             label = next((n.get('display') for n in person.get('names', []) if n.get('display')), None) or person.get('name') or pid
             shown = label.split(' ·')[0]
@@ -199,7 +205,7 @@ class Tree:
 
     def match(self, words):
         """People whose surname form and given name both appear among the words."""
-        words = set(words) | {latin_form(w) for w in words} - {''}
+        words = set(words) | {self.latin_form(w) for w in words} - {''}
         by_surname = set()
         for word in words:
             by_surname |= self.exact.get(word, set())
@@ -209,7 +215,7 @@ class Tree:
 
     def missing_surnames(self, pid, words):
         """Tree surname and dictionary surname/given-name forms not covered, including query masks."""
-        words = set(words) | {latin_form(w) for w in words} - {''}
+        words = set(words) | {self.latin_form(w) for w in words} - {''}
         out = []
         for form, shown in self.people[pid]['required_forms'].items():
             key = stem(form)

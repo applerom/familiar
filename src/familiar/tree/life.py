@@ -98,6 +98,7 @@ def _record_bounds(instance, graph, *, family_display=False):
     """Use attributed roles only; prose, name matches and document metadata are not identity."""
     from familiar.checks.engine import load
     from familiar.instance.display import research_inputs
+    from familiar.instance.gate import shared
     from familiar.instance.subjects import feedback_record, recorded_match
 
     bounds, deaths, births, child_dates = {}, {}, {}, {}
@@ -136,7 +137,7 @@ def _record_bounds(instance, graph, *, family_display=False):
     for path in sorted(research_inputs(instance)):
         if not path.is_relative_to(instance.path('records')):
             continue
-        record = load(path, {})
+        record = shared(instance, ('life-record', path), lambda: load(path, {}))
         if not recorded(record) or feedback_record(record) or record.get('record_role') in {'analysis', 'catalogue'}:
             continue
         # A subject on an event is dated by that event. Record-level subjects may

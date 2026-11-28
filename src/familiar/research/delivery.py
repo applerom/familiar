@@ -16,6 +16,8 @@ import re
 
 from familiar.instance.writer import mutate
 
+from .coverage_evidence import place_scope
+
 
 def token(value):
     if not isinstance(value, str) or not re.fullmatch(r'[A-Za-z][A-Za-z0-9_-]{0,63}', value):
@@ -35,20 +37,36 @@ def document(instance, data, input_path, author):
     rid, author = token(record['id']), token(author)
     record_path = instance.path('records') / (rid + '.json')
     target = instance.path('contributions') / author / (rid + '.json')
-    from familiar.tree.builder import build, people_index
-    graph = build(instance, view='working')
-    people = people_index(graph)
     subjects = data.get('subjects', [])
-    if not isinstance(subjects, list) or not subjects or any(not isinstance(p, str) or p not in people for p in subjects):
-        raise ValueError('Document subjects must name working people; inspect ids with tree build --view working or tree person')
-    subjects = list(dict.fromkeys(people[p]['id'] for p in subjects))
+    if not isinstance(subjects, list):
+        raise ValueError('Document subjects must be an array of working person IDs')
+    scope = place_scope(record)
+    if ('place_scope' in record or not subjects) and scope is None:
+        raise ValueError('Give record.place_scope with place and surname for a record without tree subjects')
+    if subjects:
+        from familiar.tree.builder import build, people_index
+        people = people_index(build(instance, view='working'))
+        if any(not isinstance(p, str) or p not in people for p in subjects):
+            raise ValueError('Document subjects must name working people; inspect ids with tree build --view working or tree person')
+        subjects = list(dict.fromkeys(people[p]['id'] for p in subjects))
     record['subjects'] = list(record.get('subjects', [])) + list(subjects)
+    if scope:
+        record['place_scope'] = scope
+    if not subjects:
+        from familiar.instance.subjects import explicit_subjects
+        if explicit_subjects(record):
+            raise ValueError('List the record’s tree subjects in the form’s subjects array')
+        if not record.get('read'):
+            record['read'] = {'by': author}
     source = {'kind': record['kind'], 'record': rid, 'title': record['title'], 'subjects': subjects}
     package = {'schema': 1, 'author': author, 'sources': {rid: source}, 'media': {}, 'facts': {}}
     changes = {record_path: record}
     manifest_path = instance.path('media') / 'manifest.json'
-    manifest = json.loads(manifest_path.read_text(encoding='utf-8')) if manifest_path.exists() else {'schema_version': 1, 'assets': []}
-    for index, snippet in enumerate(data.get('snippets', []), 1):
+    snippets = data.get('snippets', [])
+    manifest_raw = manifest_path.read_bytes() if subjects and snippets and manifest_path.exists() else None
+    manifest = json.loads(manifest_raw) if manifest_raw is not None else {'schema_version': 1, 'assets': []}
+    exclusive = [record_path]
+    for index, snippet in enumerate(snippets, 1):
         if not snippet.get('caption') or not snippet.get('read'):
             raise ValueError(f'snippets[{index}]: caption and literal read are required')
         path = (input_path.parent / snippet['file']).resolve()
@@ -61,10 +79,15 @@ def document(instance, data, input_path, author):
         asset_id = f'{rid}-{index}'
         if any(r.get('id') == asset_id or r.get('export') == name for r in manifest['assets']):
             raise ValueError('Document media already registered: ' + asset_id)
-        media_path = instance.path('media') / name
+        media_path = instance.path('media') / name if subjects else instance.path('records') / 'crops' / rid / (str(index) + path.suffix.lower())
         if media_path.exists():
             raise ValueError('Document media already exists: ' + name)
         changes[media_path] = raw
+        exclusive.append(media_path)
+        if not subjects:
+            record.setdefault('crops', []).append({'image': media_path.relative_to(instance.root).as_posix(),
+                'caption': snippet['caption'], 'reading': snippet['read'], 'sha256': hashlib.sha256(raw).hexdigest()})
+            continue
         manifest['assets'].append({'id': asset_id, 'file': name, 'export': name,
             'sha256': hashlib.sha256(raw).hexdigest(), 'kind': 'document-scan',
             'origin': 'research', 'subjects': subjects})
@@ -75,15 +98,20 @@ def document(instance, data, input_path, author):
             package['facts'].setdefault(pid, []).append({'label': 'document',
                 'text': snippet['read'], 'status': 'export', 'sources': [rid]})
     if not record.get('reading') and not record.get('fields'):
-        record['reading'] = '\n\n'.join(s['read'] for s in data.get('snippets', []))
+        record['reading'] = '\n\n'.join(s['read'] for s in snippets)
     if not package['facts']:
         for pid in subjects:
             package['facts'][pid] = [{'label': 'document', 'text': record.get('reading') or
                 '\n'.join(f'{key}: {value}' for key, value in record['fields'].items()),
                 'status': 'export', 'sources': [rid]}]
-    if data.get('snippets'):
+    if subjects and snippets:
         changes[manifest_path] = manifest
-    changes[target] = package
-    mutate(instance, changes, exclusive=[record_path, target])
+        if manifest_raw is None:
+            exclusive.append(manifest_path)
+    if subjects:
+        changes[target] = package
+        exclusive.append(target)
+    mutate(instance, changes, exclusive=exclusive,
+           expect={manifest_path: manifest_raw} if manifest_raw is not None else None)
     return {'record': str(record_path.relative_to(instance.root)),
-            'contribution': str(target.relative_to(instance.root)), 'subjects': subjects}
+            'contribution': str(target.relative_to(instance.root)) if subjects else None, 'subjects': subjects}

@@ -132,8 +132,15 @@ def primary(row):
     return row['kind'] not in SECONDARY
 
 
+def fully_read(row):
+    read, total = row.get('read'), row.get('of')
+    if type(read) is int and type(total) is int and total > 0:
+        return read == total
+    return row['state'] == 'read'
+
+
 def unread(place):
-    return [row for row in place['books'] if row['state'] in UNREAD and primary(row)]
+    return [row for row in place['books'] if row['state'] in UNREAD and primary(row) and not fully_read(row)]
 
 
 def first_year(row):
@@ -149,16 +156,45 @@ def named(place, keys, language):
     return any(surname_keys(name, language) & keys for name in place.get('lines') or [])
 
 
+def line_place_names(data, members, extra=()):
+    from .research_plan import recorded_places, variants_for_place
+
+    people = data['tree'].graph['people']
+    known = list(dict.fromkeys([*(p for pid in sorted(members) for p in recorded_places(people[pid])), *filter(None, extra)]))
+    for entry in variants_for_place(known, data.get('place_entries', ())):
+        known.extend(form['text'] for form in entry['forms'])
+        known.append(entry['name'])
+    return list(dict.fromkeys(known))
+
+
 def line_places(data, places, line, members, extra=()):
-    """Places of one planning line: those that name it; a place without `lines` by the line's people and versions."""
-    from .research_plan import recorded_places
-    from .search_map import leading_places
+    """Places named for the line or reached through its people and leading versions."""
+    from .search_map import leading_places, place_names
     if not places:
         return []
-    known = [p for pid in line.chain for p in recorded_places(data['tree'].graph['people'][pid])]
-    known += [p for p in [*leading_places(data, line, members), *extra] if p]
-    return [place for place in places if (named(place, line.forms, data['language']) if place.get('lines') else
-                                          any(place_match(place['place'], other) for other in known))]
+    leading = leading_places(data, line, members)
+    known = line_place_names(data, members, [*leading, *extra])
+    tagged = [named(place, line.forms, data['language']) for place in places]
+    anchors = known
+    if any(tagged):
+        people = data['tree'].graph['people']
+        origins = [e['place'] for pid in members for e in people[pid].get('events', [])
+                   if e.get('type') in {'birth', 'baptism'} and e.get('status') not in {'hypothesis', 'rejected', 'disproved'}
+                   and isinstance(e.get('place'), str)]
+        anchors = line_place_names(data, (), [*origins, *leading])
+    out = []
+    for place, mine in zip(places, tagged, strict=True):
+        if mine:
+            out.append(place)
+        elif place.get('lines'):
+            # Compare the locality itself. When the ledger already knows the line, a later shared residence
+            # does not override those entries. An origin shared with another line can still open its books.
+            names = place_names(place['place'])
+            if names and any(place_match(names[0], anchor) for anchor in anchors):
+                out.append(place)
+        elif any(place_match(place['place'], other) for other in known):
+            out.append(place)
+    return out
 
 
 CHURCH = re.compile(r'церк|костёл|костел|приход|храм|church|parish|chapel|kości|cerk|parafi|kyrk|församling|igreja|paróquia', re.I)
@@ -205,6 +241,23 @@ def progress(row, words, language, texts=None):
     return words['read_of'].format(read=row['read'], of=row['of'], unit=say(row.get('unit'), language, texts)).strip()
 
 
+def reading_words(row, words, language, texts=None):
+    count = progress(row, words, language, texts)
+    read = row.get('read')
+    if fully_read(row) or read == 0:
+        return count
+    # Older ledger verdicts sometimes give partial ranges in the note instead of counts.
+    note = say(row.get('note'), language)
+    if type(read) is int and read > 0 or re.match(
+            r'(?:(?:по кадрам|большей частью) прочитан\w*|частично (?:прочитан\w*|по прежнему уч[её]ту)|'
+            r'partially read\b|partly read\b|częściowo przeczytan\w*)', note, re.I):
+        plan = words['plan']
+        if count and 'of' in row and (label := plan.get('partly_of')):
+            return label.format(read=read, of=row['of'], unit=say(row.get('unit'), language, texts)).strip()
+        return ' · '.join(filter(None, [plan.get('partly', 'partly read'), count]))
+    return count
+
+
 def state_words(row, words, language):
     """One line a lead cannot misread: opens from home, no access from home, unknown where, read, nothing to read."""
     state, w = row['state'], words['plan']
@@ -214,8 +267,8 @@ def state_words(row, words, language):
     else:
         parts = [w[state], holder]
     if state == 'home':
-        parts += [say(row.get('online'), language), progress(row, words, language) or (w['unread'] if primary(row) else '')]
-    elif state == 'read' and (count := progress(row, words, language)):
+        parts += [say(row.get('online'), language), reading_words(row, words, language) or (w['unread'] if primary(row) else '')]
+    elif state == 'read' and (count := reading_words(row, words, language)):
         parts[0] = count
     parts.append(say(row.get('reference'), language))
     parts.append(say(row.get('price'), language))
@@ -240,7 +293,7 @@ def plan_lines(places, words, language):
         return [f"**{words['heading']}** · {words['plan']['nothing']}", '']
     for place in places:
         known = [r for r in place['books'] if primary(r) and r['state'] != 'none']
-        tally = words['plan']['tally'].format(read=sum(r['state'] == 'read' for r in known), total=len(known))
+        tally = words['plan']['tally'].format(read=sum(map(fully_read, known)), total=len(known))
         out += [f"**{words['heading']} · {place['place']}** · {tally}", '']
         out += [f"- {title(r, words, language)} — {state_words(r, words, language)} "
                 f"({', '.join(v for v in (r.get('by'), r.get('at')) if v)})" for r in in_order(place['books'])]

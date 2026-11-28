@@ -22,6 +22,15 @@ def analytical(record):
         for rows in fields.values())
 
 
+def place_scope(record):
+    """Explicit scope of a corpus reading, independent of an identity decision."""
+    scope = record.get('place_scope')
+    if isinstance(scope, dict) and all(isinstance(scope.get(k), str) and scope[k].strip()
+                                     for k in ('place', 'surname')):
+        return {k: scope[k].strip() for k in ('place', 'surname')}
+    return None
+
+
 def references(value):
     """Exact ids/paths and document URLs, including old 'site/ + page' locators."""
     if isinstance(value, dict):

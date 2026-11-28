@@ -3,7 +3,7 @@ import re
 from collections import defaultdict
 
 from familiar.instance import asks, blanks, correspondence
-from familiar.instance.gate import boundary
+from familiar.instance.gate import boundary, fixed_inputs
 from familiar.tree.life import _birth_bounds
 
 from .coverage import (CLOSED_OPTIONS, OPEN_EXCLUSIONS, applicability, collect, control_basis, line_members,
@@ -492,11 +492,13 @@ def plan_line(data, line, entries, asks_on_disk, letters_on_disk, lang, horizon=
 
 
 @boundary('diagnostic')
+@fixed_inputs()
 def plan(instance, *, line=None):
     data = collect(instance, for_plan=True)
     data['living'], data['linked'] = links_to_living(data['tree'].graph)
     data['family_connection'] = family_connection(data['tree'].graph, data['lines'][0][0] if data['lines'] else None)
     entries = place_entries(instance)
+    data['place_entries'] = entries
     local_asks, letters = home_and_archive(instance)
     lang = 'ru' if instance.source_language == 'ru' else 'en'
     closed = asks.horizons(instance)
@@ -525,7 +527,8 @@ def plan(instance, *, line=None):
             play.pop('step')
     view = {'schema': 1, 'lines': lines}
     from familiar.instance.subjects import protected_names
-    return view, protected_names(instance).sub('…', markdown_plan(view, lang, words))
+    from familiar.tree.builder import people_index
+    return view, protected_names(instance, people=people_index(data['tree'].graph)).sub('…', markdown_plan(view, lang, words))
 
 
 SKELETON_PLAYS = ('place-nest', 'role-lists', 'place-administration', 'keeper-forms')

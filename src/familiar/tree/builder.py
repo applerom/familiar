@@ -141,7 +141,12 @@ def _build(instance, *, enrich=None, family_display=False):
     return result
 
 
-from familiar.instance.gate import boundary
+from familiar.instance.gate import boundary, shared
+
+
+def read_graph(instance, *, family_display=False):
+    """A read-only graph shared by consumers of one fixed set of family inputs."""
+    return shared(instance, ('read-graph', family_display), lambda: _build(instance, family_display=family_display))
 
 
 @boundary('tree-view')

@@ -346,7 +346,12 @@ record is unknown rather than read.
 
 ## Reading it (lead, host)
 
-- `familiar research coverage [--family]`: the matrix. Cells: R result rows, D read record, +F explicitly established identity, Z zero
+- `familiar research coverage`: counts of access-ledger entries open from home and still to read, by family line.
+  `--line NAME` or a starting person ID lists the entries with their place, reference and reading progress.
+  The journal summary gives the number of rows with no tree person. A row documents a place reading when it
+  records reading at a specific place or in a named series. A place-scoped corpus record also counts for its
+  named place. These readings measure visits and individual records. Book completion comes from the ledger.
+- `--family`: the full matrix. Cells: R result rows, D read record, +F explicitly established identity, Z zero
   with control, z zero without control, ? outcome not recorded, ! access gap, . not looked; the digit is
   the strongest pass (1-4; 0 means no model was recorded, which counts as weak);
   `?` means the person was inferred from the row's question only.

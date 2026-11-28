@@ -194,15 +194,24 @@ class Instance:
         base = self.path('media')
         manifest = base / 'manifest.json'
         if manifest.is_file():
+            from .gate import shared
             immutable = getattr(self, '_immutable_snapshot', False)
             data = getattr(self, '_media_catalog', None) if immutable else None
             if data is None:
-                data = json.loads(manifest.read_text(encoding='utf-8'))
+                def index():
+                    catalog = json.loads(manifest.read_text(encoding='utf-8'))
+                    require(type(catalog.get('schema_version')) is int and catalog['schema_version'] == 1,
+                            'unsupported media manifest version')
+                    rows = {}
+                    for row in catalog['assets']:
+                        if isinstance(export := row.get('export'), str):
+                            rows.setdefault(export, row)
+                    return rows
+
+                data = shared(self, 'media-file-index', index)
                 if immutable:
                     self._media_catalog = data
-            require(type(data.get('schema_version')) is int and data['schema_version'] == 1,
-                    'unsupported media manifest version')
-            row = next((r for r in data['assets'] if r.get('export') == rel), None)
+            row = data.get(rel)
             if row is None:
                 return None
             path = (base / row['file']).resolve()

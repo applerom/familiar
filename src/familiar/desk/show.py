@@ -92,11 +92,11 @@ def project(active, graph, w, *, asks=()):
     people = graph.get('people', {})
     from familiar.checks.engine import _known_people, life_status
     from familiar.instance.publication import quotation_filter
-    from familiar.instance.gate import fixed_inputs, shared
-    from familiar.tree.builder import _build
+    from familiar.instance.gate import fixed_inputs
+    from familiar.tree.builder import read_graph
     with fixed_inputs():
         known = _known_people(active)
-        original = shared(active, ('known-people', False), lambda: _build(active))['sources']
+        original = read_graph(active)['sources']
         closed = {sid: original.get(sid, {}).get('record') or sid for sid, source in graph.get('sources', {}).items()
                   if source.keys() <= {'id', 'kind'}}
         quotes_record = quotation_filter(active, set(closed.values()))

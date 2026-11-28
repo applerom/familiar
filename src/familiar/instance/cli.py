@@ -44,6 +44,27 @@ def register(commands):
     parser.set_defaults(run=run)
 
 
+def advice_lines(findings):
+    groups = {}
+    for row in findings:
+        groups.setdefault((row.get('check'), row['message']), []).append(row)
+    for (_, message), rows in groups.items():
+        examples = []
+        for row in rows:
+            scope = row.get('scope', '')
+            where = row['location']
+            if scope and scope != 'family':
+                where = f"{scope} ({row['chapter_id']}): {where}" if row.get('chapter_id') else f'{scope}: {where}'
+            if where not in examples:
+                examples.append(where)
+            if len(examples) == 3:
+                break
+        if len(rows) == 1:
+            yield f'ADVICE: {examples[0]}: {message}'
+        else:
+            yield f"ADVICE ×{len(rows)}: {message} · {'; '.join(examples)}"
+
+
 def run(args):
     try:
         if args.action == "init":
@@ -95,11 +116,15 @@ def run(args):
                     print(f"scope: {report['scope']}; {len(report['files'])} files; not a publication check")
                 for error in report['errors']:
                     print(f"{error['location']}: {error['message']}")
-                for advice in report.get('advice', []):
-                    print(f"ADVICE: {advice['location']}: {advice['message']}")
+                if images := report.get('image_findings', []):
+                    print(f"documents: {len(images)} cited records name an image that is not on disk")
+                    for finding in images:
+                        print(f"HINT: {finding['location']}: {', '.join(finding['images'])}; {finding['message']}")
                 for row in report.get('quarantine', []):
                     print(f"QUARANTINE: {row['file']} ({row['author']}): waits for {', '.join(row['waits'])}; "
                           'not applied until committed')
+                for advice in advice_lines(report.get('advice', [])):
+                    print(advice)
                 if work := report.get('research_in_progress'):
                     label = {'ru': 'исследование в работе', 'pl': 'badania w toku'}.get(instance.source_language,
                                                                                          'research in progress')
@@ -112,10 +137,6 @@ def run(args):
                     print(f"names: {len(hints)} tile names a reader may not recognize (all in --json)")
                 for finding in hints[:5]:
                     print(f"HINT: {finding['location']}: {finding['name']}; {finding['message']}")
-                if images := report.get('image_findings', []):
-                    print(f"documents: {len(images)} cited records name an image that is not on disk (all in --json)")
-                for finding in images[:5]:
-                    print(f"HINT: {finding['location']}: {', '.join(finding['images'])}; {finding['message']}")
                 for warning in report['warnings']:
                     print(f'WARNING: {warning}', file=sys.stderr)
                 for key in (() if report.get('scope') else ('first_chapter_missing', 'full_cycle_missing')):

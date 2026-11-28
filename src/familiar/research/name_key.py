@@ -201,6 +201,9 @@ def findings(instance, graph, metadata):
     joined += [{clan_key(f['text']) for f in e['forms']} for e in _entries(instance) if e['kind'] == 'surname']
     forms = sorted(people)
     parent = {f: f for f in forms}
+    stems = {form: rules.stem(form) for form in forms}
+    folded = {form: rules.fold(stem) for form, stem in stems.items()}
+    sounds = {form: rules.sound_codes(stem) for form, stem in stems.items()}
 
     def root(f):
         while parent[f] != f:
@@ -209,7 +212,7 @@ def findings(instance, graph, metadata):
         return f
     for i, a in enumerate(forms):
         for b in forms[i + 1:]:
-            if rules.relation(a, b, 'surname'):
+            if folded[a] == folded[b] or sounds[a] & sounds[b]:
                 parent[root(a)] = root(b)
     groups = {}
     for f in forms:

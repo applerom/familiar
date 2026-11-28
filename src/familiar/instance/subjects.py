@@ -356,13 +356,13 @@ def check(instance, graph, records, fail):
         source = graph['sources'].get(sid, {})
         record = records.get(source.get('record', sid))
         living = inferring[sid] - dead
-        named = any(names(written(source, record), people[p]) for p in living)
-        return (record and living and owners[sid] & dead and (named or not complete_subjects(record))
-                and not (own.get(sid, set()) - dead) and not protected_record(record)
-                and not {p for p in explicit_subjects(record) if p in people} - dead)
+        return (record and living and owners[sid] & dead and not (own.get(sid, set()) - dead)
+                and not protected_record(record) and not {p for p in explicit_subjects(record) if p in people} - dead
+                and (not complete_subjects(record) or any(names(written(source, record), people[p]) for p in living)))
     privacy = load(instance.path('privacy'), {})
     gone = lambda view: {pid for pid, p in view.items() if life_status(p, privacy) == 'dead'}
-    if not any(waiting(sid, gone(people)) for sid in inferring):
+    dead = gone(people)
+    if not any(waiting(sid, dead) for sid in inferring):
         return
     # Reuse the recorded evidence for the family's display horizon.
     seen = _assess(instance, graph | {'people': {pid: dict(p) for pid, p in people.items()}}, family_display=True)['people']
@@ -409,11 +409,11 @@ def names(text, person):
                for row in [*rows, str(person.get('name') or '').split()] if len(row) > 1)
 
 
-def protected_names(instance, *, include_short=False):
+def protected_names(instance, *, include_short=False, people=None):
     """Match names of people still protected, including alternate written forms and name order."""
     from familiar.checks.engine import _known_people, life_status
     living, historical = set(), set()
-    for person in _known_people(instance).values():
+    for person in (_known_people(instance) if people is None else people).values():
         forms = historical if life_status(person, {}) == 'dead' else living
         shown = person.get('namePresentation') or {}
         values = [person.get('name'), shown.get('full'), *(shown.get('byLanguage') or {}).values()]
@@ -451,15 +451,20 @@ def attribute_documents(instance, graph, *, family_display=False):
     A shared scan inherits all its uses, including protected gallery owners.
     Literal excerpts remain separate from the full record's identity.
     """
-    from familiar.checks.engine import _known_people, life_status, load
+    from familiar.checks.engine import _known_people, life_status, load, record_paths
+    from functools import cache
     from .gate import shared
     known, privacy = _known_people(instance, family_display=family_display), load(instance.path('privacy'), {})
     stated = {}
-    record_paths = {normalized(p.stem): p for p in instance.path('records').rglob('*.json')}
+    paths = record_paths(instance)
     parents, subjects, uses, protected = {}, {}, [], set()
     mentioned = None if family_display else shared(
         instance, 'public-protected-names', lambda: protected_names(instance, include_short=True))
     paper_safety = {}
+
+    @cache
+    def dead(pid):
+        return life_status(known.get(pid, {'id': pid}), privacy) == 'dead'
 
     def blocked_record(rid, record):
         if protected_record(record):
@@ -503,7 +508,7 @@ def attribute_documents(instance, graph, *, family_display=False):
                 keys.append(('asset', value))
             elif isinstance(value, dict) and value.get('asset'):
                 keys.append(('asset', value['asset']))
-        value = dict(node, kind='archive-record') if shape == 'source' and node.get('record') in record_paths else node
+        value = dict(node, kind='archive-record') if shape == 'source' and node.get('record') in paths else node
         resolved = closure(instance, value, shape=shape, people=known)
         if 'excerpt' not in node and (record := resolved.records.get(node.get('record'))):
             from familiar.reader.scans import selected_capture
@@ -529,28 +534,27 @@ def attribute_documents(instance, graph, *, family_display=False):
         uses.append((node, key, people))
 
     sources = graph.get('sources', {})
-    manifest = load(instance.path('media') / 'manifest.json', {})
+    manifest = shared(instance, 'attribution-manifest', lambda: load(instance.path('media') / 'manifest.json', {}))
     attached = {row['source_id'] for row in manifest.get('assets', []) if row.get('source_id') and row.get('export')}
     attached.update(image[key] for person in graph.get('people', {}).values() for field in ('media', 'illustrations')
                     for image in person.get(field, []) if image.get('asset') for key in ('sid', 'sourceSid') if image.get(key))
     tellings = {sid for sid, source in sources.items()
-                if family_display and fileless_memory(source) and sid not in record_paths and sid not in attached}
+                if family_display and fileless_memory(source) and sid not in paths and sid not in attached}
 
     def cite(sid, people, *, inference=False):
         if sid in tellings:
             return
         alias = sources.get(sid, {}).get('record', sid)
-        if inference and sid not in stated and alias in record_paths:
-            record = load(record_paths[alias], {})
+        if inference and sid not in stated and alias in paths:
+            record = shared(instance, ('attribution-record', alias), lambda: load(paths[alias], {}))
             if complete_subjects(record):
                 stated[sid] = written(sources.get(sid, {}), record)
         if inference and sid in stated:
-            people = {p for p in people if life_status(known.get(p, {'id': p}), privacy) == 'dead'
-                      or names(stated[sid], known.get(p, {}))}
+            people = {p for p in people if dead(p) or names(stated[sid], known.get(p, {}))}
         if sources.get(sid, {}).get('excerpt'):
             bind([('source', sid)], people)
         else:
-            bind([('source', sid)] + ([('record', alias)] if alias in record_paths else []), people)
+            bind([('source', sid)] + ([('record', alias)] if alias in paths else []), people)
 
     def fact(row, context, own=()):
         people = set(context) | set(row.get('_people', row.get('people', [])))
@@ -576,7 +580,7 @@ def attribute_documents(instance, graph, *, family_display=False):
             story(child, people)
 
     for sid, source in sources.items():
-        if not source.get('record') and sid in record_paths:
+        if not source.get('record') and sid in paths:
             source['record'] = sid
         if sid not in tellings:
             document(source, 'source', sid=sid)
@@ -584,7 +588,7 @@ def attribute_documents(instance, graph, *, family_display=False):
         if row.get('source_id') and row.get('export'):
             sid = row['source_id']
             bind([('source', sid), ('asset', '/' + row['export'].lstrip('/'))]
-                 + ([('record', sid)] if sid in record_paths else []), ())
+                 + ([('record', sid)] if sid in paths else []), ())
     for pid, person in graph.get('people', {}).items():
         for collection in ('media', 'illustrations'):
             for image in person.get(collection, []):
@@ -592,7 +596,7 @@ def attribute_documents(instance, graph, *, family_display=False):
                 if image.get('record') or image.get('kind') == 'document-scan' or image.get('photo') is False:
                     document(image, 'image', [pid])
         own = own_papers(person)
-        if life_status(known.get(pid, {'id': pid}), privacy) != 'dead':
+        if not dead(pid):
             for sid in own:
                 cite(sid, {pid})
             for row in person.get('notes', []):
@@ -608,7 +612,7 @@ def attribute_documents(instance, graph, *, family_display=False):
     for relation in [*graph.get('edges', []), *graph.get('associations', []), *graph.get('families', [])]:
         if not attributed_link(relation):
             continue
-        members = {p for p in relation_people(relation) if life_status(known.get(p, {'id': p}), privacy) != 'dead'}
+        members = {p for p in relation_people(relation) if not dead(p)}
         if not members:
             continue  # A citation can protect a sheet, but cannot establish all its subjects.
         for sid in [*relation.get('sources', []), *relation.get('provenance', [])]:
@@ -618,17 +622,18 @@ def attribute_documents(instance, graph, *, family_display=False):
                 cite(sid, members)
     for feed in graph.get('feeds', []):
         story(feed)
+    private = {root(key) for key in protected}
     for node, key, people in uses:
         # Facts carry context to sources, but their subjects are not reader fields.
         if key is not None:
-            people |= subjects[root(key)]
-            if any(root(k) == root(key) for k in protected):
+            group = root(key)
+            people |= subjects[group]
+            if group in private:
                 node['_document_private'] = True
         node['subjects'] = sorted(people)
         node['_document_attributed'] = True
     from .restorations import restorations
     if any(restorations(graph)):
         closure(instance, graph, shape='graph', people=known)
-    private = {root(key) for key in protected}
-    return {key for key in parents if root(key) in private or any(
-        life_status(known.get(p, {'id': p}), privacy) != 'dead' for p in subjects[root(key)])}
+    private.update(group for group, people in subjects.items() if any(not dead(p) for p in people))
+    return {key for key in parents if root(key) in private}

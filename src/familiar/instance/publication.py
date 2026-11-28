@@ -331,9 +331,10 @@ def restrict_graph(instance, graph, *, host_private=False):
 def restrict_feed(instance, feed):
     from .narrative import restrict_feed as project_narrative
     from .subjects import attribute_documents
-    from familiar.tree.builder import _build
+    from familiar.tree.builder import read_graph
+    from familiar.tree.contributions import _clone
     from .edition import apply
-    graph = apply(instance, _build(instance))
+    graph = apply(instance, _clone(read_graph(instance)))
     graph['feeds'] = [copy.deepcopy(feed)]
     withheld = attribute_documents(instance, graph)
     return project_narrative(instance, private_graph(
@@ -450,41 +451,52 @@ def quotation_filter(instance, records):
     """Detect a telling literal span, including a cropped or translated reading."""
     from familiar.checks.engine import load, record_path, strings
     from familiar.reader.graph import card_memory
+    from functools import lru_cache
+    from .gate import shared
 
     def fragments(text, minimum):
         # Count whole words. Part of a district or province name can otherwise
         # turn an ordinary birthplace into a quotation from an unrelated sheet.
-        words = list(re.finditer(r"[^\W_]+(?:[-’'][^\W_]+)*", text))
-        for start, word in enumerate(words):
-            length = len(word.group())
-            end = start + 1
+        words = [(m[0].casefold(), m.start(), m.end()) for m in re.finditer(r"[^\W_]+(?:[-’'][^\W_]+)*", text)]
+        end, length = 0, 0
+        for start, (_, begin, stop) in enumerate(words):
             while end < len(words) and length < minimum:
-                length += len(words[end].group()) + 1
+                _, a, b = words[end]
+                length += b - a + (end > start)
                 end += 1
             if length >= minimum:
-                yield ' '.join(w.group().casefold() for w in words[start:end]), word.start(), words[end - 1].end()
+                yield ' '.join(word for word, _, _ in words[start:end]), begin, words[end - 1][2]
+            length -= stop - begin + (end > start + 1)
+
+    spans = shared(instance, 'quotation-spans', lambda: lru_cache(maxsize=16384)(
+        lambda text, minimum: tuple(fragments(text, minimum))))
 
     # A citation can also accompany an ordinary name or a researcher's own
     # argument. Only an explicitly quoted passage uses the shorter threshold.
     withheld, cited = set(), {}
-    translations = card_memory(instance).values() if records else ()
-    for rid in records:
+    translations = shared(instance, 'quotation-translations', lambda: card_memory(instance)).values() if records else ()
+
+    def terms(rid):
         record = load(record_path(instance, rid), {})
         lines = {line.strip() for text in strings([record.get('reading'), record.get('fields')])
                  for line in text.splitlines() if line.strip()}
         lines |= {texts[line] for texts in translations for line in lines if line in texts}
-        cited[rid] = {part for line in lines for part, _, _ in fragments(line, 16)}
-        withheld.update(part for line in lines for part, _, _ in fragments(line, 40))
+        return ({part for line in lines for part, _, _ in spans(line, 16)},
+                {part for line in lines for part, _, _ in spans(line, 40)})
+
+    for rid in records:
+        cited[rid], long = shared(instance, ('quotation-terms', rid), lambda: terms(rid))
+        withheld.update(long)
 
     def redact(text, sources=()):
         matches = []
         if withheld and len(text) >= 40:
-            matches.extend((a, b) for part, a, b in fragments(text, 40) if part in withheld)
+            matches.extend((a, b) for part, a, b in spans(text, 40) if part in withheld)
         selected = [cited[sid] for sid in sources if sid in cited]
         if selected:
             for quote in re.finditer(r'«([^»]+)»|“([^”]+)”|„([^”]+)”|"([^"]+)"', text):
                 start = quote.start(quote.lastindex)
-                matches.extend((start + a, start + b) for part, a, b in fragments(quote[quote.lastindex], 16)
+                matches.extend((start + a, start + b) for part, a, b in spans(quote[quote.lastindex], 16)
                                if any(part in terms for terms in selected))
         pieces, stop = [], 0
         for start, end in sorted(matches):
@@ -503,14 +515,15 @@ def private_graph(instance, graph, *, host_private=True, withheld=(), amendments
     from .subjects import closure, fileless_memory, historical_records, protected_record
     known = _known_people(instance, family_display=host_private)
     privacy = load(instance.path('privacy'), {})
+    statuses = {pid: life_status(person, privacy) for pid, person in known.items()}
     addresses = set()
 
     def dead(pid):
-        return life_status(known.get(pid, {'id': pid}), privacy) == 'dead'
+        return statuses.get(pid) == 'dead'
 
     if host_private:
         for pid, person in graph.get('people', {}).items():
-            status = life_status(known.get(pid, {'id': pid}), privacy)
+            status = statuses.get(pid) or life_status({'id': pid}, privacy)
             if status == 'unknown':
                 person.pop('living', None)
             else:
@@ -529,7 +542,7 @@ def private_graph(instance, graph, *, host_private=True, withheld=(), amendments
         resolved = closure(instance, node, shape=shape, people=known)
         attributed = (resolved.people or shape == 'image' and period_pair(node)
                       or host_private and chapter and historical_records(resolved))
-        unsafe = (not attributed or any(life_status(known[p], privacy) != 'dead' for p in resolved.people)
+        unsafe = (not attributed or any(not dead(p) for p in resolved.people)
                   or any(map(protected_record, resolved.records.values())))
         if not unsafe and shape == 'document' and node.get('excerpt'):
             # Closure checked these exact literal fields and their own people.
@@ -591,7 +604,7 @@ def private_graph(instance, graph, *, host_private=True, withheld=(), amendments
     # Where a dead person lived is family history, not an address: the locality stays.
     # Explicit address events, and every residence of a living or unknown person, remain excluded.
     localities = {id(e) for pid, person in (graph.get('people') or {}).items()
-                  if isinstance(person, dict) and pid in known and life_status(known[pid], privacy) == 'dead'
+                  if isinstance(person, dict) and dead(pid)
                   for e in person.get('events') or []
                   if isinstance(e, dict) and {e.get('type'), e.get('tag')} & {'residence', 'RESI'}
                   and not {e.get('type'), e.get('tag')} & {'address', 'ADDR'}}
@@ -610,12 +623,12 @@ def private_graph(instance, graph, *, host_private=True, withheld=(), amendments
         treatment = node if node.get('kind') == 'photo-treatment' else node.get('ours', {})
         if treatment.get('kind') == 'photo-treatment':
             resolved = closure(instance, node, shape='image', people=known)
-            living = [p for p in resolved.people if life_status(known[p], privacy) != 'dead']
+            living = [p for p in resolved.people if not dead(p)]
             if living and not host_private:
                 return True
         if not host_private and key in {'media', 'illustrations', 'figures', 'picture'}:
             resolved = closure(instance, node, shape='image', people=known)
-            if any(life_status(known[p], privacy) != 'dead' for p in resolved.people):
+            if any(not dead(p) for p in resolved.people):
                 return True
         if key == 'notes' and cites_withheld(node):
             return True
@@ -656,6 +669,9 @@ def private_graph(instance, graph, *, host_private=True, withheld=(), amendments
     graph = walk(graph)
     from familiar.reader.experiences import protect_game_media
     protect_game_media(graph)
+    if not addresses:
+        return graph
+    longest_first = sorted(addresses, key=len, reverse=True)
 
     def redact(node):
         if isinstance(node, dict):
@@ -663,7 +679,7 @@ def private_graph(instance, graph, *, host_private=True, withheld=(), amendments
         if isinstance(node, list):
             return [redact(v) for v in node]
         if isinstance(node, str):
-            for address in sorted(addresses, key=len, reverse=True):
+            for address in longest_first:
                 node = node.replace(address, '')
         return node
     return redact(graph)
@@ -672,16 +688,17 @@ def private_graph(instance, graph, *, host_private=True, withheld=(), amendments
 def media_omissions(instance, feeds):
     """Private advice from the same projections that remove chapter media and games."""
     from familiar.checks.engine import _known_people, life_status, load
-    from familiar.tree.builder import _build
+    from familiar.tree.builder import read_graph
+    from familiar.tree.contributions import _clone
     from familiar.reader.experiences import play
     from .subjects import attribute_documents, closure
-    graph = _build(instance)
+    graph = _clone(read_graph(instance))
     graph['feeds'] = copy.deepcopy(feeds)
     play(instance, graph)
     withheld = attribute_documents(instance, graph)
     known, privacy = _known_people(instance), load(instance.path('privacy'), {})
     rows = []
-    shown = private_graph(instance, copy.deepcopy(graph), withheld=withheld)
+    shown = private_graph(instance, _clone(graph), withheld=withheld)
     for feed, visible_feed in zip(graph['feeds'], shown['feeds']):
         def chapter_media(chapter, visible, cid):
             for field in ('records', 'picture', 'figures'):

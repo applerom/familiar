@@ -843,6 +843,9 @@ attachment itself establishes no identity or relationship. The usual accumulated
 subject and living-document exclusions apply to its reading, scan and source link.
 Record `subjects` accepts canonical ID strings for attachments; structured roles
 still require the literal `written` name. Attaching a card invents neither.
+With empty `subjects`, give `record.place_scope` as `{"place": "Ponta do Moinho", "surname": "Calhau"}`.
+The corpus keeps the reading and any private cut-outs together. Coverage counts
+it for the recorded place. A later explicit link can associate it with a person.
 
 **Person (`tree_snapshot/people.json`, wrapper `people[]`)**
 

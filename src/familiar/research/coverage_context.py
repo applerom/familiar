@@ -13,7 +13,7 @@ from functools import lru_cache
 
 from .search_ledger import parse_by, row_tokens, tokens
 from .search_variants import _entries, form_data, norm
-from .coverage_evidence import accepted_links, analytical, references
+from .coverage_evidence import accepted_links, analytical, place_scope, references
 
 
 def text(value):
@@ -37,7 +37,10 @@ def pattern(needle):
 
 
 def contains(haystack, needle):
-    return bool(needle and pattern(needle).search(folded(haystack)))
+    if not needle:
+        return False
+    raw = folded(haystack)
+    return folded(needle) in raw and bool(pattern(needle).search(raw))
 
 
 def person_text(person):
@@ -138,12 +141,19 @@ def row_people(row, tree, catalog):
         return (declared or named), row.get('people_from') or row.get('people_basis') or 'name', 'person'
     raw = text([row.get('query'), row.get('coverage')])
     if not candidates:
-        place_values = [v for k, v in query.items() if re.search(r'place|parish|town', k, re.I) and isinstance(v, str)] if isinstance(query, dict) else []
-        if place_values and not hasattr(tree, '_coverage_raw'):
-            tree._coverage_raw = {pid: person_text(p) for pid, p in tree.graph['people'].items()}
-        matched = [pid for pid, raw_person in getattr(tree, '_coverage_raw', {}).items() if any(contains(raw_person, v) for v in place_values if len(v) > 3)]
-        if matched:
-            return matched, 'place', 'place'
+        place_values = [v for k, v in query.items() if isinstance(v, str) and len(v) > 3
+                        and re.search(r'place|parish|town', k, re.I)] if isinstance(query, dict) else []
+        if place_values:
+            if not hasattr(tree, '_coverage_raw'):
+                tree._coverage_raw = {pid: person_text(p) for pid, p in tree.graph['people'].items()}
+                tree._coverage_by_place = {}
+            matched = set()
+            for value in map(folded, place_values):
+                if value not in tree._coverage_by_place:
+                    tree._coverage_by_place[value] = {pid for pid, raw in tree._coverage_raw.items() if contains(raw, value)}
+                matched.update(tree._coverage_by_place[value])
+            if matched:
+                return [pid for pid in tree._coverage_raw if pid in matched], 'place', 'place'
         return declared, row.get('people_from') or row.get('people_basis') or 'declared', 'person'
     groups = place_groups(raw, catalog)
     years = row.get('coverage', {}).get('years') if isinstance(row.get('coverage'), dict) else None
@@ -266,13 +276,15 @@ def record_visits(instance, tree, resolver, reviews=None):
         if digest in seen:
             continue
         seen.add(digest)
+        scope = place_scope(record)
+        reading = record.get('read') or {}
         source = record.get('source', {})
         sid = resolver.row_source({'source': source})
         if isinstance(source, dict):
             sid = sid or resolver.row_source({'source': source.get('kind'), 'url': source.get('url')})
             if not sid and (source.get('dgs') or source.get('fs_ark')):
                 sid = 'familysearch-records'
-        if not sid:
+        if not sid and not scope:
             continue
         # Only fields actually read, not links in a version, query or a collector's speculation.
         actual = {k: record[k] for k in ('person', 'people', 'subjects', 'fields', 'acts', 'reading', 'literal', 'text') if k in record}
@@ -284,8 +296,8 @@ def record_visits(instance, tree, resolver, reviews=None):
             given = primary.get('name') or primary.get('given') or ''
             # A secondary name or a parent's name in a note is not the principal's given name.
             primary_words = tokens(text([primary.get('surname'), given.split()[0] if given else '']))
-        primary_names = set(tree.match(primary_words)) if primary else set()
-        names = tree.match(tokens(text(actual)))
+        primary_names = set(tree.match(primary_words)) if primary and not scope else set()
+        names = tree.match(tokens(text(actual))) if not scope else []
         attributed, established = set(), set()
         keys = references(path.relative_to(instance.root).as_posix()) | references(record.get('id')) | references(source)
         for key in keys:
@@ -303,7 +315,11 @@ def record_visits(instance, tree, resolver, reviews=None):
                     walk(v)
             elif isinstance(node, str) and (p := tree.person(node)):
                 attributed.add(p['id'])
-        walk(actual)
+        if scope:
+            from familiar.instance.subjects import explicit_subjects
+            attributed.update(p['id'] for pid in explicit_subjects(record) if (p := tree.person(pid)))
+        else:
+            walk(actual)
         match = record.get('match') or {}
         if isinstance(match, dict) and (p := tree.person(match.get('tree_id'))):
             attributed.add(p['id'])
@@ -324,7 +340,6 @@ def record_visits(instance, tree, resolver, reviews=None):
                     if value:
                         events.append({'type': kind, 'date': value})
             planning[p['id']] = events
-        reading = record.get('read') or {}
         by = parse_by(reading.get('by') if isinstance(reading, dict) else reading)
         if isinstance(reading, dict) and reading.get('model'):
             by = parse_by(str(reading.get('by', '')) + ' / ' + reading['model'])
@@ -351,7 +366,7 @@ def record_visits(instance, tree, resolver, reviews=None):
         witnesses = (isinstance(fields, dict) and bool(fields.get('witnesses') or fields.get('godparents'))
                      or any(s.get('role') in {'witness', 'godparent', 'godfather', 'godmother'} and s.get('written')
                             for s in record.get('subjects', []) if isinstance(s, dict)))
-        yield {'source': sid, 'people': sorted(links), 'established': established, 'links': links,
+        yield {'source': sid, 'people': sorted(links), 'established': established, 'links': links, 'place_scope': scope,
                'by': by, 'at': reading.get('at', '') if isinstance(reading, dict) else '',
                'planning_events': planning, 'references': keys,
                'act_names': act and witnesses,

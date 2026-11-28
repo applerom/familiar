@@ -14,6 +14,7 @@ import re
 import unicodedata
 
 from familiar.instance.packs import pack_file, read
+from familiar.instance.gate import boundary, shared
 
 
 def norm(value):
@@ -43,6 +44,10 @@ def form_data(value, kind=None):
 
 
 def _entries(instance):
+    return shared(instance, 'search-variant-entries', lambda: _read_entries(instance))
+
+
+def _read_entries(instance):
     rows = []
     for pack in instance.packs:
         file = pack['data'].get('pack', {}).get('files', {}).get('variants')
@@ -52,9 +57,6 @@ def _entries(instance):
     if path.exists():
         rows.extend(json.loads(path.read_text(encoding='utf-8')).get('variant', []))
     return [e | {'forms': [form_data(f, e.get('kind')) for f in e.get('forms', [])]} for e in rows]
-
-
-from familiar.instance.gate import boundary
 
 
 @boundary('research')

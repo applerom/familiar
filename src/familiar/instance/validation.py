@@ -32,7 +32,7 @@ import re
 import unicodedata
 from pathlib import Path
 
-from .gate import boundary
+from .gate import boundary, fixed_inputs
 from .research_forms import request_storage_errors
 from familiar.check_policy import decision as check_decision
 
@@ -193,17 +193,23 @@ def check(instance, *, paths=None, prefix=None):
 
 
 def _full_check(instance):
+    with fixed_inputs():
+        result = _check_and_explain(instance)
+    remember_applied(instance, result)
+    return result
+
+
+def _check_and_explain(instance):
     from .gate import evaluate
     verdict = evaluate(instance, editorial=True)
     result = verdict['forms']
     result['valid'] = not verdict['blocked']
     result['errors'] = [{'location': f['location'], 'message': f['message']} for f in verdict['findings'] if f['mode'] == 'block' and f['certainty'] == 'finding']
     result['advice'] = [f for f in verdict['findings'] if f['mode'] != 'block']
-    remember_applied(instance, result)
     if result['valid']:
-        from familiar.tree.builder import _build, read_json
+        from familiar.tree.builder import read_graph, read_json
         from familiar.tree.surnames import findings, name_findings
-        graph = _build(instance)
+        graph = read_graph(instance)
         metadata = read_json(instance.path('tree_metadata'), {})
         from familiar.research.name_key import findings as key_findings
         result['surname_findings'] = findings(graph, metadata, instance.source_language) + key_findings(instance, graph, metadata)

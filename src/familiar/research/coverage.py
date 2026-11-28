@@ -25,7 +25,7 @@ from datetime import UTC, datetime
 from typing import NamedTuple
 
 from familiar.desk.search_volume import domain, name_key
-from familiar.instance.gate import boundary
+from familiar.instance.gate import boundary, fixed_inputs
 from familiar.tree.surnames import birth_names, decisions, gender_form
 
 from .search_ledger import (METHOD, Resolver, Tree, in_ledger_form, infer_people, is_review, read_rows,
@@ -36,7 +36,7 @@ from .coverage_context import (contains, episode_fit, form_metadata, life_window
                                planning_windows, record_visits, row_people, script_of, text)
 from .search_variants import form_data
 from .coverage_quality import availability, query_issues
-from .search_plays import PlaySettings, links_to_living, query_label, source_classes
+from .search_plays import PlaySettings, links_to_living, query_label, query_places, source_classes
 
 GAP_STATES = {'access-gap', 'refused', 'not_ready', 'app_error', 'help-stop', 'coverage-gap'}
 RANK = {'none': 0, 'gap': 1, 'unrecorded': 2, 'query-dubious': 2.5, 'zero-uncontrolled': 3, 'zero-controlled': 4, 'read': 4.5, 'found': 5}
@@ -124,6 +124,28 @@ def outcome(row):
     return 'gap'
 
 
+def journal_read_places(row, kind, series):
+    from .search_map import row_readings
+
+    if kind in {'gap', 'query-dubious'}:
+        return set()
+    scope = row.get('coverage')
+    if not isinstance(scope, dict):
+        return set()
+    readings = {series[sid] for sid, years, depth, _ in row_readings(row)
+                if sid in series and years and depth}
+    if readings:
+        return readings
+    read = scope.get('read')
+    if type(read) not in (int, float) or read <= 0:
+        return set()
+    if isinstance(place := scope.get('place'), str) and place.strip():
+        return {place.strip()}
+    places = {p.strip() for p in query_places(row) if p.strip()}
+    return places if len(places) == 1 else set()
+
+
+@fixed_inputs()
 def collect(instance, *, for_plan=False):
     """The journal as person-by-source cells, plus what could not be placed."""
     tree, resolver, versions = Tree(instance), Resolver(instance), read_versions(instance)
@@ -136,6 +158,10 @@ def collect(instance, *, for_plan=False):
     cells, sources, legacy, no_people, unknown, titles, no_source = {}, {}, 0, 0, set(), {}, 0
     found_by_source, planning_events, source_access, access_journals = {}, {}, {}, {}
     reviews, observations, read_acts = {}, [], set()
+    from .search_map import read_series
+    series_places = {row['id']: row['place'] for row in read_series(instance)[1] or []}
+    untied, place_searches, place_records = Counter(), {}, []
+    place_search_rows = 0
     for path in search_files(instance):
         rows, _ = read_rows(path)
         for number, row in enumerate(rows or []):
@@ -194,6 +220,13 @@ def collect(instance, *, for_plan=False):
                 observations.append({'source': sid, 'people': people, 'kind': kind, 'row': row,
                                      'cells': [(p['id'], sid) for pid in people if (p := tree.person(pid))]})
             no_people += not bool(people)
+            if not people:
+                untied[kind] += 1
+                if places := journal_read_places(row, kind, series_places):
+                    place_search_rows += 1
+                    for place in places:
+                        place_searches.setdefault(place, Counter())[sid] += 1
+                continue
             words = row_tokens(row)
             forms = row['coverage'].get('forms') if isinstance(row.get('coverage'), dict) else None
             read = row['coverage'].get('read') if isinstance(row.get('coverage'), dict) else None
@@ -254,6 +287,10 @@ def collect(instance, *, for_plan=False):
                 if kind == 'found':
                     found_by_source[sid] = found_by_source.get(sid, 0) + 1
     for visit in record_visits(instance, tree, resolver, reviews):
+        if scope := visit['place_scope']:
+            place_records.append(scope | {'record': visit['record'], 'source': visit['source']})
+        if not visit['source']:
+            continue
         if for_plan and visit['act_names']:
             read_acts.update(pid for pid, link in visit['links'].items() if link['status'] == 'same')
         for pid, events in visit['planning_events'].items():
@@ -300,6 +337,8 @@ def collect(instance, *, for_plan=False):
             'observations': observations, 'read_acts': read_acts,
             'yield': found_by_source, 'titles': titles, 'distance': distance,
             'form_metadata': form_metadata(instance), 'planning_events': planning_events, 'source_access': source_access}
+    data.update(untied=untied, place_searches=place_searches, place_search_rows=place_search_rows,
+                place_records=place_records)
     queue_lines = {}
     if main_lines or focus_lines or prefs.overrides:
         for line in selected_lines(data):
@@ -722,6 +761,21 @@ def collateral_hints(data):
             for (pid, record), status in sorted(hints.items())]
 
 
+def untied_journal(data):
+    return {'rows': data['no_people'], 'outcomes': dict(data['untied']),
+            'rows_with_place_reading': data['place_search_rows']}
+
+
+def place_coverage(data, *, includes=None, includes_record=None):
+    places = {place: {'place': place, 'journal_rows': dict(rows), 'records': []}
+              for place, rows in data['place_searches'].items() if includes is None or includes(place)}
+    for record in data['place_records']:
+        place = record['place']
+        if includes_record is None or includes_record(record):
+            places.setdefault(place, {'place': place, 'journal_rows': {}, 'records': []})['records'].append(record)
+    return sorted(places.values(), key=lambda p: p['place'].casefold())
+
+
 def matrix(data):
     main = matrix_group(data, data['focus'])
     sources = [{'id': sid, 'title': title(data, sid), 'catalogued': not sid.startswith('~'),
@@ -736,7 +790,8 @@ def matrix(data):
                        'rows_not_in_ledger_form': data['legacy'], 'rows_without_people': data['no_people'],
                        'unknown_people': data['unknown'],
                        'rows_without_source': data['no_source']},
-            'sources': sources, 'people': main['people'], 'collateral': collateral}
+            'sources': sources, 'people': main['people'], 'collateral': collateral,
+            'place_coverage': place_coverage(data), 'untied_journal': untied_journal(data)}
 
 
 def line_surname(surname, language):
@@ -784,6 +839,10 @@ def selected_lines(data, name=None):
         return lines
     keys = surname_keys(name, data['language'])
     matches = [line for line in lines if line.chain[0] == name or keys & line.forms]
+    if not matches:
+        names = {norm(key) for key in keys}
+        variants = names.union(*(data['tree'].surname_groups.get(key, ()) for key in names))
+        matches = [line for line in lines if any(norm(form) in variants for form in line.forms)]
     if not matches:
         raise ValueError(f'unknown family line: {name}; list names with research coverage --lines')
     return matches
@@ -986,13 +1045,105 @@ def markdown_lines(view, language='en'):
     return '\n'.join(out)
 
 
+def home_coverage(instance, data, name):
+    from . import access_ledger as access
+    from .research_plan import place_entries
+    from .search_map import leading_places, line_groups, place_match
+
+    data['place_entries'] = place_entries(instance)
+    _, ledger, _ = access.read(instance)
+    words, lang = access.words_for(instance), data['language']
+    lines = []
+    for group in line_groups(selected_lines(data, name)):
+        line = group[0]
+        places, known = {}, set()
+        forms = set().union(*(one.forms for one in group))
+        for one in group:
+            members = line_members(data, one.chain)
+            matched = access.line_places(data, ledger, one, members)
+            places.update((p['place'], p) for p in matched)
+            if name:
+                known.update(access.line_place_names(data, members, leading_places(data, one, members)))
+        books = [dict(row, place=p['place']) for p in places.values() for row in access.in_order(p['books'])
+                 if row['state'] == 'home' and not access.fully_read(row)]
+        label = line.surname or line.chain[0]
+        entry = {'line': label, 'start': line.chain[0], 'open_cells': len(books)}
+        if name:
+            known.update(places)
+
+            def includes(place):
+                return any(place_match(place, p) for p in known)
+
+            entry.update(books=books, place_coverage=place_coverage(data, includes=includes,
+                includes_record=lambda r: includes(r['place']) or bool(surname_keys(r['surname'], lang) & forms)))
+        lines.append(entry)
+    view = {'schema': 1, 'lines': lines, 'untied_journal': untied_journal(data)}
+    if not name:
+        view['place_coverage'] = place_coverage(data)
+    return view, markdown_home_coverage(view, words, lang, detail=bool(name))
+
+
+def markdown_home_coverage(view, words, language, *, detail):
+    ru = language == 'ru'
+    out = ['# Из дома: книги и источники с открытым чтением' if ru else '# Coverage: open from home', '']
+    for line in view['lines']:
+        out.append(f"{'##' if detail else '-'} {line['line']} · {line['open_cells']}")
+        if not detail:
+            continue
+        for book in line['books']:
+            out.append(f"- [{book['id']}] {book['place']} · {access_title(book, words, language)}")
+        if not line['books']:
+            out.append('В учёте нет открытых строк.' if ru else 'No open entries in the access ledger.')
+        out += markdown_place_coverage(line['place_coverage'], language, detail=True)
+        out.append('')
+    if not detail:
+        out += ['', 'Одна строка учёта — одна ячейка. Подробнее: research coverage --line ИМЯ.' if ru else
+                'Each access-ledger entry is one cell. Details: research coverage --line NAME.']
+        out += markdown_place_coverage(view['place_coverage'], language, detail=False)
+    return '\n'.join([*out, '', journal_summary(view['untied_journal'], ru)])
+
+
+def access_title(book, words, language):
+    from .access_ledger import say, state_words, title
+
+    parts = [f'{title(book, words, language)} — {state_words(book, words, language)}', say(book.get('look_for'), language)]
+    return ' · '.join(filter(None, parts))
+
+
+def markdown_place_coverage(places, language, *, detail):
+    if not places:
+        return []
+    ru = language == 'ru'
+    out = ['', '### Чтение по месту' if ru else '### Place readings']
+    for place in places:
+        searches, records = sum(place['journal_rows'].values()), len(place['records'])
+        if not detail and not records:
+            continue
+        label = f'{searches} строк журнала, {records} записей' if ru else f'{searches} journal rows, {records} records'
+        out.append(f"- {place['place']} · {label}")
+        if detail:
+            out.extend(f"  - {record['surname']} · `{record['record']}`" for record in place['records'])
+    return out if len(out) > 2 else []
+
+
+def journal_summary(journal, ru):
+    total, placed = journal['rows'], journal['rows_with_place_reading']
+    gaps = journal['outcomes'].get('gap', 0)
+    other = total - placed - gaps
+    if ru:
+        return (f'Журнал: {total} строк без привязки к человеку. Из них {placed} дают чтение в указанном месте. '
+                f'{gaps} отмечают разрыв доступа или охвата. Ещё {other} — общие поиски или строки без места либо объёма чтения. '
+                'Охват целой книги берётся из учёта доступа.')
+    return (f'Journal: {total} rows without a tree person. Of these, {placed} document reading at a named place. '
+            f'{gaps} record an access or coverage gap. Another {other} are broad searches or lack a place or reading scope. '
+            'Book completion comes from the access ledger.')
+
+
 @boundary('diagnostic')
-def coverage(instance, *, person=None, queue=None, lines=False, save=False, line=None):
+def coverage(instance, *, person=None, queue=None, lines=False, save=False, line=None, family=False):
     """Read a coverage view; save always writes the matrix and complete queue."""
     data = collect(instance)
-    if line is not None:
-        selected_lines(data, line)
-    view = matrix(data) if save or (not lines and not person and queue is None) else None
+    view = matrix(data) if save or family else None
     if save:
         from familiar.instance.writer import mutate
         saved = view | {'recheck': recheck(data)}
@@ -1008,4 +1159,7 @@ def coverage(instance, *, person=None, queue=None, lines=False, save=False, line
         excluded = sum(bool(r) for r in data['not_applicable'].values())
         return rows, '\n'.join(markdown_queue(rows, f'Recheck queue: top {len(rows)}') +
                                ['', f'Not applicable by epoch/region: {excluded} cells (see matrix JSON totals).'])
-    return view, markdown_matrix(view)
+    if family:
+        return view, '\n'.join([markdown_matrix(view), '', journal_summary(view['untied_journal'], False),
+                               *markdown_place_coverage(view['place_coverage'], data['language'], detail=True)])
+    return home_coverage(instance, data, line)
