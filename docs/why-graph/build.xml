@@ -76,6 +76,7 @@
   <MODULE_READER_SERVER ID="MOD-READER-SERVER" FILE="src/familiar/reader/server.py" STATE="IMPLEMENTED"/>
   <MODULE_READER_EXPERIENCES ID="MOD-READER-EXPERIENCES" FILE="src/familiar/reader/experiences.py" STATE="IMPLEMENTED">
     <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_play_in_flow">A game cannot deliver a route on an image absent from its displayed chapter.</INVARIANT>
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_play_in_flow">A public game is withheld when its text draws from a withheld paper.</INVARIANT>
   </MODULE_READER_EXPERIENCES>
   <MODULE_READER_BOOK ID="MOD-READER-BOOK" FILE="src/familiar/reader/book.py" STATE="IMPLEMENTED">
     <!-- Consume the factory's current seal; do not duplicate its family gate before flat delivery. -->
@@ -128,6 +129,7 @@
   <MODULE_DESK_ACCOUNTS ID="MOD-DESK-ACCOUNTS" FILE="src/familiar/desk/accounts.py" STATE="IMPLEMENTED"/>
   <MODULE_DESK_ACCESS ID="MOD-DESK-ACCESS" FILE="src/familiar/desk/aws/accounts-access.py" STATE="IMPLEMENTED"/>
   <MODULE_DESK_BUILD ID="MOD-DESK-BUILD" FILE="src/familiar/desk/build.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Both signed-in desk modes preserve described frames from the local display.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Both hosted modes exclude owner receipts from the common feedback projection.</INVARIANT>
     <INVARIANT REVIEW="engine lead">A public-reader fictional demo wraps the accepted public projection; it never substitutes the host-private reader.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Every desk language renders the same checked correspondence projection.</INVARIANT>

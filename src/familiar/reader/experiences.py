@@ -4,6 +4,7 @@
 # INVARIANTS:
 # - public routes contain only visible stops and attributed deceased participants [review: engine lead]
 # - games cannot restore a document or image removed from their enclosing chapter [review: engine lead]
+# - public games inherit the exclusion of the papers they draw from [review: engine lead]
 # - interactive data never executes family-supplied code [review: engine lead]
 # CHANGES_WITH:
 # - MOD-PUBLICATION (typed atlas, game and panorama fields)
@@ -36,6 +37,24 @@ def chapter_game(chapter, game):
     result = copy.deepcopy(game)
     _protect_route(chapter, result)
     return result
+
+
+def game_sources(game):
+    from familiar.instance.narrative import text_sources
+
+    def sources(value):
+        if isinstance(value, dict):
+            yield from text_sources(value)
+            for key, child in value.items():
+                if key != 'sources':
+                    yield from sources(child)
+        elif isinstance(value, list):
+            for child in value:
+                yield from sources(child)
+
+    yield from sources(game)
+    if ref := game.get('truth', {}).get('record'):
+        yield ref
 
 
 def _visible_route(route, images):

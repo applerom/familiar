@@ -108,6 +108,21 @@ living person's document to a deceased person's card cannot release it. A scan,
 its reading and local source link share the same exclusion. Literal text excerpts
 remain scoped to their declared fields and have no full-document link.
 
+Public output inherits a paper's exclusion in attributed prose and games. Use
+`sources` on prose blocks, their alternatives or game text objects to identify the
+records or tree sources they draw from. A game also inherits the exclusion of a
+paper referenced by its reward.
+
+The scan catches literal wording, dates in digits and words, and distinctive
+words from withheld papers. Independent reading is needed to catch an author’s
+free retelling. The scan expands full dates found in digits or with a numeric day
+and year and a written month. It uses the configured reader languages, with
+built-in month forms for English, Polish, Russian and Swedish.
+
+The signed-in family desk shows described frames while pictures are being drawn
+with either shared or personal login. Public feeds and reader export require
+finished frames.
+
 Family editorial cards are declared by `paths.edition` (PRD FORMS). Both tree and
 reader delivery apply the same card decisions before enforcing privacy. The family display includes stories, photographs and compound
 name/date explanations for everyone. Public output limits living and unknown

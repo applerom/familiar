@@ -612,6 +612,17 @@ def attribute_documents(instance, graph, *, family_display=False):
                     document(image, 'image', people, chapter=True)
         for row in node.get('facts', []):
             fact(row, people)
+        if not family_display:
+            from .narrative import text_sources
+            from familiar.reader.experiences import game_sources
+            refs = {ref for blocks in node.get('_prose', {}).values() for block in blocks
+                    for passage in (block, block.get('otherwise', {})) for ref in text_sources(passage)}
+            for placement in [node, *(beat.get('do', {}) for beat in node.get('flow', []))]:
+                if game := placement.get('game'):
+                    refs.update(game_sources(game))
+            for ref in (refs & paths.keys()) - sources.keys():
+                # A derivative depends on its paper even when the chapter omits the scan.
+                document({'record': ref}, 'source')
         for child in node.get('extras', []) + node.get('chapters', []):
             story(child, people)
 

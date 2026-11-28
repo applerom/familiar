@@ -448,6 +448,8 @@ explanation or chapter `kind` becomes reader text. Optional `people` on each
 place, fact, variant, extra, link or children's object permits independently
 attributed parts to survive; absent attribution conservatively inherits chapter
 people. This authoring attribution is not exported as prose.
+Optional `sources` on a block or its alternative names the corpus records or
+tree sources it draws from. Public prose inherits their exclusions.
 Unsplit prose defaults to chapter people. Feed `prose` uses the same blocks
 for title, lead, period and line; private host text retains them all. A name match only enters the review
 worklist; meaning still requires independent reading. Neither command sends or publishes.
@@ -1207,7 +1209,8 @@ name the matching asset key under `spots` or `panos` for the chapter picture or
 a figure. The short children's text uses its own paragraphs and keeps the
 order of the chapter's beats. Blank lines mark the author's paragraphs.
 Continuous children's prose can be split at sentence boundaries for the layout.
-An external release names the chapters whose frames need replacing or removal.
+Public feed and reader builds name the chapters whose frames need replacing or
+removal. The signed-in family desk shows the described frames with either login.
 
 A game with one step and one plain answer opens that answer in place. Give it a
 `route` in its entry under `games` to make the answer follow a route on an

@@ -8,6 +8,7 @@
 # - docs/reader-export.md (print command and private review preparation)
 # :END_MODULE_CONTRACT
 import json
+import sys
 from pathlib import Path
 
 from familiar.instance.model import Instance
@@ -69,6 +70,9 @@ def run(args):
         result = (export(Instance(args.root), args.output, host_private=args.host_private)
                   if args.reader_action == 'export' else verify(Instance(args.root), args.output))
         print(json.dumps({'schema_version': result['schema_version'], 'state': result['state'], 'files': len(result['files'])}))
+        if args.reader_action == 'export' and result['state'] == 'clean':
+            from familiar.instance.publication import PUBLIC_SCAN_SCOPE
+            print(PUBLIC_SCAN_SCOPE, file=sys.stderr)
         return 0
     except (ValueError, OSError, KeyError, TypeError) as exc:
         print(str(exc))

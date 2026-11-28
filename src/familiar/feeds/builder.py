@@ -236,6 +236,8 @@ class _Feed:
             target[field] = []
             for block in blocks:
                 built = self.attributed(block, {'text': row(block['text'])}, where, block=True)
+                if 'sources' in block:
+                    built['sources'] = block['sources']
                 if 'people' not in built:
                     raise ValueError('prose block needs explicit people')
                 if 'otherwise' in block:
@@ -243,6 +245,8 @@ class _Feed:
                     if 'people' not in alternative:
                         raise ValueError('otherwise passage needs explicit people')
                     built['otherwise'] = self.attributed(alternative, {'text': row(alternative['text'])}, where, block=True)
+                    if 'sources' in alternative:
+                        built['otherwise']['sources'] = alternative['sources']
                 target[field].append(built)
             output[field] = {lang: '\n\n'.join(b['text'].get(lang, '') for b in target[field]) for lang in context.get().languages}
 

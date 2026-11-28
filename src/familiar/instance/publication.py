@@ -22,6 +22,7 @@
 # - MOD-FAMILY-WRITER
 # - MOD-SUBJECT-CLOSURE
 # - MOD-NARRATIVE-DISCLOSURE (public narrative projection)
+# - MOD-PAPER-DATES
 # - MOD-TREE-SURNAMES (clan display is applied after editorial name patches)
 # - docs/PRD.md#FORMS (reader card surface dictionary and disclosure policies)
 # - docs/gate.md
@@ -320,9 +321,9 @@ def restrict_graph(instance, graph, *, host_private=False, paper_words=None):
         if (any(life_status(known[pid], privacy) != 'dead' for pid in resolved.people) or
                 any(map(protected_record, resolved.records.values()))):
             if paper_words is not None:
-                paper_words.withheld.update(paper_text(source))
+                paper_words.withhold(source)
                 for rid, record in resolved.records.items():
-                    paper_words.withheld.update(corpus_paper_words(instance, rid, record))
+                    paper_words.withhold_record(corpus_paper_words(instance, rid, record))
             graph['sources'][sid] = {key: val for key, val in source.items() if key in {'id', 'kind'}}
     for collection in ('edges', 'associations'):
         for edge in graph.get(collection, []):
@@ -330,14 +331,10 @@ def restrict_graph(instance, graph, *, host_private=False, paper_words=None):
             if any(pid and life_status(known.get(pid, {'id': pid}), privacy) != 'dead' for pid in members):
                 for key in ('text', 'note', 'basis'):
                     edge.pop(key, None)
-    if 'feeds' in graph:
-        from .narrative import restrict_feed as project_narrative
-        graph['feeds'] = [project_narrative(instance, feed) for feed in graph['feeds']]
     return graph
 
 
 def restrict_feed(instance, feed, *, paper_words=None):
-    from .narrative import restrict_feed as project_narrative
     from .subjects import attribute_documents
     from familiar.tree.builder import read_graph
     from familiar.tree.contributions import _clone
@@ -348,8 +345,7 @@ def restrict_feed(instance, feed, *, paper_words=None):
     graph = _clone(base)
     graph['feeds'] = [copy.deepcopy(feed)]
     withheld = attribute_documents(instance, graph)
-    return project_narrative(instance, private_graph(
-        instance, graph, host_private=False, withheld=withheld, disclosed=paper_words)['feeds'][0])
+    return private_graph(instance, graph, host_private=False, withheld=withheld, disclosed=paper_words)['feeds'][0]
 
 
 def public_references(instance, value, *, graph=None):
@@ -523,18 +519,54 @@ def quotation_filter(instance, records):
 
 _PAPER_TEXT = ('caption', 'title', 'alt', 'description', 'read', 'reading', 'text',
                'date', 'place', 'place_text', 'where', 'fields', 'parts', 'snippets', 'events')
-_FULL_DATE = re.compile(r'(?<!\d)\d{4}[-./]\d{1,2}[-./]\d{1,2}(?!\d)|'
-                        r'(?<!\d)\d{1,2}[./-]\d{1,2}[./-]\d{4}(?!\d)')
+_LABEL_WORD = re.compile(r'(?<!\w)[^\W\d_]{6,}(?!\w)')
+PUBLIC_SCAN_SCOPE = ('The scan catches literal wording, dates in digits and words, and distinctive words from '
+                     'withheld papers. Independent reading is needed to catch an author’s free retelling.')
+_COMMON_LABEL_WORDS = set('''
+    archive archives archival baptism baptisms certificate certificates census censuses confirmation
+    description document documents entry entries fictional historical invented maiden marriage marriages
+    participant passenger passengers register registers registration registry residence source sources visitor witness
+    dokument dokumenty księga księgi małżeństwo małżeństwa metryka metryki protokół rejestr świadectwo urodzenia urodzenie
+    ведомость выписка документ документы записка запись крещение метрическая приход протокол регистрация
+    реабилитации реабилитация рождения рождение свидетельство справка список
+    arkivet dokument födelse födelsen församling kyrkbok protokoll registret vigsel vittne
+'''.split()) | {key.casefold() for schema in SCHEMAS.values() for key in schema}
 
 
 @dataclass
 class PaperWords:
     withheld: set[str] = field(default_factory=set)
     published_literals: set[str] = field(default_factory=set)
+    withheld_labels: set[str] = field(default_factory=set)
+    open_words: set[str] = field(default_factory=set)
+    published_dates: set[str] = field(default_factory=set)
+
+    def withhold(self, *nodes):
+        self.withheld.update(paper_text(*nodes))
+        self.withheld_labels.update(label_words(*nodes))
+
+    def withhold_record(self, words):
+        terms, labels, dates = words
+        self.withheld.update(terms)
+        self.withheld_labels.update(labels)
+        self.published_dates.update(dates)
+        return terms
+
+
+def label_words(*nodes):
+    from familiar.checks.engine import strings
+
+    for node in nodes:
+        for label in strings([node.get('title'), node.get('caption')]):
+            for match in _LABEL_WORD.finditer(label):
+                word = match[0]
+                if len(word) >= 8 or (word[0].isupper() and (match.start() or len(label.strip()) == len(word))):
+                    yield plain_text(word).casefold()
 
 
 def paper_text(*nodes):
     from familiar.checks.engine import strings
+    from .paper_dates import NUMERIC_DATE
 
     for node in nodes:
         for key in _PAPER_TEXT:
@@ -543,7 +575,7 @@ def paper_text(*nodes):
                 yield from paper_text(*(part for part in values or [] if isinstance(part, dict)))
                 continue
             for value in strings([values]):
-                yield from _FULL_DATE.findall(value)
+                yield from NUMERIC_DATE.findall(value)
                 for line in value.splitlines():
                     line = plain_text(line.strip())
                     if sum(c.isalnum() for c in line) >= 4:
@@ -591,9 +623,12 @@ def corpus_paper_words(instance, rid, record):
     # A deceased person's independently projected event can cite a full
     # sheet we withhold. Its date says nothing about the sheet's other people.
     _, places, dates, dated_sources = public_paper_context(instance)
-    shared = set() if protected_record(record) else places | dates | dated_sources.get(rid, set())
+    protected = protected_record(record)
+    independent_dates = set() if protected else dated_sources.get(rid, set())
+    shared = set() if protected else places | dates | independent_dates
     strict = {k: record[k] for k in ('title', 'caption', 'reading') if k in record}
-    return set(paper_text(strict)) | (set(paper_text({k: v for k, v in record.items() if k not in strict})) - shared)
+    terms = set(paper_text(strict)) | (set(paper_text({k: v for k, v in record.items() if k not in strict})) - shared)
+    return terms, set(label_words(record)), independent_dates
 
 
 def word_pattern(words):
@@ -604,10 +639,16 @@ def check_public_files(instance, files, words):
     """Verify the final serialized payload, including filenames, markup and asset bytes."""
     if not words.withheld:
         return
-    names = public_paper_context(instance)[0]
+    from .paper_dates import date_variants
+
+    names, places, _, _ = public_paper_context(instance)
     allowed = {name.casefold() for name in names if not any(c.isdigit() for c in name)}
     allowed.update(term.casefold() for term in words.published_literals)
     hidden_words = {term for term in words.withheld if term.casefold() not in allowed}
+    hidden_words.update(date_variants(instance, hidden_words, allowed | words.published_dates))
+    open_words = words.open_words | {match[0].casefold() for term in allowed | places
+                                     for match in _LABEL_WORD.finditer(term)}
+    hidden_words.update(words.withheld_labels - open_words - _COMMON_LABEL_WORDS)
     if not hidden_words:
         return
     variants = {encoded for term in hidden_words for encoded in (
@@ -616,7 +657,7 @@ def check_public_files(instance, files, words):
     pattern = word_pattern(variants)
     binary = re.compile(rb'(?<!\w)(?:' + b'|'.join(re.escape(term.encode('utf-8')) for term in variants) + rb')(?!\w)', re.I)
     for name, raw in files.items():
-        hit = (pattern.search(raw.decode('utf-8')) if name.endswith(('.json', '.html', '.svg', '.txt', '.js', '.css'))
+        hit = (pattern.search(plain_text(raw.decode('utf-8'))) if name.endswith(('.json', '.html', '.svg', '.txt', '.js', '.css'))
                else binary.search(raw))
         if pattern.search(name) or hit:
             raise ValueError(f'TRUST-06: {name} contains wording from a withheld paper; review the public material')
@@ -670,6 +711,7 @@ def private_graph(instance, graph, *, host_private=True, withheld=(), amendments
             from familiar.checks.engine import strings
             if record := resolved.records.get(node.get('record')):
                 readings = set(strings([record.get('reading'), record.get('fields')]))
+                disclosed.open_words.update(label_words(record))
                 disclosed.published_literals.update(paper_text({'read': [
                     part['read'] for part in [node, *node.get('parts', []), *node.get('snippets', [])]
                     if isinstance(part.get('read'), str) and part['read'] in readings]}))
@@ -697,11 +739,18 @@ def private_graph(instance, graph, *, host_private=True, withheld=(), amendments
         from .gate import shared
 
         for sid in blocked_papers:
-            disclosed.withheld.update(paper_text(sources[sid]))
+            disclosed.withhold(sources[sid])
         for rid in records:
-            paper_terms[rid] = shared(instance, ('withheld-paper-words', rid),
-                                      lambda: corpus_paper_words(instance, rid, load(record_path(instance, rid), {})))
-            disclosed.withheld.update(paper_terms[rid])
+            def terms():
+                record = load(record_path(instance, rid), {})
+                return corpus_paper_words(instance, rid, record)
+            paper_terms[rid] = disclosed.withhold_record(shared(instance, ('withheld-paper-words', rid), terms))
+        for sid in sources.keys() - dropped_sources:
+            source = sources[sid]
+            if rid := source.get('record'):
+                if ('record', rid) not in withheld and (path := record_path(instance, rid)).is_file():
+                    labels = shared(instance, ('open-paper-labels', rid), lambda: set(label_words(load(path, {}))))
+                    disclosed.open_words.update(labels)
     quotes_record = quotation_filter(instance, records)
     inline_assets = re.compile(r'''(?:src=["']|href=["']|\]\()(/[^"'\s)<>]+)''')
 
@@ -756,7 +805,7 @@ def private_graph(instance, graph, *, host_private=True, withheld=(), amendments
         omit = exclude(node, key)
         if omit and disclosed is not None and (key == 'records' or node.get('record')
                 or node.get('kind') == 'document-scan'):
-            disclosed.withheld.update(paper_text(node, node.get('_paper', {})))
+            disclosed.withhold(node, node.get('_paper', {}))
         return omit
 
     def exclude(node, key):
@@ -788,9 +837,17 @@ def private_graph(instance, graph, *, host_private=True, withheld=(), amendments
             return unsafe_document(node, 'document' if key == 'records' else 'image', chapter=key in {'records', 'figures', 'picture'})
         return False
 
-    for feed in graph.get('feeds', []) if host_private else []:
+    if 'feeds' in graph:
         from .narrative import restrict_feed
-        feed.update(restrict_feed(instance, feed, host_private=True))
+
+        @cache
+        def withheld_source(ref):
+            if blocked_id(ref) or ref in dropped_sources or ref in blocked_assets:
+                return True
+            return (ref not in sources and record_path(instance, ref).is_file()
+                    and unsafe_document({'record': ref}, 'source'))
+        graph['feeds'] = [restrict_feed(instance, feed, host_private=host_private, withheld=withheld_source)
+                          for feed in graph['feeds']]
     if amendments and instance.path('amendments').is_dir():
         from familiar.tree.amendments import apply
         from .memory_visibility import require_displayable, select

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.67.2 — 28 November 2026
+
+- We keep questions and games tied to their papers. The public packet scan
+  catches dates in digits and words and distinctive words from withheld labels.
+  An independent reading still covers an author's free retelling.
+- We show described frames on the signed-in family desk while the pictures are
+  being drawn. Public feeds and reader exports still require finished frames.
+
 ## 0.67.1 — 28 November 2026
 
 - We keep diagnostics, input paths and review records out of public packets.

@@ -26,8 +26,9 @@ def edit(family, relative, change):
 def test_draft_frames_stay_home(family):
     edit(family, 'feeds/ferrolho/chapters.json', lambda chapters: chapters[0]['flow'].append({
         'after': 1, 'placeholder': {'kind': 'map', 'ratio': [4, 3], 'says': 'The island and its harbour'}}))
-    with pytest.raises(ValueError, match='home-only.*ferrolho/amaro-1921'):
-        publication(family, 'reader', for_review=True)
+    for kind in ('feeds', 'reader'):
+        with pytest.raises(ValueError, match='home-only.*ferrolho/amaro-1921'):
+            publication(family, kind, for_review=True)
 
 
 def test_play_in_flow(family):
@@ -38,6 +39,22 @@ def test_play_in_flow(family):
         'after': 1, 'do': {'kind': 'game', 'key': 'riddle'}}))
     chapter = json.loads(publication(family, 'reader-private').files()['graph.json'])['feeds'][0]['chapters'][0]
     assert chapter['flow'][-1] == {'after': 1, 'do': {'kind': 'game', 'key': 'riddle', 'game': game}}
+    record = 'closed-note'
+    (family.path('records') / (record + '.json')).write_text(json.dumps({
+        'id': record, 'kind': 'home-paper', 'title': 'Private note', 'source': {'kind': 'home', 'holder': 'host'},
+        'language': ['en'], 'fields': {'Note': 'A private line about tomorrow.'}, 'privacy': 'living', 'fictional': True,
+        'subjects': [{'person': 'p-daniel', 'role': 'named'}],
+    }), encoding='utf-8')
+    edit(family, 'feeds/ferrolho/play.json',
+         lambda play: play['games']['riddle']['truth'].update(sources=[record]))
+    edit(family, 'feeds/ferrolho/chapters.json', lambda cs: cs[0]['prose'].update(ask=[{
+        'text': 'What else was in the village?', 'people': ['AMARO'], 'sources': [record],
+        'otherwise': {'text': 'What else do you remember?', 'people': ['AMARO']},
+    }]))
+    for kind, name in [('feeds', 'feeds.json'), ('reader', 'graph.json')]:
+        public = publication(family, kind, for_review=True).files()[name]
+        assert b'What else was in the village?' not in public and b'What else do you remember?' in public
+        assert b'To the mainland' not in public
 
 
 def test_f1_shown_reference_resolves(family):
@@ -359,7 +376,7 @@ def test_f7_not_found_requires_read_coverage(family):
 def test_f8_review_binds_exact_bytes(family, tmp_path):
     birthday = '1980-04-17'
     location = 'feeds/ferrolho/chapters.json'
-    edit(family, location, lambda cs: cs[0]['records'][0].update(title='Private paper dated ' + birthday))
+    edit(family, location, lambda cs: cs[0]['records'][0].update(title='Private paper of Cinderquill dated ' + birthday))
     material = publication(family, 'feeds', for_review=True)
     assert material.manifest['state'] == 'preview'
     ticket = review_ticket(material)
@@ -372,9 +389,11 @@ def test_f8_review_binds_exact_bytes(family, tmp_path):
     assert {p.name for p in generation(family, out).iterdir()} == set(packet)
     assert json.loads(packet['status.json'])['ferrolho'] == {'output': {'state': 'clean', 'unreviewed': []}}
     assert all(birthday.encode() not in raw for raw in packet.values())
-    edit(family, location, lambda cs: cs[0]['prose']['text'][0].update(text='A date copied elsewhere: ' + birthday))
-    with pytest.raises(ValueError, match=r'feeds\.json contains wording from a withheld paper'):
-        publication(family, 'feeds')
+    for fragment in (birthday, '04/17/1980', 'seventeenth of April nineteen eighty', 'Cinderquill'):
+        edit(family, location, lambda cs: cs[0]['prose']['text'][0].update(text='Copied wording: ' + fragment))
+        for kind, name in [('feeds', 'feeds'), ('reader', 'graph')]:
+            with pytest.raises(ValueError, match=rf'{name}\.json contains wording from a withheld paper'):
+                publication(family, kind)
     edit(family, location, lambda cs: cs[0]['prose']['text'][0].update(text='Edited while reading'))
     with pytest.raises(ValueError, match='review material changed'):
         attest(family, 'feeds', reviewer='reader', author='writer', ticket=ticket)

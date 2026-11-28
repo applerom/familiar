@@ -397,8 +397,6 @@ def publication(instance, kind, feed=None, *, for_review=False, tree_enrich=None
             return result
         content = graph if kind == 'reader' else data
         review = _review_manifest(active, _review_units(active, kind, content, files), uses)
-        if kind == 'reader' and not for_review and review['state'] == PREVIEW:
-            raise GateBlocked('Unreviewed reader pages: ' + ', '.join(review['unreviewed']))
         if kind == 'reader':
             data['state'] = review['state']
             files['bundle.json'] = encode(data)
@@ -410,6 +408,8 @@ def publication(instance, kind, feed=None, *, for_review=False, tree_enrich=None
                 reports = {'_about': 'Build status of an invented family.', 'fictional': True, **reports}
             files['status.json'] = (json.dumps(reports, ensure_ascii=False, allow_nan=False, sort_keys=True, indent=2) + '\n').encode()
         check_public_files(active, files, paper_words)
+        if kind == 'reader' and not for_review and review['state'] == PREVIEW:
+            raise GateBlocked('Unreviewed reader pages: ' + ', '.join(review['unreviewed']))
         review['kind'] = kind
         review['feed'] = feed
         review['languages'] = list(active.languages)

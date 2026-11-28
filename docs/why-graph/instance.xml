@@ -144,6 +144,8 @@
     <REL TYPE="DEPENDS_ON" TARGET="MOD-OUTPUT-REVIEW"/>
   </MODULE_FAMILY_WRITER>
   <MODULE_PUBLICATION ID="MOD-PUBLICATION" FILE="src/familiar/instance/publication.py" STATE="IMPLEMENTED">
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_f8_review_binds_exact_bytes">Public packets refuse withheld-paper wording, including dates in words and distinctive label words.</INVARIANT>
+    <REL TYPE="DEPENDS_ON" TARGET="MOD-PAPER-DATES"/>
     <INVARIANT REVIEW="engine lead">The owner correspondence seal declares ranked fields; stored aims and migrated letter originals have no reader field.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Spouse union weights reach the reader unchanged.</INVARIANT>
     <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_photo_treatment_stays_local_for_living_subject">Restorations refuse living or unknown subjects everywhere and require original frames and version recipes; deceased pairs reach both views.</INVARIANT>
@@ -164,7 +166,11 @@
     <REL TYPE="DEPENDS_ON" TARGET="MOD-SUBJECT-CLOSURE"/>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-NARRATIVE-DISCLOSURE"/>
   </MODULE_PUBLICATION>
+  <MODULE_PAPER_DATES ID="MOD-PAPER-DATES" FILE="src/familiar/instance/paper_dates.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Full calendar dates have numeric and reader-language forms.</INVARIANT>
+  </MODULE_PAPER_DATES>
   <MODULE_NARRATIVE_DISCLOSURE ID="MOD-NARRATIVE-DISCLOSURE" FILE="src/familiar/instance/narrative.py" STATE="IMPLEMENTED">
+    <INVARIANT REVIEW="engine lead">Public prose blocks and games inherit restrictions from their declared papers.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Public exclusions follow the active person’s life classification; remaining papers stay visible when paragraphs are removed.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Instance check locates prose with disclosure cues and missing paragraph attribution; the author reviews its meaning.</INVARIANT>
   </MODULE_NARRATIVE_DISCLOSURE>

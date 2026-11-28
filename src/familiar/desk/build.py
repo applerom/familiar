@@ -8,6 +8,7 @@
 # - shell or desk wording updates consume the existing private reader without exporting family data again [review: engine lead]
 # - desk assembly depends on host authorization and family inputs, never a publication target [review: engine lead]
 # - shared hosted projection omits correspondence pages, navigation and receipts [review: engine lead]
+# - both signed-in desk modes preserve described frames from the local display [review: engine lead]
 # - personal staging also removes correspondence receipts from the common feedback file [review: engine lead]
 # - local serving pins verified bytes, reloads a changed build record and refuses changed file-set metadata [review: engine lead]
 # - reader receipts use only explicit status and reply fields bound to the assembled mark bytes [review: engine lead]
@@ -60,14 +61,14 @@ ICONS = {
 }
 
 
-def hosted_files(files, *, personal, feedback_ids=(), photos=None, fictional_draft=False):
+def hosted_files(files, *, personal, feedback_ids=(), photos=None, allow_draft_frames=False):
     from familiar.feeds.flow import require_finished
 
     from .feed_strip import PAGE as STRIP_PAGE
 
     from familiar.instance.gallery import external_faces
     graph = json.loads(files['graph.json']) if 'graph.json' in files else {}
-    if not fictional_draft:
+    if not allow_draft_frames:
         require_finished(graph.get('feeds', []))
     projected, cuts, originals = external_faces(graph, photos or {}, files.__getitem__)
     result = {name: raw for name, raw in files.items()
@@ -489,7 +490,7 @@ def export_demo(instance, out, *, public_reader=False):
         bundle = assemble(instance)
     from familiar.instance.gallery import photographs
     files = hosted_files(bundle.files, personal=True, photos=photographs(instance),
-                         fictional_draft=not public_reader)
+                         allow_draft_frames=not public_reader)
     # Personal desk scripts require a feedback/auth server. The public demo has
     # neither; retain only the reader, investigation and their static navigation.
     omitted = {'desk/desk.js', 'desk/session.js', 'desk/tree-add.js', 'desk/tree-add.css',

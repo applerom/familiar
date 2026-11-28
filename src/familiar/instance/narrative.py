@@ -3,6 +3,7 @@
 # PRD_REF: docs/PRD.md#FORMS
 # INVARIANTS:
 # - unattributed nested prose conservatively inherits its chapter's subjects [review: engine lead]
+# - public prose and games inherit the protection of their declared papers [review: engine lead]
 # - protected canonical names in feed signatures and tree nodes exclude inferred components [review: engine lead]
 # - instance check names passages with missing privacy attribution separately from restricted blocks [review: engine lead]
 # CHANGES_WITH:
@@ -85,8 +86,16 @@ def prose_review(instance, feed):
                             yield where, f'{field} item {index}: {why}; attribute its people or keep only names and kinship'
 
 
-def restrict_feed(instance, feed, *, host_private=False):
+def text_sources(value):
+    sources = value.get('sources', [])
+    if not isinstance(sources, list) or any(not isinstance(ref, str) or not ref for ref in sources):
+        raise ValueError('Narrative sources must be a list of record or tree source IDs')
+    return sources
+
+
+def restrict_feed(instance, feed, *, host_private=False, withheld=lambda ref: False):
     from familiar.checks.engine import _known_people, life_status, load
+    from familiar.reader.experiences import game_sources
 
     from .publication import confirmed_name
     privacy, known = load(instance.path('privacy'), {}), _known_people(instance)
@@ -126,6 +135,13 @@ def restrict_feed(instance, feed, *, host_private=False):
             for child in value:
                 nodes(child)
 
+    def show(block):
+        return not restricted(block['people']) and (
+            host_private or not any(map(withheld, text_sources(block))))
+
+    def withhold_game(game):
+        return not host_private and any(map(withheld, game_sources(game)))
+
     for chapter in [feed, *feed.get('chapters', [])]:
         defaults = chapter.get('people', [])
         nodes(chapter.get('tree', {}))
@@ -134,12 +150,11 @@ def restrict_feed(instance, feed, *, host_private=False):
             if blocks is not None:
                 shown = []
                 for block in blocks:
-                    ids = restricted(block['people'])
-                    if not ids:
+                    if show(block):
                         shown.append(block['text'])
                         continue
                     alternative = block.get('otherwise')
-                    if alternative and not restricted(alternative['people']):
+                    if alternative and show(alternative):
                         shown.append(alternative['text'])
                 if field == 'text' and len(shown) != len(blocks):
                     # Paragraph positions belonged to the complete story. The
@@ -152,7 +167,7 @@ def restrict_feed(instance, feed, *, host_private=False):
                     chapter['kids']['text'] = chapter[field]
             elif chapter.get(field) and restricted(defaults):
                 chapter.pop(field)
-        for field in ('facts', 'variants', 'places', 'extras', 'links', 'kids', 'game'):
+        for field in ('facts', 'variants', 'places', 'extras', 'links', 'kids'):
             if not chapter.get(field):
                 continue
             items = chapter[field] if isinstance(chapter[field], list) else [chapter[field]]
@@ -165,9 +180,15 @@ def restrict_feed(instance, feed, *, host_private=False):
                 chapter.pop(field)
             else:
                 chapter[field] = kept if isinstance(chapter[field], list) else kept[0]
-        if chapter.get('flow') and restricted(defaults):
-            for beat in chapter['flow']:
-                beat.pop('do', None)
+        if (game := chapter.get('game')) and (
+                restricted(game.get('_people', defaults)) or withhold_game(game)):
+            chapter.pop('game')
+        if flow := chapter.get('flow'):
+            protected = restricted(defaults)
+            for beat in flow:
+                game = beat.get('do', {}).get('game', {})
+                if protected or withhold_game(game):
+                    beat.pop('do', None)
         # Authoring classification is not part of the reader's story.
         chapter.pop('kind', None)
     return feed

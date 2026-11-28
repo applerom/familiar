@@ -53,6 +53,9 @@ def execute(args):
             from .service import refresh_output
             status = refresh_output(instance, args.out or instance.path('build') / 'feeds')
             print(f'{status["state"]}: {len(result)} feeds built; unreviewed: {len(status.get("unreviewed", []))}')
+            if status['state'] == 'clean':
+                from familiar.instance.publication import PUBLIC_SCAN_SCOPE
+                print(PUBLIC_SCAN_SCOPE, file=sys.stderr)
         elif args.feed_command == 'status':
             from .service import refresh_output
             output = refresh_output(instance)

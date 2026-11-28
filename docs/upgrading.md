@@ -68,7 +68,7 @@ Going back is the same command with the previous tag. A carry-over step that
 rewrote stored forms is undone from your backup, which is why the backup step
 above is not optional.
 
-## From 0.52.1 to 0.67.1
+## From 0.52.1 to 0.67.2
 
 The upgrade command checks old photo registrations and asks the author to
 scope any older life decisions. In `family/privacy.json`, use `everywhere`
@@ -91,7 +91,7 @@ strips are an optional way to author those catalogs, described in
   import before confirming removal with `--allow-remove-chapters`. Use
   `instance keep-citations --dry-run` to inspect temporary citations and
   `instance keep-citations` to copy the evidence and update its locators.
-  Rebuild earlier public feed, tree and reader generations with 0.67.1.
+  Rebuild earlier public feed, tree and reader generations with 0.67.2.
   Share the checked payload in the active numbered generation directory.
 
 ## From 0.41.3 to 0.50.0

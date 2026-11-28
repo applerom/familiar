@@ -1377,7 +1377,8 @@ def desk_upload(instance, *, personal):
     active = source(instance)
     public_ids = {p.stem for p in active._inside('family/feedback/inbox').glob('*.json')
                   if not owner_only(row := json.loads(p.read_bytes())) and not research_feedback(row)}
-    files = hosted_files(checked.files, personal=personal, feedback_ids=public_ids, photos=photographs(active))
+    files = hosted_files(checked.files, personal=personal, feedback_ids=public_ids,
+                         photos=photographs(active), allow_draft_frames=True)
     from .memory_visibility import check_delivery
     check_delivery(active, files)
     with tempfile.TemporaryDirectory(prefix='familiar-desk-upload-') as directory:
