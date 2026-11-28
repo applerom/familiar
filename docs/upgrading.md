@@ -68,7 +68,7 @@ Going back is the same command with the previous tag. A carry-over step that
 rewrote stored forms is undone from your backup, which is why the backup step
 above is not optional.
 
-## From 0.52.1 to 0.64.2
+## From 0.52.1 to 0.67.1
 
 The upgrade command checks old photo registrations and asks the author to
 scope any older life decisions. In `family/privacy.json`, use `everywhere`
@@ -79,6 +79,20 @@ applies at home only. This can withhold passages and papers in the public feed.
 Existing `feed.json`, `chapters.json` and `documents.json` still build. Chapter
 strips are an optional way to author those catalogs, described in
 [Feed studio](feed-studio.md).
+
+- **0.65.0.** Corpus readings retain their text. The upgrade names incomplete
+  explicit `place_scope` values so the author can assign the place and surname
+  from the reading.
+- **0.66.0.** Old chapter catalogues remain available. When a studio file cut
+  still appears as a placeholder, compare `feed chapters FEED --out DIR` and
+  reimport to carry the cut and reading over.
+- **0.67.0–0.67.1.** The studio counts its numbered files. The upgrade names
+  incomplete sets and catalogues. Restore missing strips or compare a scratch
+  import before confirming removal with `--allow-remove-chapters`. Use
+  `instance keep-citations --dry-run` to inspect temporary citations and
+  `instance keep-citations` to copy the evidence and update its locators.
+  Rebuild earlier public feed, tree and reader generations with 0.67.1.
+  Share the checked payload in the active numbered generation directory.
 
 ## From 0.41.3 to 0.50.0
 

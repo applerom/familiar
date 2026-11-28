@@ -20,13 +20,17 @@ _TEMP = re.compile(r"(?<![\w:/\\])(?:\.[/\\])?(?P<path>(?:tmp|temp|\.tmp)[/\\][^
                    re.IGNORECASE)
 _JSON_STRING = re.compile(rb'"(?:[^"\\]|\\.)*"')
 _JSON_KEY_END = re.compile(rb'\s*:')
+_ARCHIVE = re.compile(r'(?<![\w/\\])archive:[^;|\r\n]*', re.IGNORECASE)
 
 
 def _matches(value):
     # Quoted path fields can contain spaces. Paths embedded in prose use path tokens.
     exact = re.fullmatch(r'(?:\.[/\\])?(?P<path>(?:tmp|temp|\.tmp)[/\\][^<>:;"(),|?*#\r\n]+?\.[\w-]+)',
                          value, re.IGNORECASE)
+    archives = [m.span() for m in _ARCHIVE.finditer(value)]
     for match in (exact,) if exact else _TEMP.finditer(value):
+        if any(start <= match.start() < end for start, end in archives):
+            continue
         path = match['path'].rstrip('.').replace('\\', '/')
         parts = PurePosixPath(path).parts
         if len(parts) > 1 and '..' not in parts:

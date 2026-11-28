@@ -150,7 +150,6 @@ export function FeedViewer({feed,step,setStep,onClose,go,model,labels,language,c
  const originalText=fallsBack(bodyText),originalIntro=!!v&&fallsBack(c.text);
  const allRecs=[...(c.record?[c.record]:[]),...(c.records||[])];
  const paperId=(r:Rec)=>[r.full,r.asset].map(h=>h&&paper?.(h)).find(Boolean) as string|undefined;
- const chapterPapers=allRecs.map(paperId).filter((x):x is string=>!!x);
  const record=(r:Rec,k:number)=><figure key={k} className={'feed-record'+(r.kind==='index'||!r.asset?' feed-index':'')}>{[{asset:r.asset,read:r.read},...(r.parts||[])].map((p,j)=><div key={j} className="feed-snip">{/* eslint-disable-next-line @next/next/no-img-element */}{p.asset&&(paperId(r)?<button className="feed-paper" onClick={()=>openPaper?.(paperId(r)!,chapterPapers)} aria-label={labels.feedOpenDoc}><img src={p.asset} alt={tr(r.title,language)} loading="lazy"/></button>:<img src={p.asset} alt={tr(r.title,language)} loading="lazy"/>)}{p.read&&<q className="feed-read">{marked(p.read)}</q>}</div>)}<figcaption>{r.title&&tr(r.title,language)&&<b>{tr(r.title,language)}</b>}{r.kind==='index'&&<em>{labels.feedIndexOnly}</em>}{r.kind==='home-paper'&&<em>{labels.feedHomePaper}</em>}{r.kind==='archive-scan'&&<em>{labels.feedArchiveScan}</em>}{paperId(r)?<button className="link" onClick={()=>openPaper?.(paperId(r)!,chapterPapers)}>{labels.feedOpenDoc}</button>:(r.full||r.asset)&&<a href={r.full||r.asset} target="_blank" rel="noreferrer">{r.full?labels.feedFullDoc:labels.feedOpenDoc} ↗</a>}</figcaption></figure>;
  // play layer: children get «Найди», adults «Рассмотри»; a feed with one text for all ages offers both (2.11.2026)
  const play={kids:kidsMode,offer:(kidsMode?'find':hasKids?'look':'both') as Offer};
@@ -160,10 +159,23 @@ export function FeedViewer({feed,step,setStep,onClose,go,model,labels,language,c
  const placedF=new Set(visibleFlow.filter(f=>f.after>=0).map(f=>f.figure));
  const placedR=new Set(visibleFlow.filter(f=>f.after>=0).map(f=>f.record));
  const unplaced=allRecs.map((r,k)=>({r,k})).filter(({k})=>!placedR.has(k));
- const markedRecs=unplaced.filter(({r})=>r.kids===true);let remaining=4;
- const unplacedRecords=!kidsMode?unplaced:c.kidsRecords===false?[]:(c.kidsSelection||markedRecs.length)
-  ?markedRecs.flatMap(({r,k})=>{if(!remaining)return [];const parts=(r.parts||[]).slice(0,remaining-1);remaining-=1+parts.length;return [{r:{...r,parts},k}]})
-  :unplaced.slice(0,1).map(({r,k})=>({r:{...r,parts:(r.parts||[]).slice(0,1)},k}));
+ const markedRecs=unplaced.filter(({r})=>r.kids===true);
+ let remaining=c.kidsRecords===false?0:4;
+ const limitCrops=(r:Rec,extra=remaining-1)=>{
+  if(!remaining)return undefined;
+  const parts=(r.parts||[]).slice(0,Math.min(extra,remaining-1));
+  remaining-=1+parts.length;
+  return {...r,parts};
+ };
+ const placedRecords=visibleFlow.map(beat=>{
+  const r=beat.after>=0&&beat.record!==undefined?allRecs[beat.record]:undefined;
+  return r&&kidsMode?limitCrops(r):r;
+ });
+ const selectedKids=c.kidsSelection||allRecs.some(r=>r.kids===true);
+ const unplacedRecords=!kidsMode?unplaced:(selectedKids?markedRecs:unplaced.slice(0,1))
+  .flatMap(({r,k})=>{const visible=limitCrops(r,selectedKids?remaining-1:1);return visible?[{r:visible,k}]:[]});
+ const visibleRecords=kidsMode?[...placedRecords.filter((r):r is Rec=>!!r),...unplacedRecords.map(({r})=>r)]:allRecs;
+ const chapterPapers=visibleRecords.map(paperId).filter((x):x is string=>!!x);
  const moved=(kind:Activity['kind'],key?:string)=>visibleFlow.some(f=>f.do?.kind===kind&&f.do.key===key&&
   (f.do.kind==='game'||f.do.picture));
  const staticPicture=(p:Picture):Picture=>({...p,spots:moved('spots',p.asset)?undefined:p.spots,
@@ -172,7 +184,7 @@ export function FeedViewer({feed,step,setStep,onClose,go,model,labels,language,c
  const figure=(f:Picture,k:number)=><FeedFigure key={'f'+k+(f.ours?.asset||'')} f={staticPicture(f)} labels={labels} language={language} {...play}/>;
  const chapterGame=feed.id+'/'+(c.id||tr(c.year,''));
  const game=(g:Game,id:string,key=id)=><GameCard key={key} id={id} game={g} kids={kidsMode} labels={labels} language={language}
-  doc={(a:string)=>{const r=allRecs.find(x=>x.asset===a);return r?record(r,-1):null}}/>;
+  doc={(a:string)=>{const r=visibleRecords.find(x=>x.asset===a);return r?record(r,-1):null}}/>;
  const activity=(item:Activity,key:number)=>{
   if(item.kind==='game')return game(item.game,item.key,`${chapterGame}/do/${item.key}/${key}`);
   const picture=item.picture;
@@ -193,7 +205,7 @@ export function FeedViewer({feed,step,setStep,onClose,go,model,labels,language,c
  const unplacedFigures=(c.figures||[]).flatMap((f,k)=>placedF.has(k)?[]:[figure(f,k)]);
  const beats=visibleFlow.flatMap((beat,j)=>[
    beat.after>=0&&beat.figure!==undefined&&c.figures?.[beat.figure]?figure(c.figures[beat.figure],beat.figure):null,
-   beat.after>=0&&beat.record!==undefined&&allRecs[beat.record]?record(allRecs[beat.record],beat.record):null,
+   placedRecords[j]?record(placedRecords[j]!,beat.record!):null,
    beat.placeholder?.ratio&&<DraftFrame key={'placeholder'+j} frame={beat.placeholder} language={language}/>,
    beat.do&&activity(beat.do,j)
   ].filter(Boolean).map(node=>({after:beat.after,node})));

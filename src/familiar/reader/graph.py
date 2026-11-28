@@ -121,7 +121,7 @@ def _intake_person(person, source_map, records, telling, wording, labels):
         if documents:
             fact.pop('testimony', None)
             if field in {'document', 'notes'}:
-                fact['label'] = documents[0].get('title', '')
+                fact['_paper_heading'] = documents[0]['id']
         if fact.get('derived') and field == 'notes':
             fact['detailOnly'] = True  # Generated reasoning stays outside the ordinary card view.
         if isinstance(field, str) and not fact.get('eventType'):
@@ -172,10 +172,31 @@ def _intake_person(person, source_map, records, telling, wording, labels):
             continue
         if not text:
             continue
-        attribution = [wording['paper_label'].format(title=records[sid].get('title', ''))
-                       for sid in fact.get('sources', []) if sid in records]
-        fact['text'] = text + ('. ' + '; '.join(dict.fromkeys(attribution)) if attribution else '')
+        fact['text'] = text
+        if any(sid in records for sid in fact.get('sources', [])):
+            fact['_paper_attribution'] = wording['paper_label']
     return person
+
+
+def paper_attribution(graph):
+    """Only sources surviving the reader's document projection supply titles."""
+    sources = graph['sources']
+    for person in graph['people'].values():
+        for fact in person.get('facts', []):
+            heading = fact.pop('_paper_heading', None)
+            wording = fact.pop('_paper_attribution', None)
+            if not (heading or wording):
+                continue
+            shown = [sources[sid] for sid in fact.get('sources', [])
+                     if sid in sources and sources[sid].get('record') and isinstance(sources[sid].get('title'), str)]
+            if heading:
+                if title := next((s['title'] for s in shown if s['record'] == heading), ''):
+                    fact['label'] = title
+            if wording:
+                labels = dict.fromkeys(wording.format(title=s['title']) for s in shown
+                                       if s['record'] in fact['sources'] and s['title'])
+                if labels:
+                    fact['text'] += '. ' + '; '.join(labels)
 
 
 
@@ -219,7 +240,7 @@ def _card_dates(pid, person, evidence):
     return person
 
 
-def _assemble(instance, *, for_review=False, host_private=False):
+def _assemble(instance, *, for_review=False, host_private=False, paper_words=None):
     graph = _build(instance, family_display=host_private)
     errors = graph.get('research', {}).get('contributions', {}).get('errors', [])
     if errors:
@@ -260,7 +281,7 @@ def _assemble(instance, *, for_review=False, host_private=False):
             fact['eventKey'] = hashlib.sha256(json.dumps([fact.get('label'), fact.get('text'), fact.get('sources')], ensure_ascii=False).encode()).hexdigest()[:24]
     card_dates(graph['people'], evidence)
     from familiar.instance.publication import restrict_graph
-    graph = restrict_graph(instance, graph, host_private=host_private)
+    graph = restrict_graph(instance, graph, host_private=host_private, paper_words=paper_words)
     for person in graph['people'].values():
         if person.get('living') is False:
             if _workshop(person.get('summary')):

@@ -12,7 +12,7 @@ from familiar.instance.gate import evaluate, publication
 from familiar.instance.publication import restrict_graph, scan
 from familiar.instance.review import attest, review_ticket
 from familiar.instance.validation import _forms, check
-from familiar.instance.writer import mutate, publish, read_generation
+from familiar.instance.writer import generation, mutate, publish, read_generation
 from familiar.tree.builder import _build, build
 
 
@@ -357,6 +357,9 @@ def test_f7_not_found_requires_read_coverage(family):
 
 
 def test_f8_review_binds_exact_bytes(family, tmp_path):
+    birthday = '1980-04-17'
+    location = 'feeds/ferrolho/chapters.json'
+    edit(family, location, lambda cs: cs[0]['records'][0].update(title='Private paper dated ' + birthday))
     material = publication(family, 'feeds', for_review=True)
     assert material.manifest['state'] == 'preview'
     ticket = review_ticket(material)
@@ -365,7 +368,14 @@ def test_f8_review_binds_exact_bytes(family, tmp_path):
     attest(family, 'feeds', reviewer='reader', author='writer', ticket=ticket)
     out = tmp_path / 'checked'
     service.build(family, out)
-    edit(family, 'feeds/ferrolho/chapters.json', lambda cs: cs[0]['prose']['text'][0].update(text='Edited while reading'))
+    packet = read_generation(family, out)
+    assert {p.name for p in generation(family, out).iterdir()} == set(packet)
+    assert json.loads(packet['status.json'])['ferrolho'] == {'output': {'state': 'clean', 'unreviewed': []}}
+    assert all(birthday.encode() not in raw for raw in packet.values())
+    edit(family, location, lambda cs: cs[0]['prose']['text'][0].update(text='A date copied elsewhere: ' + birthday))
+    with pytest.raises(ValueError, match=r'feeds\.json contains wording from a withheld paper'):
+        publication(family, 'feeds')
+    edit(family, location, lambda cs: cs[0]['prose']['text'][0].update(text='Edited while reading'))
     with pytest.raises(ValueError, match='review material changed'):
         attest(family, 'feeds', reviewer='reader', author='writer', ticket=ticket)
 

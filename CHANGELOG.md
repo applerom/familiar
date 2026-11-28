@@ -1,15 +1,32 @@
 # Changelog
 
+## 0.67.1 — 28 November 2026
+
+- We keep diagnostics, input paths and review records out of public packets.
+  The gate scans the delivered files for wording from withheld papers.
+- The reader shows placed cuts in both modes by default. The children's
+  setting can hide papers and the crop limit covers the whole chapter.
+- Data: Upgrade names incomplete studio sets. Installed chapter IDs and
+  expected counts protect the catalogue. Compare with `feed chapters --out DIR`
+  before confirming a removal with `--allow-remove-chapters`.
+- Data: Upgrade names citations to temporary files. Use `instance keep-citations
+  --dry-run` and then `instance keep-citations` to keep the files. Missing
+  paths and archive locators keep their original wording.
+
 ## 0.67.0 — 28 November 2026
 
 - We import the numbered chapters the studio holds. The storyboard uses the
   studio plan, highlights words in paper readings and accepts a host path map
   for original photographs kept outside the family.
+- Data: The studio counts numbered files. In 0.67.1, we check existing
+  expected counts and installed chapter IDs before replacing the catalogue.
 - A desk built from a separate Git checkout names the feed and other authored
   inputs it excludes. A chapter import points out very wide paper cuts.
 - We identify temporary paths cited in records and search journals.
   `instance keep-citations` keeps the bytes in the family captures directory
-  and updates their locators. Missing files keep their current citation.
+  and updates their locators.
+- Data: The transfer is explicit and leaves missing files in place. In 0.67.1,
+  it also preserves archive locators.
 - Instance checks share the host media projection across feeds. Each public
   feed still goes through its own projection and media checks.
 

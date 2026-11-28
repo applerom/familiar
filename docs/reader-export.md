@@ -132,6 +132,9 @@ published external copy or make a static browser recheck private inputs.
 The directory is a generation container. `CURRENT.json` points at
 `.generations/<digest>/`, where the files below live. Use `reader verify` or the
 checked `writer.read_generation` API before handing a generation to a host.
+Share only the verified payload. The sibling `.generations/<digest>.json`
+is the host's metadata with dependency paths and review records. Rebuild
+public generations created before this layout.
 Raw path reads are outside the engine boundary. Payloads retain the v1 shape.
 
 For a local browser shell, run `familiar --root <family> reader serve --output
@@ -242,7 +245,7 @@ read the pages in a browser, and confirm the ticket with `feed accept` before th
   supplies the scan URL in `image`. Back follows browser history with the reader
   home as the direct-entry fallback. Research URLs stay private.
 - `bundle.json`, written last: integer `schema_version: 1`, `family_id`,
-  `state: clean` (or recorded `host release`), named `inputs` fingerprints, and `files` mapping relative
+  `state: clean` (or recorded `host release`) and `files` mapping relative
   names to SHA-256 (plus the stable media id and kind where relevant).
   Automatic scans add `source_sha256` for the exact capture bytes.
 

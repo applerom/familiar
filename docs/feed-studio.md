@@ -51,8 +51,12 @@ The feed's `feed.json` supplies the title and lead. Optional
   passage puts the person's chip under the chapter, and the reader's
   "For whom?" choice shows the kinship of that person to whoever reads.
 
-The import counts the numbered files in the selected studio. Existing
-`chapter_count` values are ignored. When the image extra is installed,
+The import counts the numbered files in the selected studio. Before replacing
+`chapters.json`, we check that every installed chapter ID is present and that
+any existing `chapter_count` still matches the sequence starting at 00.
+Use `--out DIR` to inspect an incomplete set and `--allow-remove-chapters`
+to confirm the replacement. Update any old expected count for future imports.
+When the image extra is installed,
 an import points out cuts that shrink to a very thin strip on a 390 px phone.
 Use `**words**` in a reading to highlight them.
 

@@ -43,6 +43,11 @@ We report withheld chapter cut-outs, pictures and game evidence as private advic
 in `feed check` and `feed pages --text`, separately for the local host and readers.
 Advice names the item, protected subjects and life status, and the next action:
 clarify life status or separate a deceased-only excerpt.
+Public feed status is built from the projected feeds and their reading state.
+Before sealing a public packet we scan its serialized files and names for
+wording from withheld papers. Permissible names and independently shown
+historical facts or checked literal readings retain their public use.
+An occurrence of withheld wording stops the build and names the file.
 A living or unknown person's full document and its record-linked card details
 remain excluded. The build can continue with that omission. Conflicting
 subjects still refuse it. A paper with stated `subjects` is judged by them when a
@@ -364,7 +369,8 @@ Review unit bytes use deterministic compact UTF-8 page serialization (preserving
 field and array order), every displayed language, and exact reachable media
 SHA-256 digests. Reader document pages and profile have their own byte digests.
 Whitespace in the surrounding JSON envelope is not displayed content. Method
-and engine provenance and per-item/person/field uses are in `generation.json`.
+and engine provenance and per-item/person/field uses stay in local generation
+metadata. For a public build that file is beside the numbered payload directory.
 Working notes and unshown corpus fields do not invalidate a page review.
 
 Publishers take an exclusive per-destination lock before generation or pointer

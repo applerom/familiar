@@ -5,6 +5,7 @@
 # - draft frames may be read locally and prevent external release of their feeds [test: tests/gate/test_data_guarantees.py::test_draft_frames_stay_home]
 # - public output adapters share the full class-F verdict; private displays validate their selected record inputs [review: engine lead]
 # - chapter media omissions report the host and reader projections as advice [review: engine lead]
+# - delivered feed status contains only public review state and page identifiers [test: tests/gate/test_data_guarantees.py::test_f8_review_binds_exact_bytes]
 # - every engine function that mutates, publishes or reads family data is a registered boundary and serializes only the sealed projection [review: engine lead]
 # - research lookups (forms, compare, person) are registered boundaries without the family verdict; they publish nothing [review: engine lead]
 # - one verdict or one checked call reads fixed inputs: derived reads are shared inside it; the final fingerprint comparison still rejects any change [review: engine lead]
@@ -256,7 +257,7 @@ def publication(instance, kind, feed=None, *, for_review=False, tree_enrich=None
     from familiar.feeds import service
     from familiar.feeds.flow import require_finished
 
-    from .publication import _seal, public_references, restrict_graph, scan, scan_assets
+    from .publication import PaperWords, _seal, check_public_files, public_references, restrict_graph, scan, scan_assets
     from .review import _output_uses, _review_manifest, _review_units
     from .writer import snapshot
 
@@ -264,6 +265,7 @@ def publication(instance, kind, feed=None, *, for_review=False, tree_enrich=None
         raise ValueError('tree_enrich must be callable and is only supported for tree publications')
     with snapshot(instance) as (active, inputs):
         private = kind == 'reader-private'
+        paper_words = PaperWords()
         verdict = {'valid': True, 'state': 'host-private' if private else 'working'} if kind in {'host', 'correspondence', 'reader-private'} else require(active)
         def original_locations(value):
             if isinstance(value, dict):
@@ -294,28 +296,21 @@ def publication(instance, kind, feed=None, *, for_review=False, tree_enrich=None
             result.check(instance)
             return result
         elif kind == 'feeds':
-            data, reports = [], {}
+            data = []
             for folder in service.folders(active, feed):
                 result, _ = service._materialize(active, folder)
                 require_finished([result])
-                data.append(scan(active, result, 'feed'))
-                reports[folder.name] = service._inspect(active, folder)
-            for report in reports.values():
-                report['trust'] = verdict
-                report['output'] = {'state': CLEAN, 'inputs': inputs}
-            if active.config.get('family', {}).get('fictional'):
-                reports = {'_about': 'Build status of an invented family.', 'fictional': True, **reports}
+                data.append(scan(active, result, 'feed', paper_words=paper_words))
             uses = _output_uses(active, kind, data, feed)
             data = public_references(active, data)
-            files = {name: (json.dumps(value, ensure_ascii=False, allow_nan=False, sort_keys=True, indent=2) + '\n').encode()
-                     for name, value in [('feeds.json', data), ('status.json', reports)]}
+            files = {'feeds.json': (json.dumps(data, ensure_ascii=False, allow_nan=False, sort_keys=True, indent=2) + '\n').encode()}
         elif kind == 'tree':
             from familiar.tree.builder import _build
             from familiar.tree.canonical import encode
             graph = _build(active, enrich=tree_enrich)
             for source in graph['sources'].values():
                 source.pop('image', None)  # Only the checked reader document projection writes this field.
-            data = scan(active, restrict_graph(active, graph), 'graph')
+            data = scan(active, restrict_graph(active, graph, paper_words=paper_words), 'graph')
             scan_assets(active, data)
             uses = _output_uses(active, kind, data, feed)
             data = public_references(active, data, graph=data)
@@ -324,16 +319,18 @@ def publication(instance, kind, feed=None, *, for_review=False, tree_enrich=None
             from familiar.reader.assets import catalog, dependencies, used_assets
             from familiar.reader.documents import _local_sources
             from familiar.reader.export import encode, external_links
-            from familiar.reader.graph import _assemble, show_probable_identities
+            from familiar.reader.graph import _assemble, paper_attribution, show_probable_identities
             from familiar.rules.cascade import Registry
             from familiar.rules.roles import method_root
             media = catalog(active)
-            graph = _assemble(active, for_review=for_review, host_private=private)
+            graph = _assemble(active, for_review=for_review, host_private=private,
+                              paper_words=None if private else paper_words)
             if private:
                 # The display snapshot holds no search journals; the host's own instance supplies the coverage block.
                 from familiar.research.coverage_display import attach
                 attach(instance, graph)
             documents, scan_sources = _local_sources(active, graph, media, host_private=private)
+            paper_attribution(graph)
             if private:
                 show_probable_identities(graph)
             allowed = Registry(method_root() / 'rules', active).resolve_setting('media.external_embeds').value
@@ -376,11 +373,13 @@ def publication(instance, kind, feed=None, *, for_review=False, tree_enrich=None
                     from .writer import reader_media
                     files[name] = reader_media(source, row, name)
             from .writer import content_digest
-            manifest = {'schema_version': 1, 'family_id': active.id, 'state': 'host-private' if private else CLEAN, 'inputs': inputs,
+            manifest = {'schema_version': 1, 'family_id': active.id, 'state': 'host-private' if private else CLEAN,
                         'files': {name: {'sha256': content_digest(value),
                                           **({'source_sha256': scan_sources[name]} if name in scan_sources else {}),
                                           **({'id': media[name][0]['id'], 'kind': media[name][0]['kind']} if name in media else {})}
                                   for name, value in sorted(files.items())}}
+            if private:
+                manifest['inputs'] = inputs
             files['bundle.json'] = encode(manifest)
             data = manifest
         else:
@@ -404,10 +403,13 @@ def publication(instance, kind, feed=None, *, for_review=False, tree_enrich=None
             data['state'] = review['state']
             files['bundle.json'] = encode(data)
         if kind == 'feeds':
-            for report in reports.values():
-                if isinstance(report, dict):
-                    report['output'] = {'state': review['state'], 'unreviewed': review['unreviewed']}
+            reports = {item['id']: {'output': {'state': review['state'], 'unreviewed': [
+                page for page in review['unreviewed'] if page.startswith('feed:' + item['id'] + '/')]}}
+                for item in data}
+            if active.config.get('family', {}).get('fictional'):
+                reports = {'_about': 'Build status of an invented family.', 'fictional': True, **reports}
             files['status.json'] = (json.dumps(reports, ensure_ascii=False, allow_nan=False, sort_keys=True, indent=2) + '\n').encode()
+        check_public_files(active, files, paper_words)
         review['kind'] = kind
         review['feed'] = feed
         review['languages'] = list(active.languages)

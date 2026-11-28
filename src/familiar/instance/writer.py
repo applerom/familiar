@@ -850,8 +850,13 @@ def _publish(instance, out, publication):
                                               for p in sorted(method_root().rglob('*')) if p.is_file()})).hexdigest()
         manifest = {'inputs': publication.inputs, 'files': {k: content_digest(v) for k, v in files.items()},
                     'review': publication.manifest, 'engine': {'version': version('familiar'), 'method': method_digest}}
-        identity = hashlib.sha256(encode(manifest)).hexdigest()
-        _put(staged / 'generation.json', encode(manifest))
+        public = not publication.host_private
+        if public:
+            manifest['payload_only'] = True
+        manifest_bytes = encode(manifest)
+        identity = hashlib.sha256(manifest_bytes).hexdigest()
+        if not public:
+            _put(staged / 'generation.json', manifest_bytes)
         publication.check(instance)
         out.mkdir(parents=True, exist_ok=True)
         target = out / '.generations' / identity
@@ -859,7 +864,7 @@ def _publish(instance, out, publication):
         if not target.parent.resolve().is_relative_to(out) or not target.resolve().is_relative_to(out):
             raise ValueError('generation directory escapes output root')
         if target.exists():
-            expected = {**files, 'generation.json': encode(manifest)}
+            expected = files if public else {**files, 'generation.json': manifest_bytes}
             try:
                 valid = ({p.relative_to(target).as_posix() for p in target.rglob('*') if p.is_file()} == set(expected)
                          and all(_relative(target, name).read_bytes() == value for name, value in expected.items()))
@@ -871,6 +876,14 @@ def _publish(instance, out, publication):
                 target.rename(Path(directory) / 'rejected')
         if not target.exists():
             staged.rename(target)
+        if public:
+            sidecar = target.with_suffix('.json')
+            if sidecar.is_symlink():
+                raise ValueError('generation metadata cannot be a symlink')
+            if not sidecar.is_file() or sidecar.read_bytes() != manifest_bytes:
+                metadata = Path(directory) / 'generation.json'
+                _put(metadata, manifest_bytes)
+                os.replace(metadata, sidecar)
         # This check occurs after all payload bytes and before the atomic commit.
         publication.check(instance)
         if (out / '.CURRENT.tmp').is_symlink():
@@ -959,13 +972,17 @@ def save_working(instance, out, graph, inputs):
 
 def generation(instance, out):
     """The mandatory reader: checks live inputs and every byte on every use."""
+    return _checked_generation(instance, out)[0]
+
+
+def _checked_generation(instance, out):
     root, manifest = _generation_manifest(instance, out)
     _check_uses(instance, manifest)
     _check_file_set(root, manifest)
     for name, digest in manifest['files'].items():
         if hashlib.sha256(_relative(root, name).read_bytes()).hexdigest() != digest:
             raise ValueError('generation payload checksum mismatch')
-    return root
+    return root, manifest
 
 
 def _generation_manifest(instance, out):
@@ -977,15 +994,26 @@ def _generation_manifest(instance, out):
     root = out / '.generations' / ident
     if not root.resolve().is_relative_to(out):
         raise ValueError('generation escapes output root')
-    manifest = json.loads((root / 'generation.json').read_text(encoding='utf-8'))
+    sidecar = root.with_suffix('.json')
+    if sidecar.is_symlink():
+        raise ValueError('generation metadata cannot be a symlink')
+    public = sidecar.is_file()
+    manifest = json.loads((sidecar if public else root / 'generation.json').read_text(encoding='utf-8'))
     if hashlib.sha256(encode(manifest)).hexdigest() != ident:
         raise ValueError('generation manifest checksum mismatch')
+    if public != bool(manifest.get('payload_only')):
+        raise ValueError('generation metadata is misplaced')
+    if not public and manifest.get('review', {}).get('state') != 'host-private':
+        raise ValueError('older public generation contains private metadata; rebuild it')
     return root, manifest
 
 
 def _check_file_set(root, manifest):
     actual = {p.relative_to(root).as_posix() for p in root.rglob('*') if p.is_file()}
-    if actual != set(manifest['files']) | {'generation.json'}:
+    expected = set(manifest['files'])
+    if not manifest.get('payload_only'):
+        expected.add('generation.json')
+    if actual != expected:
         raise ValueError('generation file set differs')
 
 
@@ -1055,8 +1083,7 @@ def _check_uses(instance, manifest):
 
 
 def generation_status(instance, out):
-    root = generation(instance, out)
-    manifest = json.loads((root / 'generation.json').read_text(encoding='utf-8'))
+    _, manifest = _checked_generation(instance, out)
     if manifest.get('review', {}).get('state') == 'host-private':
         instance = display_instance(instance)
     changed = manifest['inputs'] != fingerprints(instance)

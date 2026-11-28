@@ -187,6 +187,9 @@ def register(commands):
         command.add_argument('--config', type=Path, help='Use this import.json instead of the studio settings')
         command.add_argument('--source-ref', help='Read studio files and image lists from a family Git commit')
         command.add_argument('--out', type=Path, help='Scratch directory for chapters, or HTML file for storyboard')
+        if name == 'chapters':
+            command.add_argument('--allow-remove-chapters', action='store_true',
+                                 help='Replace the catalogue even if installed or expected chapters are absent')
         command.set_defaults(run=execute)
     for name, fields in (('person', ('feed', 'person')), ('doc', ('feed', 'key', 'frame', 'box', 'reading')), ('accept', ('feed',))):
         command = sub.add_parser(name)

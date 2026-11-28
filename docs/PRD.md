@@ -663,7 +663,11 @@ the instance path confinement and explicit host mapping contract.
 Translations use `_source` as the source-snapshot key, independently of the
 configured source language. Catalogs use stable corpus record IDs, never paths.
 Crop indices use explicit `index_base`, defaulting to one-based; `field` is literal data. Build preserves order and chapter/catalog content.
-In a chapter record reference, `kids: true` selects its `pick` crops for children, up to four crops per chapter in order. Without any marks, the first record and its first extra crop remain the default; `kidsRecords: false` hides all records.
+Placed paper cuts appear in both reading modes by default. In the children's mode,
+placed cuts use the four-crop chapter allowance first. For unplaced papers,
+`kids: true` selects crops in catalogue order from the remaining allowance.
+Without marks, the default unplaced selection is the first record and its
+first extra crop. `kidsRecords: false` hides all chapter records.
 
 
 JSON objects may carry `_about` and `fictional` metadata. Required fields are

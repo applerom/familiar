@@ -56,9 +56,9 @@
   "reader:tree@ru": {
     "page": "reader:tree",
     "language": "ru",
-    "reviewer": "r25-claude-opus-5-5",
+    "reviewer": "u92-codex-gpt-6.2-sol",
     "author": "u88-codex-gpt-6.2-sol",
-    "digest": "14ffb51b6036ade95c1e0c9627884d7a9167c63f884c553dd29892e219bec53c",
+    "digest": "58e891c3f0bad08ae0c9376772dc8dae70fb04282adf28992163ba54e9126811",
     "safety_digest": "744221837d8262fe487beef171e766ba7436c273fee0f656671085af8067e7c6",
     "rules": [
       "R1",
@@ -66,9 +66,9 @@
       "R3",
       "R4"
     ],
-    "inspection_digest": "d04ba24cc57388e6df9ba267522a2266863603c0d245bfbeb2d31b445291ded6",
+    "inspection_digest": "e9a15a14a8a8d36779dc38b18627cb56460ca2f8617dff8931c4a84df8ce3b5b",
     "verdict": "pass",
-    "at": "2026-11-28T08:48:10.734634+00:00",
+    "at": "2026-11-28T13:55:09.252614+00:00",
     "stage": "reading"
   }
 }

@@ -218,17 +218,9 @@ def load(instance, feed, studio=None, config=None, source_ref=None, *, draft=Fal
         config = json.loads(sources.text(default)) if default in sources.files(studio, 'import.json') else {}
     else:
         config = sources.json(default, {})
-    chapters = [parse(path, sources.text(path)) for path in sources.files(studio / 'chapters', '[0-9]*.md')]
-    chapters.sort(key=lambda chapter: chapter['n'])
-    if not chapters:
+    chapters = chapter_strips(sources, studio, config)
+    if not chapters and draft:
         raise ValueError(f'{studio / "chapters"}: no numbered chapter files')
-    for ch in chapters:
-        if not ch.pop('explicit_id', False):
-            ch['id'] = config.get('chapter_ids', {}).get(ch['id'], ch['id'])
-    if any(not ID.fullmatch(ch['id']) for ch in chapters):
-        raise ValueError('Invalid chapter id in studio settings')
-    if len({ch['id'] for ch in chapters}) != len(chapters) or len({ch['n'] for ch in chapters}) != len(chapters):
-        raise ValueError('Duplicate chapter id or number')
     meta = sources.json(folder / 'feed.json')
     if meta is None and draft:
         readme = folder / 'README.md'
@@ -243,6 +235,37 @@ def load(instance, feed, studio=None, config=None, source_ref=None, *, draft=Fal
             head = plan_head(sources.text(plans[0]))
             meta = {**meta, 'lead': '', **head}
     return folder, sources, config, chapters, meta
+
+
+def chapter_strips(sources, studio, config):
+    chapters = [parse(path, sources.text(path)) for path in sources.files(studio / 'chapters', '[0-9]*.md')]
+    chapters.sort(key=lambda chapter: chapter['n'])
+    for ch in chapters:
+        if not ch.pop('explicit_id', False):
+            ch['id'] = config.get('chapter_ids', {}).get(ch['id'], ch['id'])
+    if any(not ID.fullmatch(ch['id']) for ch in chapters):
+        raise ValueError('Invalid chapter id in studio settings')
+    if len({ch['id'] for ch in chapters}) != len(chapters) or len({ch['n'] for ch in chapters}) != len(chapters):
+        raise ValueError('Duplicate chapter id or number')
+    return chapters
+
+
+def chapter_set_issues(config, chapters, installed):
+    issues = []
+    omitted = sorted(set(installed) - {chapter['id'] for chapter in chapters})
+    if omitted:
+        issues.append('installed chapter IDs omitted: ' + ', '.join(omitted))
+    expected = config.get('chapter_count')
+    if expected is not None:
+        if type(expected) is not int or expected < 1:
+            raise ValueError('chapter_count must be a positive integer')
+        numbers = {chapter['n'] for chapter in chapters}
+        missing = [n for n in range(expected) if n not in numbers]
+        extra = sorted(n for n in numbers if n >= expected)
+        for label, values in (('missing chapter numbers', missing), ('unexpected chapter numbers', extra)):
+            if values:
+                issues.append(label + ': ' + ', '.join(f'{n:02d}' for n in values))
+    return issues
 
 
 def credits(sources, owners, supplements):
@@ -685,9 +708,15 @@ def translations(old, meta, chapters, pictures, play, language, languages):
                 (sources[key].get(language) if isinstance(sources[key], dict) else sources[key]))}
 
 
-def compile_chapters(instance, folder, sources, config, raw, meta):
+def compile_chapters(instance, folder, sources, config, raw, meta, *, allow_removal=False):
+    catalogue = folder / 'chapters.json'
+    old = {ch['id']: ch for ch in sources.json(catalogue, [])}
+    if not allow_removal and (issues := chapter_set_issues(config, raw, old)):
+        raise ValueError(f'{catalogue}: {"; ".join(issues)}. Restore the studio strips or use '
+                         '--out DIR to compare and --allow-remove-chapters to confirm the replacement')
+    if not raw:
+        raise ValueError(f'{catalogue}: no numbered studio chapters to import')
     importer = Importer(instance, sources, folder, config)
-    old = {ch['id']: ch for ch in sources.json(folder / 'chapters.json', [])}
     starts = part_starts(config, meta, raw, old, instance.source_language)
     part = 0
     chapters = []
@@ -727,7 +756,7 @@ def run(instance, args):
         print(notes)
         print(out)
         return
-    changes = compile_chapters(instance, *loaded)
+    changes = compile_chapters(instance, *loaded, allow_removal=bool(args.out or args.allow_remove_chapters))
     changes = {path: data if isinstance(data, bytes) else (json.dumps(data, ensure_ascii=False, indent=2) + '\n').encode('utf-8')
                for path, data in changes.items()}
     if args.out:

@@ -5,6 +5,7 @@
 # - draft frames and photographs with unnamed faces have no public reader path [review: engine lead]
 # - publication asset failures retain each unique URL across feeds [review: engine lead]
 # - both reader modes exclude protected documents and their record-linked card details [review: engine lead]
+# - public packet bytes are checked for text from withheld papers before sealing [review: engine lead]
 # - photo treatments inherit original privacy [review: engine lead]
 # - living name parts inferred by researchers are omitted from canonical names; reported kin wording remains permissible kinship [review: engine lead]
 # - the delivered public graph has only bundle-local references for protected people and closed sources [test: tests/gate/test_data_guarantees.py::test_life_decision_scope]
@@ -27,11 +28,12 @@
 # :END_MODULE_CONTRACT
 import copy
 import hashlib
+import html
 import json
 import re
 import tomllib
 import unicodedata
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass(frozen=True)
@@ -261,7 +263,7 @@ def confirmed_name(person):
                     if name.get(k) and k not in name.get('inferred_parts', {}))
 
 
-def restrict_graph(instance, graph, *, host_private=False):
+def restrict_graph(instance, graph, *, host_private=False, paper_words=None):
     from familiar.checks.engine import _known_people, life_status, load
 
     from .edition import apply
@@ -271,7 +273,8 @@ def restrict_graph(instance, graph, *, host_private=False):
     surname_display(instance, graph, read_json(instance.path('tree_metadata'), {}))
     from .subjects import attribute_documents
     withheld = attribute_documents(instance, graph, family_display=host_private)
-    graph = private_graph(instance, graph, host_private=host_private, withheld=withheld, amendments=True)
+    graph = private_graph(instance, graph, host_private=host_private, withheld=withheld, amendments=True,
+                          disclosed=paper_words)
     if host_private:
         return graph
     privacy = load(instance.path('privacy'), {})
@@ -316,6 +319,10 @@ def restrict_graph(instance, graph, *, host_private=False):
         resolved = closure(instance, source, shape='source', people=known)
         if (any(life_status(known[pid], privacy) != 'dead' for pid in resolved.people) or
                 any(map(protected_record, resolved.records.values()))):
+            if paper_words is not None:
+                paper_words.withheld.update(paper_text(source))
+                for rid, record in resolved.records.items():
+                    paper_words.withheld.update(corpus_paper_words(instance, rid, record))
             graph['sources'][sid] = {key: val for key, val in source.items() if key in {'id', 'kind'}}
     for collection in ('edges', 'associations'):
         for edge in graph.get(collection, []):
@@ -329,7 +336,7 @@ def restrict_graph(instance, graph, *, host_private=False):
     return graph
 
 
-def restrict_feed(instance, feed):
+def restrict_feed(instance, feed, *, paper_words=None):
     from .narrative import restrict_feed as project_narrative
     from .subjects import attribute_documents
     from familiar.tree.builder import read_graph
@@ -342,7 +349,7 @@ def restrict_feed(instance, feed):
     graph['feeds'] = [copy.deepcopy(feed)]
     withheld = attribute_documents(instance, graph)
     return project_narrative(instance, private_graph(
-        instance, graph, host_private=False, withheld=withheld)['feeds'][0])
+        instance, graph, host_private=False, withheld=withheld, disclosed=paper_words)['feeds'][0])
 
 
 def public_references(instance, value, *, graph=None):
@@ -384,7 +391,7 @@ def public_references(instance, value, *, graph=None):
     return rewrite(value)
 
 
-def scan(instance, value, shape, *, host_private=False):
+def scan(instance, value, shape, *, host_private=False, paper_words=None):
     from .memory_visibility import require_displayable
     require_displayable(instance, value)
     """Scan precisely what the declared projection can publish, in every language."""
@@ -392,7 +399,7 @@ def scan(instance, value, shape, *, host_private=False):
     from familiar.rules.cascade import Registry
     from familiar.rules.roles import method_root
     if shape == 'feed':
-        value = restrict_feed(instance, value)
+        value = restrict_feed(instance, value, paper_words=paper_words)
     surfaces = []
     projected = project(value, shape, instance.languages, surfaces)
     # Recheck pairs on the exact declared bytes, including the local host projection.
@@ -402,6 +409,7 @@ def scan(instance, value, shape, *, host_private=False):
         closure(instance, projected, shape=shape)
     if shape == 'graph' and not host_private:
         projected.pop('presentationAliases', None)
+        projected.get('research', {}).pop('contributions', None)
         from .subjects import protected_record
         for person in projected.get('people', {}).values():
             person.pop('probableIdentities', None)
@@ -513,7 +521,108 @@ def quotation_filter(instance, records):
     return redact
 
 
-def private_graph(instance, graph, *, host_private=True, withheld=(), amendments=False):
+_PAPER_TEXT = ('caption', 'title', 'alt', 'description', 'read', 'reading', 'text',
+               'date', 'place', 'place_text', 'where', 'fields', 'parts', 'snippets', 'events')
+_FULL_DATE = re.compile(r'(?<!\d)\d{4}[-./]\d{1,2}[-./]\d{1,2}(?!\d)|'
+                        r'(?<!\d)\d{1,2}[./-]\d{1,2}[./-]\d{4}(?!\d)')
+
+
+@dataclass
+class PaperWords:
+    withheld: set[str] = field(default_factory=set)
+    published_literals: set[str] = field(default_factory=set)
+
+
+def paper_text(*nodes):
+    from familiar.checks.engine import strings
+
+    for node in nodes:
+        for key in _PAPER_TEXT:
+            values = node.get(key)
+            if key in {'parts', 'snippets', 'events'}:
+                yield from paper_text(*(part for part in values or [] if isinstance(part, dict)))
+                continue
+            for value in strings([values]):
+                yield from _FULL_DATE.findall(value)
+                for line in value.splitlines():
+                    line = plain_text(line.strip())
+                    if sum(c.isalnum() for c in line) >= 4:
+                        yield line
+
+
+def public_paper_context(instance):
+    """Shared names and independently shown historical facts are public in their own right."""
+    from familiar.checks.engine import _known_people, life_status, load
+    from .gate import shared
+
+    def build():
+        from datetime import date
+        from familiar.rules.cascade import Registry
+        from familiar.rules.roles import method_root
+
+        names, places, earlier_dates, dated_sources = set(), set(), set(), {}
+        privacy = load(instance.path('privacy'), {})
+        registry = Registry(method_root() / 'rules', instance)
+        cutoff = date.today().year - registry.resolve_setting('privacy.living_years').value
+        for person in _known_people(instance).values():
+            if name := confirmed_name(person):
+                names.add(name)
+                names.update(name.split())
+            if life_status(person, privacy) != 'dead':
+                continue
+            for event in person.get('events', []):
+                if event_kind(event) in {'address', 'residence'}:
+                    continue
+                if isinstance(place := event.get('place'), str):
+                    places.add(place)
+                if isinstance(when := event.get('date'), str):
+                    if re.fullmatch(r'\d{4}', when) and int(when) < cutoff:
+                        earlier_dates.add(when)
+                    for source in event.get('provenance', []):
+                        dated_sources.setdefault(source, set()).add(when)
+        return names, places, earlier_dates, dated_sources
+
+    return shared(instance, 'public-paper-context', build)
+
+
+def corpus_paper_words(instance, rid, record):
+    from .subjects import protected_record
+
+    # A deceased person's independently projected event can cite a full
+    # sheet we withhold. Its date says nothing about the sheet's other people.
+    _, places, dates, dated_sources = public_paper_context(instance)
+    shared = set() if protected_record(record) else places | dates | dated_sources.get(rid, set())
+    strict = {k: record[k] for k in ('title', 'caption', 'reading') if k in record}
+    return set(paper_text(strict)) | (set(paper_text({k: v for k, v in record.items() if k not in strict})) - shared)
+
+
+def word_pattern(words):
+    return re.compile(r'(?<!\w)(?:' + '|'.join(map(re.escape, sorted(words, key=len, reverse=True))) + r')(?!\w)', re.I)
+
+
+def check_public_files(instance, files, words):
+    """Verify the final serialized payload, including filenames, markup and asset bytes."""
+    if not words.withheld:
+        return
+    names = public_paper_context(instance)[0]
+    allowed = {name.casefold() for name in names if not any(c.isdigit() for c in name)}
+    allowed.update(term.casefold() for term in words.published_literals)
+    hidden_words = {term for term in words.withheld if term.casefold() not in allowed}
+    if not hidden_words:
+        return
+    variants = {encoded for term in hidden_words for encoded in (
+        term, html.escape(term), json.dumps(term, ensure_ascii=False)[1:-1],
+        json.dumps(term, ensure_ascii=True)[1:-1])}
+    pattern = word_pattern(variants)
+    binary = re.compile(rb'(?<!\w)(?:' + b'|'.join(re.escape(term.encode('utf-8')) for term in variants) + rb')(?!\w)', re.I)
+    for name, raw in files.items():
+        hit = (pattern.search(raw.decode('utf-8')) if name.endswith(('.json', '.html', '.svg', '.txt', '.js', '.css'))
+               else binary.search(raw))
+        if pattern.search(name) or hit:
+            raise ValueError(f'TRUST-06: {name} contains wording from a withheld paper; review the public material')
+
+
+def private_graph(instance, graph, *, host_private=True, withheld=(), amendments=False, disclosed=None):
     """Exclude protected documents and addresses from every family display."""
     from familiar.checks.engine import _known_people, life_status, load, record_path, strings
 
@@ -557,6 +666,13 @@ def private_graph(instance, graph, *, host_private=True, withheld=(), amendments
             for part in [node, *node.get('parts', []), *node.get('snippets', [])]:
                 if part.get('field') in fields and part.get('read') == fields[part['field']]:
                     literal_readings[id(part)] = part['read']
+        if not unsafe and shape == 'document' and disclosed is not None and not node.get('excerpt'):
+            from familiar.checks.engine import strings
+            if record := resolved.records.get(node.get('record')):
+                readings = set(strings([record.get('reading'), record.get('fields')]))
+                disclosed.published_literals.update(paper_text({'read': [
+                    part['read'] for part in [node, *node.get('parts', []), *node.get('snippets', [])]
+                    if isinstance(part.get('read'), str) and part['read'] in readings]}))
         return unsafe
 
     sources = graph.get('sources', {})
@@ -576,6 +692,16 @@ def private_graph(instance, graph, *, host_private=True, withheld=(), amendments
     # protection as a typed citation. Short common field values are handled
     # through the citation, where their meaning is known.
     records = {ref for kind, ref in withheld if kind == 'record'}
+    paper_terms = {}
+    if disclosed is not None:
+        from .gate import shared
+
+        for sid in blocked_papers:
+            disclosed.withheld.update(paper_text(sources[sid]))
+        for rid in records:
+            paper_terms[rid] = shared(instance, ('withheld-paper-words', rid),
+                                      lambda: corpus_paper_words(instance, rid, load(record_path(instance, rid), {})))
+            disclosed.withheld.update(paper_terms[rid])
     quotes_record = quotation_filter(instance, records)
     inline_assets = re.compile(r'''(?:src=["']|href=["']|\]\()(/[^"'\s)<>]+)''')
 
@@ -584,7 +710,18 @@ def private_graph(instance, graph, *, host_private=True, withheld=(), amendments
             return ''
         if blocked_assets and '/' in text:
             text = inline_assets.sub(lambda match: match[0].replace(match[1], '#') if match[1] in blocked_assets else match[0], text)
+        if paper_terms and cited and (pattern := citation_pattern(tuple(sorted(set(cited))))):
+            text = pattern.sub('…', text)
         return quotes_record(text, cited)
+
+    from functools import cache
+
+    @cache
+    def citation_pattern(cited):
+        terms = set().union(*(paper_terms.get(rid, set()) for rid in cited))
+        # Exact names and their name parts are already permissible.
+        terms.difference_update(public_paper_context(instance)[0])
+        return word_pattern(terms) if terms else None
 
     def cites_withheld(node):
         return any(('record', s) in withheld or s in blocked_papers
@@ -616,6 +753,13 @@ def private_graph(instance, graph, *, host_private=True, withheld=(), amendments
                   and not {e.get('type'), e.get('tag')} & {'address', 'ADDR'}}
 
     def excluded(node, key):
+        omit = exclude(node, key)
+        if omit and disclosed is not None and (key == 'records' or node.get('record')
+                or node.get('kind') == 'document-scan'):
+            disclosed.withheld.update(paper_text(node, node.get('_paper', {})))
+        return omit
+
+    def exclude(node, key):
         if key == 'truth' and ('asset', node.get('record')) in withheld:
             return True
         if any(node.get(k) in blocked_assets for k in ('asset', 'full', 'originalAsset', 'url')
@@ -673,6 +817,8 @@ def private_graph(instance, graph, *, host_private=True, withheld=(), amendments
     for sid in dropped_sources:
         graph['sources'][sid] = {k: v for k, v in graph['sources'][sid].items() if k in {'id', 'kind'}}
     graph = walk(graph)
+    if disclosed is not None:
+        disclosed.published_literals.update(paper_text({'read': list(literal_readings.values())}))
     from familiar.reader.experiences import protect_game_media
     protect_game_media(graph)
     if not addresses:

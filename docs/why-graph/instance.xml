@@ -122,6 +122,7 @@
   <MODULE_FAMILY_GATE ID="MOD-FAMILY-GATE" FILE="src/familiar/instance/gate.py" STATE="IMPLEMENTED">
     <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_draft_frames_stay_home">The gate names every draft chapter with a frame before a feed or reader leaves home.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Withheld chapter media advise separately for the host and readers without weakening exclusions.</INVARIANT>
+    <INVARIANT TEST="tests/gate/test_data_guarantees.py::test_f8_review_binds_exact_bytes">A public feed packet contains public status and passes a byte scan for withheld paper wording.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Research lookups are registered boundaries without the family verdict; they publish nothing.</INVARIANT>
     <INVARIANT REVIEW="engine lead">One verdict or one checked call reads fixed inputs: derived reads are shared inside it and its final fingerprint comparison still rejects any change.</INVARIANT>
     <REL TYPE="DEPENDS_ON" TARGET="MOD-PUBLICATION"/>
@@ -133,6 +134,7 @@
     <INVARIANT REVIEW="engine lead">Studio imports bind the selected feed and the dependencies of its catalogues through the atomic save.</INVARIANT>
     <INVARIANT REVIEW="engine lead">The relative-letter move verifies the source in the staged family and restores both sides if the write fails.</INVARIANT>
     <INVARIANT REVIEW="engine lead">Generation exclusions resolve merged person references.</INVARIANT>
+    <INVARIANT REVIEW="engine lead">The public payload directory is separate from host input and review metadata.</INVARIANT>
     <!-- Hosted upload stages the verified delivery, excluding correspondence for shared login; local feedback carries an explicit origin. -->
     <!-- Standalone demo storage accepts only a checked fictional desk and an empty
          destination; the ordinary private-reader publication refusal is unchanged. -->

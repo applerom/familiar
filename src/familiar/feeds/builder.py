@@ -171,6 +171,8 @@ class _Feed:
             r['kids'] = True
         if d.get('kind') == 'studio-cut':
             r['kind'] = d['kind']
+        # The final packet scan also covers wording from unselected catalogue crops.
+        r['_paper'] = {k: d[k] for k in ('caption', 'reading', 'snippets') if k in d}
         for k in ('full', 'source', 'record', 'fictional', 'subjects', 'excerpt'):
             if d.get(k):
                 r[k] = d[k]

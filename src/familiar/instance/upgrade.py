@@ -149,12 +149,40 @@ def studio_file_cuts(instance, apply):
     return notes
 
 
+def studio_chapter_set(instance, apply):
+    from familiar.feeds.studio import Sources, chapter_set_issues, chapter_strips
+    from .citations import temporary_references
+
+    notes = []
+    for catalogue in sorted(instance.path('feeds').glob('*/chapters.json')):
+        studio = catalogue.parent / 'studio'
+        settings = studio / 'import.json'
+        if not (studio / 'chapters').is_dir() and not settings.is_file():
+            continue
+        sources = Sources(instance, None)
+        try:
+            config = sources.json(settings, {})
+            chapters = chapter_strips(sources, studio, config)
+            installed = {ch['id'] for ch in sources.json(catalogue, [])}
+            issues = chapter_set_issues(config, chapters, installed)
+        except (OSError, ValueError, KeyError, TypeError) as error:
+            issues = [str(error)]
+        if issues:
+            notes.append(f'{catalogue} ({studio / "chapters"}; settings: {settings}): '
+                         f'{"; ".join(issues)}. Restore the strips or compare with '
+                         f'feed chapters {catalogue.parent.name} --out DIR before confirming removal')
+    for file in sorted(set(temporary_references(instance).values())):
+        notes.append(f'{file}: run instance keep-citations --dry-run to inspect temporary locators')
+    return notes
+
+
 STEPS = [
     ('0.41.0', 'generated document pages replace registered copies', generated_record_pages),
     ('0.53.1', 'render photographs received with remarks before family display', received_photographs),
     ('0.58.1', 'name the scope of life decisions with the author', scoped_life_decisions),
     ('0.65.0', 'preserve corpus readings and name incomplete place scopes', corpus_place_scope),
     ('0.66.0', 'name the studio file cuts still installed as placeholders', studio_file_cuts),
+    ('0.67.1', 'name incomplete studio imports and temporary citations', studio_chapter_set),
 ]
 
 
