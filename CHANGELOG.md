@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.64.3 — 28 November 2026
+
+- The files agents read at their start are kept short by a rhythm, not by
+  vigilance. Every role now changes a standing file in place instead of
+  appending to it (`PROC-STATE-IN-PLACE`), and the lead runs the new
+  `cleaning-pass` skill every week of work and before a broad wave
+  (`PROC-CLEANING-PASS`): dead instructions are deleted, living ones are
+  rewritten as state, nothing is archived.
+- A host remark lands as its meaning and its reason, in the lead's own words.
+
 ## 0.64.2 — 28 November 2026
 
 - `method/living-history.md` is shorter and speaks in one voice and one

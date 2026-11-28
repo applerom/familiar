@@ -650,6 +650,26 @@ check = ""
 mode = "advise"
 reads = ["rules.exception_alarm"]
 
+[[rule]]
+id = "PROC-STATE-IN-PLACE"
+kind = "process"
+statement = "A standing file says what is true now and what to do next. When your work changes it, change the line in place: the new word replaces the old, and the dated account goes into your report. Do not start a new standing file where a home exists, and do not leave a note for safety. Written against: entry files grown into stacked daily summaries that every agent had to read before working."
+roles = ["lead", "researcher", "second-look", "recipe-searcher", "feed-author", "shot-director", "artist", "reviewer", "translator"]
+serves = "UC-TUNE"
+check = ""
+mode = "advise"
+reads = []
+
+[[rule]]
+id = "PROC-CLEANING-PASS"
+kind = "process"
+statement = "Agents add and do not delete; no instruction removes the habit, so a rhythm carries it. Every week of work and before a broad wave, run the cleaning pass (skill `cleaning-pass`): dead standing files are deleted, living ones rewritten as state, nothing archived. When a file grows again, change the hand-in that feeds it. Written against: a workplace of dead protocols and entry sheets tens of kilobytes long that hindered the work they were written to help."
+roles = ["lead"]
+serves = "UC-TUNE"
+check = ""
+mode = "advise"
+reads = []
+
 # ---------- memory-first start ----------
 
 [[rule]]

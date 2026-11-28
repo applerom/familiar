@@ -12,7 +12,7 @@ import sys
 
 from familiar.rules.roles import ROLES, method_root
 
-SKILLS = ('blind-check', 'branch-abroad', 'drawing', 'game', 'generation-review',
+SKILLS = ('blind-check', 'branch-abroad', 'cleaning-pass', 'drawing', 'game', 'generation-review',
           'memory-first', 'on-site-researcher', 'research-versions', 'second-look', 'shot-card',
           'story-reading', 'story-scenario', 'story-text', 'translation', 'wide-hypotheses')
 

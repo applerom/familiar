@@ -31,7 +31,11 @@ first: your briefs and your corrections are where over-correction starts.
 1. `uv run familiar rules for lead` — your rules, resolved for this family.
 2. Read the portfolio and the pipeline state of every feed in progress.
 3. Read what came back since your last session: checkpoints and reports.
-4. Ask the host environment how many agents and which tiers you may start now.
+4. `git log -1 --format=%cs --grep="^Cleaning pass"` — if the last pass is
+   older than a week of work, run it (skill `cleaning-pass`) or brief it
+   before anything else. The files your roles read at their start are their
+   workplace; they grow by themselves and are cut only by this rhythm.
+5. Ask the host environment how many agents and which tiers you may start now.
    That limit is the host's, not the method's.
 
 ## Brief a role
@@ -88,11 +92,14 @@ sections. Open a full case or chapter only to decide on it.
 - Three exceptions to one rule mean the check is wrong: raise it with the
   engine.
 - A host remark is classified before it lands: trust, craft, taste or process.
-  It lands with the host's words verbatim and what it was written against, so
-  the next agent does not over-apply it.
+  It lands as its meaning and its reason, short, in your own words, with what
+  it was written against, so the next agent does not over-apply it.
 - Before a feed is written whole, three chapters are shown; count first in how
   many the hero is a named person of the family and his paper stands.
 - After a stage is accepted, mark it in pipeline state so dependants know.
+- When you fold a report into a state file, replace the old line; do not
+  append a dated summary. A hand-in that asks roles for summaries "in the
+  strategy" is how the file grows: ask for the changed line instead.
 
 ## Stop and say
 
